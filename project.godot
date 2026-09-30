@@ -1,0 +1,31 @@
+; Engine configuration file.
+; Godot 4.4+ is required (3D physics interpolation).
+
+config_version=5
+
+[application]
+
+config/name="Gra - Colossus Prototype"
+config/description="Open-source Shadow of the Colossus style remake. Milestone 1: climbing on a moving colossus."
+run/main_scene="res://scenes/sandbox.tscn"
+config/features=PackedStringArray("4.4", "Forward Plus")
+
+[display]
+
+window/size/viewport_width=1600
+window/size/viewport_height=900
+
+[layer_names]
+
+3d_physics/layer_1="world"
+3d_physics/layer_2="player"
+3d_physics/layer_3="colossus"
+
+[physics]
+
+common/physics_ticks_per_second=60
+common/physics_interpolation=true
+
+[rendering]
+
+anti_aliasing/quality/msaa_3d=2
