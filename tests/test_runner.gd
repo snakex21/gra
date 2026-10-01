@@ -3391,7 +3391,13 @@ func test_boss_cost_stays_within_budget() -> void:
 	Perf.take()
 	var fx0 := Fx.spawned
 	var ticks := 60 * 25
-	await _ticks(ticks)
+	var physics_ms := 0.0
+	var physics_max := 0.0
+	for i in ticks:
+		await _ticks(1)
+		var pm := Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
+		physics_ms += pm
+		physics_max = maxf(physics_max, pm)
 	var m := Perf.take()
 	var u: Dictionary = m.usec
 	var q: Dictionary = m.queries
@@ -3402,6 +3408,8 @@ func test_boss_cost_stays_within_budget() -> void:
 	for k in [&"colossus", &"player", &"horse", &"encounter"]:
 		total += per.call(k)
 	_log.append("Sentinel fight (bot climbing, 25 s): colossus %.1f us/tick = brain %.1f + combat %.1f + hits %.1f + attack pose %.1f + locomotion %.1f + IK %.1f; player %.1f; Agro %.1f; camera %.1f us/frame; vfx %.1f (%d effects); queries/tick: climb %.2f, horse %.2f, camera %.2f, boss hit tests %.2f, sword %.3f" % [colossus, per.call(&"brain"), per.call(&"boss_combat"), per.call(&"boss_hits"), per.call(&"boss_pose"), per.call(&"locomotion"), per.call(&"ik"), per.call(&"player"), per.call(&"horse"), per.call(&"camera"), per.call(&"vfx"), Fx.spawned - fx0, qp.call(&"climb_rays"), qp.call(&"horse_rays"), qp.call(&"camera_queries"), qp.call(&"boss_hit_tests"), qp.call(&"sword_checks")])
+	_log.append("whole physics tick (engine monitor, incl. physics server): mean %.3f ms, max %.3f ms" % [physics_ms / ticks, physics_max])
+	_metric("boss_physics_tick_ms", physics_ms / ticks, "lower")
 	_metric("boss_colossus_us", colossus, "lower")
 	_metric("boss_brain_us", per.call(&"brain"), "lower")
 	_metric("boss_hits_us", per.call(&"boss_hits"), "lower")

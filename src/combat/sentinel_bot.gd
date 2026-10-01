@@ -31,7 +31,7 @@ var phase_time := 0.0
 var time := 0.0
 ## Which calf to climb (&"shin_l" / &"shin_r"); picked per approach.
 var leg: StringName = &"shin_l"
-var stats := {"falls": 0, "grabs": 0, "strikes": 0, "weak_hits": 0, "rejected": 0, "evades": 0, "rests": 0, "stalls": [], "deaths": 0, "death_causes": [], "max_height": 0.0}
+var stats := {"falls": 0, "grabs": 0, "strikes": 0, "weak_hits": 0, "rejected": 0, "evades": 0, "rests": 0, "stalls": [], "deaths": 0, "death_causes": [], "detours": 0, "max_height": 0.0}
 var events := PackedStringArray()
 var verbose := false
 var result := {}
@@ -43,6 +43,9 @@ var _side := 1.0
 var _last_hits := 0
 var _approach_step := 0
 var _last_damage := "none"
+var _blocked := 0.0
+var _detour := 0.0
+var _detour_side := 1.0
 
 
 func _ready() -> void:
@@ -59,7 +62,8 @@ func setup(p_player: PlayerCharacter, p_sentinel: Sentinel, p_encounter: Sentine
 	player.landed.connect(func(speed: float, _tier: int, dmg: float) -> void:
 		if dmg > 0.0:
 			_last_damage = "fall %.1f m/s (%.0f, %s)" % [speed, dmg, Phase.keys()[phase]])
-	player.died.connect(func() -> void: stats.death_causes.append(_last_damage))
+	# died fires before landed (fall damage): read the cause a moment later.
+	player.died.connect(func() -> void: (func() -> void: stats.death_causes.append(_last_damage)).call_deferred())
 	encounter.encounter_reset.connect(func(_n: int) -> void: _enter(Phase.ENTER))
 
 
@@ -421,6 +425,21 @@ func _run_to(target: Vector3, speed := 1.0) -> void:
 	var d := _flat(target - player.global_position)
 	if d.length() < 0.05:
 		return
+	# Blocked (a horse, a rock, a foot in the way)? Step round it for a moment.
+	var dt := get_physics_process_delta_time()
+	var moving := _flat(player.velocity).length() > 0.6
+	if player.state == PlayerCharacter.State.GROUND and not moving and _detour <= 0.0:
+		_blocked += dt
+		if _blocked > 0.6:
+			_detour = 1.0
+			_detour_side = -_detour_side
+			_blocked = 0.0
+			stats.detours += 1
+	else:
+		_blocked = 0.0
+	if _detour > 0.0:
+		_detour -= dt
+		d = d.rotated(Vector3.UP, _detour_side * PI * 0.5)
 	_look(d)
 	player.actions.move = Vector2(0, clampf(speed * d.length() / 0.6, 0.25, 1.0) if speed < 1.0 else 1.0)
 
@@ -476,6 +495,7 @@ func _stall() -> void:
 			phase_time = 0.0
 			_reroute()
 		_:
+			phase_time = 0.0
 			_enter(Phase.APPROACH_LEG)
 
 
@@ -493,7 +513,9 @@ func _finish(won: bool, why: String) -> void:
 	result = {"won": won, "why": why, "time": time, "stats": stats.duplicate(true), "boss": sentinel.stats.duplicate(true), "resets": encounter.resets}
 	_log("FINISHED %s (%s) after %.1f s" % ["WIN" if won else "LOSS", why, time])
 	phase = Phase.DONE
-	player.actions.clear()
+	# Stop moving and swinging, but keep holding on: the colossus is still going down.
+	player.actions.move = Vector2.ZERO
+	player.actions.attack_held = false
 	finished.emit(result)
 
 

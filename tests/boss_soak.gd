@@ -50,6 +50,7 @@ func _run(i: int) -> Dictionary:
 	var s: Sentinel = w.sentinel
 	var e: SentinelEncounter = w.encounter
 	var bot := SentinelBot.new()
+	bot.verbose = OS.get_environment("BOT_VERBOSE") != ""
 	world.add_child(bot)
 	bot.setup(p, s, e)
 	var glitches := 0
