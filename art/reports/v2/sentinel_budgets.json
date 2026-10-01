@@ -1,0 +1,211 @@
+{
+  "optional_foot_variants": [
+    {
+      "id": "sentinel_foot_l_extended",
+      "lod_triangles": [
+        380,
+        182,
+        68
+      ],
+      "foot_size": [
+        1.7,
+        0.7,
+        3.6
+      ],
+      "foot_center": [
+        0,
+        -0.05,
+        -0.85
+      ]
+    },
+    {
+      "id": "sentinel_foot_r_extended",
+      "lod_triangles": [
+        380,
+        182,
+        68
+      ],
+      "foot_size": [
+        1.7,
+        0.7,
+        3.6
+      ],
+      "foot_center": [
+        0,
+        -0.05,
+        -0.85
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "id": "sentinel_hips",
+      "lod_triangles": [
+        584,
+        280,
+        104
+      ],
+      "max_envelope_delta_m": 0.01934337615966797
+    },
+    {
+      "id": "sentinel_spine",
+      "lod_triangles": [
+        617,
+        296,
+        111
+      ],
+      "max_envelope_delta_m": 0.027989864349365234
+    },
+    {
+      "id": "sentinel_chest",
+      "lod_triangles": [
+        1241,
+        594,
+        223
+      ],
+      "max_envelope_delta_m": 0.060000061988830566
+    },
+    {
+      "id": "sentinel_neck",
+      "lod_triangles": [
+        477,
+        227,
+        85
+      ],
+      "max_envelope_delta_m": 0.017197608947753906
+    },
+    {
+      "id": "sentinel_head",
+      "lod_triangles": [
+        1339,
+        641,
+        238
+      ],
+      "max_envelope_delta_m": 0.01830422878265381
+    },
+    {
+      "id": "sentinel_upper_arm_l",
+      "lod_triangles": [
+        852,
+        408,
+        152
+      ],
+      "max_envelope_delta_m": 0.016866564750671387
+    },
+    {
+      "id": "sentinel_forearm_l",
+      "lod_triangles": [
+        1274,
+        611,
+        229
+      ],
+      "max_envelope_delta_m": 0.014396190643310547
+    },
+    {
+      "id": "sentinel_hand_l",
+      "lod_triangles": [
+        380,
+        182,
+        68
+      ],
+      "max_envelope_delta_m": 0.0209999680519104
+    },
+    {
+      "id": "sentinel_thigh_l",
+      "lod_triangles": [
+        777,
+        372,
+        139
+      ],
+      "max_envelope_delta_m": 0.021678686141967773
+    },
+    {
+      "id": "sentinel_shin_l",
+      "lod_triangles": [
+        1142,
+        548,
+        205
+      ],
+      "max_envelope_delta_m": 0.020999908447265625
+    },
+    {
+      "id": "sentinel_foot_l",
+      "lod_triangles": [
+        380,
+        182,
+        68
+      ],
+      "max_envelope_delta_m": 0.020999789237976074
+    },
+    {
+      "id": "sentinel_upper_arm_r",
+      "lod_triangles": [
+        846,
+        406,
+        151
+      ],
+      "max_envelope_delta_m": 0.01689314842224121
+    },
+    {
+      "id": "sentinel_forearm_r",
+      "lod_triangles": [
+        1241,
+        595,
+        223
+      ],
+      "max_envelope_delta_m": 0.014474928379058838
+    },
+    {
+      "id": "sentinel_hand_r",
+      "lod_triangles": [
+        380,
+        182,
+        68
+      ],
+      "max_envelope_delta_m": 0.0209999680519104
+    },
+    {
+      "id": "sentinel_thigh_r",
+      "lod_triangles": [
+        768,
+        368,
+        138
+      ],
+      "max_envelope_delta_m": 0.021840691566467285
+    },
+    {
+      "id": "sentinel_shin_r",
+      "lod_triangles": [
+        1148,
+        550,
+        206
+      ],
+      "max_envelope_delta_m": 0.020999908447265625
+    },
+    {
+      "id": "sentinel_foot_r",
+      "lod_triangles": [
+        380,
+        182,
+        68
+      ],
+      "max_envelope_delta_m": 0.020999789237976074
+    }
+  ],
+  "unique_triangles_by_lod": [
+    13826,
+    6624,
+    2476
+  ],
+  "texture_resolution": [
+    2048,
+    2048
+  ],
+  "source": "art/source/sentinel_v2.blend",
+  "reference_height_metres": 17,
+  "notes": [
+    "Rigid joint-local mesh source with 10-ring capsule joint loops; no replacement skin rig.",
+    "Visual envelope comparison is against v1 art, not a claim of perfect collider matching at all moving poses.",
+    "Runtime adapter test separately verifies original skeleton identity, collision shapes, and 17 attachments."
+  ]
+}

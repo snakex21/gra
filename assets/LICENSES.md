@@ -50,3 +50,13 @@ shader `materials/environment/terrain.gdshader` are under the MIT licence in
   neither Blender nor NumPy and makes no network requests
 
 Last verified: 2026-10-01.
+
+## Part 2 original additions
+
+The same asset-only CC0-1.0 dedication applies to `art/source/ancient_valley_v2.blend`,
+`art/source/sentinel_v2.blend`, `models/ancient_valley/`, `models/sentinel_v2/`,
+`textures/ancient_valley/`, `textures/sentinel_v2/`, `environment/ancient_valley/`,
+and the actual viewport captures in `art/screenshots/v2/` and `art/screenshots/sentinel_v2/`.
+Their new generators, adapters, tests and shaders are under `tools/art/LICENSE` (MIT).
+These are original procedural assets. Existing gameplay code and repository-wide
+licensing remain outside this scope.
