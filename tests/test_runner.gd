@@ -24,6 +24,8 @@ var _pre_etap6_results := {}
 var _etap6_started := false
 var _pre_etap7_results := {}
 var _etap7_started := false
+var _pre_etap8_results := {}
+var _etap8_started := false
 const BASELINE_PATH := "res://tests/baseline/etap2_baseline.json"
 ## Agro metrics (horse_*) are frozen separately, so the stage 2/3 baseline stays untouched.
 const HORSE_BASELINE_PATH := "res://tests/baseline/etap4_horse_baseline.json"
@@ -187,6 +189,21 @@ func _ready() -> void:
 		test_bow_aim_zooms_camera_over_shoulder,
 		test_arrow_glances_off_stone,
 		all_etap6_and_earlier_tests_still_pass,
+		# --- ETAP 8: the valley, the beam, the whole game ---
+		test_game_state_save_load_roundtrip,
+		test_sword_beam_gathers_towards_target,
+		test_sword_beam_works_from_agro,
+		test_valley_ground_world_edge_and_closed_gates,
+		test_open_gate_leads_to_next_colossus,
+		test_leaving_arena_returns_to_its_gate,
+		test_defeat_returns_to_temple_and_saves,
+		test_no_mounting_while_knocked_down,
+		test_game_bot_finds_way_with_beam,
+		test_valley_simulation_independent_of_render_fps,
+		test_valley_cost_stays_within_budget,
+		test_gaius_head_phase_is_fair_and_smooth,
+		test_sentinel_v2_dresses_valus,
+		all_etap7_and_earlier_tests_still_pass,
 	]
 	for t in tests:
 		var name := t.get_method()
@@ -212,6 +229,10 @@ func _ready() -> void:
 			_etap7_started = true
 		if not _etap7_started:
 			_pre_etap7_results[name] = ok
+		if name == "test_game_state_save_load_roundtrip":
+			_etap8_started = true
+		if not _etap8_started:
+			_pre_etap8_results[name] = ok
 		print("%s %s (%d ms)" % ["PASS" if ok else "FAIL", name, Time.get_ticks_msec() - t0])
 		for line in _log:
 			print("    ", line)
@@ -5117,4 +5138,420 @@ func all_etap6_and_earlier_tests_still_pass() -> void:
 		if not _pre_etap7_results[n]:
 			failed.append(n)
 	_log.append("%d earlier tests (Milestone 1, Etap 2-6) ran in this run, %d failed %s" % [ran, failed.size(), str(failed) if failed.size() > 0 else ""])
+	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))
+
+
+# --- ETAP 8: the valley, the sword's beam, the whole game -----------------------------
+
+## A GameWorld under the test world (no art, no input). ``save`` = save file ("" = none).
+func _setup_game(save := "") -> GameWorld:
+	Sfx.enabled = false
+	Fx.enabled = false
+	_world = Node3D.new()
+	_world.name = "World_" + _current
+	add_child(_world)
+	var g := GameWorld.new()
+	g.with_input = false
+	g.with_art = false
+	g.save_path = save
+	_world.add_child(g)
+	g.start(save == "")
+	await _ticks(2)
+	return g
+
+
+## The Valus arena with a frozen Valus: flat open ground, the player and Agro.
+func _setup_plain_arena() -> Dictionary:
+	Sfx.enabled = false
+	Fx.enabled = false
+	_world = Node3D.new()
+	_world.name = "World_" + _current
+	add_child(_world)
+	var w := ValusArena.build_encounter(_world, false, 7)
+	(w.valus as Valus).debug_override = &"frozen"
+	await _ticks(2)
+	return w
+
+
+func _wait_region(g: GameWorld, kind: StringName, max_ticks: int) -> bool:
+	for i in max_ticks:
+		if g.region_kind == kind and g.phase == GameWorld.Phase.PLAYING:
+			return true
+		await _ticks(1)
+	return g.region_kind == kind and g.phase == GameWorld.Phase.PLAYING
+
+
+func test_game_state_save_load_roundtrip() -> void:
+	var path := "user://test_etap8_state.json"
+	var s := GameState.new()
+	_check(s.next_colossus() == &"valus", "a new game does not lead to Valus")
+	s.mark_defeated(&"valus")
+	s.mark_defeated(&"valus")
+	s.mark_defeated(&"nobody")
+	s.play_time = 123.5
+	s.deaths = 2
+	_check(s.defeated.size() == 1 and s.next_colossus() == &"quadratus", "progress after Valus is wrong: %s" % str(s.defeated))
+	_check(s.save(path), "saving failed")
+	var l := GameState.new()
+	var ok := l.load_from(path)
+	_check(ok and l.defeated == s.defeated and is_equal_approx(l.play_time, 123.5) and l.deaths == 2, "the loaded state differs: %s" % str(l.to_dict()))
+	# Out of order or unknown names in a file never skip a colossus.
+	var gap := GameState.new()
+	gap.from_dict({"version": GameState.VERSION, "defeated": ["quadratus", "gaius", "x"]})
+	_check(gap.defeated.is_empty() and gap.next_colossus() == &"valus", "a save with a gap skipped a colossus: %s" % str(gap.defeated))
+	# A broken or foreign file is a new game, not a crash.
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	f.store_string("{not json")
+	f.close()
+	var b := GameState.new()
+	_check(not b.load_from(path) and b.defeated.is_empty(), "a broken save was not treated as a new game")
+	_check(not GameState.new().load_from("user://does_not_exist.json"), "a missing save was not a new game")
+	var all := GameState.new()
+	for c in GameState.ORDER:
+		all.mark_defeated(c)
+	_check(all.is_complete() and all.next_colossus() == &"", "three defeats do not complete the game")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	_log.append("save: %s" % JSON.stringify(s.to_dict()))
+
+
+func test_sword_beam_gathers_towards_target() -> void:
+	var w := await _setup_plain_arena()
+	var p: PlayerCharacter = w.player
+	var a := p.actions
+	var target := Vector3(0, 0, 0)    # straight ahead (-Z) of the arena entrance
+	p.beam.target = target
+	a.view_basis = Basis.IDENTITY
+	a.beam_held = true
+	await _ticks(60)
+	_check(p.beam.raised and p.beam.raise >= 1.0 and p.beam.lit, "the sword was not raised to the sun (raise %.2f lit %s)" % [p.beam.raise, p.beam.lit])
+	_check(p.beam.locked and p.beam.direction.dot((target - p.global_position).normalized()) > 0.95, "looking at the target, the beam did not gather (focus %.2f)" % p.beam.focus)
+	var locked_focus := p.beam.focus
+	# Looking 30 degrees off: partly gathered; 90 degrees off: scattered.
+	a.view_basis = Basis(Vector3.UP, 0.52)
+	await _ticks(40)
+	var partial := p.beam.focus
+	a.view_basis = Basis(Vector3.UP, PI * 0.5)
+	await _ticks(40)
+	var off := p.beam.focus
+	_check(partial > 0.05 and partial < 0.9, "30 degrees off the beam should be partly gathered (%.2f)" % partial)
+	_check(off < 0.01 and not p.beam.locked, "90 degrees off the beam still gathered (%.2f)" % off)
+	# Moving with the sword up is a slow walk.
+	a.move = Vector2(0, 1)
+	await _ticks(60)
+	var speed := Vector2(p.velocity.x, p.velocity.z).length()
+	_check(speed < p.run_speed * 0.4, "walking with the sword raised is not slow (%.2f m/s)" % speed)
+	a.move = Vector2.ZERO
+	# In shadow (a roof between the blade and the sun) the beam does not gather.
+	a.view_basis = Basis.IDENTITY
+	var roof := TerrainKit.box(_world, p.global_position + Valley.SUN_DIRECTION.normalized() * 6.0, Vector3(8, 1, 8), StandardMaterial3D.new())
+	await _ticks(40)
+	_check(not p.beam.lit and p.beam.focus < 0.01, "in shadow the beam still shone (lit %s focus %.2f)" % [p.beam.lit, p.beam.focus])
+	roof.queue_free()
+	await _ticks(40)
+	_check(p.beam.lit and p.beam.focus > 0.9, "back in the sun the beam did not return (%.2f)" % p.beam.focus)
+	# Only with the sword in hand.
+	p.set_weapon(PlayerCharacter.Weapon.BOW)
+	await _ticks(20)
+	_check(not p.beam.raised and p.beam.focus < 0.01, "the beam works with the bow in hand")
+	_log.append("focus: locked %.2f, 30 deg %.2f, 90 deg %.2f; walk with sword up %.2f m/s; sun rays %d" % [locked_focus, partial, off, speed, p.beam.sun_rays])
+
+
+func test_sword_beam_works_from_agro() -> void:
+	var w := await _setup_plain_arena()
+	var p: PlayerCharacter = w.player
+	var h: Horse = w.horse
+	p.riding.mount_now(h)
+	await _ticks(10)
+	_check(p.is_riding(), "not in the saddle")
+	p.beam.target = Vector3(0, 0, 0)
+	var yaw0 := h.controller.yaw
+	p.actions.beam_held = true
+	# Sweep the view round with the sword up: only the view turns, not the horse.
+	for i in 90:
+		p.actions.view_basis = Basis(Vector3.UP, sin(i * 0.07) * 1.2)
+		await _ticks(1)
+	p.actions.view_basis = Basis.IDENTITY
+	await _ticks(40)
+	_check(p.beam.raised and p.beam.locked, "from the saddle the beam did not gather (focus %.2f)" % p.beam.focus)
+	_check(absf(wrapf(h.controller.yaw - yaw0, -PI, PI)) < 0.02, "raising the sword turned Agro (%.3f rad)" % (h.controller.yaw - yaw0))
+
+
+func test_valley_ground_world_edge_and_closed_gates() -> void:
+	var t0 := Time.get_ticks_msec()
+	var g := await _setup_game()
+	var build_ms := Time.get_ticks_msec() - t0
+	var p := g.player()
+	await _ticks(60)
+	var ground := Valley.ground_height(p.global_position.x, p.global_position.z)
+	_check(p.state == PlayerCharacter.State.GROUND and absf(p.global_position.y - (ground + 0.95)) < 0.25, "the player does not stand in the temple (y %.2f, ground %.2f, state %d)" % [p.global_position.y, ground, p.state])
+	var h: Horse = g.refs.horse
+	_check(absf(h.global_position.y - Valley.ground_height(h.global_position.x, h.global_position.z)) < 0.6, "Agro does not stand on the valley floor")
+	var gates: Dictionary = g.refs.gates
+	_check(gates[&"valus"].open and not gates[&"quadratus"].open and not gates[&"gaius"].open, "a new game should open only the way to Valus")
+	# The world's edge holds.
+	p.global_position = Valley.on_ground(Vector3(-160, 0, -120), 1.2)
+	p.reset_physics_interpolation()
+	p.actions.view_basis = Basis(Vector3.UP, PI * 0.5)   # looking -X
+	p.actions.move = Vector2(0, 1)
+	await _ticks(60 * 5)
+	var edge_x := p.global_position.x
+	_check(edge_x > -Valley.EDGE - 0.5 and edge_x < -160.0, "walked off the world's edge (x %.1f)" % edge_x)
+	# A closed gate is a wall of mist.
+	var q: Dictionary = gates[&"quadratus"]
+	p.global_position = Valley.on_ground((q.pos as Vector3) - (q.out as Vector3) * 8.0, 1.2)
+	p.reset_physics_interpolation()
+	p.actions.view_basis = Basis.looking_at(q.out)
+	await _ticks(60 * 4)
+	var through := (p.global_position - (q.pos as Vector3)).dot(q.out)
+	_check(through < 0.0 and g.region_kind == GameWorld.VALLEY, "walked through a closed gate (%.2f m past it, region %s)" % [through, g.region_kind])
+	p.actions.move = Vector2.ZERO
+	_log.append("valley built in %d ms (no grass); temple floor %.2f m; edge stop x %.1f; closed gate stop %.2f m before" % [build_ms, ground, edge_x, -through])
+	_metric("valley_build_ms", build_ms, "info")
+
+
+func test_open_gate_leads_to_next_colossus() -> void:
+	var g := await _setup_game()
+	var p := g.player()
+	var gate: Dictionary = g.refs.gates[&"valus"]
+	var out: Vector3 = gate.out
+	# On horseback through the open gate: arrive in the Valus arena, still in the saddle.
+	var h: Horse = g.refs.horse
+	h.teleport(Valley.on_ground((gate.pos as Vector3) - out * 12.0), atan2(-out.x, -out.z))
+	await _ticks(2)
+	p.riding.mount_now(h)
+	p.actions.view_basis = Basis.looking_at(out)
+	p.actions.move = Vector2(0, 1)
+	var arrived := await _wait_region(g, &"valus", 60 * 20)
+	await _ticks(2)
+	p = g.player()
+	_check(arrived and g.colossus() is Valus, "riding through the gate did not lead to Valus (region %s)" % g.region_kind)
+	_check(p.is_riding() and p.riding.horse == g.refs.horse, "arrived on foot although we rode through the gate")
+	_check(p.beam.target.distance_to(g.colossus().get_focus_point()) < 0.01, "in the arena the beam does not lead to the colossus")
+	_log.append("through the gate after %d transitions, riding %s" % [g.transitions, str(p.is_riding())])
+
+
+func test_leaving_arena_returns_to_its_gate() -> void:
+	var g := await _setup_game()
+	var p := g.player()
+	var gate: Dictionary = g.refs.gates[&"valus"]
+	p.global_position = Valley.on_ground((gate.pos as Vector3) - (gate.out as Vector3) * 2.0, 1.0)
+	p.reset_physics_interpolation()
+	p.actions.view_basis = Basis.looking_at(gate.out)
+	p.actions.move = Vector2(0, 1)
+	_check(await _wait_region(g, &"valus", 60 * 10), "did not reach the arena")
+	p = g.player()
+	await _ticks(10)
+	# Turn round and walk back out through the entrance.
+	p.actions.view_basis = Basis(Vector3.UP, PI)
+	p.actions.move = Vector2(0, 1)
+	_check(await _wait_region(g, GameWorld.VALLEY, 60 * 15), "walking out of the arena did not lead back to the valley")
+	p = g.player()
+	var d := Vector2(p.global_position.x - gate.pos.x, p.global_position.z - gate.pos.z).length()
+	_check(d < 20.0, "back in the valley %.1f m from the Valus gate (expected next to it)" % d)
+	_check(g.state.defeated.is_empty() and g.refs.gates[&"valus"].open, "leaving the fight changed the progress")
+
+
+func test_defeat_returns_to_temple_and_saves() -> void:
+	var path := "user://test_etap8_save.json"
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	var g := await _setup_game(path)
+	var p := g.player()
+	var gate: Dictionary = g.refs.gates[&"valus"]
+	p.global_position = Valley.on_ground((gate.pos as Vector3) - (gate.out as Vector3) * 2.0, 1.0)
+	p.reset_physics_interpolation()
+	p.actions.view_basis = Basis.looking_at(gate.out)
+	p.actions.move = Vector2(0, 1)
+	_check(await _wait_region(g, &"valus", 60 * 10), "did not reach the arena")
+	var bot := ValusBot.new()
+	g.region.add_child(bot)
+	bot.setup(g.player(), g.colossus(), g.refs.encounter)
+	var fight := {}
+	bot.finished.connect(func(r: Dictionary) -> void: fight.merge(r))
+	var back := await _wait_region(g, GameWorld.VALLEY, 60 * 240)
+	_check(back and fight.get("won", false), "the fight was not won and followed by the temple")
+	await _ticks(2)
+	p = g.player()
+	_check(p.global_position.distance_to(Valley.on_ground(Valley.TEMPLE_SPAWN, 0.95)) < 1.5, "after the victory the player is not in the temple (%s)" % str(p.global_position))
+	_check(g.state.defeated == [&"valus"] and g.state.next_colossus() == &"quadratus", "progress after Valus is wrong: %s" % str(g.state.defeated))
+	var gates: Dictionary = g.refs.gates
+	_check(gates[&"quadratus"].open and not gates[&"valus"].open, "the way should now lead to Quadratus only")
+	var saved := GameState.new()
+	_check(saved.load_from(path) and saved.defeated == [&"valus"], "the victory was not saved")
+	_check(g.player().beam.target.distance_to(gates[&"quadratus"].trigger) < 0.01, "the beam does not lead to the next gate")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	_log.append("won in %.1f s, saved %s" % [float(fight.get("time", 0.0)), JSON.stringify(saved.to_dict())])
+
+
+func test_no_mounting_while_knocked_down() -> void:
+	var w := await _setup_plain_arena()
+	var p: PlayerCharacter = w.player
+	var h: Horse = w.horse
+	p.global_position = h.saddle_transform().origin + h.global_basis.x * -1.4
+	p.global_position.y = 0.95
+	p.reset_physics_interpolation()
+	await _ticks(20)
+	p.balance.knock_down(1.5)
+	for i in 30:
+		if i % 5 == 0:
+			p.actions.press_interact()
+		await _ticks(1)
+	_check(not p.is_riding(), "mounted Agro while lying on the ground")
+	var waited := 0
+	while p.balance.state == Balance.State.FALLEN and waited < 60 * 5:
+		await _ticks(1)
+		waited += 1
+	p.actions.press_interact()
+	await _ticks(60)
+	_check(p.is_riding(), "could not mount after getting up")
+	# Knocked over in the saddle (e.g. right after a hit): the rider recovers there.
+	p.balance.knock_down(1.0)
+	await _ticks(60 * 3)
+	_check(p.balance.state != Balance.State.FALLEN and PlayerBow.can_use(p), "in the saddle the rider never recovered (bow unusable)")
+
+
+func test_game_bot_finds_way_with_beam() -> void:
+	var g := await _setup_game()
+	var bot := GameBot.new()
+	_world.add_child(bot)
+	bot._heading = Vector3.BACK   # first guess: the wrong way
+	bot.setup(g)
+	var arrived := await _wait_region(g, &"valus", 60 * 120)
+	_check(arrived, "the bot did not find the way to Valus (phase %s, events %s)" % [GameBot.Phase.keys()[bot.phase], str(bot.events.slice(-6))])
+	_check(int(bot.stats.beam_locks) >= 1, "the bot found the way without the beam")
+	_check(bot.stats.stalls.is_empty(), "stalls on the way: %s" % str(bot.stats.stalls))
+	_log.append("temple -> Valus gate: %.1f s (riding %.1f s), beam sweeps %d, locks %d, detours %d" % [bot.time, float(bot.stats.ride_time), int(bot.stats.beam_sweeps), int(bot.stats.beam_locks), int(bot.stats.detours)])
+	_metric("game_temple_to_valus_s", bot.time, "lower")
+
+
+func test_valley_simulation_independent_of_render_fps() -> void:
+	var exe := OS.get_executable_path()
+	var rates := [30, 60, 144, 240]
+	var results := {}
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/valley_fps_%d.json" % fps)
+		var output := []
+		var code := OS.execute(exe, ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=valley", "--out=" + out_path], output, true)
+		if code != 0 or not FileAccess.file_exists(out_path):
+			_check(false, "valley scenario at %d fps failed (code %d)" % [fps, code])
+			return
+		results[fps] = JSON.parse_string(FileAccess.get_file_as_string(out_path))
+	var diff := _max_json_diff(results, rates)
+	var ref: Dictionary = results[60]
+	_log.append("temple -> Valus gate (bot, beam, Agro) at %s fps: arrived at tick %d, max state difference %.8f" % [str(rates), int(ref.tick), diff])
+	_metric("valley_fps_max_diff", diff, "lower")
+	_check(int(ref.arrived) == 1, "reference run did not reach the gate")
+	_check(diff < 1e-4, "the valley ride depends on the render rate (diff %.6f)" % diff)
+
+
+func test_valley_cost_stays_within_budget() -> void:
+	var g := await _setup_game()
+	var bot := GameBot.new()
+	_world.add_child(bot)
+	bot._heading = Vector3.FORWARD
+	bot.setup(g)
+	# Wait until it rides, then measure 15 s of riding (with beam checks from the saddle).
+	var waited := 0
+	while bot.phase != GameBot.Phase.RIDE and waited < 60 * 30:
+		await _ticks(1)
+		waited += 1
+	Perf.take()
+	var ticks := 60 * 15
+	# Wall clock per tick (the engine's physics monitor is not reliable with --fixed-fps
+	# headless): everything the engine does in a tick, physics server included.
+	var t0 := Time.get_ticks_usec()
+	await _ticks(ticks)
+	var physics_ms := (Time.get_ticks_usec() - t0) / 1000.0
+	var m := Perf.take()
+	var u: Dictionary = m.usec
+	var q: Dictionary = m.queries
+	var per := func(k: StringName) -> float: return float(u.get(k, 0)) / ticks
+	_log.append("valley ride (bot, 15 s): player %.1f us/tick (beam %.1f, mount %.1f), Agro %.1f us (controller %.1f, probes %.1f, steps %.1f), camera %.1f us; beam rays %.2f/tick, horse rays %.1f/tick; whole tick (wall clock) %.3f ms" % [
+		per.call(&"player"), per.call(&"beam"), per.call(&"mount"), per.call(&"horse"), per.call(&"horse_controller"), per.call(&"horse_probes"), per.call(&"horse_steps"), per.call(&"camera"),
+		float(q.get(&"beam_rays", 0)) / ticks, float(q.get(&"horse_rays", 0)) / ticks, physics_ms / ticks])
+	_metric("valley_player_us", per.call(&"player"), "lower")
+	_metric("valley_horse_us", per.call(&"horse"), "lower")
+	_check(float(q.get(&"beam_rays", 0)) / ticks <= 0.25, "the beam casts too many rays")
+	_check(per.call(&"beam") < 40.0, "the beam costs too much (%.1f us/tick)" % per.call(&"beam"))
+	_check(physics_ms / ticks < 4.0, "a valley tick takes %.2f ms" % (physics_ms / ticks))
+
+
+func test_gaius_head_phase_is_fair_and_smooth() -> void:
+	var w := await _setup_gaius()
+	var g: Gaius = w.gaius
+	var p: PlayerCharacter = w.player
+	var bot := GaiusBot.new()
+	_world.add_child(bot)
+	bot.setup(p, g, w.encounter)
+	var hits: Array[float] = []
+	var shakes: Array[float] = []
+	var t := 0.0
+	# Lambdas copy locals: they read the clock from the colossus instead.
+	g.weak_point.struck.connect(func(_d: float, _h: float) -> void: hits.append(g._time))
+	g.intent_changed.connect(func(i: ColossusIntent) -> void:
+		if i.kind in g._shake_kinds():
+			shakes.append(g._time))
+	var max_jump := 0.0
+	var prev := p.global_position
+	var was := false
+	for i in 60 * 200:
+		await _ticks(1)
+		t += DT
+		if p.is_climbing() and was:
+			max_jump = maxf(max_jump, p.global_position.distance_to(prev))
+		was = p.is_climbing()
+		prev = p.global_position
+		if bot.phase == ValusBot.Phase.DONE:
+			break
+	var calm := g.recover_time + g.shake_after_flinch - 2.0 * DT
+	var too_soon := 0
+	for h in hits:
+		for s in shakes:
+			if s > h and s - h < calm:
+				too_soon += 1
+	_log.append("won %s in %.1f s, deaths %d; weak point hits at %s, shakes %d (%d within %.1f s after a hit); largest body step while gripping %.3f m" % [str(bot.result.get("won", false)), t, int(bot.stats.deaths), str(hits.map(func(x: float) -> String: return "%.1f" % x)), shakes.size(), too_soon, calm, max_jump])
+	_metric("gaius_max_grip_body_step", max_jump, "lower")
+	_check(bot.result.get("won", false) and int(bot.stats.deaths) == 0, "Gaius was not beaten without dying")
+	_check(too_soon == 0, "%d shakes started right after a flinch" % too_soon)
+	_check(max_jump < 0.5, "the body jumped %.2f m in one tick while gripping" % max_jump)
+
+
+func test_sentinel_v2_dresses_valus() -> void:
+	Sfx.enabled = false
+	_world = Node3D.new()
+	_world.name = "World_" + _current
+	add_child(_world)
+	var w := ValusArena.build_encounter(_world, false, 7, true)
+	await _ticks(2)
+	var v: Valus = w.valus
+	var visuals := 0
+	var v2_meshes := 0
+	var extended := 0
+	var cues_visible := 0
+	for seg in v.segments:
+		for c in seg.get_children():
+			if c.name == "ArtVisual":
+				visuals += 1
+				for m in c.get_children():
+					var path := (m as MeshInstance3D).mesh.resource_path if (m as MeshInstance3D).mesh else ""
+					if path.contains("sentinel_v2") or (m as MeshInstance3D).mesh != null:
+						v2_meshes += 1
+				if seg.bone_name in [&"foot_l", &"foot_r"]:
+					extended += 1
+			elif c is MeshInstance3D and c.visible and c.has_meta(&"kind"):
+				cues_visible += 1
+	_check(visuals == 17 and v2_meshes == 51, "Sentinel v2: %d of 17 segments dressed, %d of 51 LOD meshes" % [visuals, v2_meshes])
+	_check(ArenaArt._extended_feet() and extended == 2, "the 3.6 m feet did not get the extended kit feet")
+	_check(cues_visible > 0, "Valus' climbing cues (mane, fur cap, armour) are hidden")
+	_log.append("Sentinel v2: %d segments, %d LOD meshes, extended feet %s, %d greybox climbing cues still visible" % [visuals, v2_meshes, str(ArenaArt._extended_feet()), cues_visible])
+
+
+## Everything that ran before the Etap 8 tests passed.
+func all_etap7_and_earlier_tests_still_pass() -> void:
+	var ran := 0
+	var failed := PackedStringArray()
+	for n in _pre_etap8_results:
+		ran += 1
+		if not _pre_etap8_results[n]:
+			failed.append(n)
+	_log.append("%d earlier tests (Milestone 1, Etap 2-7) ran in this run, %d failed %s" % [ran, failed.size(), str(failed) if failed.size() > 0 else ""])
 	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))

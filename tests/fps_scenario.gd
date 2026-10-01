@@ -19,6 +19,9 @@ var qbot: QuadratusBot
 var gbot: GaiusBot
 var bow_world := {}
 var bow_log := []
+var game: GameWorld
+var game_bot: GameBot
+var arrived_tick := -1
 
 
 func _ready() -> void:
@@ -54,6 +57,9 @@ func _ready() -> void:
 		return
 	if scenario == "art":
 		_setup_art()
+		return
+	if scenario == "valley":
+		_setup_valley()
 		return
 	TerrainKit.build_course(self, Vector3(0, 0, -6))
 	colossus = GreyboxHumanoid.new()
@@ -324,6 +330,53 @@ func _gaius_tick() -> void:
 	get_tree().quit()
 
 
+## The whole game from the temple: GameBot finds the way with the beam and rides Agro to
+## the Valus gate (ends a little after the arena is loaded).
+func _setup_valley() -> void:
+	for c in get_children():
+		remove_child(c)
+		c.free()
+	InputSetup.ensure_defaults()
+	Sfx.enabled = false
+	Fx.enabled = false
+	game = GameWorld.new()
+	game.with_input = false
+	game.with_art = false
+	game.save_path = ""
+	add_child(game)
+	game.start(true)
+	game_bot = GameBot.new()
+	add_child(game_bot)
+	game_bot._heading = Vector3.BACK
+	game_bot.setup(game)
+
+
+func _valley_tick() -> void:
+	if arrived_tick < 0 and game.region_kind == &"valus":
+		arrived_tick = tick
+	if not (arrived_tick >= 0 and tick > arrived_tick + 120) and tick < 60 * 120:
+		return
+	var p := game.player()
+	var h: Horse = game.refs.horse
+	var data := {
+		"frames": Engine.get_process_frames(),
+		"arrived": 1 if arrived_tick >= 0 else 0,
+		"tick": arrived_tick,
+		"player": [p.global_position.x, p.global_position.y, p.global_position.z],
+		"horse": [h.global_position.x, h.global_position.z, h.controller.yaw, h.controller.speed],
+		"riding": 1 if p.is_riding() else 0,
+		"play_time": game.state.play_time,
+		"sweeps": game_bot.stats.beam_sweeps,
+		"locks": game_bot.stats.beam_locks,
+		"ride_time": game_bot.stats.ride_time,
+		"detours": game_bot.stats.detours,
+	}
+	var f := FileAccess.open(out_path, FileAccess.WRITE)
+	f.store_string(JSON.stringify(data))
+	f.close()
+	get_tree().quit()
+
+
 ## Valus walking and turning in its arena, with or without the art layer (--art).
 func _setup_art() -> void:
 	for c in get_children():
@@ -357,6 +410,9 @@ func _physics_process(_delta: float) -> void:
 	tick += 1
 	if scenario == "art":
 		_art_tick()
+		return
+	if scenario == "valley":
+		_valley_tick()
 		return
 	if scenario == "gaius":
 		_gaius_tick()

@@ -22,6 +22,8 @@ var first := 1
 var boss := "valus"
 var results := []
 var _prev_bone: StringName = &""
+var _prev_hand := Vector3.ZERO
+var _prev_local := Vector3.ZERO
 
 
 func _ready() -> void:
@@ -91,6 +93,11 @@ func _run(i: int) -> Dictionary:
 			glitches += 1
 			if OS.get_environment("TRACE") != "":
 				print("  glitch t%.2f %.2f m grip %s n %s prev_bone %s phase %s | boss %s attack %s shake %.2f stagger %.2f anchor speed %.2f m/tick" % [t * dt, p.global_position.distance_to(prev), bot._grip_bone(), str(p.grip.world_normal().snapped(Vector3.ONE * 0.01)), _prev_bone, ValusBot.Phase.keys()[bot.phase], s.intent.kind, s.attack.describe() if s.attack and not s.attack.is_done() else "-", s._shake, s._stagger, p.grip.point_velocity(dt).length() * dt])
+		if OS.get_environment("TRACE") != "" and p.is_climbing() and was_climbing and p.global_position.distance_to(prev) > 0.5:
+			print("    hands moved %.2f m, local %s -> %s, normal %s, climb_up %s, mantle? state %s" % [p.grip.world_point().distance_to(_prev_hand), str(_prev_local), str(p.grip.local_point.snapped(Vector3.ONE * 0.01)), str(p.grip.world_normal().snapped(Vector3.ONE * 0.01)), str(p.climb_up.snapped(Vector3.ONE * 0.01)), p.state])
+		if p.is_climbing():
+			_prev_hand = p.grip.world_point()
+			_prev_local = p.grip.local_point.snapped(Vector3.ONE * 0.01)
 		_prev_bone = bot._grip_bone()
 		was_climbing = p.is_climbing()
 		prev = p.global_position
