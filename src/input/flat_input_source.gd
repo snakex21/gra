@@ -34,8 +34,11 @@ func _process(delta: float) -> void:
 		actions.press_interact()
 	if Input.is_action_just_pressed(&"call_horse"):
 		actions.press_call()
+	if Input.is_action_just_pressed(&"switch_weapon"):
+		actions.press_switch_weapon()
 	if view:
 		actions.view_basis = view.global_basis
+		actions.aim_origin = view.global_position
 
 
 func _unhandled_input(event: InputEvent) -> void:

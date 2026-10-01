@@ -33,7 +33,7 @@ func _ready() -> void:
 	_help.add_theme_font_size_override(&"font_size", 15)
 	_help.text = "\n".join([
 		"WASD / left stick: move      mouse / right stick: camera",
-		"HOLD RMB / Shift / R1: grip  (release to let go)   HOLD LMB / F / X: charge sword, release: strike",
+		"HOLD RMB / Shift / R1: grip  (release to let go)   HOLD LMB / F / X: charge sword / draw bow, release: strike / shoot   Tab / R / D-pad right: sword <-> bow",
 		"Space / A: jump (while gripping: leap off / along surface)",
 		"Q / MMB / L1: frame the colossus",
 		"E / Y: mount / dismount Agro   C: call Agro   riding: stick = direction, Space/A = kick, RMB/R1 = reins",
@@ -71,7 +71,14 @@ func _process(delta: float) -> void:
 	if show_debug:
 		var lines := PackedStringArray()
 		lines.append("FPS %d   physics %d Hz   %s" % [Engine.get_frames_per_second(), Engine.physics_ticks_per_second, _perf_text])
-		lines.append("P%d %s   HP %.0f   stamina %.0f%s   sword %s %.0f%%" % [player.player_index + 1, player.get_display_state(), player.health, player.stamina.value, " EXHAUSTED" if player.stamina.exhausted else "", player.sword.state_name(), player.sword.charge * 100.0])
+		var weapon_text := "sword %s %.0f%%" % [player.sword.state_name(), player.sword.charge * 100.0]
+		if player.weapon == PlayerCharacter.Weapon.BOW:
+			var bw := player.bow
+			weapon_text = "bow %s draw %.0f%% (%.0f m/s)  shots %d" % [bw.state_name(), bw.draw * 100.0, bw.speed_for(bw.draw), bw.shots]
+			if not bw.last_shot.is_empty():
+				var a: Dictionary = bw.last_shot.arrow
+				weapon_text += "  last arrow %s" % a.state
+		lines.append("P%d %s   HP %.0f   stamina %.0f%s   %s" % [player.player_index + 1, player.get_display_state(), player.health, player.stamina.value, " EXHAUSTED" if player.stamina.exhausted else "", weapon_text])
 		var bal := player.balance
 		lines.append("balance %.2f %s   disturbance %.1f / %.1f m/s2" % [bal.value, Balance.State.keys()[bal.state], bal.disturbance, bal.capacity])
 		lines.append("surface |a| %.1f m/s2   |w| %.2f rad/s   |v| %.1f m/s   shake %.2f" % [player.surface_accel.length(), player.surface_angular_velocity.length(), player.surface_velocity.length(), player.shake_level])
@@ -116,10 +123,27 @@ func _draw() -> void:
 	draw_rect(Rect2(bar.position, Vector2(bar.size.x * hp, bar.size.y)), Color(0.85, 0.3, 0.25))
 	if player.sword.state == PlayerSword.State.CHARGE:
 		draw_arc(center, r + 14.0, -PI / 2.0, -PI / 2.0 + TAU * player.sword.charge, 48, Color(0.7, 0.9, 1.0), 4.0, true)
-	# Boss weak point.
+	# Bow: crosshair in the middle of the view and the draw around it.
+	if player.weapon == PlayerCharacter.Weapon.BOW:
+		var c := size * 0.5
+		var aiming := player.bow.is_aiming()
+		var cc := Color(1, 1, 1, 0.9 if aiming else 0.35)
+		draw_line(c + Vector2(-10, 0), c + Vector2(-3, 0), cc, 2.0)
+		draw_line(c + Vector2(3, 0), c + Vector2(10, 0), cc, 2.0)
+		draw_line(c + Vector2(0, -10), c + Vector2(0, -3), cc, 2.0)
+		draw_line(c + Vector2(0, 3), c + Vector2(0, 10), cc, 2.0)
+		if aiming:
+			draw_arc(c, 18.0, -PI / 2.0, -PI / 2.0 + TAU * player.bow.draw, 48, Color(1.0, 0.85, 0.4) if player.bow.draw >= 1.0 else Color(0.9, 0.9, 0.9), 3.0, true)
+	# Boss weak points (one bar each).
+	var wps: Array = []
 	if colossus is Valus:
-		var wp := (colossus as Valus).weak_point
-		var wb := Rect2(size.x * 0.5 - 150.0, 18.0, 300.0, 8.0)
+		wps = [(colossus as Valus).weak_point]
+	elif colossus is Quadratus:
+		wps = (colossus as Quadratus).weak_points
+	for i in wps.size():
+		var wp: WeakPoint = wps[i]
+		var w := 300.0 / wps.size() - 6.0
+		var wb := Rect2(size.x * 0.5 - 150.0 + i * (w + 12.0), 18.0, w, 8.0)
 		draw_rect(wb, Color(0, 0, 0, 0.45))
 		draw_rect(Rect2(wb.position, Vector2(wb.size.x * (1.0 - wp.progress()), wb.size.y)), Color(0.5, 0.85, 1.0))
 
@@ -140,8 +164,8 @@ func _sample_perf() -> void:
 	var us: Dictionary = p.usec
 	var q: Dictionary = p.queries
 	var n := float(ticks)
-	_perf_text = "logic/tick: colossus %.0f us (brain %.0f, combat %.0f, hits %.0f, locomotion %.0f, IK %.0f)  vfx %.0f  Agro %.0f us (controller %.0f incl. probes %.0f, steps %.0f, IK+body %.0f)  player %.0f us (mount %.0f)  camera %.0f us | rays/tick: climb %.1f  horse %.1f  grab %.1f  camera %.1f" % [
-		us.get(&"colossus", 0) / n, us.get(&"brain", 0) / n, us.get(&"boss_combat", 0) / n, us.get(&"boss_hits", 0) / n, us.get(&"locomotion", 0) / n, us.get(&"ik", 0) / n, us.get(&"vfx", 0) / n,
+	_perf_text = "logic/tick: colossus %.0f us (brain %.0f, combat %.0f, hits %.0f, locomotion %.0f, IK %.0f)  arrows %.0f us (%.1f rays)  vfx %.0f  Agro %.0f us (controller %.0f incl. probes %.0f, steps %.0f, IK+body %.0f)  player %.0f us (mount %.0f)  camera %.0f us | rays/tick: climb %.1f  horse %.1f  grab %.1f  camera %.1f" % [
+		us.get(&"colossus", 0) / n, us.get(&"brain", 0) / n, us.get(&"boss_combat", 0) / n, us.get(&"boss_hits", 0) / n, us.get(&"locomotion", 0) / n, us.get(&"ik", 0) / n, us.get(&"arrows", 0) / n, q.get(&"arrow_rays", 0) / n, us.get(&"vfx", 0) / n,
 		us.get(&"horse", 0) / n, us.get(&"horse_controller", 0) / n, us.get(&"horse_probes", 0) / n, us.get(&"horse_steps", 0) / n, us.get(&"horse_ik", 0) / n,
 		us.get(&"player", 0) / n, us.get(&"mount", 0) / n, us.get(&"camera", 0) / n,
 		q.get(&"climb_rays", 0) / n, q.get(&"horse_rays", 0) / n, q.get(&"grab_queries", 0) / n, q.get(&"camera_queries", 0) / n]

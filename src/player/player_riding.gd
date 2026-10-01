@@ -129,7 +129,9 @@ func build_ride_intent(intent: HorseInputIntent) -> void:
 		return
 	var a := player.actions
 	var mv := a.move
-	if steer_relative:
+	# Aiming the bow: the camera looks wherever the arrow goes, so steering is relative
+	# to the horse (the stick turns and drives it); without input it keeps its heading.
+	if steer_relative or player.bow.is_aiming():
 		intent.turn = mv.x
 		intent.drive = maxf(mv.y, 0.0)
 		intent.rein = mv.y < -0.6

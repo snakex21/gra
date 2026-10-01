@@ -20,6 +20,7 @@ signal died
 signal hit_taken(damage: float, source: StringName)
 
 enum State { GROUND, AIR, CLIMB, RIDE }
+enum Weapon { SWORD, BOW }
 
 @export_group("Locomotion")
 @export var run_speed := 5.5
@@ -97,6 +98,9 @@ var dead := false
 var visual: PlayerVisual
 var riding: PlayerRiding
 var sword := PlayerSword.new()
+var bow := PlayerBow.new()
+## Weapon in hand (switch_weapon toggles). The bow is not used while climbing.
+var weapon := Weapon.SWORD
 ## Stats for debugging / tests.
 var last_release_reason: StringName = &""
 
@@ -165,7 +169,12 @@ func _physics_process(delta: float) -> void:
 			state = State.RIDE
 	if actions.consume_call():
 		_call_horse()
-	sword.update(self, delta)
+	if actions.consume_switch_weapon():
+		set_weapon(Weapon.BOW if weapon == Weapon.SWORD else Weapon.SWORD)
+	if weapon == Weapon.BOW:
+		bow.update(self, delta)
+	else:
+		sword.update(self, delta)
 	visual.update_visual(self, delta)
 	if global_position.y < -60.0:
 		respawn()
@@ -212,6 +221,14 @@ func get_display_state() -> String:
 	return s
 
 
+func set_weapon(w: Weapon) -> void:
+	if w == weapon:
+		return
+	sword.reset()
+	bow.reset()
+	weapon = w
+
+
 func is_on_colossus() -> bool:
 	return get_support_body() is BodySegment
 
@@ -256,6 +273,7 @@ func respawn() -> void:
 	stamina.refill()
 	balance.reset()
 	sword.reset()
+	bow.reset()
 	health = fall.max_health
 	_since_damage = 999.0
 	_invulnerable = 0.0
@@ -275,6 +293,8 @@ func _locomotion(delta: float) -> void:
 		wish = Vector3.ZERO
 	if sword.is_busy():
 		wish *= 0.35
+	elif bow.is_aiming():
+		wish *= 0.4
 	var on_floor := is_on_floor()
 	# Ride the body exactly (same idea as the grip anchor), before anything else moves us.
 	_apply_carry(on_floor)

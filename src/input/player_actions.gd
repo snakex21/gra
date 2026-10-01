@@ -19,12 +19,17 @@ var view_basis := Basis.IDENTITY
 var grab_held := false
 ## Hold to frame the current target (colossus) with the camera.
 var focus_held := false
-## Sword: hold to charge, release to strike.
+## Weapon use: sword (hold to charge, release to strike) or bow (hold to draw, release
+## to shoot).
 var attack_held := false
+## Where the aim ray starts (camera / controller position); INF = from the player's eyes.
+## The aim direction is -view_basis.z.
+var aim_origin := Vector3.INF
 
 var _jump_pressed := false
 var _interact_pressed := false
 var _call_pressed := false
+var _switch_weapon_pressed := false
 
 
 func press_jump() -> void:
@@ -57,6 +62,18 @@ func press_call() -> void:
 func consume_call() -> bool:
 	var pressed := _call_pressed
 	_call_pressed = false
+	_switch_weapon_pressed = false
+	return pressed
+
+
+## Edge: next weapon (sword <-> bow).
+func press_switch_weapon() -> void:
+	_switch_weapon_pressed = true
+
+
+func consume_switch_weapon() -> bool:
+	var pressed := _switch_weapon_pressed
+	_switch_weapon_pressed = false
 	return pressed
 
 
@@ -69,3 +86,4 @@ func clear() -> void:
 	_jump_pressed = false
 	_interact_pressed = false
 	_call_pressed = false
+	_switch_weapon_pressed = false
