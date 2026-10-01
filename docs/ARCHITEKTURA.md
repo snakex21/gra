@@ -1,4 +1,4 @@
-# Architektura (stan po Etapie 5)
+# Architektura (stan po Etapie 6)
 
 Dokument opisuje decyzje, które mają przetrwać dalszy rozwój. Kod jest komentowany po angielsku
 (open source), a dokumentacja projektowa jest po polsku.
@@ -152,6 +152,27 @@ Szczegóły: [ETAP_5.md](ETAP_5.md). Zasady:
 - Jedna gra dla wszystkich: bot testowy gra wyłącznie przez `PlayerActions`, jak człowiek.
 - Wszystko w stałym kroku: cała walka przy 30–240 FPS daje identyczny stan.
 
+## 2e. Czworonożny kolos, łuk i strzały (Etap 6)
+
+```
+QuadratusBrain -> FairnessRules + reguły kolosa -> intencja -> ataki / reakcje / ruch
+  -> LocomotionController (4 nogi: kolejność kroków, LegState.support, pochylany tułów)
+  -> GreyboxQuadruped (kość body z miednicy + pochylenie + shake, IK czterech nóg)
+gracz: PlayerActions -> PlayerBow (IDLE/DRAW/AIM/RELEASE/RECOVERY) -> ArrowSystem
+  -> ArrowTarget (podeszwa kopyta) -> reakcja kolosa (noga traci podparcie)
+```
+Szczegóły: [ETAP_6.md](ETAP_6.md). Zasady:
+- Nie ma `if boss == Quadratus` we wspólnym kodzie. Wspólne mechanizmy (planer kroków,
+  podparcie nogi, pochylenie ciała, `LimbStomp`, `ArrowTarget`, `WeakPoint`, `FairnessRules`,
+  `BossEncounter`) są konfigurowane przez anatomię i parametry konkretnego kolosa.
+- Klęknięcie nie jest animacją: trafiona noga traci `support`, planer przestaje jej używać,
+  reszta nóg przejmuje ciężar, a płaszczyzna bioder opada na ten róg.
+- Strzała to pocisk w stałym kroku (balistyka bez oporu, jeden raycast na strzałę i tick
+  plus analityczny test kuli w ruchomym układzie celu). Identyczna trajektoria przy 30–240 FPS.
+- Celowanie pochodzi z `PlayerActions.view_basis` / `aim_origin`, więc VR może podać pozę
+  kontrolera. Na koniu podczas celowania drążek steruje względem konia: celowanie nigdy
+  nie skręca Agro.
+
 ## 3. Gracze i wejście
 
 - Nie ma singletona gracza. Każdy `PlayerCharacter` jest w grupie `players`, a sandbox trzyma
@@ -195,4 +216,8 @@ Zasada: kamera nie walczy z graczem.
 - Etap 5: Valus w walce ~270–470 µs/tick (mózg ~10, walka/ataki ~35–65, trafienia ~15–30,
   locomotion ~115–190, IK ~30–45; zakres zależy od obciążenia maszyny). Etykiety: `brain`,
   `boss_combat`, `boss_hits`, `boss_pose`, `vfx`.
+- Etap 6: Quadratus w walce ~300 µs/tick (mózg ~10, walka ~50, trafienia ~15, locomotion
+  czterech nóg ~120 w tym balans/przenoszenie ciężaru, IK czterech nóg ~40); strzały ~6 µs/tick
+  przy kilku strzałach w locie (1 raycast na strzałę i tick). Etykiety: `loco_balance`,
+  `arrows`, `bow`, `climb`, zapytania `arrow_rays`, `arrow_target_tests`, `bow_aim_rays`.
 - Nie ma potrzeby przenosić czegokolwiek do Ziga.
