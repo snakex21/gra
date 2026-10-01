@@ -298,6 +298,10 @@ func _pose_bones(delta: float) -> void:
 	_rot(&"head", Vector3(_look.y * 0.6, _look.x * 0.6 + head_shake, 0))
 
 
+func get_speed() -> float:
+	return _speed
+
+
 func debug_text() -> String:
 	return super() + "\nspeed %.2f  shake %.2f  look %.2f/%.2f" % [_speed, _shake, _look.x, _look.y]
 

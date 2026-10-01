@@ -12,14 +12,20 @@ var _failures: Array[String] = []
 var _current := ""
 var _world: Node3D
 var _log := PackedStringArray()
+## Regression metrics: key -> {"value": float, "better": "lower"|"higher"|"info", "test": name}
+var _metrics := {}
+const BASELINE_PATH := "res://tests/baseline/etap2_baseline.json"
 
 
 func _ready() -> void:
 	InputSetup.ensure_defaults()
 	var only := ""
+	var save_baseline := false
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--only="):
 			only = arg.trim_prefix("--only=")
+		elif arg == "--save-baseline":
+			save_baseline = true
 	var tests: Array[Callable] = [
 		test_rig_segments_follow_bones,
 		test_physics_server_transform_matches_anchor,
@@ -69,6 +75,7 @@ func _ready() -> void:
 		for line in _log:
 			print("    ", line)
 		_log.clear()
+	_report_metrics(save_baseline and only == "")
 	print("\n%d failure(s)" % _failures.size())
 	for f in _failures:
 		print("  - ", f)
@@ -127,6 +134,9 @@ func test_grab_and_hold_on_walking_leg() -> void:
 		var drift := p.grip.local_point.distance_to(start_local)
 		_log.append("local drift over 6 s: %.5f m, max anchor-to-surface error: %.4f m, max surface speed %.2f m/s" % [drift, max_surface_err, max_speed])
 		_check(drift < 0.01, "anchor drifted %.4f m in segment space without input" % drift)
+		_metric("grip_drift_walk_m", drift, "lower")
+	_metric("grip_surface_err_walk_m", max_surface_err, "lower")
+	_metric("grip_surface_speed_walk_mps", max_speed)
 	_check(max_surface_err < 0.08, "anchor is %.3f m off the real collider" % max_surface_err)
 	_check(max_speed > 0.3, "leg was not moving (%.2f m/s) - test is not testing anything" % max_speed)
 
@@ -172,6 +182,7 @@ func _climb_route(mode: StringName) -> void:
 	await _ticks(30)
 	_log.append("[%s] route: %s" % [mode, " -> ".join(visited)])
 	_log.append("[%s] rose %.1f m, state %s, stamina %.0f, max surface err %.3f, last release %s" % [mode, p.global_position.y - start_y, PlayerCharacter.State.keys()[p.state], p.stamina.value, max_err, p.last_release_reason])
+	_metric("climb_route_%s_stamina_left" % mode, p.stamina.value, "higher")
 	if OS.get_environment("TRACE") != "":
 		_log.append_array(trace)
 	_check(&"thigh_l" in visited, "never reached the thigh")
@@ -310,6 +321,7 @@ func test_shake_drains_more_than_hanging() -> void:
 	await _ticks(60)
 	var shake_drain := before - p.stamina.value
 	_log.append("stamina/s hanging %.1f, shaking %.1f" % [hang_drain, shake_drain])
+	_metric("shake_grip_stamina_drain_per_s", shake_drain)
 	_check(shake_drain > hang_drain * 2.5, "shaking is not noticeably harder than hanging")
 
 
@@ -326,6 +338,7 @@ func test_release_inherits_surface_velocity() -> void:
 	await _ticks(1)
 	var inherited := p.velocity
 	_log.append("surface velocity %.2f m/s, velocity after release %.2f m/s" % [sv.length(), inherited.length()])
+	_metric("release_inherit_error_mps", Vector2(inherited.x, inherited.z).distance_to(Vector2(sv.x, sv.z)), "lower")
 	_check(not p.is_climbing(), "did not let go")
 	_check(sv.length() > 0.2, "surface was not moving")
 	# One tick of gravity/air control is applied after the release.
@@ -352,6 +365,7 @@ func test_jump_off_and_regrab_midair() -> void:
 			break
 	p.actions.move = Vector2.ZERO
 	_log.append("re-grabbed after %d ticks at dy %.2f" % [regrabbed_at, p.global_position.y - y0])
+	_metric("leap_regrab_gain_m", p.global_position.y - y0, "higher")
 	_check(regrabbed_at >= int(p.regrab_delay / DT) - 1, "re-grabbed before the regrab delay")
 	_check(regrabbed_at >= 0, "holding grip in the air did not catch the surface again")
 	_check(p.global_position.y > y0 + 0.5, "leap along the surface did not gain height")
@@ -417,6 +431,15 @@ func test_performance_budget() -> void:
 		var m: Dictionary = r[1]
 		_log.append("%-12s frame %.3f ms | logic/tick: colossus %.1f us, player %.1f us, camera %.1f us | queries/tick: climb rays %.1f, grab %.1f, camera %.1f" % [r[0], m.frame_ms, m.colossus, m.player, m.camera, m.climb_rays, m.grab, m.cam_q])
 	_log.append("object count growth over 300 ticks: %d" % objects_growth)
+	for r in [["climb", a0], ["climb_cam", a], ["stand_shake", b], ["fall_grab", d]]:
+		var m: Dictionary = r[1]
+		_metric("perf_%s_frame_ms" % r[0], m.frame_ms, "lower")
+		_metric("perf_%s_colossus_us" % r[0], m.colossus, "lower")
+		_metric("perf_%s_player_us" % r[0], m.player, "lower")
+		_metric("perf_%s_camera_us" % r[0], m.camera, "lower")
+		_metric("perf_%s_climb_rays" % r[0], m.climb_rays, "lower")
+		_metric("perf_%s_grab_queries" % r[0], m.grab, "lower")
+		_metric("perf_%s_camera_queries" % r[0], m.cam_q, "lower")
 	_check(a0.frame_ms < 0.6, "regression vs Milestone 1 benchmark (~0.25 ms): %.3f ms" % a0.frame_ms)
 	_check(a.climb_rays < 8.0, "too many climb rays per tick: %.1f" % a.climb_rays)
 	_check(d.grab <= 2.0, "grab search too expensive: %.1f shape queries per tick" % d.grab)
@@ -458,6 +481,7 @@ func test_standing_on_still_colossus_is_stable() -> void:
 		min_balance = minf(min_balance, p.balance.value)
 	var drift := (chest.global_transform.affine_inverse() * p.global_position).distance_to(start)
 	_log.append("min balance %.3f, drift on chest %.3f m, state %s" % [min_balance, drift, p.get_display_state()])
+	_metric("standing_drift_still_m", drift, "lower")
 	_check(c.owns_body(p.get_support_body()), "not standing on the colossus")
 	_check(p.get_display_state() == "STAND", "display state is %s" % p.get_display_state())
 	_check(min_balance > 0.95, "balance dropped on a still colossus (%.2f)" % min_balance)
@@ -486,8 +510,10 @@ func test_standing_on_walking_colossus_remains_controllable() -> void:
 	await _ticks(20)
 	var after := chest.global_transform.affine_inverse() * p.global_position
 	var moved := before.z - after.z  # chest-local -Z is the colossus front
-	_log.append("colossus speed %.2f m/s, min balance %.2f, moved %.2f m forward on the body, state %s" % [(c as GreyboxHumanoid)._speed, min_balance, moved, p.get_display_state()])
-	_check((c as GreyboxHumanoid)._speed > 1.0, "colossus was not walking")
+	_log.append("colossus speed %.2f m/s, min balance %.2f, moved %.2f m forward on the body, state %s" % [(c as GreyboxHumanoid).get_speed(), min_balance, moved, p.get_display_state()])
+	_metric("standing_walk_min_balance", min_balance, "higher")
+	_metric("standing_walk_moved_m", moved, "higher")
+	_check((c as GreyboxHumanoid).get_speed() > 1.0, "colossus was not walking")
 	_check(min_balance > 0.7, "walking colossus destabilised a standing player (%.2f)" % min_balance)
 	_check(moved > 0.8, "player input did not move him on the walking body (%.2f m)" % moved)
 	_check(c.owns_body(p.get_support_body()), "player is no longer on the colossus")
@@ -508,6 +534,7 @@ func test_standing_on_turning_colossus_is_carried() -> void:
 		min_balance = minf(min_balance, p.balance.value)
 	var drift := (chest.global_transform.affine_inverse() * p.global_position).distance_to(start)
 	_log.append("turned %.2f rad, drift on chest %.3f m, min balance %.2f" % [absf(angle_difference(yaw0, c.rotation.y)), drift, min_balance])
+	_metric("standing_drift_turning_m", drift, "lower")
 	_check(absf(angle_difference(yaw0, c.rotation.y)) > 0.2, "colossus did not turn")
 	_check(drift < 0.25, "player was not carried by the rotating body (drift %.2f m)" % drift)
 	_check(min_balance > 0.7, "slow turn destabilised the player")
@@ -530,6 +557,7 @@ func test_shake_destabilizes_standing_player() -> void:
 		states[Balance.State.keys()[p.balance.state]] = true
 		slid = maxf(slid, p._slide_velocity.length())
 	_log.append("half-strength shake: min balance %.2f, states %s, max slide speed %.2f m/s" % [min_balance, str(states.keys()), slid])
+	_metric("shake_half_min_balance", min_balance)
 	_check(min_balance < 0.5, "shake did not destabilise a standing player (%.2f)" % min_balance)
 	_check(states.has("UNSTABLE"), "no gradual UNSTABLE phase (not continuous)")
 	_check(slid > 0.05, "losing balance did not make the player slide at all")
@@ -554,6 +582,8 @@ func test_player_can_grab_during_slip() -> void:
 			grabbed_at = i
 			break
 	_log.append("lost balance after %.2f s, saved by grab after %d ticks on %s" % [lost_at * DT, grabbed_at - lost_at, p.grip.body.name if p.grip else "-"])
+	_metric("shake_full_balance_loss_s", lost_at * DT)
+	_metric("rescue_grab_ticks", grabbed_at - lost_at, "lower")
 	_check(lost_at >= 0, "never lost balance")
 	_check(grabbed_at >= 0, "could not grab while slipping")
 	_check(p.grip != null and c.owns_body(p.grip.body), "rescue grab did not hold onto the colossus")
@@ -582,6 +612,7 @@ func test_severe_shake_can_throw_ungripped_player() -> void:
 	for i in 120:
 		await _ticks(1)
 	_log.append("knocked down after %.2f s, thrown off after %.2f s, impact %.1f m/s (%s), health %.0f" % [fallen_at * DT, off_at * DT, p.last_impact_speed, FallImpact.Tier.keys()[p.last_impact_tier], p.health])
+	_metric("shake_full_thrown_off_s", off_at * DT)
 	_check(fallen_at >= 0, "full shake never knocked the standing player down")
 	_check(off_at >= 0, "full shake never threw the ungripped player off")
 	_check(p.last_impact_tier != FallImpact.Tier.NONE or p.get_support_body() is BodySegment, "being thrown off had no landing consequence")
@@ -608,6 +639,7 @@ func test_brain_shake_throws_idle_standing_player() -> void:
 			off_at = i
 			break
 	_log.append("brain: first shake at %.1f s, idle player thrown off at %.1f s" % [first_shake * DT, off_at * DT])
+	_metric("brain_idle_player_thrown_s", off_at * DT)
 	_check(first_shake >= 0, "brain never shook the standing player")
 	_check(off_at >= 0, "a standing player who does nothing survives the brain's shakes")
 
@@ -626,6 +658,7 @@ func test_gripping_player_resists_shake_using_stamina() -> void:
 		await _ticks(1)
 		held = held and p.is_climbing()
 	_log.append("2.5 s full shake: still gripping %s, stamina %.0f -> %.0f" % [held, st0, p.stamina.value])
+	_metric("shake_full_grip_stamina_cost", st0 - p.stamina.value)
 	_check(held, "gripping player was thrown off with stamina left")
 	_check(st0 - p.stamina.value > 25.0, "shake cost too little stamina (%.0f)" % (st0 - p.stamina.value))
 
@@ -685,6 +718,7 @@ func _drop_from(height: float) -> Dictionary:
 			break
 		if r.tier != -1 and i > 60 * 3 and not died[0]:
 			break
+	_metric("fall_%dm_damage" % int(height), r.damage)
 	_log.append("drop %.1f m: impact %.1f m/s, tier %s, damage %.1f, min balance %.2f, knocked %s, dead %s" % [height, r.speed, FallImpact.Tier.keys()[maxi(r.tier, 0)], r.damage, r.min_balance, r.knocked, r.dead])
 	return r
 
@@ -706,6 +740,7 @@ func test_late_grab_catches_falling_player() -> void:
 	p.actions.grab_held = true
 	await _ticks(3)
 	_log.append("falling at %.1f m/s; let go at %.1f m, caught at %.1f m on %s" % [vy, y0, p.global_position.y, p.grip.body.name if p.grip else "-"])
+	_metric("late_grab_caught_height_m", p.global_position.y)
 	_check(p.is_climbing(), "late grab did not catch the falling player")
 
 
@@ -732,6 +767,7 @@ func test_grip_transfer_while_colossus_turns() -> void:
 			visited.append(bone)
 	p.actions.move = Vector2.ZERO
 	_log.append("turning colossus route: %s, max surface err %.3f" % [" -> ".join(visited), max_err])
+	_metric("turn_transfer_surface_err_m", max_err, "lower")
 	_check(not dropped, "dropped during segment transfer on a turning colossus (%s)" % p.last_release_reason)
 	_check(&"thigh_l" in visited and &"hips" in visited, "did not transfer leg -> hip")
 	_check(max_err < 0.08, "anchor left the surface during transfer")
@@ -777,6 +813,7 @@ func test_camera_does_not_clip_into_colossus() -> void:
 		if cam.last_clamp.begins_with("colossus"):
 			occlusion_clamps += 1
 	_log.append("camera frames %d, inside colossus %d, min distance %.2f, colossus clamps %d, player %s" % [frames, inside, min_dist, occlusion_clamps, p.get_display_state()])
+	_metric("camera_inside_colossus_frames", inside, "lower")
 	_check(inside == 0, "camera was inside the colossus in %d frames" % inside)
 	_check(occlusion_clamps > 0, "test never put the colossus between camera and player")
 
@@ -825,6 +862,8 @@ func test_bone_local_grip_still_has_no_drift() -> void:
 		max_speed = maxf(max_speed, p.surface_velocity.length())
 	var drift := p.grip.local_point.distance_to(start_local) if p.grip and p.grip.body == start_body else 99.0
 	_log.append("walk+shake 2.5 s: drift %.5f m, max surface err %.4f, surface speed up to %.1f m/s, stamina %.0f" % [drift, max_err, max_speed, p.stamina.value])
+	_metric("grip_drift_walk_shake_m", drift, "lower")
+	_metric("grip_surface_speed_walk_shake_mps", max_speed)
 	_check(p.is_climbing(), "lost grip")
 	_check(drift < 0.01, "grip drifted %.4f m in bone space" % drift)
 	_check(max_err < 0.08, "anchor left the collider surface")
@@ -906,6 +945,49 @@ func _teardown() -> void:
 func _ticks(n: int) -> void:
 	for i in n:
 		await get_tree().physics_frame
+
+
+## Records a regression metric (compared against the frozen baseline at the end of the run).
+func _metric(key: String, value: float, better := "info") -> void:
+	_metrics[key] = {"value": value, "better": better, "test": _current}
+
+
+func _report_metrics(save: bool) -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://tests/output"))
+	var f := FileAccess.open("res://tests/output/metrics.json", FileAccess.WRITE)
+	f.store_string(JSON.stringify(_metrics, "  ", true))
+	f.close()
+	if save:
+		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://tests/baseline"))
+		var b := FileAccess.open(BASELINE_PATH, FileAccess.WRITE)
+		b.store_string(JSON.stringify(_metrics, "  ", true))
+		b.close()
+		print("\nbaseline saved to %s (%d metrics)" % [BASELINE_PATH, _metrics.size()])
+		return
+	if not FileAccess.file_exists(BASELINE_PATH):
+		return
+	var base: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(BASELINE_PATH))
+	print("\n--- regression metrics vs frozen baseline (%s) ---" % BASELINE_PATH)
+	var keys := _metrics.keys()
+	keys.sort()
+	var flagged := 0
+	for k in keys:
+		var cur: float = _metrics[k].value
+		var better: String = _metrics[k].better
+		if not base.has(k):
+			print("  %-44s %10.4f   (new)" % [k, cur])
+			continue
+		var old: float = base[k].value
+		var mark := ""
+		# Generous tolerance: these are smoke alarms, the tests hold the hard limits.
+		if better == "lower" and cur > old * 1.5 + 0.02:
+			mark = "  <-- WORSE"
+		elif better == "higher" and cur < old * 0.67 - 0.02:
+			mark = "  <-- WORSE"
+		if mark != "":
+			flagged += 1
+		print("  %-44s %10.4f   baseline %10.4f%s" % [k, cur, old, mark])
+	print("  %d metric(s) flagged" % flagged)
 
 
 func _check(cond: bool, msg: String) -> void:

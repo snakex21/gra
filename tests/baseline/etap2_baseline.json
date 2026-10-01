@@ -1,0 +1,277 @@
+{
+  "brain_idle_player_thrown_s": {
+    "better": "info",
+    "test": "test_brain_shake_throws_idle_standing_player",
+    "value": 10.9333333333333
+  },
+  "camera_inside_colossus_frames": {
+    "better": "lower",
+    "test": "test_camera_does_not_clip_into_colossus",
+    "value": 0.0
+  },
+  "climb_route_frozen_stamina_left": {
+    "better": "higher",
+    "test": "test_climb_leg_to_shoulders_frozen",
+    "value": 53.3333333333316
+  },
+  "climb_route_walk_stamina_left": {
+    "better": "higher",
+    "test": "test_climb_leg_to_shoulders_walking",
+    "value": 53.0665236069213
+  },
+  "fall_12m_damage": {
+    "better": "info",
+    "test": "test_large_fall_triggers_fall_consequence",
+    "value": 77.0588594324448
+  },
+  "fall_18m_damage": {
+    "better": "info",
+    "test": "test_lethal_fall_respawns",
+    "value": 100.0
+  },
+  "fall_1m_damage": {
+    "better": "info",
+    "test": "test_small_fall_is_safe",
+    "value": 0.0
+  },
+  "fall_5m_damage": {
+    "better": "info",
+    "test": "test_medium_fall_has_consequence",
+    "value": 27.4509990916533
+  },
+  "grip_drift_walk_m": {
+    "better": "lower",
+    "test": "test_grab_and_hold_on_walking_leg",
+    "value": 0.0
+  },
+  "grip_drift_walk_shake_m": {
+    "better": "lower",
+    "test": "test_bone_local_grip_still_has_no_drift",
+    "value": 0.0
+  },
+  "grip_surface_err_walk_m": {
+    "better": "lower",
+    "test": "test_grab_and_hold_on_walking_leg",
+    "value": 0.000000725121822142683
+  },
+  "grip_surface_speed_walk_mps": {
+    "better": "info",
+    "test": "test_grab_and_hold_on_walking_leg",
+    "value": 2.18602252006531
+  },
+  "grip_surface_speed_walk_shake_mps": {
+    "better": "info",
+    "test": "test_bone_local_grip_still_has_no_drift",
+    "value": 8.3248405456543
+  },
+  "late_grab_caught_height_m": {
+    "better": "info",
+    "test": "test_late_grab_catches_falling_player",
+    "value": 1.9957081079483
+  },
+  "leap_regrab_gain_m": {
+    "better": "higher",
+    "test": "test_jump_off_and_regrab_midair",
+    "value": 1.36913442611694
+  },
+  "perf_climb_cam_camera_queries": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 7.0
+  },
+  "perf_climb_cam_camera_us": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 64.9916666666667
+  },
+  "perf_climb_cam_climb_rays": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 2.40833333333333
+  },
+  "perf_climb_cam_colossus_us": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 79.225
+  },
+  "perf_climb_cam_frame_ms": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 0.489825
+  },
+  "perf_climb_cam_grab_queries": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 0.0
+  },
+  "perf_climb_cam_player_us": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 104.108333333333
+  },
+  "perf_climb_camera_queries": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 0.0
+  },
+  "perf_climb_camera_us": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 0.0
+  },
+  "perf_climb_climb_rays": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 2.99333333333333
+  },
+  "perf_climb_colossus_us": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 56.8466666666667
+  },
+  "perf_climb_frame_ms": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 0.296933333333333
+  },
+  "perf_climb_grab_queries": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 0.0
+  },
+  "perf_climb_player_us": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 68.66
+  },
+  "perf_fall_grab_camera_queries": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 7.0
+  },
+  "perf_fall_grab_camera_us": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 25.7833333333333
+  },
+  "perf_fall_grab_climb_rays": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 0.0
+  },
+  "perf_fall_grab_colossus_us": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 43.6833333333333
+  },
+  "perf_fall_grab_frame_ms": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 0.148233333333333
+  },
+  "perf_fall_grab_grab_queries": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 2.0
+  },
+  "perf_fall_grab_player_us": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 29.7166666666667
+  },
+  "perf_stand_shake_camera_queries": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 7.65833333333333
+  },
+  "perf_stand_shake_camera_us": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 79.9583333333333
+  },
+  "perf_stand_shake_climb_rays": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 0.0
+  },
+  "perf_stand_shake_colossus_us": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 64.0333333333333
+  },
+  "perf_stand_shake_frame_ms": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 0.433858333333333
+  },
+  "perf_stand_shake_grab_queries": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 0.0
+  },
+  "perf_stand_shake_player_us": {
+    "better": "lower",
+    "test": "test_performance_budget",
+    "value": 93.7
+  },
+  "release_inherit_error_mps": {
+    "better": "lower",
+    "test": "test_release_inherits_surface_velocity",
+    "value": 0.0
+  },
+  "rescue_grab_ticks": {
+    "better": "lower",
+    "test": "test_player_can_grab_during_slip",
+    "value": 1.0
+  },
+  "shake_full_balance_loss_s": {
+    "better": "info",
+    "test": "test_player_can_grab_during_slip",
+    "value": 1.28333333333333
+  },
+  "shake_full_grip_stamina_cost": {
+    "better": "info",
+    "test": "test_gripping_player_resists_shake_using_stamina",
+    "value": 54.2268944279745
+  },
+  "shake_full_thrown_off_s": {
+    "better": "info",
+    "test": "test_severe_shake_can_throw_ungripped_player",
+    "value": 2.08333333333333
+  },
+  "shake_grip_stamina_drain_per_s": {
+    "better": "info",
+    "test": "test_shake_drains_more_than_hanging",
+    "value": 23.5710872818389
+  },
+  "shake_half_min_balance": {
+    "better": "info",
+    "test": "test_shake_destabilizes_standing_player",
+    "value": 0.152503951805001
+  },
+  "standing_drift_still_m": {
+    "better": "lower",
+    "test": "test_standing_on_still_colossus_is_stable",
+    "value": 0.00133315462153405
+  },
+  "standing_drift_turning_m": {
+    "better": "lower",
+    "test": "test_standing_on_turning_colossus_is_carried",
+    "value": 0.000277327228104696
+  },
+  "standing_walk_min_balance": {
+    "better": "higher",
+    "test": "test_standing_on_walking_colossus_remains_controllable",
+    "value": 1.0
+  },
+  "standing_walk_moved_m": {
+    "better": "higher",
+    "test": "test_standing_on_walking_colossus_remains_controllable",
+    "value": 1.64970874786377
+  },
+  "turn_transfer_surface_err_m": {
+    "better": "lower",
+    "test": "test_grip_transfer_while_colossus_turns",
+    "value": 0.00000192311586033611
+  }
+}
