@@ -90,7 +90,7 @@ static func build(parent: Node3D) -> Dictionary:
 
 ## Everything for a playable / testable fight. ``with_input`` adds the keyboard/mouse/pad
 ## input source (scenes); tests and bots drive PlayerActions themselves.
-static func build_encounter(parent: Node3D, with_input := false, brain_seed := 7) -> Dictionary:
+static func build_encounter(parent: Node3D, with_input := false, brain_seed := 7, with_art := false) -> Dictionary:
 	var points := build(parent)
 	var valus := Valus.new()
 	valus.name = "Valus"
@@ -100,6 +100,10 @@ static func build_encounter(parent: Node3D, with_input := false, brain_seed := 7
 	parent.add_child(valus)
 	valus.teleport(VALUS_START, PI)
 	valus.reset_encounter(valus.global_transform, true)
+	if with_art:
+		# Render-only: collision, climbing and AI are the greybox ones.
+		ArenaArt.dress_arena(parent, Vector3(0, 0, 1), 55.0)
+		ArenaArt.dress_valus(valus)
 
 	var horse := Horse.new()
 	horse.name = "Agro"

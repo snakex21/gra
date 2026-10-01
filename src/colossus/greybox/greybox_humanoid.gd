@@ -683,6 +683,9 @@ func _add_part(seg: BodySegment, kind: Kind, size: Variant, center: Vector3, mat
 	col.position = center
 	mesh.position = center
 	mesh.material_override = material
+	# What the part is made of (art layers reskin greybox parts by kind).
+	mesh.set_meta(&"kind", kind)
+	mesh.set_meta(&"part_size", size)
 	seg.add_child(col)
 	seg.add_child(mesh)
 	return col

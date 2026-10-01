@@ -8,7 +8,7 @@ var refs := {}
 
 func _ready() -> void:
 	InputSetup.ensure_defaults()
-	refs = ValusArena.build_encounter(self, true)
+	refs = ValusArena.build_encounter(self, true, 7, not OS.has_environment("NO_ART"))
 	players.append(refs.player)
 	if DisplayServer.get_name() != "headless":
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED

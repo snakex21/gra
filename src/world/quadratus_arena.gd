@@ -59,7 +59,7 @@ static func build(parent: Node3D) -> Dictionary:
 	return {"quadratus": [QUADRATUS_START, PI], "player": [PLAYER_START, 0.0], "horse": [HORSE_START, 0.0]}
 
 
-static func build_encounter(parent: Node3D, with_input := false, brain_seed := 11) -> Dictionary:
+static func build_encounter(parent: Node3D, with_input := false, brain_seed := 11, with_art := false) -> Dictionary:
 	var points := build(parent)
 	var q := Quadratus.new()
 	q.name = "Quadratus"
@@ -69,6 +69,10 @@ static func build_encounter(parent: Node3D, with_input := false, brain_seed := 1
 	parent.add_child(q)
 	q.teleport(QUADRATUS_START, PI)
 	q.reset_encounter(q.global_transform, true)
+	if with_art:
+		# Render-only: collision, climbing and AI are the greybox ones.
+		ArenaArt.dress_arena(parent, Vector3(0, 0, 1), 75.0, 4021)
+		ArenaArt.skin_colossus(q)
 
 	var horse := Horse.new()
 	horse.name = "Agro"
