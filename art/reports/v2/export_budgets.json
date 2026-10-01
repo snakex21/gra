@@ -1,0 +1,421 @@
+{
+  "assets": [
+    {
+      "id": "column",
+      "triangles": [
+        480,
+        230,
+        86
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "column_broken",
+      "triangles": [
+        392,
+        188,
+        70
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "column_base",
+      "triangles": [
+        88,
+        42,
+        14
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "beam_4m",
+      "triangles": [
+        88,
+        42,
+        13
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "wall",
+      "triangles": [
+        704,
+        336,
+        126
+      ],
+      "collision_triangles": 44,
+      "collision": "hull"
+    },
+    {
+      "id": "wall_broken",
+      "triangles": [
+        572,
+        274,
+        102
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "wall_corner",
+      "triangles": [
+        1232,
+        590,
+        220
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "arch",
+      "triangles": [
+        220,
+        104,
+        31
+      ],
+      "collision_triangles": 0,
+      "collision": "opening_boxes"
+    },
+    {
+      "id": "door",
+      "triangles": [
+        220,
+        104,
+        31
+      ],
+      "collision_triangles": 0,
+      "collision": "opening_boxes"
+    },
+    {
+      "id": "floor",
+      "triangles": [
+        56,
+        26,
+        9
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "platform",
+      "triangles": [
+        56,
+        26,
+        9
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "stairs",
+      "triangles": [
+        352,
+        168,
+        62
+      ],
+      "collision_triangles": 0,
+      "collision": "stair_ramp_v2"
+    },
+    {
+      "id": "altar",
+      "triangles": [
+        192,
+        92,
+        34
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "relief",
+      "triangles": [
+        352,
+        168,
+        62
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "channel",
+      "triangles": [
+        132,
+        62,
+        22
+      ],
+      "collision_triangles": 0,
+      "collision": "channel_boxes"
+    },
+    {
+      "id": "rubble_0",
+      "triangles": [
+        396,
+        190,
+        70
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "rubble_1",
+      "triangles": [
+        572,
+        274,
+        102
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "slate_0",
+      "triangles": [
+        80,
+        38,
+        14
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "slate_1",
+      "triangles": [
+        80,
+        38,
+        14
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "slate_2",
+      "triangles": [
+        80,
+        38,
+        14
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "chalk_0",
+      "triangles": [
+        80,
+        38,
+        14
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "chalk_1",
+      "triangles": [
+        80,
+        38,
+        14
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "chalk_2",
+      "triangles": [
+        80,
+        38,
+        14
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "basalt_0",
+      "triangles": [
+        80,
+        38,
+        14
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "basalt_1",
+      "triangles": [
+        80,
+        38,
+        14
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "basalt_2",
+      "triangles": [
+        80,
+        38,
+        14
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "ledge",
+      "triangles": [
+        488,
+        234,
+        86
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "cliff",
+      "triangles": [
+        488,
+        234,
+        86
+      ],
+      "collision_triangles": 48,
+      "collision": "hull"
+    },
+    {
+      "id": "rock_arch",
+      "triangles": [
+        240,
+        114,
+        42
+      ],
+      "collision_triangles": 0,
+      "collision": "rock_arch_boxes"
+    },
+    {
+      "id": "grass_dry_v2",
+      "triangles": [
+        27,
+        12,
+        4
+      ],
+      "collision_triangles": 0,
+      "collision": "none"
+    },
+    {
+      "id": "fern",
+      "triangles": [
+        30,
+        14,
+        5
+      ],
+      "collision_triangles": 0,
+      "collision": "none"
+    },
+    {
+      "id": "reed",
+      "triangles": [
+        27,
+        12,
+        4
+      ],
+      "collision_triangles": 0,
+      "collision": "none"
+    },
+    {
+      "id": "moss_patch",
+      "triangles": [
+        36,
+        17,
+        6
+      ],
+      "collision_triangles": 0,
+      "collision": "none"
+    },
+    {
+      "id": "shrub_heather",
+      "triangles": [
+        396,
+        181,
+        61
+      ],
+      "collision_triangles": 0,
+      "collision": "none"
+    },
+    {
+      "id": "shrub_thorn",
+      "triangles": [
+        216,
+        102,
+        38
+      ],
+      "collision_triangles": 0,
+      "collision": "none"
+    },
+    {
+      "id": "tree_cypress",
+      "triangles": [
+        508,
+        242,
+        76
+      ],
+      "collision_triangles": 0,
+      "collision": "trunk"
+    },
+    {
+      "id": "tree_oak",
+      "triangles": [
+        508,
+        242,
+        76
+      ],
+      "collision_triangles": 0,
+      "collision": "trunk"
+    },
+    {
+      "id": "tree_willow",
+      "triangles": [
+        508,
+        242,
+        76
+      ],
+      "collision_triangles": 0,
+      "collision": "trunk"
+    },
+    {
+      "id": "tree_dead",
+      "triangles": [
+        348,
+        166,
+        62
+      ],
+      "collision_triangles": 0,
+      "collision": "trunk"
+    },
+    {
+      "id": "roots",
+      "triangles": [
+        144,
+        68,
+        24
+      ],
+      "collision_triangles": 0,
+      "collision": "none"
+    }
+  ],
+  "asset_count": 40,
+  "lod_glbs": 120,
+  "unique_triangles_by_lod": [
+    10788,
+    5138,
+    1835
+  ],
+  "shared_atlas": [
+    1024,
+    1024
+  ],
+  "scope_fence": "src/scenes/tests/project.godot unchanged versus assets a838b5b",
+  "notes": [
+    "One mesh surface per GLB; no embedded per-model images.",
+    "Static hull sources <=60 triangles; openings use separate boxes.",
+    "No target-hardware FPS claim."
+  ]
+}

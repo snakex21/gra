@@ -1,0 +1,9 @@
+{
+	"asset_instances": 138,
+	"collision_shapes": 134,
+	"determinism": "same seed equal",
+	"scatter_fingerprint": 24673418,
+	"scene": "res://art/tests/ancient_valley.tscn",
+	"terrain_triangles": 28800,
+	"vegetation_instances": 1147
+}
