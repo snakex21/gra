@@ -1,0 +1,75 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scenes/agro_test.gd" id="1_agro"]
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
+sky_top_color = Color(0.32, 0.46, 0.68, 1)
+sky_horizon_color = Color(0.76, 0.78, 0.8, 1)
+ground_bottom_color = Color(0.3, 0.3, 0.28, 1)
+ground_horizon_color = Color(0.76, 0.78, 0.8, 1)
+
+[sub_resource type="Sky" id="Sky"]
+sky_material = SubResource("SkyMat")
+
+[sub_resource type="Environment" id="Env"]
+background_mode = 2
+sky = SubResource("Sky")
+ambient_light_source = 3
+ambient_light_energy = 0.8
+tonemap_mode = 2
+fog_enabled = true
+fog_light_color = Color(0.74, 0.77, 0.8, 1)
+fog_density = 0.0025
+fog_sky_affect = 0.3
+
+[sub_resource type="BoxShape3D" id="GroundShape"]
+size = Vector3(600, 2, 600)
+
+[sub_resource type="Shader" id="GridShader"]
+code = "shader_type spatial;
+// Cheap world-space grid so motion and scale are readable in the greybox.
+uniform vec3 base_color : source_color = vec3(0.42, 0.47, 0.34);
+uniform vec3 line_color : source_color = vec3(0.3, 0.34, 0.25);
+varying vec3 world_pos;
+void vertex() { world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+float grid(vec2 p, float cell, float width) {
+	vec2 g = abs(fract(p / cell - 0.5) - 0.5) * cell;
+	vec2 fw = fwidth(p) * 0.75 + width;
+	vec2 l = 1.0 - smoothstep(vec2(0.0), fw, g);
+	return max(l.x, l.y);
+}
+void fragment() {
+	float g = max(grid(world_pos.xz, 2.0, 0.02) * 0.5, grid(world_pos.xz, 10.0, 0.06));
+	ALBEDO = mix(base_color, line_color, g);
+	ROUGHNESS = 1.0;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="GroundMat"]
+shader = SubResource("GridShader")
+
+[sub_resource type="PlaneMesh" id="GroundMesh"]
+material = SubResource("GroundMat")
+size = Vector2(600, 600)
+
+[node name="AgroTest" type="Node3D"]
+script = ExtResource("1_agro")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.383022, 0.321394, 0, 0.642788, 0.766044, -0.5, -0.663414, 0.556670, 0, 30, 0)
+light_energy = 1.2
+shadow_enabled = true
+directional_shadow_max_distance = 160.0
+
+[node name="Ground" type="StaticBody3D" parent="."]
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+shape = SubResource("GroundShape")
+
+[node name="Mesh" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("GroundMesh")

@@ -1,4 +1,4 @@
-# Architektura (stan po Etapie 3)
+# Architektura (stan po Etapie 4)
 
 Dokument opisuje decyzje, które mają przetrwać dalszy rozwój. Kod jest komentowany po angielsku
 (open source), a dokumentacja projektowa jest po polsku.
@@ -111,6 +111,28 @@ Szczegóły i pomiary: [ETAP_3.md](ETAP_3.md). Zasady:
 - Symulacja działa tylko w stałym kroku. Render, kamera i wejście nie wpływają na stan gry.
   Pilnuje tego test uruchamiany przy 30/60/144/240 FPS.
 
+## 2c. Agro (Etap 4)
+
+```
+rider / AI / test -> HorseInputIntent -> HorseController (chód, masa, R(v), omijanie, hamowanie)
+                  -> QuadrupedGait (zegar chodu, fazy nóg) -> Horse (tułów, szyja, IK nóg)
+                  -> Skeleton3D -> siodło (kość body) -> PlayerRiding
+```
+Szczegóły i pomiary: [ETAP_4.md](ETAP_4.md). Zasady:
+- Jeździec nigdy nie ustawia prędkości ani kursu. Wyraża zamiar (kierunek, kopnięcie, wodze),
+  a koń przekłada go na ruch w granicach swojej masy i promienia skrętu.
+- Jeźdźcem jest dowolny węzeł z `build_ride_intent()` (`current_rider` się zmienia).
+  `HorseInputIntent` nie zna urządzeń. Polecenia AI (`follow/come/stop`) to wspólne API
+  dla gracza, AI kompana i testów.
+- Autonomia jest lokalna: korekta kursu, zwolnienie, zatrzymanie. Koń nie szuka ścieżki
+  i nie wybiera nowej drogi za jeźdźca.
+- Wspólna z kolosem jest tylko matematyka kroku (`StepMath`, `LegState`, `TwoBoneIK`).
+  Rytm czworonoga to osobny `QuadrupedGait`.
+- Jeździec jest zakotwiczony do kości jak chwyt: zero dryfu. Wsiadanie i zsiadanie to łuki
+  w układzie konia, bez teleportów. Zsiadanie wymaga bezpiecznego miejsca.
+- Kolejność w ticku: kolos (−10) → koń (−9) → gracz (0), więc jeździec czyta siodło
+  z bieżącego ticku.
+
 ## 3. Gracze i wejście
 
 - Nie ma singletona gracza. Każdy `PlayerCharacter` jest w grupie `players`, a sandbox trzyma
@@ -119,7 +141,7 @@ Szczegóły i pomiary: [ETAP_3.md](ETAP_3.md). Zasady:
   Źródła wejścia to `FlatInputSource` (klawiatura/mysz/pad), a w przyszłości VR, AI kompan
   i testy. Sieć będzie synchronizować akcje/intencje, nie przyciski.
 - Kolejność w ticku: wejście (`process_priority -100`) → kolos (`process_physics_priority -10`)
-  → gracz → kamera (`_process`, interpolowana pozycja gracza).
+  → koń (`-9`) → gracz → kamera (`_process`, interpolowana pozycja gracza).
 - Włączona jest interpolacja fizyki (Godot 4.4), więc symulacja idzie w 60 Hz, a obraz jest płynny
   przy dowolnym FPS.
 
@@ -148,4 +170,7 @@ Zasada: kamera nie walczy z graczem.
   chwyt w powietrzu 2 zapytania sferą, kamera ok. 7 zapytań.
 - Zapytania korzystają ze współdzielonych obiektów parametrów, a `find_grip` liczy najbliższy
   punkt analitycznie.
+- Etap 4: Agro kosztuje ~180–230 µs na tick (sondy przeszkód ~75, planer kroków ~25, IK i poza
+  ~60) i ~8 zapytań fizyki na tick. Osobne etykiety: `horse_controller`, `horse_probes`,
+  `horse_steps`, `horse_ik`, `mount`, `camera`.
 - Nie ma potrzeby przenosić czegokolwiek do Ziga.

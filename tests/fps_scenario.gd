@@ -10,12 +10,17 @@ var player: PlayerCharacter
 var camera: PlayerCamera
 var tick := 0
 var out_path := ""
+## "colossus" (default) or "horse".
+var scenario := "colossus"
+var horse: Horse
 
 
 func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out_path = arg.trim_prefix("--out=")
+		elif arg.begins_with("--scenario="):
+			scenario = arg.trim_prefix("--scenario=")
 	process_physics_priority = 100  # after the colossus and the player
 	var ground := StaticBody3D.new()
 	ground.collision_layer = Layers.WORLD
@@ -26,6 +31,9 @@ func _ready() -> void:
 	gs.position = Vector3(0, -1, 0)
 	ground.add_child(gs)
 	add_child(ground)
+	if scenario == "horse":
+		_setup_horse()
+		return
 	TerrainKit.build_course(self, Vector3(0, 0, -6))
 	colossus = GreyboxHumanoid.new()
 	colossus.debug_override = &"manual"
@@ -39,8 +47,72 @@ func _ready() -> void:
 	add_child(camera)
 
 
+## Mount, kick to a gallop on the arena course, turn, rein in, dismount. The camera is
+## part of the run (it reads the rider's position every rendered frame).
+func _setup_horse() -> void:
+	var arena := Node3D.new()
+	add_child(arena)
+	var points := AgroArena.build(arena)
+	horse = Horse.new()
+	add_child(horse)
+	var sp: Array = points.course
+	horse.teleport(sp[0], sp[1])
+	player = PlayerCharacter.new()
+	add_child(player)
+	player.global_position = (sp[0] as Vector3) + Vector3(-1.4, 0.95, 0.2)
+	camera = PlayerCamera.new()
+	camera.player = player
+	add_child(camera)
+
+
+func _horse_tick() -> void:
+	var a := player.actions
+	match tick:
+		5:
+			a.press_interact()
+		60:
+			a.view_basis = Basis.IDENTITY
+			a.move = Vector2(0, 1)
+			a.press_jump()
+		90, 150:
+			a.press_jump()
+		420:
+			a.move = Vector2(0.8, 0.6)
+		600:
+			a.move = Vector2(-0.5, 0.85)
+		720:
+			a.move = Vector2.ZERO
+			a.grab_held = true
+		900:
+			a.grab_held = false
+			a.press_interact()
+	if tick == 1000:
+		var feet := []
+		for leg in horse.gait_planner.legs:
+			feet.append_array([leg.foot_pos.x, leg.foot_pos.y, leg.foot_pos.z])
+		var body := horse.body_transform().origin
+		var data := {
+			"frames": Engine.get_process_frames(),
+			"horse": [horse.global_position.x, horse.global_position.y, horse.global_position.z],
+			"yaw": horse.controller.yaw,
+			"speed": horse.controller.speed,
+			"body": [body.x, body.y, body.z],
+			"feet": feet,
+			"steps": horse.gait_planner.step_count,
+			"player": [player.global_position.x, player.global_position.y, player.global_position.z],
+			"riding": 1 if player.is_riding() else 0,
+		}
+		var f := FileAccess.open(out_path, FileAccess.WRITE)
+		f.store_string(JSON.stringify(data))
+		f.close()
+		get_tree().quit()
+
+
 func _physics_process(_delta: float) -> void:
 	tick += 1
+	if scenario == "horse":
+		_horse_tick()
+		return
 	match tick:
 		10:
 			colossus.debug_desired_speed = 1.4

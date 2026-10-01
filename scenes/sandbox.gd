@@ -9,6 +9,7 @@ var players: Array[PlayerCharacter] = []
 var cameras: Array[PlayerCamera] = []
 
 @onready var colossus: Colossus = $Colossus
+var horse: Horse
 @onready var spawn: Marker3D = $PlayerSpawn
 
 
@@ -17,6 +18,11 @@ func _ready() -> void:
 	_build_ruins()
 	# Uneven test terrain for locomotion (ramp, bumps, step) beside the colossus.
 	TerrainKit.build_course(self, Vector3(26, 0, -4))
+	# Agro waits next to the player's spawn (not owned by any particular player).
+	horse = Horse.new()
+	horse.name = "Agro"
+	horse.position = spawn.global_position + Vector3(3.5, -1.0, 2.0)
+	add_child(horse)
 	for i in player_count:
 		_spawn_player(i)
 	if DisplayServer.get_name() != "headless":
@@ -53,6 +59,7 @@ func _spawn_player(index: int) -> void:
 	hud.player = p
 	hud.colossus = colossus
 	hud.camera = cam
+	hud.horse = horse
 	layer.add_child(hud)
 	add_child(layer)
 
@@ -73,6 +80,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed(&"debug_draw") and colossus is GreyboxHumanoid:
 		var draw := (colossus as GreyboxHumanoid).debug_draw
 		draw.visible = not draw.visible
+		if horse:
+			horse.debug_draw.visible = draw.visible
+	elif event.is_action_pressed(&"ride_steer_mode"):
+		for p in players:
+			p.riding.steer_relative = not p.riding.steer_relative
 
 
 ## Static ruins: camera obstacles and a climbable wall (vines = ClimbPatch) with a

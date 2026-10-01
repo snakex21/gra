@@ -5,6 +5,7 @@ extends Control
 var player: PlayerCharacter
 var colossus: Colossus
 var camera: PlayerCamera
+var horse: Horse
 var show_debug := true
 var show_help := true
 
@@ -32,7 +33,8 @@ func _ready() -> void:
 		"HOLD RMB / Shift / R1: grip  (release to let go)",
 		"Space / A: jump (while gripping: leap off / along surface)",
 		"Q / MMB / L1: frame the colossus",
-		"Backspace: respawn   F2: colossus mode   F3: debug + step overlay   F4: locomotion A/B   F1: help",
+		"E / Y: mount / dismount Agro   C: call Agro   riding: stick = direction, Space/A = kick, RMB/R1 = reins",
+		"F6: ride steering camera/horse-relative   Backspace: respawn   F2: colossus mode   F3: debug + overlays   F4: locomotion A/B   F1: help",
 		"Click to capture the mouse, Esc to release",
 	])
 	add_child(_help)
@@ -71,6 +73,8 @@ func _process(delta: float) -> void:
 			lines.append("last release: %s" % player.last_release_reason)
 		if camera:
 			lines.append("camera: %s  dist %.1f %s" % [camera.debug_state, camera.get_distance(), camera.last_clamp])
+		if horse:
+			lines.append(horse.debug_text())
 		if colossus:
 			lines.append(colossus.debug_text())
 		_label.text = "\n".join(lines)
@@ -108,6 +112,9 @@ func _sample_perf() -> void:
 	var p := Perf.take()
 	var us: Dictionary = p.usec
 	var q: Dictionary = p.queries
-	_perf_text = "logic/tick: colossus %.0f us (locomotion %.0f, IK %.0f)  player %.0f us  camera %.0f us | queries/tick: rays %.1f  grab %.1f  camera %.1f" % [
-		us.get(&"colossus", 0) / float(ticks), us.get(&"locomotion", 0) / float(ticks), us.get(&"ik", 0) / float(ticks), us.get(&"player", 0) / float(ticks), us.get(&"camera", 0) / float(ticks),
-		q.get(&"climb_rays", 0) / float(ticks), q.get(&"grab_queries", 0) / float(ticks), q.get(&"camera_queries", 0) / float(ticks)]
+	var n := float(ticks)
+	_perf_text = "logic/tick: colossus %.0f us (locomotion %.0f, IK %.0f)  Agro %.0f us (controller %.0f incl. probes %.0f, steps %.0f, IK+body %.0f)  player %.0f us (mount %.0f)  camera %.0f us | rays/tick: climb %.1f  horse %.1f  grab %.1f  camera %.1f" % [
+		us.get(&"colossus", 0) / n, us.get(&"locomotion", 0) / n, us.get(&"ik", 0) / n,
+		us.get(&"horse", 0) / n, us.get(&"horse_controller", 0) / n, us.get(&"horse_probes", 0) / n, us.get(&"horse_steps", 0) / n, us.get(&"horse_ik", 0) / n,
+		us.get(&"player", 0) / n, us.get(&"mount", 0) / n, us.get(&"camera", 0) / n,
+		q.get(&"climb_rays", 0) / n, q.get(&"horse_rays", 0) / n, q.get(&"grab_queries", 0) / n, q.get(&"camera_queries", 0) / n]

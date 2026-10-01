@@ -20,6 +20,7 @@ extends Camera3D
 @export var distance_near_colossus := 6.5
 @export var distance_on_colossus := 7.0
 @export var distance_climb := 7.0
+@export var distance_riding := 5.5
 @export var distance_focus_extra := 4.0
 ## Within this horizontal distance of a colossus the "near colossus" framing is used.
 @export var near_colossus_range := 45.0
@@ -101,8 +102,12 @@ func _update(delta: float) -> void:
 	target_pivot += _lookahead
 	# The pivot itself must stay in free space (look-ahead can point under an overhang).
 	var space := get_world_3d().direct_space_state
-	if _exclude.is_empty():
+	# The horse being ridden is part of "us" for the camera; other horses are obstacles.
+	var ridden := player.riding.horse if player.is_riding() and is_instance_valid(player.riding.horse) else null
+	if _exclude.is_empty() or (ridden != null) != (_exclude.size() > 1):
 		_exclude = [player.get_rid()]
+		if ridden:
+			_exclude.append(ridden.get_rid())
 	var origin := _free_origin(space, body)
 	var to_pivot := target_pivot - origin
 	if to_pivot.length() > 0.01:
@@ -124,7 +129,11 @@ func _update(delta: float) -> void:
 	# --- situational distance -------------------------------------------------------------
 	var want := distance_ground
 	debug_state = "ground"
-	if climbing:
+	if player.is_riding():
+		var v: float = player.riding.horse.get_speed() if is_instance_valid(player.riding.horse) else 0.0
+		want = distance_riding + v * 0.15
+		debug_state = "riding"
+	elif climbing:
 		want = distance_climb
 		debug_state = "climb"
 	elif player.is_on_colossus():

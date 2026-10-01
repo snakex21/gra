@@ -162,18 +162,11 @@ func update_steps(delta: float, space: PhysicsDirectSpaceState3D) -> void:
 				leg.target_normal = g[1]
 		# The landing spot follows a re-planned goal through a critically damped spring
 		# (continuous velocity), so a re-plan never jerks the foot.
-		var k := 6.0
-		leg.target_velocity += ((leg.target_goal - leg.target_pos) * k * k - leg.target_velocity * 2.0 * k) * delta
-		leg.target_pos += leg.target_velocity * delta
+		StepMath.follow_goal(leg, delta)
 		_update_swing_pose(leg)
 		if leg.swing_t >= 1.0:
-			leg.phase = LegState.Phase.STANCE
-			leg.plant_pos = leg.target_pos
-			leg.plant_normal = leg.target_normal
-			leg.plant_yaw = leg.target_yaw
-			leg.touchdown_time = time
+			StepMath.plant(leg, time)
 			last_touchdown = time
-			_set_foot(leg, leg.plant_pos, leg.plant_normal, leg.plant_yaw)
 		else:
 			swinging += 1
 
@@ -245,10 +238,7 @@ func plan_error(leg: LegState, t_ahead: float) -> float:
 ## One ray straight down. Returns [point, normal].
 func probe_ground(space: PhysicsDirectSpaceState3D, at: Vector3, ref_y: float) -> Array:
 	probes_this_tick += 1
-	var hit := ClimbQuery.ray(space, Vector3(at.x, ref_y + 8.0, at.z), Vector3(at.x, ref_y - 12.0, at.z), [], ground_mask)
-	if hit.is_empty():
-		return [Vector3(at.x, ref_y, at.z), Vector3.UP]
-	return [hit.position, hit.normal]
+	return StepMath.probe_ground(space, at, ref_y, ground_mask)
 
 
 func swinging_count() -> int:
@@ -286,23 +276,8 @@ func _start_swing(i: int, swing_time: float, space: PhysicsDirectSpaceState3D) -
 	step_count += 1
 
 
-## Smooth arc, C2 at lift-off and touchdown: horizontal smootherstep and a 64 t^3 (1-t)^3
-## lift both start and end with zero velocity AND zero acceleration, so anything attached
-## to the leg (a climbing player) never gets a jolt.
 func _update_swing_pose(leg: LegState) -> void:
-	var t := leg.swing_t
-	var s := t * t * t * (t * (t * 6.0 - 15.0) + 10.0)
-	var p := leg.lift_pos.lerp(leg.target_pos, s)
-	var dist := _flat(leg.target_pos - leg.lift_pos).length()
-	var clearance := lift_height * clampf(dist / 1.5, 0.35, 1.0) + maxf(0.0, leg.target_pos.y - leg.lift_pos.y) * 0.6
-	p.y += clearance * 64.0 * pow(t * (1.0 - t), 3.0)
-	_set_foot(leg, p, leg.lift_normal.slerp(leg.target_normal, s).normalized(), lerp_angle(leg.lift_yaw, leg.target_yaw, s))
-
-
-func _set_foot(leg: LegState, p: Vector3, nrm: Vector3, foot_yaw: float) -> void:
-	leg.foot_pos = p
-	leg.foot_normal = nrm
-	leg.foot_yaw = foot_yaw
+	StepMath.swing_pose(leg, lift_height)
 
 
 func _update_pelvis(delta: float, double_support: float) -> void:

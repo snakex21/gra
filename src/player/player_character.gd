@@ -17,7 +17,7 @@ signal mantled
 signal landed(impact_speed: float, tier: int, damage: float)
 signal died
 
-enum State { GROUND, AIR, CLIMB }
+enum State { GROUND, AIR, CLIMB, RIDE }
 
 @export_group("Locomotion")
 @export var run_speed := 5.5
@@ -88,6 +88,7 @@ var last_impact_tier := FallImpact.Tier.NONE
 ## Body is out of play (health 0) and waiting to respawn.
 var dead := false
 var visual: PlayerVisual
+var riding: PlayerRiding
 ## Stats for debugging / tests.
 var last_release_reason: StringName = &""
 
@@ -132,6 +133,7 @@ func _ready() -> void:
 	add_child(visual)
 	_exclude = [get_rid()]
 	spawn_transform = global_transform
+	riding = PlayerRiding.new(self)
 
 
 func _physics_process(delta: float) -> void:
@@ -140,10 +142,18 @@ func _physics_process(delta: float) -> void:
 	if not actions.grab_held:
 		_grab_needs_release = false
 	_update_health(delta)
-	if state == State.CLIMB:
+	if state == State.RIDE:
+		if actions.consume_interact():
+			riding.try_dismount()
+		riding.update(delta)
+	elif state == State.CLIMB:
 		_climb(delta)
 	else:
 		_locomotion(delta)
+		if actions.consume_interact() and riding.try_mount():
+			state = State.RIDE
+	if actions.consume_call():
+		_call_horse()
 	visual.update_visual(self, delta)
 	if global_position.y < -60.0:
 		respawn()
@@ -154,6 +164,8 @@ func _physics_process(delta: float) -> void:
 func get_support_body() -> Object:
 	if state == State.CLIMB and grip:
 		return grip.body
+	if state == State.RIDE:
+		return riding.horse
 	return _support
 
 
@@ -167,6 +179,8 @@ func get_display_state() -> String:
 	if dead:
 		return "DEAD"
 	match state:
+		State.RIDE:
+			return riding.display_state()
 		State.CLIMB:
 			if _climb_slipping:
 				return "SLIP"
@@ -179,6 +193,8 @@ func get_display_state() -> String:
 		Balance.State.STUMBLE:
 			return "SLIP"
 	var s := "STAND" if is_on_colossus() else "GROUND"
+	if s == "GROUND" and riding.horse_in_reach() != null:
+		s = "APPROACH HORSE"
 	if balance.state == Balance.State.UNSTABLE:
 		s += " (unstable)"
 	return s
@@ -188,7 +204,36 @@ func is_on_colossus() -> bool:
 	return get_support_body() is BodySegment
 
 
+func is_riding() -> bool:
+	return state == State.RIDE
+
+
+## Called by a horse every tick it is ridden by this player.
+func build_ride_intent(intent: HorseInputIntent) -> void:
+	riding.build_ride_intent(intent)
+
+
+## Called by PlayerRiding when the rider is back on foot.
+func end_riding() -> void:
+	state = State.AIR
+	_carry_body = null
+	reset_physics_interpolation()
+
+
+func _call_horse() -> void:
+	var best: Horse = null
+	for h in get_tree().get_nodes_in_group(&"horses"):
+		if not is_instance_valid((h as Horse).current_rider):
+			if best == null or h.global_position.distance_to(global_position) < best.global_position.distance_to(global_position):
+				best = h
+	if best:
+		best.command_come(self)
+
+
 func respawn() -> void:
+	if state == State.RIDE:
+		riding.phase = PlayerRiding.Phase.RIDING
+		riding._finish(Vector3.ZERO)
 	grip = null
 	state = State.AIR
 	dead = false

@@ -1,0 +1,82 @@
+{
+  "horse_accel_max": {
+    "better": "lower",
+    "test": "test_horse_acceleration_is_smooth",
+    "value": 2.40000009536743
+  },
+  "horse_controller_us": {
+    "better": "lower",
+    "test": "test_horse_cost_stays_within_budget",
+    "value": 94.1166666666667
+  },
+  "horse_foot_slip_max": {
+    "better": "lower",
+    "test": "test_horse_feet_do_not_slide",
+    "value": 0.00195556720427703
+  },
+  "horse_fps_max_diff": {
+    "better": "lower",
+    "test": "test_horse_simulation_independent_of_render_fps",
+    "value": 0.0
+  },
+  "horse_height_d2": {
+    "better": "lower",
+    "test": "test_horse_body_lean_is_continuous",
+    "value": 14.6405696868896
+  },
+  "horse_ik_us": {
+    "better": "lower",
+    "test": "test_horse_cost_stays_within_budget",
+    "value": 74.2583333333333
+  },
+  "horse_jerk_max": {
+    "better": "lower",
+    "test": "test_horse_acceleration_is_smooth",
+    "value": 7.0
+  },
+  "horse_probes_us": {
+    "better": "lower",
+    "test": "test_horse_cost_stays_within_budget",
+    "value": 81.5416666666667
+  },
+  "horse_radius_gallop": {
+    "better": "info",
+    "test": "test_horse_turn_radius_increases_with_speed",
+    "value": 21.6555078188867
+  },
+  "horse_rays_per_tick": {
+    "better": "lower",
+    "test": "test_horse_cost_stays_within_budget",
+    "value": 8.43166666666667
+  },
+  "horse_rock_contacts": {
+    "better": "lower",
+    "test": "test_horse_avoids_small_obstacle",
+    "value": 0.0
+  },
+  "horse_roll_d2": {
+    "better": "lower",
+    "test": "test_horse_body_lean_is_continuous",
+    "value": 9.80543231964111
+  },
+  "horse_steps_us": {
+    "better": "lower",
+    "test": "test_horse_cost_stays_within_budget",
+    "value": 28.6416666666667
+  },
+  "horse_stop_distance": {
+    "better": "info",
+    "test": "test_horse_braking_is_smooth",
+    "value": 12.1911087036133
+  },
+  "horse_terrain_foot_error": {
+    "better": "lower",
+    "test": "test_horse_feet_follow_uneven_terrain",
+    "value": 0.0366606712341309
+  },
+  "horse_us": {
+    "better": "lower",
+    "test": "test_horse_cost_stays_within_budget",
+    "value": 233.411666666667
+  }
+}

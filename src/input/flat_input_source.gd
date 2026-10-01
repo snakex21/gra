@@ -29,6 +29,10 @@ func _process(delta: float) -> void:
 	actions.focus_held = Input.is_action_pressed(&"focus")
 	if Input.is_action_just_pressed(&"jump"):
 		actions.press_jump()
+	if Input.is_action_just_pressed(&"interact"):
+		actions.press_interact()
+	if Input.is_action_just_pressed(&"call_horse"):
+		actions.press_call()
 	if view:
 		actions.view_basis = view.global_basis
 

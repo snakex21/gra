@@ -14,7 +14,12 @@ var _world: Node3D
 var _log := PackedStringArray()
 ## Regression metrics: key -> {"value": float, "better": "lower"|"higher"|"info", "test": name}
 var _metrics := {}
+## Pass/fail of every pre-Etap-4 test that ran (checked by existing_colossus_tests_still_pass).
+var _legacy_results := {}
 const BASELINE_PATH := "res://tests/baseline/etap2_baseline.json"
+## Agro metrics (horse_*) are frozen separately, so the stage 2/3 baseline stays untouched.
+const HORSE_BASELINE_PATH := "res://tests/baseline/etap4_horse_baseline.json"
+var _save_horse_baseline := false
 
 
 func _ready() -> void:
@@ -26,6 +31,8 @@ func _ready() -> void:
 			only = arg.trim_prefix("--only=")
 		elif arg == "--save-baseline":
 			save_baseline = true
+		elif arg == "--save-horse-baseline":
+			_save_horse_baseline = true
 	var tests: Array[Callable] = [
 		test_rig_segments_follow_bones,
 		test_physics_server_transform_matches_anchor,
@@ -77,6 +84,29 @@ func _ready() -> void:
 		test_locomotion_cost_stays_within_reasonable_budget,
 		ab_locomotion_comparison,
 		probe_balance_disturbance,
+		# --- ETAP 4: Agro ---
+		test_horse_acceleration_is_smooth,
+		test_horse_braking_is_smooth,
+		test_horse_cannot_instant_turn_at_speed,
+		test_horse_turn_radius_increases_with_speed,
+		test_horse_feet_do_not_slide,
+		test_horse_feet_follow_uneven_terrain,
+		test_horse_body_lean_is_continuous,
+		test_mounted_player_has_no_saddle_drift,
+		test_mount_and_dismount_are_stable,
+		test_dismount_refused_without_space,
+		test_horse_avoids_small_obstacle,
+		test_horse_keeps_heading_after_avoiding,
+		test_horse_threads_narrow_passage,
+		test_horse_steps_over_low_obstacle,
+		test_horse_stops_before_large_obstacle,
+		test_horse_stops_at_cliff_edge,
+		test_horse_simulation_independent_of_render_fps,
+		test_horse_camera_can_look_away_from_travel_direction,
+		test_horse_comes_when_called,
+		test_horse_follows_player,
+		test_horse_cost_stays_within_budget,
+		existing_colossus_tests_still_pass,
 	]
 	for t in tests:
 		var name := t.get_method()
@@ -88,6 +118,8 @@ func _ready() -> void:
 		await t.call()
 		await _teardown()
 		var ok := _failures.size() == fails_before
+		if not name.contains("horse") and not name.contains("mount") and name != "existing_colossus_tests_still_pass":
+			_legacy_results[name] = ok
 		print("%s %s (%d ms)" % ["PASS" if ok else "FAIL", name, Time.get_ticks_msec() - t0])
 		for line in _log:
 			print("    ", line)
@@ -1536,10 +1568,24 @@ func _report_metrics(save: bool) -> void:
 		b.close()
 		print("\nbaseline saved to %s (%d metrics)" % [BASELINE_PATH, _metrics.size()])
 		return
+	if _save_horse_baseline:
+		var horse := {}
+		for k in _metrics:
+			if String(k).begins_with("horse_"):
+				horse[k] = _metrics[k]
+		var hb := FileAccess.open(HORSE_BASELINE_PATH, FileAccess.WRITE)
+		hb.store_string(JSON.stringify(horse, "  ", true))
+		hb.close()
+		print("\nhorse baseline saved to %s (%d metrics)" % [HORSE_BASELINE_PATH, horse.size()])
 	if not FileAccess.file_exists(BASELINE_PATH):
 		return
 	var base: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(BASELINE_PATH))
-	print("\n--- regression metrics vs frozen baseline (%s) ---" % BASELINE_PATH)
+	if FileAccess.file_exists(HORSE_BASELINE_PATH):
+		var hbase: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(HORSE_BASELINE_PATH))
+		for k in hbase:
+			if not base.has(k):
+				base[k] = hbase[k]
+	print("\n--- regression metrics vs frozen baselines (%s, %s) ---" % [BASELINE_PATH, HORSE_BASELINE_PATH])
 	var keys := _metrics.keys()
 	keys.sort()
 	var flagged := 0
@@ -1725,3 +1771,708 @@ func _surface_error(p: PlayerCharacter) -> float:
 	if hit.is_empty():
 		return 1.0
 	return (hit.position as Vector3).distance_to(pt)
+
+
+# --- ETAP 4: Agro --------------------------------------------------------------------------
+
+## One tick of horse state for the smoothness checks.
+func _horse_sample(h: Horse) -> Dictionary:
+	var body := h.body_transform()
+	var e := (h.global_basis.inverse() * body.basis).get_euler()
+	return {"speed": h.controller.speed, "yaw": h.controller.yaw, "yaw_rate": h.controller.yaw_rate,
+		"pos": h.global_position, "gait": int(h.controller.gait), "height": body.origin.y - h.global_position.y,
+		"pitch": e.x, "roll": e.z, "body": body.origin,
+		"collided": h.get_slide_collision_count() > 0, "obstacle": h.controller.obstacle}
+
+
+## Runs n ticks recording a sample per tick (``each`` is called before the tick, with the tick index).
+func _ride(h: Horse, n: int, each := Callable()) -> Array:
+	var out := []
+	for i in n:
+		if each.is_valid():
+			each.call(i)
+		await _ticks(1)
+		out.append(_horse_sample(h))
+	return out
+
+
+## Largest |d/dt| and |d2/dt2| of a sampled scalar.
+func _rates(samples: Array, key: String, from := 0) -> Vector2:
+	var d1 := 0.0
+	var d2 := 0.0
+	for i in range(maxi(from, 2), samples.size()):
+		var a: float = samples[i - 2][key]
+		var b: float = samples[i - 1][key]
+		var c: float = samples[i][key]
+		if key == "yaw":
+			b = a + wrapf(b - a, -PI, PI)
+			c = b + wrapf(c - (samples[i - 1][key] as float), -PI, PI)
+		d1 = maxf(d1, absf(c - b) / DT)
+		d2 = maxf(d2, absf(c - 2.0 * b + a) / (DT * DT))
+	return Vector2(d1, d2)
+
+
+func _setup_horse(start: String, with_player := false, with_camera := false) -> Dictionary:
+	_world = Node3D.new()
+	_world.name = "World_" + _current
+	add_child(_world)
+	var ground := StaticBody3D.new()
+	ground.collision_layer = Layers.WORLD
+	var gs := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(400, 2, 400)
+	gs.shape = box
+	gs.position = Vector3(0, -1, 0)
+	ground.add_child(gs)
+	_world.add_child(ground)
+	var points := AgroArena.build(_world)
+	var h := Horse.new()
+	h.name = "Agro"
+	_world.add_child(h)
+	var sp: Array = points[start]
+	h.teleport(sp[0], sp[1])
+	var d := ScriptedHorseDriver.new()
+	d.name = "Driver"
+	_world.add_child(d)
+	var out := {"horse": h, "driver": d, "points": points}
+	if with_player:
+		var p := PlayerCharacter.new()
+		p.name = "Player1"
+		_world.add_child(p)
+		p.global_position = (sp[0] as Vector3) + Vector3(-1.4, 0.95, 0.2)
+		p.actions.view_basis = Basis.IDENTITY
+		out.player = p
+		if with_camera:
+			var cam := PlayerCamera.new()
+			cam.player = p
+			_world.add_child(cam)
+			out.camera = cam
+	else:
+		h.set_rider(d)
+	await _ticks(2)
+	h.reset_foot_stats()
+	return out
+
+
+## Player mounts the horse next to it through PlayerActions; waits until seated.
+func _mount(p: PlayerCharacter) -> bool:
+	p.actions.press_interact()
+	for i in 90:
+		await _ticks(1)
+		if p.is_riding() and p.riding.phase == PlayerRiding.Phase.RIDING:
+			return true
+	return false
+
+
+func _gait_sequence(samples: Array) -> Array:
+	var seq := []
+	for s in samples:
+		if seq.is_empty() or seq[-1] != s.gait:
+			seq.append(s.gait)
+	return seq
+
+
+func test_horse_acceleration_is_smooth() -> void:
+	var w := await _setup_horse("flat")
+	var h: Horse = w.horse
+	var d: ScriptedHorseDriver = w.driver
+	d.direction = Vector3.FORWARD
+	d.drive = 1.0
+	for i in 3:
+		d.kick()
+	var s := await _ride(h, 540)
+	var r := _rates(s, "speed")
+	var top: float = s[-1].speed
+	var t_gallop := -1.0
+	for i in s.size():
+		if s[i].gait == HorseController.Gait.GALLOP:
+			t_gallop = i * DT
+			break
+	# Real body speed (from positions), not only the controller's number.
+	var body_v: Array = []
+	for i in range(1, s.size()):
+		body_v.append({"speed": ((s[i].pos as Vector3) - (s[i - 1].pos as Vector3)).length() / DT})
+	var rb := _rates(body_v, "speed")
+	_log.append("0 -> %.2f m/s, gaits %s, gallop after %.2f s; max accel %.2f m/s2 (body %.2f), max jerk %.2f m/s3" % [top, str(_gait_sequence(s)), t_gallop, r.x, rb.x, r.y])
+	_metric("horse_accel_max", r.x, "lower")
+	_metric("horse_jerk_max", r.y, "lower")
+	_check(top > 9.0, "did not reach a gallop: %.2f m/s" % top)
+	_check(_gait_sequence(s) == [0, 1, 2, 3], "gaits not in order: %s" % str(_gait_sequence(s)))
+	_check(r.x <= h.controller.max_accel + 0.05, "acceleration too high: %.2f" % r.x)
+	_check(rb.x <= h.controller.max_accel + 0.3, "body acceleration jumps: %.2f" % rb.x)
+	_check(r.y <= h.controller.max_jerk + 0.5, "jerk too high: %.2f" % r.y)
+	_check(t_gallop > 2.0, "reached a gallop instantly (%.2f s)" % t_gallop)
+
+
+func test_horse_braking_is_smooth() -> void:
+	var w := await _setup_horse("flat")
+	var h: Horse = w.horse
+	var d: ScriptedHorseDriver = w.driver
+	d.direction = Vector3.FORWARD
+	d.drive = 1.0
+	for i in 3:
+		d.kick()
+	await _ticks(480)
+	var v0 := h.get_speed()
+	var p0 := h.global_position
+	d.drive = 0.0
+	d.direction = Vector3.ZERO
+	d.rein = true
+	var s := await _ride(h, 300)
+	var stop_t := -1.0
+	for i in s.size():
+		if s[i].speed < 0.05:
+			stop_t = i * DT
+			break
+	var r := _rates(s, "speed")
+	var dist := Vector2(h.global_position.x - p0.x, h.global_position.z - p0.z).length()
+	_log.append("rein from %.2f m/s: stopped after %.2f s / %.1f m, gaits %s, max decel %.2f m/s2, max jerk %.2f m/s3" % [v0, stop_t, dist, str(_gait_sequence(s)), r.x, r.y])
+	_metric("horse_stop_distance", dist, "info")
+	_check(v0 > 9.0, "not galloping before braking")
+	_check(stop_t > 0.0 and stop_t < 4.5, "did not stop in time (%.2f s)" % stop_t)
+	_check(stop_t > 1.2, "stopped like a car (%.2f s)" % stop_t)
+	_check(r.x <= h.controller.rein_decel + 0.05, "deceleration too high: %.2f" % r.x)
+	_check(r.y <= h.controller.max_jerk + 0.5, "jerk too high: %.2f" % r.y)
+	_check(_gait_sequence(s) == [3, 2, 1, 0], "gaits not stepped down in order: %s" % str(_gait_sequence(s)))
+
+
+func test_horse_cannot_instant_turn_at_speed() -> void:
+	var w := await _setup_horse("flat")
+	var h: Horse = w.horse
+	var d: ScriptedHorseDriver = w.driver
+	d.direction = Vector3.FORWARD
+	d.drive = 1.0
+	for i in 3:
+		d.kick()
+	await _ticks(480)
+	var yaw0 := h.controller.yaw
+	d.direction = Vector3.RIGHT   # a hard 90 deg request at a gallop
+	var s := await _ride(h, 480)
+	var over_limit := 0.0
+	for e in s:
+		over_limit = maxf(over_limit, absf(e.yaw_rate) - h.controller.max_turn_rate(e.speed))
+	var after_quarter := absf(wrapf((s[14].yaw as float) - yaw0, -PI, PI))
+	var done_t := -1.0
+	for i in s.size():
+		if absf(wrapf((s[i].yaw as float) - (-PI * 0.5), -PI, PI)) < 0.1:
+			done_t = i * DT
+			break
+	var min_speed := 99.0
+	for e in s:
+		min_speed = minf(min_speed, e.speed)
+	var r := _rates(s, "yaw_rate")
+	_log.append("90 deg request at %.1f m/s: %.1f deg after 0.25 s, turn done after %.2f s, slowed to %.1f m/s, max yaw accel %.2f rad/s2" % [s[0].speed, rad_to_deg(after_quarter), done_t, min_speed, r.x])
+	_check(after_quarter < 0.12, "turned %.2f rad in 0.25 s at a gallop" % after_quarter)
+	_check(over_limit < 1e-3, "turn rate above the radius limit by %.3f" % over_limit)
+	_check(r.x <= h.controller.max_yaw_accel + 0.01, "turn rate jumps: %.2f rad/s2" % r.x)
+	_check(done_t > 1.0 and done_t < 7.5, "turn finished after %.2f s" % done_t)
+	_check(min_speed < 7.0, "kept a full gallop through a hard turn (%.1f m/s)" % min_speed)
+
+
+func test_horse_turn_radius_increases_with_speed() -> void:
+	var w := await _setup_horse("flat")
+	var h: Horse = w.horse
+	var d: ScriptedHorseDriver = w.driver
+	var radii: Array[float] = []
+	for v in [1.7, 4.2, 9.5]:
+		var sp: Array = w.points.flat
+		h.teleport(sp[0], 0.0)
+		d.hold_speed = v
+		d.turn = 0.0
+		await _ticks(300)
+		d.turn = 0.4
+		await _ticks(180)
+		var s := await _ride(h, 180)
+		var arc := 0.0
+		for i in range(1, s.size()):
+			arc += ((s[i].pos as Vector3) - (s[i - 1].pos as Vector3)).length()
+		var turned := absf(wrapf((s[-1].yaw as float) - (s[0].yaw as float), -PI, PI))
+		radii.append(arc / maxf(turned, 1e-4))
+	_log.append("measured turn radius at 1.7 / 4.2 / 9.5 m/s: %.1f / %.1f / %.1f m" % [radii[0], radii[1], radii[2]])
+	_metric("horse_radius_gallop", radii[2], "info")
+	_check(radii[0] < radii[1] and radii[1] < radii[2], "radius does not grow with speed")
+	_check(radii[2] > 12.0, "galloping turn too tight: %.1f m" % radii[2])
+	_check(radii[0] < 4.0, "walking turn too wide: %.1f m" % radii[0])
+
+
+func test_horse_feet_do_not_slide() -> void:
+	var w := await _setup_horse("flat")
+	var h: Horse = w.horse
+	var d: ScriptedHorseDriver = w.driver
+	d.direction = Vector3.ZERO
+	var plan := func(i: int) -> void:
+		match i:
+			0:
+				d.hold_speed = 1.7
+			180:
+				d.hold_speed = 4.2
+			420:
+				d.hold_speed = 9.5
+			600:
+				d.turn = 0.35
+			780:
+				d.turn = -0.35
+			960:
+				d.turn = 0.0
+				d.hold_speed = 0.0
+	await _ride(h, 1140, plan)
+	var fs := h.foot_stats
+	_log.append("walk/trot/gallop/turns/stop: foot slip max %.4f m/s, mean %.5f m/s over %d contacts; IK reach error max %.3f m; %d steps" % [fs.slip_max, fs.slip_sum / maxf(1.0, fs.contact_ticks), fs.contact_ticks, fs.reach_max, h.gait_planner.step_count])
+	_metric("horse_foot_slip_max", fs.slip_max, "lower")
+	_check(fs.slip_max < 0.05, "planted hoof slides: %.3f m/s" % fs.slip_max)
+	_check(fs.reach_max < 0.03, "legs cannot reach the planned feet: %.3f m" % fs.reach_max)
+	_check(h.gait_planner.step_count > 100, "too few steps: %d" % h.gait_planner.step_count)
+
+
+func test_horse_feet_follow_uneven_terrain() -> void:
+	var w := await _setup_horse("course")
+	var h: Horse = w.horse
+	var d: ScriptedHorseDriver = w.driver
+	d.hold_speed = 4.2
+	var worst := 0.0
+	var samples := 0
+	var max_y := 0.0
+	# Across the ramp, the bumps and the 0.8 m step down (the course ends in a drop at z -60).
+	for i in 1000:
+		await _ticks(1)
+		max_y = maxf(max_y, h.global_position.y)
+		for k in 4:
+			if not h.gait_planner.legs[k].is_planted():
+				continue
+			var sole := h.sole_world(k)
+			var g := _ground_at(sole + Vector3.UP * 0.3)
+			if g.is_empty():
+				continue
+			# The probe from 10 m above can land on a rock edge the hoof sits beside: only
+			# compare where the ground is within reach.
+			var err := absf(sole.y - (g.position as Vector3).y)
+			if err < 0.6:
+				worst = maxf(worst, err)
+				samples += 1
+	var fs := h.foot_stats
+	_log.append("course (ramp 10 deg, bumps, 0.8 m step) at a trot: reached z %.1f, top %.2f m; planted hoof vs ground max %.3f m (%d samples); IK reach %.3f m; slip max %.4f m/s" % [h.global_position.z, max_y, worst, samples, fs.reach_max, fs.slip_max])
+	_metric("horse_terrain_foot_error", worst, "lower")
+	_check(h.global_position.z < -48.5, "did not cross the course (z %.1f)" % h.global_position.z)
+	_check(max_y > 3.0, "never climbed the ramp")
+	_check(worst < 0.05, "planted hooves not on the ground: %.3f m" % worst)
+	_check(fs.reach_max < 0.05, "legs cannot reach the terrain: %.3f m" % fs.reach_max)
+	_check(fs.slip_max < 0.05, "hooves slide on the course: %.3f m/s" % fs.slip_max)
+
+
+func test_horse_body_lean_is_continuous() -> void:
+	var w := await _setup_horse("flat")
+	var h: Horse = w.horse
+	var d: ScriptedHorseDriver = w.driver
+	var plan := func(i: int) -> void:
+		match i:
+			0:
+				d.hold_speed = 9.5
+			300:
+				d.turn = 0.5
+			420:
+				d.turn = -0.5
+			540:
+				d.turn = 0.0
+				d.hold_speed = 0.0
+				d.rein = true
+	var s := await _ride(h, 780, plan)
+	var roll := _rates(s, "roll", 3)
+	var pitch := _rates(s, "pitch", 3)
+	var height := _rates(s, "height", 3)
+	var into := 0
+	var turning := 0
+	for e in s:
+		if absf(e.yaw_rate) > 0.2:
+			turning += 1
+			if e.roll * e.yaw_rate > 0.0:
+				into += 1
+	_log.append("slalom at a gallop + rein stop: roll rate max %.2f rad/s (d2 %.1f), pitch rate %.2f (d2 %.1f), height rate %.2f m/s (d2 %.1f), hard height clamps %d; leaning into the turn %d/%d ticks" % [roll.x, roll.y, pitch.x, pitch.y, height.x, height.y, h.height_clamps, into, turning])
+	_metric("horse_roll_d2", roll.y, "lower")
+	_metric("horse_height_d2", height.y, "lower")
+	_check(roll.x < 1.0 and pitch.x < 1.5, "body tilts too fast")
+	_check(roll.y < 30.0 and pitch.y < 40.0 and height.y < 40.0, "body pose pops (second differences too large)")
+	_check(turning > 30 and into > turning * 0.8, "does not lean into turns (%d/%d)" % [into, turning])
+
+
+func test_mounted_player_has_no_saddle_drift() -> void:
+	var w := await _setup_horse("flat", true)
+	var h: Horse = w.horse
+	var p: PlayerCharacter = w.player
+	_check(await _mount(p), "could not mount")
+	p.actions.move = Vector2(0, 1)
+	var worst := 0.0
+	var top := 0.0
+	for i in 900:
+		match i:
+			30, 60, 90:
+				p.actions.press_jump()
+			400:
+				p.actions.move = Vector2(0.7, 0.7)
+			560:
+				p.actions.move = Vector2(-0.7, 0.7)
+			720:
+				p.actions.move = Vector2.ZERO
+				p.actions.grab_held = true
+		await _ticks(1)
+		var seat := h.saddle_transform()
+		worst = maxf(worst, p.global_position.distance_to(seat.origin))
+		top = maxf(top, h.get_speed())
+	_log.append("ride 15 s (gallop, turns, rein stop): rider vs saddle max %.6f m; top speed %.1f m/s" % [worst, top])
+	_metric("horse_saddle_drift", worst, "lower")
+	_check(worst < 1e-4, "rider drifts in the saddle: %.5f m" % worst)
+	_check(p.is_riding(), "fell off")
+	_check(top > 9.0, "never galloped")
+
+
+func test_mount_and_dismount_are_stable() -> void:
+	var w := await _setup_horse("flat", true)
+	var h: Horse = w.horse
+	var p: PlayerCharacter = w.player
+	var states := []
+	var m := {"max_step": 0.0, "prev": p.global_position, "where": ""}
+	var track := func() -> void:
+		var st := p.get_display_state()
+		if states.is_empty() or states[-1] != st:
+			states.append(st)
+		var step: float = p.global_position.distance_to(m.prev)
+		if step > m.max_step:
+			m.max_step = step
+			m.where = st
+		m.prev = p.global_position
+	await _ticks(10)
+	track.call()
+	p.actions.press_interact()
+	for i in 60:
+		await _ticks(1)
+		track.call()
+	var mounted := p.is_riding() and p.riding.phase == PlayerRiding.Phase.RIDING
+	# Walk a bit, stop, get off.
+	p.actions.move = Vector2(0, 1)
+	for i in 180:
+		await _ticks(1)
+		track.call()
+	p.actions.move = Vector2.ZERO
+	p.actions.grab_held = true
+	for i in 120:
+		await _ticks(1)
+		track.call()
+	p.actions.grab_held = false
+	p.actions.press_interact()
+	for i in 90:
+		await _ticks(1)
+		track.call()
+	var off := not p.is_riding()
+	var max_step: float = m.max_step
+	var hd := Vector2(p.global_position.x - h.global_position.x, p.global_position.z - h.global_position.z).length()
+	var g := _ground_at(p.global_position)
+	var above: float = p.global_position.y - (g.position as Vector3).y if not g.is_empty() else 99.0
+	_log.append("states %s; max per-tick move %.3f m (%s); on foot %.2f m from the horse, %.2f m above ground, on floor %s" % [" -> ".join(states), max_step, m.where, hd, above, str(p.is_on_floor())])
+	_check(mounted, "did not reach RIDE")
+	_check(off, "did not get off")
+	_check(states.has("APPROACH HORSE") and states.has("MOUNT") and states.has("RIDE") and states.has("DISMOUNT"), "missing states: %s" % str(states))
+	_check(max_step < 0.12, "teleport-like jump of %.3f m in one tick" % max_step)
+	_check(hd > 0.8, "player ends inside the horse (%.2f m)" % hd)
+	_check(above < 1.1 and p.is_on_floor(), "player not standing on the ground after dismount")
+	# Riding again works (state machine closed the loop).
+	_check(await _mount(p), "could not mount again")
+
+
+func test_dismount_refused_without_space() -> void:
+	var w := await _setup_horse("flat", true)
+	var h: Horse = w.horse
+	var p: PlayerCharacter = w.player
+	_check(await _mount(p), "could not mount")
+	# Rocks close on every side: no free, flat spot to step off to.
+	var c := h.global_position
+	var mat := StandardMaterial3D.new()
+	TerrainKit.box(_world, c + Vector3(-1.6, 1.0, 0), Vector3(1.3, 2.0, 3.0), mat)
+	TerrainKit.box(_world, c + Vector3(1.6, 1.0, 0), Vector3(1.3, 2.0, 3.0), mat)
+	TerrainKit.box(_world, c + Vector3(0, 1.0, -2.4), Vector3(4.5, 2.0, 1.0), mat)
+	TerrainKit.box(_world, c + Vector3(0, 1.0, 2.4), Vector3(4.5, 2.0, 1.0), mat)
+	await _ticks(10)
+	p.actions.press_interact()
+	await _ticks(10)
+	_log.append("boxed in: still riding %s, reason '%s'" % [str(p.riding.phase == PlayerRiding.Phase.RIDING), p.riding.last_refusal])
+	_check(p.is_riding() and p.riding.phase == PlayerRiding.Phase.RIDING, "dismounted into a rock")
+	_check(p.riding.last_refusal != "", "no reason given")
+
+
+func test_horse_avoids_small_obstacle() -> void:
+	var w := await _setup_horse("rocks")
+	var h: Horse = w.horse
+	var d: ScriptedHorseDriver = w.driver
+	d.direction = Vector3.FORWARD
+	d.hold_speed = 4.2
+	var s := await _ride(h, 900)
+	var hits := 0
+	var max_dev := 0.0
+	var max_avoid := 0.0
+	for e in s:
+		hits += 1 if e.collided else 0
+		max_dev = maxf(max_dev, absf((e.pos as Vector3).x))
+	var r := _rates(s, "yaw")
+	_log.append("rock field at a trot: reached z %.1f, %d ticks touching a rock, max sideways %.2f m, max turn rate %.2f rad/s (d2 %.1f)" % [h.global_position.z, hits, max_dev, r.x, r.y])
+	_metric("horse_rock_contacts", hits, "lower")
+	_check(h.global_position.z < -42.0, "did not get through the rocks (z %.1f)" % h.global_position.z)
+	_check(hits == 0, "ran into rocks (%d ticks)" % hits)
+	_check(max_dev < 4.5, "wandered off the line (%.1f m)" % max_dev)
+
+
+## Horse-relative steering (no stick direction, no turn): after going round a rock the
+## horse comes back to the heading it was given instead of following its own nose.
+func test_horse_keeps_heading_after_avoiding() -> void:
+	var w := await _setup_horse("rocks")
+	var h: Horse = w.horse
+	var d: ScriptedHorseDriver = w.driver
+	d.drive = 1.0
+	d.hold_speed = 4.2
+	var s := await _ride(h, 900)
+	var hits := 0
+	var max_yaw := 0.0
+	for e in s:
+		hits += 1 if e.collided else 0
+		max_yaw = maxf(max_yaw, absf(e.yaw))
+	_log.append("rocks, horse-relative steering: reached z %.1f, final heading %.1f deg (max %.0f deg while going round), %d contacts" % [h.global_position.z, rad_to_deg(h.controller.yaw), rad_to_deg(max_yaw), hits])
+	_check(h.global_position.z < -42.0, "did not get through (z %.1f)" % h.global_position.z)
+	_check(absf(h.controller.yaw) < 0.1, "lost its heading (%.2f rad)" % h.controller.yaw)
+	_check(hits == 0, "ran into rocks")
+
+
+func test_horse_threads_narrow_passage() -> void:
+	var w := await _setup_horse("passage")
+	var h: Horse = w.horse
+	var d: ScriptedHorseDriver = w.driver
+	d.direction = Vector3.FORWARD
+	d.hold_speed = 4.2
+	var s := await _ride(h, 540)
+	var hits := 0
+	for e in s:
+		hits += 1 if e.collided else 0
+	_log.append("3 m gap at a trot: reached z %.1f, %d ticks touching a wall" % [h.global_position.z, hits])
+	_check(h.global_position.z < -22.0, "did not get through the passage (z %.1f)" % h.global_position.z)
+	_check(hits == 0, "scraped the walls (%d ticks)" % hits)
+
+
+func test_horse_steps_over_low_obstacle() -> void:
+	var w := await _setup_horse("log")
+	var h: Horse = w.horse
+	var d: ScriptedHorseDriver = w.driver
+	d.direction = Vector3.FORWARD
+	d.hold_speed = 4.2
+	var s := await _ride(h, 360)
+	var max_dev := 0.0
+	var saw_step := false
+	for e in s:
+		max_dev = maxf(max_dev, absf((e.pos as Vector3).x - 18.0))
+		saw_step = saw_step or e.obstacle == "step"
+	var fs := h.foot_stats
+	_log.append("0.3 m log at a trot: reached z %.1f, max sideways %.2f m, classified as step %s; IK reach %.3f m, slip %.4f m/s" % [h.global_position.z, max_dev, str(saw_step), fs.reach_max, fs.slip_max])
+	_check(h.global_position.z < -8.0, "did not cross the log")
+	_check(saw_step, "log not recognised as something to step over")
+	_check(max_dev < 0.5, "went around the log instead of over it (%.2f m)" % max_dev)
+	_check(fs.reach_max < 0.05 and fs.slip_max < 0.05, "feet failed on the log")
+
+
+func test_horse_stops_before_large_obstacle() -> void:
+	var w := await _setup_horse("wall")
+	var h: Horse = w.horse
+	var d: ScriptedHorseDriver = w.driver
+	d.direction = Vector3.FORWARD
+	d.drive = 1.0
+	for i in 3:
+		d.kick()
+	var s := await _ride(h, 720)
+	var hits := 0
+	var near_speed := 0.0
+	var top := 0.0
+	var min_gap := 99.0
+	for e in s:
+		hits += 1 if e.collided else 0
+		top = maxf(top, e.speed)
+		var gap: float = (e.pos as Vector3).z - (-59.5) - 1.15
+		min_gap = minf(min_gap, gap)
+		if gap < 3.0:
+			near_speed = maxf(near_speed, e.speed)
+	_log.append("gallop at a 5 m wall, rider keeps pushing: top %.1f m/s, max speed within 3 m %.2f m/s, closest nose gap %.2f m, final speed %.2f, %d contact ticks" % [top, near_speed, min_gap, h.get_speed(), hits])
+	_check(top > 8.0, "never galloped")
+	_check(hits == 0, "ran into the wall")
+	_check(min_gap > 0.2, "nose in the wall (gap %.2f m)" % min_gap)
+	_check(near_speed < 4.0, "still fast next to the wall: %.1f m/s" % near_speed)
+	_check(h.get_speed() < 0.3, "not standing at the wall")
+
+
+func test_horse_stops_at_cliff_edge() -> void:
+	var w := await _setup_horse("cliff")
+	var h: Horse = w.horse
+	var d: ScriptedHorseDriver = w.driver
+	d.direction = Vector3.FORWARD
+	d.drive = 1.0
+	for i in 3:
+		d.kick()
+	var s := await _ride(h, 600)
+	var min_y := 99.0
+	var top := 0.0
+	for e in s:
+		min_y = minf(min_y, (e.pos as Vector3).y)
+		top = maxf(top, e.speed)
+	var edge := -72.7
+	_log.append("galloping at a 4 m drop: top %.1f m/s, stopped %.2f m before the edge, lowest %.2f m, final speed %.2f" % [top, h.global_position.z - edge, min_y, h.get_speed()])
+	_check(min_y > 3.5, "went over the edge")
+	_check(h.global_position.z - edge > 1.2, "stopped with the front hooves over the edge")
+	_check(h.get_speed() < 0.3, "not standing at the edge")
+	_check(top > 6.0, "never got going")
+
+
+## Same scripted ride as separate processes at 30..240 render FPS (physics 60 Hz).
+func test_horse_simulation_independent_of_render_fps() -> void:
+	var exe := OS.get_executable_path()
+	var results := {}
+	var rates := [30, 60, 90, 120, 144, 240]
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/horse_fps_%d.json" % fps)
+		var output := []
+		var code := OS.execute(exe, ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "20000", "res://tests/fps_scenario.tscn", "--", "--scenario=horse", "--out=" + out_path], output, true)
+		if code != 0 or not FileAccess.file_exists(out_path):
+			_check(false, "horse scenario at %d fps failed (code %d)" % [fps, code])
+			return
+		results[fps] = JSON.parse_string(FileAccess.get_file_as_string(out_path))
+	var ref: Dictionary = results[60]
+	var max_diff := 0.0
+	var frames := []
+	for fps in rates:
+		var r: Dictionary = results[fps]
+		frames.append(int(r.frames))
+		for k in ref:
+			if k == "frames":
+				continue
+			if ref[k] is Array:
+				for j in (ref[k] as Array).size():
+					max_diff = maxf(max_diff, absf(float(r[k][j]) - float(ref[k][j])))
+			else:
+				max_diff = maxf(max_diff, absf(float(r[k]) - float(ref[k])))
+	_log.append("mount, ride, turn, rein, dismount at render %s fps: frames %s, max state difference %.8f (steps %d)" % [str(rates), str(frames), max_diff, int(ref.steps)])
+	_metric("horse_fps_max_diff", max_diff, "lower")
+	_check(max_diff < 1e-4, "horse simulation depends on render fps (diff %.6f)" % max_diff)
+	_check(frames[-1] > frames[0] * 6, "render rate did not actually differ")
+
+
+func test_horse_camera_can_look_away_from_travel_direction() -> void:
+	var w := await _setup_horse("flat", true, true)
+	var h: Horse = w.horse
+	var p: PlayerCharacter = w.player
+	var cam: PlayerCamera = w.camera
+	_check(await _mount(p), "could not mount")
+	p.actions.view_basis = cam.global_basis
+	p.actions.move = Vector2(0, 1)
+	p.actions.press_jump()
+	await _ticks(240)
+	p.actions.move = Vector2(0, 1)
+	var yaw0 := h.controller.yaw
+	# Let go of the stick and look 90 degrees to the side.
+	p.actions.move = Vector2.ZERO
+	var cam_yaw0 := cam.yaw
+	p.actions.look_delta = Vector2(PI * 0.5, 0.0)
+	await _ticks(30)
+	p.actions.view_basis = cam.global_basis
+	await _ticks(150)
+	var drift_free := absf(wrapf(h.controller.yaw - yaw0, -PI, PI))
+	var cam_turn := absf(wrapf(cam.yaw - cam_yaw0, -PI, PI))
+	var v_free := h.get_speed()
+	# Horse-relative steering while still looking sideways (prep for riding + aiming).
+	p.riding.steer_relative = true
+	p.actions.move = Vector2(0, 1)
+	await _ticks(180)
+	var drift_rel := absf(wrapf(h.controller.yaw - yaw0, -PI, PI))
+	var cam_vs_travel := absf(wrapf(cam.yaw - h.controller.yaw, -PI, PI))
+	_log.append("camera turned %.0f deg away; horse heading change %.1f deg (no stick), %.1f deg (horse-relative stick); speed %.1f m/s; camera vs travel %.0f deg" % [rad_to_deg(cam_turn), rad_to_deg(drift_free), rad_to_deg(drift_rel), v_free, rad_to_deg(cam_vs_travel)])
+	_check(cam_turn > 1.4, "camera did not turn")
+	_check(drift_free < 0.03, "camera steered the horse (%.3f rad)" % drift_free)
+	_check(drift_rel < 0.03, "horse-relative stick followed the camera (%.3f rad)" % drift_rel)
+	_check(v_free > 3.0, "horse stopped when the camera turned")
+	_check(cam_vs_travel > 1.3, "camera snapped back to the travel direction")
+
+
+func test_horse_comes_when_called() -> void:
+	var w := await _setup_horse("rocks", true)
+	var h: Horse = w.horse
+	var p: PlayerCharacter = w.player
+	# The horse waits on the far side of the rock field.
+	h.teleport(Vector3(1, 0, -46), PI)
+	await _ticks(5)
+	p.actions.press_call()
+	var s := await _ride(h, 1500)
+	var hits := 0
+	for e in s:
+		hits += 1 if e.collided else 0
+	var dist := Vector2(h.global_position.x - p.global_position.x, h.global_position.z - p.global_position.z).length()
+	_log.append("called from 56 m through the rocks: arrived %.2f m from the player, speed %.2f, command %s, %d rock contacts" % [dist, h.get_speed(), Horse.Command.keys()[h.command], hits])
+	_check(dist < 4.5 and dist > 1.5, "did not stop next to the player (%.1f m)" % dist)
+	_check(h.get_speed() < 0.2, "still moving")
+	_check(hits == 0, "ran into rocks")
+
+
+func test_horse_follows_player() -> void:
+	var w := await _setup_horse("flat", true)
+	var h: Horse = w.horse
+	var p: PlayerCharacter = w.player
+	h.command_follow(p)
+	p.actions.move = Vector2(0, 1)
+	var max_d := 0.0
+	var min_d := 99.0
+	var run_end := 0.0
+	for i in 600:
+		await _ticks(1)
+		var dd := Vector2(h.global_position.x - p.global_position.x, h.global_position.z - p.global_position.z).length()
+		if i > 240:
+			max_d = maxf(max_d, dd)
+		if i > 60:
+			min_d = minf(min_d, dd)
+		run_end = dd
+	p.actions.move = Vector2.ZERO
+	await _ticks(300)
+	var end_d := Vector2(h.global_position.x - p.global_position.x, h.global_position.z - p.global_position.z).length()
+	_log.append("follow a running player (5.5 m/s) 10 s: distance %.1f..%.1f m (%.1f m at the end of the run), after the player stops %.1f m, speed %.2f" % [min_d, max_d, run_end, end_d, h.get_speed()])
+	_check(max_d < 16.0, "fell behind (%.1f m)" % max_d)
+	_check(run_end < 10.0, "did not catch up (%.1f m)" % run_end)
+	_check(min_d > 1.5, "ran over the player (%.1f m)" % min_d)
+	_check(h.get_speed() < 0.2 and end_d < 8.0, "did not settle near the player")
+
+
+func test_horse_cost_stays_within_budget() -> void:
+	var w := await _setup_horse("course", true, true)
+	var h: Horse = w.horse
+	var p: PlayerCharacter = w.player
+	_check(await _mount(p), "could not mount")
+	p.actions.view_basis = Basis.IDENTITY
+	p.actions.move = Vector2(0, 1)
+	p.actions.press_jump()
+	await _ticks(60)
+	Perf.take()
+	await _ticks(600)
+	var m := Perf.take()
+	var u: Dictionary = m.usec
+	var q: Dictionary = m.queries
+	var per := func(k: StringName) -> float: return float(u.get(k, 0)) / 600.0
+	var horse_total: float = per.call(&"horse")
+	var rays := float(q.get(&"horse_rays", 0)) / 600.0
+	_log.append("ridden on the course: horse %.1f us/tick (controller %.1f of which obstacle probes %.1f, step planner %.1f, IK+body %.1f), mount %.1f, camera %.1f us/frame; horse queries %.1f/tick" % [horse_total, per.call(&"horse_controller"), per.call(&"horse_probes"), per.call(&"horse_steps"), per.call(&"horse_ik"), per.call(&"mount"), per.call(&"camera"), rays])
+	_metric("horse_probes_us", per.call(&"horse_probes"), "lower")
+	_metric("horse_us", horse_total, "lower")
+	_metric("horse_controller_us", per.call(&"horse_controller"), "lower")
+	_metric("horse_steps_us", per.call(&"horse_steps"), "lower")
+	_metric("horse_ik_us", per.call(&"horse_ik"), "lower")
+	_metric("horse_rays_per_tick", rays, "lower")
+	_check(horse_total < 400.0, "horse logic too expensive: %.0f us/tick" % horse_total)
+	_check(rays < 14.0, "too many horse rays: %.1f/tick" % rays)
+
+
+## All tests from Milestone 1 and stages 2-3 ran in this process before the horse tests.
+func existing_colossus_tests_still_pass() -> void:
+	var ran := 0
+	var failed := PackedStringArray()
+	for n in _legacy_results:
+		ran += 1
+		if not _legacy_results[n]:
+			failed.append(n)
+	_log.append("%d earlier tests ran in this run, %d failed %s" % [ran, failed.size(), str(failed) if failed.size() > 0 else ""])
+	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))
