@@ -199,6 +199,9 @@ func _physics_process(delta: float) -> void:
 	else:
 		_ai_intent()
 
+	controller.danger_zones.clear()
+	for src in get_tree().get_nodes_in_group(&"danger_sources"):
+		controller.danger_zones.append_array(src.get_danger_zones())
 	var tc := Perf.begin()
 	controller.update(intent, delta, space, _exclude)
 	Perf.end(&"horse_controller", tc)
@@ -410,7 +413,7 @@ func debug_text() -> String:
 	var rider: String = String(current_rider.name) if is_instance_valid(current_rider) else "none"
 	lines.append("Agro: %s (level %d)  rider %s  command %s" % [HorseController.GAIT_NAMES[c.gait], c.gait_level, rider, Command.keys()[command]])
 	lines.append("speed desired %.2f actual %.2f m/s  accel %.2f m/s2 | turn %.2f rad/s (max %.2f)  radius %s" % [c.desired_speed, c.speed, c.speed_rate, c.yaw_rate, c.max_turn_rate(c.speed), "%.1f m" % c.turn_radius() if c.turn_radius() < 1e5 else "-"])
-	lines.append("direction desired %.0f deg  actual %.0f deg  avoid %+.0f deg  obstacle %s %s" % [rad_to_deg(atan2(-c.desired_dir.x, -c.desired_dir.z)), rad_to_deg(c.yaw), rad_to_deg(c.avoid_angle), c.obstacle, ("%.1f m" % c.obstacle_distance) if c.obstacle_distance < 1e5 else ""])
+	lines.append("danger %s  direction desired %.0f deg  actual %.0f deg  avoid %+.0f deg  obstacle %s %s" % [c.danger_response, rad_to_deg(atan2(-c.desired_dir.x, -c.desired_dir.z)), rad_to_deg(c.yaw), rad_to_deg(c.avoid_angle), c.obstacle, ("%.1f m" % c.obstacle_distance) if c.obstacle_distance < 1e5 else ""])
 	var feet := PackedStringArray()
 	for leg in gait_planner.legs:
 		feet.append("%s %s slip %.3f" % [String(leg.name).substr(0, 1) + String(leg.name).split("_")[1].substr(0, 1), "ST" if leg.is_planted() else "SW%.0f" % (leg.swing_t * 100.0), leg.slip_speed])

@@ -70,6 +70,13 @@ var speed_limit := INF
 ## Distance left before the horse must be standing (wall / edge ahead), INF if none.
 var stop_distance := INF
 var probe_hits: Array = []       ## [from, to, hit?] for the debug overlay
+## Danger zones set by the horse each tick: [[centre, radius, seconds_to_impact], ...]
+## (e.g. a colossus foot about to come down).
+var danger_zones: Array = []
+## Extra distance the horse keeps from a danger zone.
+var danger_margin := 2.5
+## none / flee (inside a zone: get out) / refuse (the way leads into one: stop short).
+var danger_response := "none"
 var rays_this_tick := 0
 
 var _avoid_v := 0.0
@@ -157,27 +164,43 @@ func update(intent: HorseInputIntent, delta: float, space: PhysicsDirectSpaceSta
 			_held_dir = fwd
 		desired_dir = _held_dir
 
-	# 3) Local avoidance: small corrections and speed limits, never a path search.
+	# 3) Danger first (an animal does not walk under a falling foot), then local avoidance:
+	# small corrections and speed limits, never a path search.
+	var flee_speed := _danger()
 	var tp := Perf.begin()
-	_probe(space, exclude, delta)
+	if desired_speed <= 0.0 and speed < 0.05 and flee_speed <= 0.0 and absf(yaw_rate) < 0.01:
+		# Standing still and wanting nothing: nothing to look out for (saves every query).
+		probe_hits.clear()
+		speed_limit = INF
+		stop_distance = INF
+		obstacle = "none"
+		obstacle_distance = INF
+	else:
+		_probe(space, exclude, delta)
 	Perf.end(&"horse_probes", tp)
 	steer_dir = desired_dir.rotated(Vector3.UP, avoid_angle)
 	desired_speed = minf(desired_speed, speed_limit)
+	if flee_speed > 0.0:
+		desired_speed = maxf(desired_speed, minf(flee_speed, speed_limit + 2.0))
 
 	# 4) Steering within the turn radius the speed allows; sharp requests slow it down.
 	var err := fwd.signed_angle_to(steer_dir, Vector3.UP)
+	var spooked := danger_response == "flee"
 	if absf(err) > 0.6 and speed > GAIT_SPEED[2]:
 		desired_speed = minf(desired_speed, GAIT_SPEED[2])
-	elif absf(err) > 1.2 and speed > GAIT_SPEED[1]:
+	elif absf(err) > 1.2 and speed > GAIT_SPEED[1] and not spooked:
 		desired_speed = minf(desired_speed, GAIT_SPEED[1])
-	var limit := max_turn_rate(speed)
+	# Spooked: whirl round on the spot faster than a calm horse would.
+	var limit := max_turn_rate(speed) * (2.0 if spooked else 1.0)
 	var target_rate := clampf(err * steer_gain, -limit, limit)
-	yaw_rate = move_toward(yaw_rate, target_rate, max_yaw_accel * delta)
+	yaw_rate = move_toward(yaw_rate, target_rate, max_yaw_accel * (2.0 if spooked else 1.0) * delta)
 	yaw_rate = clampf(yaw_rate, -limit, limit)
 
 	# 5) Speed with limited acceleration and jerk (mass).
 	var decel := rein_decel if rein else max_decel
-	var want_accel := clampf((desired_speed - speed) * 2.0, -decel, max_accel)
+	# Bolting from danger: an animal gets away faster than it sets off for a ride.
+	var accel_limit := max_accel * (1.7 if danger_response == "flee" else 1.0)
+	var want_accel := clampf((desired_speed - speed) * 2.0, -decel, accel_limit)
 	# Something to stop before: brake with the deceleration that stops exactly there (up to
 	# the hard limit), instead of lagging behind a speed limit.
 	if stop_distance < INF and speed > 0.05:
@@ -189,11 +212,42 @@ func update(intent: HorseInputIntent, delta: float, space: PhysicsDirectSpaceSta
 	if speed <= 0.0 and speed_rate < 0.0:
 		speed_rate = 0.0
 	# The radius limit holds for the new speed too (slowing down never widens the arc).
-	limit = max_turn_rate(speed)
+	limit = max_turn_rate(speed) * (2.0 if spooked else 1.0)
 	yaw_rate = clampf(yaw_rate, -limit, limit)
 
 	yaw = wrapf(yaw + yaw_rate * delta, -PI, PI)
 	gait = _logical_gait()
+
+
+## Reacts to danger zones. Inside one (plus margin): run out of it, away from its centre
+## (returns the speed to flee with). Heading into one: stop short of it (speed limit).
+func _danger() -> float:
+	danger_response = "none"
+	var flee := 0.0
+	for z in danger_zones:
+		var c: Vector3 = z[0]
+		var r: float = float(z[1]) + danger_margin
+		var to := Vector3(position.x - c.x, 0.0, position.z - c.z)
+		var d := to.length()
+		if d < r:
+			desired_dir = to / d if d > 0.1 else -forward()
+			_held_dir = desired_dir
+			flee = maxf(flee, GAIT_SPEED[2] + 1.0)
+			danger_response = "flee"
+			continue
+		if desired_speed <= 0.0 or danger_response == "flee":
+			continue
+		var along := desired_dir.dot(Vector3(c.x - position.x, 0.0, c.z - position.z))
+		if along <= 0.0:
+			continue
+		var closest := sqrt(maxf(0.0, d * d - along * along))
+		if closest >= r:
+			continue
+		var entry := along - sqrt(r * r - closest * closest)
+		if entry < 3.0 + speed * 1.5:
+			desired_speed = minf(desired_speed, sqrt(2.0 * plan_decel * maxf(0.0, entry - 0.5)))
+			danger_response = "refuse"
+	return flee
 
 
 ## Called by the horse after its body moved: a blocked body bleeds speed (no full gallop
