@@ -18,6 +18,7 @@ static func ensure_defaults() -> void:
 	_action(&"focus", [_key(KEY_Q), _mouse(MOUSE_BUTTON_MIDDLE), _button(JOY_BUTTON_LEFT_SHOULDER)])
 	_action(&"interact", [_key(KEY_E), _button(JOY_BUTTON_Y)])
 	_action(&"attack", [_mouse(MOUSE_BUTTON_LEFT), _key(KEY_F), _button(JOY_BUTTON_X)])
+	_action(&"sword_beam", [_key(KEY_V), _axis(JOY_AXIS_TRIGGER_LEFT, 1.0)])
 	_action(&"switch_weapon", [_key(KEY_TAB), _key(KEY_R), _button(JOY_BUTTON_DPAD_RIGHT)])
 	_action(&"encounter_reset", [_key(KEY_F5)])
 	_action(&"call_horse", [_key(KEY_C), _button(JOY_BUTTON_DPAD_DOWN)])

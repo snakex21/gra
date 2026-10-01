@@ -74,6 +74,22 @@ func try_mount() -> bool:
 	return true
 
 
+## Already in the saddle of ``h`` (arriving in a new region on horseback): no mount arc.
+func mount_now(h: Horse) -> void:
+	horse = h
+	h.set_rider(player)
+	phase = Phase.RIDING
+	_t = 1.0
+	_saved_layer = player.collision_layer
+	_saved_mask = player.collision_mask
+	player.collision_layer = 0
+	player.collision_mask = 0
+	player.state = PlayerCharacter.State.RIDE
+	player.global_position = h.saddle_transform().origin
+	player.velocity = Vector3.ZERO
+	player.reset_physics_interpolation()
+
+
 func try_dismount() -> bool:
 	if phase != Phase.RIDING:
 		return false

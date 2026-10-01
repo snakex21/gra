@@ -8,6 +8,8 @@ var camera: PlayerCamera
 var horse: Horse
 ## Boss encounter (banner, state); may be null.
 var encounter: BossEncounter
+## Banner when there is no encounter banner (the valley: hints, the end of the game).
+var message := ""
 var show_debug := true
 var show_help := true
 
@@ -35,7 +37,7 @@ func _ready() -> void:
 		"WASD / left stick: move      mouse / right stick: camera",
 		"HOLD RMB / Shift / R1: grip  (release to let go)   HOLD LMB / F / X: charge sword / draw bow, release: strike / shoot   Tab / R / D-pad right: sword <-> bow",
 		"Space / A: jump (while gripping: leap off / along surface)",
-		"Q / MMB / L1: frame the colossus",
+		"Q / MMB / L1: frame the colossus   HOLD V / L2: raise the sword to the sun (the beam leads to the next colossus)",
 		"E / Y: mount / dismount Agro   C: call Agro   riding: stick = direction, Space/A = kick, RMB/R1 = reins",
 		"F5: reset encounter   F6: ride steering camera/horse-relative   Backspace: respawn   F2: colossus mode   F3: debug + overlays   F4: locomotion A/B   F1: help",
 		"Click to capture the mouse, Esc to release",
@@ -60,7 +62,7 @@ func _process(delta: float) -> void:
 		show_help = not show_help
 	# The help never covers the debug text: it only shows below it.
 	_help.visible = show_help and (not show_debug or _label.position.y + _label.size.y < size.y - _help.size.y - 16.0)
-	_banner.text = encounter.banner if encounter else ""
+	_banner.text = encounter.banner if encounter and encounter.banner != "" else message
 	_banner.size = Vector2(size.x, 60)
 	_banner.position = Vector2(0, size.y * 0.3)
 	_help.position = Vector2(16, size.y - _help.size.y - 16)

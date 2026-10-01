@@ -99,6 +99,7 @@ var visual: PlayerVisual
 var riding: PlayerRiding
 var sword := PlayerSword.new()
 var bow := PlayerBow.new()
+var beam := SwordBeam.new()
 ## Weapon in hand (switch_weapon toggles). The bow is not used while climbing.
 var weapon := Weapon.SWORD
 ## Stats for debugging / tests.
@@ -114,6 +115,8 @@ var _moving := false
 var _exclude: Array[RID] = []
 var _shape: CapsuleShape3D
 var _support_local := Vector3.ZERO
+## Hand step of an edge wrap this tick, kept out of the body position (see _crawl).
+var _hand_jump := Vector3.ZERO
 var _support_normal := Vector3.UP
 var _support_ticks := 0
 var _slide_velocity := Vector3.ZERO
@@ -181,6 +184,12 @@ func _physics_process(delta: float) -> void:
 		Perf.end(&"bow", tb)
 	else:
 		sword.update(self, delta)
+	var tbeam := Perf.begin()
+	beam.update(self, delta)
+	Perf.end(&"beam", tbeam)
+	if beam.raise > 0.0 and state == State.GROUND:
+		# The sword held up to the sun: face where we look.
+		facing = _flat_dir(-actions.view_basis.z, facing)
 	visual.update_visual(self, delta)
 	if global_position.y < -60.0:
 		respawn()
@@ -232,6 +241,7 @@ func set_weapon(w: Weapon) -> void:
 		return
 	sword.reset()
 	bow.reset()
+	beam.reset()
 	weapon = w
 
 
@@ -280,6 +290,7 @@ func respawn() -> void:
 	balance.reset()
 	sword.reset()
 	bow.reset()
+	beam.reset()
 	health = fall.max_health
 	_since_damage = 999.0
 	_invulnerable = 0.0
@@ -297,7 +308,7 @@ func _locomotion(delta: float) -> void:
 		wish = wish.normalized()
 	if dead:
 		wish = Vector3.ZERO
-	if sword.is_busy():
+	if sword.is_busy() or beam.raise > 0.0:
 		wish *= 0.35
 	elif bow.is_aiming():
 		wish *= 0.4
@@ -641,8 +652,13 @@ func _crawl(dir: Vector3, distance: float) -> bool:
 	if next == null:
 		return false
 	# Never teleport through thin gaps.
-	if next.world_point().distance_to(grip.world_point()) > distance * 3.0 + 0.6:
+	var jump := next.world_point() - grip.world_point()
+	if jump.length() > distance * 3.0 + 0.6:
 		return false
+	if jump.length() > distance * 2.0:
+		# Wrapping round an edge moves the hands by a step at once: the body does not
+		# jump with them, it follows smoothly (like any other change of hang offset).
+		_hand_jump -= jump
 	grip = next
 	_update_climb_up(next.world_normal())
 	return true
@@ -740,11 +756,14 @@ func _place_on_grip(snap := false) -> void:
 	if snap or _hang_body != body:
 		if not snap and is_instance_valid(_hang_body):
 			# Moving onto another segment: keep the current world offset, re-expressed.
-			var world_offset := _hang_body.global_basis.orthonormalized() * _hang_local
+			var world_offset := _hang_body.global_basis.orthonormalized() * _hang_local + _hand_jump
 			_hang_local = basis.inverse() * world_offset
 		else:
 			_hang_local = basis.inverse() * hang
 		_hang_body = body
+	elif _hand_jump != Vector3.ZERO:
+		_hang_local += basis.inverse() * _hand_jump
+	_hand_jump = Vector3.ZERO
 	var target_local := basis.inverse() * hang
 	_hang_local = _hang_local.lerp(target_local, 1.0 - exp(-hang_follow_rate * get_physics_process_delta_time()))
 	global_position = grip.world_point() + basis * _hang_local

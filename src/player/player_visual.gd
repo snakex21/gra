@@ -10,6 +10,10 @@ var _arms: Array[Node3D] = []
 var _arm_raise := 0.0
 var _lean := Vector3.ZERO
 var _down := 0.0
+var _blade: MeshInstance3D
+var _flare: MeshInstance3D
+var _beam: MeshInstance3D
+var _beam_mat: StandardMaterial3D
 
 
 func _ready() -> void:
@@ -58,6 +62,48 @@ func _ready() -> void:
 		pivot.add_child(arm)
 		_arms.append(pivot)
 
+	# Sword raised to the sun: blade in the right hand, a flare at its tip, the beam.
+	var steel := StandardMaterial3D.new()
+	steel.albedo_color = Color(0.82, 0.84, 0.88)
+	steel.metallic = 0.8
+	steel.roughness = 0.25
+	_blade = MeshInstance3D.new()
+	var blade_mesh := BoxMesh.new()
+	blade_mesh.size = Vector3(0.05, 0.75, 0.02)
+	_blade.mesh = blade_mesh
+	_blade.position = Vector3(0, -0.95, 0)
+	_blade.material_override = steel
+	_blade.visible = false
+	_arms[1].add_child(_blade)
+	_beam_mat = StandardMaterial3D.new()
+	_beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_beam_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	_beam_mat.albedo_color = Color(1.0, 0.95, 0.8, 0.0)
+	_beam_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_flare = MeshInstance3D.new()
+	var flare_mesh := SphereMesh.new()
+	flare_mesh.radius = 0.25
+	flare_mesh.height = 0.5
+	_flare.mesh = flare_mesh
+	_flare.material_override = _beam_mat
+	_flare.top_level = true
+	_flare.visible = false
+	add_child(_flare)
+	_beam = MeshInstance3D.new()
+	var beam_mesh := CylinderMesh.new()
+	beam_mesh.top_radius = 0.06
+	beam_mesh.bottom_radius = 0.06
+	beam_mesh.height = 1.0
+	beam_mesh.radial_segments = 6
+	beam_mesh.rings = 1
+	_beam.mesh = beam_mesh
+	_beam.material_override = _beam_mat
+	_beam.top_level = true
+	_beam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_beam.visible = false
+	add_child(_beam)
+
 
 func update_visual(player: PlayerCharacter, delta: float) -> void:
 	var target: Basis
@@ -99,6 +145,10 @@ func update_visual(player: PlayerCharacter, delta: float) -> void:
 	_arm_raise = lerpf(_arm_raise, 1.0 if climbing else 0.0, 1.0 - exp(-12.0 * delta))
 	for arm in _arms:
 		arm.rotation.x = PI * 0.95 * _arm_raise
+	var raise := player.beam.raise
+	if raise > 0.0 and not climbing:
+		_arms[1].rotation.x = PI * 0.95 * raise
+	_update_beam(player)
 
 	var b := Basis(_rot)
 	if _lean.length() > 0.001:
@@ -110,6 +160,27 @@ func update_visual(player: PlayerCharacter, delta: float) -> void:
 		b = Basis(b.x, -PI * 0.5 * _down) * b
 		pos += Vector3.DOWN * 0.6 * _down
 	transform = Transform3D(b, pos)
+
+
+func _update_beam(player: PlayerCharacter) -> void:
+	var b := player.beam
+	_blade.visible = b.raise > 0.0
+	var shine := b.raise >= 1.0 and b.lit
+	_flare.visible = shine
+	_beam.visible = shine and b.focus > 0.02
+	if not shine:
+		return
+	var from := SwordBeam.tip(player)
+	_flare.global_transform = Transform3D(Basis.from_scale(Vector3.ONE * (0.6 + 1.4 * b.focus)), from)
+	_beam_mat.albedo_color.a = 0.25 + 0.6 * b.focus
+	if _beam.visible:
+		var length := 6.0 + 120.0 * b.focus * b.focus
+		var radius := lerpf(0.6, 1.0, b.focus)
+		var y := b.direction
+		var x := y.cross(Vector3.UP if absf(y.y) < 0.95 else Vector3.RIGHT).normalized()
+		var z := x.cross(y).normalized()
+		var basis := Basis(x * radius, y * length, z * radius)
+		_beam.global_transform = Transform3D(basis, from + y * length * 0.5)
 
 
 static func _look_basis(forward: Vector3, up: Vector3) -> Basis:

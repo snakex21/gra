@@ -22,6 +22,8 @@ var focus_held := false
 ## Weapon use: sword (hold to charge, release to strike) or bow (hold to draw, release
 ## to shoot).
 var attack_held := false
+## Hold to raise the sword to the sun (the beam that leads to the next colossus).
+var beam_held := false
 ## Where the aim ray starts (camera / controller position); INF = from the player's eyes.
 ## The aim direction is -view_basis.z.
 var aim_origin := Vector3.INF
@@ -83,6 +85,7 @@ func clear() -> void:
 	grab_held = false
 	focus_held = false
 	attack_held = false
+	beam_held = false
 	_jump_pressed = false
 	_interact_pressed = false
 	_call_pressed = false
