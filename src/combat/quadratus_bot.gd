@@ -460,18 +460,26 @@ func _on_back() -> void:
 			a.move = Vector2.ZERO if _hold_on() else Vector2(0, 1)
 			_look(quadratus.get_focus_point() - player.global_position)
 			return
-		# On the fur of the back: crawl (gripping) straight to the weak point.
+		# On the fur of the back: crawl (gripping) to the weak point; to the crown along the
+		# fur beside the stone saddle, then stand up on the front of the back.
 		if not _hold_on():
-			_look(_target_wp().world_point() - player.grip.world_point())
-			a.move = Vector2(0, 1)
-			if _target_wp() == quadratus.crown and bone == &"body" and quadratus.region_of(player) == &"back":
-				# The stone saddle and the neck are walked: stand up near the front, but only
-				# on a level back (kneeling, it is tilted: wait gripping until it stands).
-				var local := (player.grip.body as BodySegment).target_transform.affine_inverse() * player.grip.world_point()
-				if local.z < 2.0:
+			var goal := _target_wp().world_point()
+			if _target_wp() == quadratus.crown and bone == &"body":
+				var body_xf := (player.grip.body as BodySegment).target_transform
+				var local := body_xf.affine_inverse() * player.grip.world_point()
+				var side := signf(local.x) if absf(local.x) > 0.3 else 1.0
+				if local.z > 1.2:
+					goal = body_xf * Vector3(side * 2.5, 2.2, 0.6)
+				elif local.z > -3.5:
+					goal = body_xf * Vector3(side * 0.8, 2.2, -4.2)
+				else:
+					# Level back: stand up and walk the neck (kneeling it is tilted: wait).
 					a.move = Vector2.ZERO
 					var level := absf(quadratus.loco.body_roll) < 0.12 and absf(quadratus.loco.body_pitch) < 0.12
 					a.grab_held = not level
+					return
+			_look(goal - player.grip.world_point())
+			a.move = Vector2(0, 1)
 		return
 	var wp := _target_wp()
 	var target := wp.world_point()

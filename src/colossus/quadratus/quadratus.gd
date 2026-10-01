@@ -82,6 +82,11 @@ const PARTS := [
 	[&"fr_up", Kind.FUR, Vector2(1.05, 3.0), Vector3(0, -1.1, 0)],
 	[&"rl_up", Kind.FUR, Vector2(1.15, 3.2), Vector3(0, -1.2, 0)],
 	[&"rr_up", Kind.FUR, Vector2(1.15, 3.2), Vector3(0, -1.2, 0)],
+	# Knees: stone below the thigh fur (keeps the fur out of reach while it stands).
+	[&"fl_up", Kind.STONE, Vector2(0.85, 2.4), Vector3(0, -3.0, 0)],
+	[&"fr_up", Kind.STONE, Vector2(0.85, 2.4), Vector3(0, -3.0, 0)],
+	[&"rl_up", Kind.STONE, Vector2(0.9, 2.4), Vector3(0, -3.0, 0)],
+	[&"rr_up", Kind.STONE, Vector2(0.9, 2.4), Vector3(0, -3.0, 0)],
 	[&"fl_low", Kind.STONE, Vector2(0.75, 3.8), Vector3(0, -1.8, 0)],
 	[&"fr_low", Kind.STONE, Vector2(0.75, 3.8), Vector3(0, -1.8, 0)],
 	[&"rl_low", Kind.STONE, Vector2(0.75, 3.8), Vector3(0, -1.8, 0)],
@@ -681,9 +686,12 @@ func _start_attack(it: ColossusIntent) -> void:
 	attack_started.emit(a)
 
 
+## Closes the running attack (also one that just reached DONE): limbs back, the rules
+## learn that it ended (cooldowns), hit volumes off. Safe to call twice.
 func _end_attack(finished: bool) -> void:
-	if attack == null or attack.is_done():
+	if attack == null or attack.get_meta(&"closed", false):
 		return
+	attack.set_meta(&"closed", true)
 	if attack.kind == STOMP and _stomp.leg != null:
 		_stomp.abort(_ground_under(_stomp.leg.foot_pos), loco.time)
 	if finished or attack.phase != ColossusAttack.Phase.PREPARE:
