@@ -5,7 +5,7 @@ uniform float wind_strength = 0.35;
 varying vec3 p;
 void vertex(){p=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}
 void fragment(){
- float wave=sin(dot(p.xz,wind_direction)*1.7+TIME*.65)*sin(p.z*2.1-TIME*.42);
+ float wave=sin(dot(p.xz,wind_direction)*1.7+TIME*.65)*sin(p.z*2.1-TIME*.42)*wind_strength;
  ALBEDO=mix(vec3(.025,.075,.078),vec3(.06,.13,.12),wave*.15+.3);
  ROUGHNESS=.65;METALLIC=0.0;
  // Opaque surface, no refraction, SSR, depth read, or planar reflection pass.

@@ -70,7 +70,8 @@ func build() -> void:
 	place("rubble_0",Vector3(-46,0,25),.4)
 	place("rubble_1",Vector3(-21,0,14),1.4)
 	for i in 7:
-		place("channel",Vector3(-12+i*4,0,36),0,1,"channel_boxes")
+		var canal_segment := place("channel",Vector3(-12+i*4,0,36),0,1,"channel_boxes")
+		canal_segment.position.y=.1
 	# Landmark and canyon edges. Preserve open central basin and long sightlines.
 	place("rock_arch",Vector3(-91,0,81),-.22,2.0,"rock_arch_boxes")
 	# Overlapping escarpment masses, not an evenly spaced perimeter fence.
@@ -158,7 +159,7 @@ func _water() -> void:
 	var canal := MeshInstance3D.new()
 	canal.name="ShallowCanal_NoSimulation"
 	var plane := PlaneMesh.new();plane.size=Vector2(28,.95)
-	canal.mesh=plane;canal.position=Vector3(0,1.17,36);canal.material_override=mat
+	canal.mesh=plane;canal.position=Vector3(0,.48,36);canal.material_override=mat
 	canal.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;add_child(canal)
 
 func _scatter(rng: RandomNumberGenerator) -> void:
