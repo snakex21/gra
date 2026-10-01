@@ -1,0 +1,1448 @@
+{
+  "copied_utc": "2026-10-01T19:13:13.027368+00:00",
+  "base": "615f29c43867510758d12389702a6d713433087d",
+  "source_art_base": "99ed94f7f163f6239209f0b1f835c56bd53bab84",
+  "file_count": 239,
+  "scope": "Final committed Stonewater runtime snapshot plus absent Ancient Valley standalone dependencies; existing gameplay/ArenaArt files never overwritten. Each copied source file verified against exact committed Git blob.",
+  "files": [
+    {
+      "path": "models/stonewater/aqueduct_broken_end_lod0.glb",
+      "sha256": "a9111629110f7923f02672c107423528e94f46ae4225018a558bc46cc7509926",
+      "bytes": 155032,
+      "git_blob": "7130e862c2457023647d087f9ee9113a258b6489"
+    },
+    {
+      "path": "models/stonewater/aqueduct_broken_end_lod1.glb",
+      "sha256": "8dcf5353da0d5cecfcfb0b089eaca1247f012876636c1fb8735c1b3cc5df40af",
+      "bytes": 28780,
+      "git_blob": "0d019798393b6ee61ee5f582022d1515df125d7b"
+    },
+    {
+      "path": "models/stonewater/aqueduct_broken_end_lod2.glb",
+      "sha256": "482f8f1a5700104325b35678794014bd79b11cf7b167cdde31a0d77e77268dde",
+      "bytes": 15276,
+      "git_blob": "54875c8197f102bdd32632e65c7a1c7dad8094df"
+    },
+    {
+      "path": "models/stonewater/aqueduct_span_12m_lod0.glb",
+      "sha256": "1ccb523bd21851078ed4a2b1ed3d71755d449acd537c599356861d628edbfd5b",
+      "bytes": 275164,
+      "git_blob": "3a1f6cf631c311dcc7548f9cb3c6b7854915cc24"
+    },
+    {
+      "path": "models/stonewater/aqueduct_span_12m_lod1.glb",
+      "sha256": "0f21a35772bbdca288fd8e64d07b5cd3983a3daa3d2b4bb539588a66a1f52dd5",
+      "bytes": 78264,
+      "git_blob": "e422b1bd55fb64c3e4ae2e2168c40b42dc0834d5"
+    },
+    {
+      "path": "models/stonewater/aqueduct_span_12m_lod2.glb",
+      "sha256": "90be79de395e95410c70cc8cae4816759593460d3b8eb405354e5162b54f428b",
+      "bytes": 27020,
+      "git_blob": "f9f2241b34aad2908107480cf3419239148dda02"
+    },
+    {
+      "path": "models/stonewater/basin_corner_6m_lod0.glb",
+      "sha256": "7003b6feaee3a7b02b41866a64823b90df58f9321ccaa313879e51f9626195d1",
+      "bytes": 27680,
+      "git_blob": "00fc1f0e74bedf72c0f9d28e7a3e38932338ac47"
+    },
+    {
+      "path": "models/stonewater/basin_corner_6m_lod1.glb",
+      "sha256": "65d72e3710203d6b8b5eec658ed70f02397fa21a2c8d4c998944e51a9b7b1bf3",
+      "bytes": 7656,
+      "git_blob": "b3318169b96ec6857aacc713496a1567462d318a"
+    },
+    {
+      "path": "models/stonewater/basin_corner_6m_lod2.glb",
+      "sha256": "edfa379a7c5c1c764892377e3a6e9a4cfbe840927c7b93e2636730f55a4e2aff",
+      "bytes": 5976,
+      "git_blob": "0e751d94201535ac630d77e8456b75df0914985a"
+    },
+    {
+      "path": "models/stonewater/bridge_abutment_lod0.glb",
+      "sha256": "5110a38e77175f49db1f6f3d8a4cf61693c533d8639c093c376cb8872e183b2f",
+      "bytes": 144760,
+      "git_blob": "7d78c6bba17bade17d5d89ea16bd3b31b227e9fb"
+    },
+    {
+      "path": "models/stonewater/bridge_abutment_lod1.glb",
+      "sha256": "88645f1e4109c0adf9f44a007428812ff16cfb5ca49c3b2ba115b5fa403f6da6",
+      "bytes": 13524,
+      "git_blob": "abcdaefeee55b3bffef1cc16570b8bd6393db1d6"
+    },
+    {
+      "path": "models/stonewater/bridge_abutment_lod2.glb",
+      "sha256": "3d822954b5cbbd231cad905d4d97350b270e4f457aaabcb3f7c6b868da87647a",
+      "bytes": 5120,
+      "git_blob": "80e843584ee46835110f5945eb08433e898599a2"
+    },
+    {
+      "path": "models/stonewater/bridge_deck_12m_lod0.glb",
+      "sha256": "7e3c5626374d9c94f47c375bdb42fce8a568e03c0da6cb7b148af33f0955fe9c",
+      "bytes": 83112,
+      "git_blob": "6273734b7b6356872cc804c20763c09f285a08ed"
+    },
+    {
+      "path": "models/stonewater/bridge_deck_12m_lod1.glb",
+      "sha256": "84127c83aac7fd15345a308bc7e32817c9c5ccddbeb1ca682412c6d46e79e6bc",
+      "bytes": 8548,
+      "git_blob": "d6ca73aed49694f84daad9f95b2d4a9e8bad4aeb"
+    },
+    {
+      "path": "models/stonewater/bridge_deck_12m_lod2.glb",
+      "sha256": "dfda724d1132c5dbb258dd80afc1924a8500e8f71de1a0f6bb1b946856e75b81",
+      "bytes": 4344,
+      "git_blob": "996045d16da667d74b82f50e89df55b87193d9ea"
+    },
+    {
+      "path": "models/stonewater/bridge_ramp_8m_lod0.glb",
+      "sha256": "ef26d3a217911830f462e5567dc0c66fa51844479a8852b9325997cbb2f438b2",
+      "bytes": 9352,
+      "git_blob": "9f25d06c6783581391aea546343b66711ebcdf60"
+    },
+    {
+      "path": "models/stonewater/bridge_ramp_8m_lod1.glb",
+      "sha256": "3263839fd86d9142fea808583bad4e42032c6119ca9dc97bd7b95e41d48f9fae",
+      "bytes": 3468,
+      "git_blob": "093093bee53ec1fe1702a3c7da9ab5ac8f230189"
+    },
+    {
+      "path": "models/stonewater/bridge_ramp_8m_lod2.glb",
+      "sha256": "90ed4d8ba9334624f6bf84479dc5328ba0399e5226499a9d2f32f7f13e41b0ea",
+      "bytes": 1784,
+      "git_blob": "d8b607db143bdc0e5d2afa7c222ef5d22e48c5d6"
+    },
+    {
+      "path": "models/stonewater/carved_waymarker_lod0.glb",
+      "sha256": "e68f4e8914924609b18df03e990fff21e70102e9b226e51f9b98772f6179141a",
+      "bytes": 35208,
+      "git_blob": "421c3a1029b32f4d3c11943fbf75639336aa11fa"
+    },
+    {
+      "path": "models/stonewater/carved_waymarker_lod1.glb",
+      "sha256": "a72dcc27fcf8d57cd9f11bd27d38b44dcacf393d7adb6e4752bbb8e73e89c8e8",
+      "bytes": 5200,
+      "git_blob": "56dd5f4f6a204f59e4bc492d083ad05fed63aaeb"
+    },
+    {
+      "path": "models/stonewater/carved_waymarker_lod2.glb",
+      "sha256": "4452838976b7304b0b4815c0d3f9a5c5de2d10a369beed337951d99f82895ed6",
+      "bytes": 3516,
+      "git_blob": "fc4053d0be99accc0cf3a04de6faa2cc60dc2b5e"
+    },
+    {
+      "path": "models/stonewater/causeway_8m_lod0.glb",
+      "sha256": "5874827bb954d1cc54b95643066edd96ede8c42c70e6323a0e9687430a9bf8d8",
+      "bytes": 91660,
+      "git_blob": "410157fe61d0028d3756e447ba53cae6278d80f5"
+    },
+    {
+      "path": "models/stonewater/causeway_8m_lod1.glb",
+      "sha256": "aee217bffca9aab12f2dcda1fcdb067549596105ce54b779d0d5752943b5a055",
+      "bytes": 48012,
+      "git_blob": "c571aac2f01986aabd0b1bd7524313b79898cc25"
+    },
+    {
+      "path": "models/stonewater/causeway_8m_lod2.glb",
+      "sha256": "5b7ba97b3fbfc1f667ec9795f681848a1d99765431f64d95e8dff75cb2f41fed",
+      "bytes": 36248,
+      "git_blob": "8960f2504a0159550f085016c3d74e40f1551c82"
+    },
+    {
+      "path": "models/stonewater/cistern_vault_8m_lod0.glb",
+      "sha256": "82f29d82ee17224822997f75b29221a44d9913c2908f595236a6b39f1b491d4f",
+      "bytes": 179560,
+      "git_blob": "bb885b4174270d313bfa5749848d0f76381aa4e6"
+    },
+    {
+      "path": "models/stonewater/cistern_vault_8m_lod1.glb",
+      "sha256": "f08a86c5c151c5b9e6b4950cd8840e0638a61e8749bb127fc2c4e4e08d96cdb8",
+      "bytes": 60620,
+      "git_blob": "4916d0a462187f0dc7afca0f20468eba68e13db5"
+    },
+    {
+      "path": "models/stonewater/cistern_vault_8m_lod2.glb",
+      "sha256": "eab060a9746f8aa34006f6662e2c357dce105546048983700bd164940c093273",
+      "bytes": 11892,
+      "git_blob": "2d244ed2ae5b0e5f122d1dffc2ddf3ef60024ff3"
+    },
+    {
+      "path": "models/stonewater/flying_buttress_lod0.glb",
+      "sha256": "d88fb8c7c52a5512563542d07b5d12d390c8847832045c78e200147dd44b4cfa",
+      "bytes": 66040,
+      "git_blob": "eef6064dd867e73941f010c64da83707ed4e2bc8"
+    },
+    {
+      "path": "models/stonewater/flying_buttress_lod1.glb",
+      "sha256": "38275e5bbe890c2b196ea072995db173ac93bd7870366088425b045f8e6cb098",
+      "bytes": 8500,
+      "git_blob": "2c10e5257983bd52974c7314351b11c7e037d345"
+    },
+    {
+      "path": "models/stonewater/flying_buttress_lod2.glb",
+      "sha256": "e3a3d0edadb1854217686537a2d364df605fc860611637e5610af70701cb063c",
+      "bytes": 4296,
+      "git_blob": "05fa9a6f699b8a4e48adaa0b91d06b17c7a728a7"
+    },
+    {
+      "path": "models/stonewater/monumental_portal_lod0.glb",
+      "sha256": "cd38882bd1c70797f08a73940679ba3735cbe85f2c7b09506affbb601e5565b9",
+      "bytes": 250560,
+      "git_blob": "6f2607d86970bb649324e4ace49df3136cbd7ca7"
+    },
+    {
+      "path": "models/stonewater/monumental_portal_lod1.glb",
+      "sha256": "3f392e3f91606b18fbaa1e4489d39ff1e598ff964c3ff40691a43565535c1b47",
+      "bytes": 64812,
+      "git_blob": "686e9b4ec61763df884a3dcdf2f552e56f85ba8d"
+    },
+    {
+      "path": "models/stonewater/monumental_portal_lod2.glb",
+      "sha256": "aa9974c0e4fac072086fe05cf07f852f69e4f9be53a46040921351245c5b57ea",
+      "bytes": 22804,
+      "git_blob": "47dca1c8ba5ca6f3281999def67f8f82600433f5"
+    },
+    {
+      "path": "models/stonewater/oculus_roof_8m_lod0.glb",
+      "sha256": "018b58f217d5edeb3a96eb707919ceba76ac210d59bfdd870911c28319b8a7ca",
+      "bytes": 67972,
+      "git_blob": "847309aae4668c6d6777246c49482256647870c4"
+    },
+    {
+      "path": "models/stonewater/oculus_roof_8m_lod1.glb",
+      "sha256": "994164c34695b3a0ecc399264c6004515f2e2e3ba29203693fb7eea613ebcdbb",
+      "bytes": 27840,
+      "git_blob": "036df88da96cfbc5b788823835bc554aadbffc03"
+    },
+    {
+      "path": "models/stonewater/oculus_roof_8m_lod2.glb",
+      "sha256": "b7cef38415c40b8a4031e80d09cfcb81a249522a149ec2938079f9d4a721dfb6",
+      "bytes": 14396,
+      "git_blob": "4b1aab8589ee7383d732ed9ba0c8622288311c23"
+    },
+    {
+      "path": "models/stonewater/parapet_4m_lod0.glb",
+      "sha256": "31f71e4325ecb5accc9fe406edfd49dc32b3c8c1f189ddb593cb6d9ea39a2b67",
+      "bytes": 64360,
+      "git_blob": "a85d22682b303961440b8d7bb9def13c034cd1e0"
+    },
+    {
+      "path": "models/stonewater/parapet_4m_lod1.glb",
+      "sha256": "f256d71734b43395ba0bc64877443727fe740fe37a79af1244093d1d0b039bfa",
+      "bytes": 8524,
+      "git_blob": "680c942b0f7f793076003cce05663e82aabc9ead"
+    },
+    {
+      "path": "models/stonewater/parapet_4m_lod2.glb",
+      "sha256": "4e2384ad41bfbe7b37bff913fbde0fc56f294808e236dec147a2607534e77dcb",
+      "bytes": 3480,
+      "git_blob": "f7783491f96959fe3716e4bab90d7b552f829f37"
+    },
+    {
+      "path": "models/stonewater/parapet_end_lod0.glb",
+      "sha256": "c16cc108775660f5b5f53a747e3d5042d2ce80e3b12c3db6f480d80e28130ac8",
+      "bytes": 25168,
+      "git_blob": "6df870dbf1ba4ab7207838654353c30f2e8c88f8"
+    },
+    {
+      "path": "models/stonewater/parapet_end_lod1.glb",
+      "sha256": "f800463ab81bf56f8bc915c29835a535a736a0436eb5c56cb08a48b01ec34006",
+      "bytes": 5172,
+      "git_blob": "5e6ab35c09d9300b6b34e58ab6c07a498ceef97f"
+    },
+    {
+      "path": "models/stonewater/parapet_end_lod2.glb",
+      "sha256": "f63744a40b3665dc453a152737f5429c6d610c2b9dee6835fe19de60954e52f8",
+      "bytes": 4328,
+      "git_blob": "950550d0077b193609f1ab415058ba3bc9a04a36"
+    },
+    {
+      "path": "models/stonewater/ribbed_pier_10m_lod0.glb",
+      "sha256": "7cc44197c005aa4a0fdc0b0b54d3f9c113fa665460130dc1e1c8a87fc0d87f5c",
+      "bytes": 217248,
+      "git_blob": "5a01ffefd45808a45a5bc6ff784bb66436259d79"
+    },
+    {
+      "path": "models/stonewater/ribbed_pier_10m_lod1.glb",
+      "sha256": "634cddb0c3c9239acfcdb8534369c8a7a4210224cd86c6bd18e5152244b5f1de",
+      "bytes": 9328,
+      "git_blob": "267bbfe5fa677c9337d279a28ab4c7246fc5d679"
+    },
+    {
+      "path": "models/stonewater/ribbed_pier_10m_lod2.glb",
+      "sha256": "b0af60e526697ebdc25372255710db20edceafcf78014185b48e7d0d355157db",
+      "bytes": 6808,
+      "git_blob": "86c21e3f92d05c75bf73faf31232c7b5aa549020"
+    },
+    {
+      "path": "models/stonewater/sluice_frame_6m_lod0.glb",
+      "sha256": "d432a2022b9ef01b32f0ec8ed59ede791427175311f9014f182b212b45ddb917",
+      "bytes": 158140,
+      "git_blob": "8de3b82e62318a2abc9459603a39dee38ba72b9d"
+    },
+    {
+      "path": "models/stonewater/sluice_frame_6m_lod1.glb",
+      "sha256": "950e3f15eea2dac4cbc089be1070f481e7098bce1e23048435ff6a5f72c7dd3e",
+      "bytes": 18584,
+      "git_blob": "ac3fdc47efb90f929f9ede84ecf2d36aeb170e0a"
+    },
+    {
+      "path": "models/stonewater/sluice_frame_6m_lod2.glb",
+      "sha256": "9ab73f1f0ed0d53c4c40ccd1d6a9d4832a14eb9480cde793a322951b8f8093b2",
+      "bytes": 6820,
+      "git_blob": "9575745b0868ef5c5ec6390afa76ba194812d553"
+    },
+    {
+      "path": "models/stonewater/spillway_steps_6m_lod0.glb",
+      "sha256": "57a27f391783121537f338c3925ce3c661552477ec30992d81ca68bf2e5c32a8",
+      "bytes": 109432,
+      "git_blob": "a62666123e0c9f30f88c37cd63a3caea48261382"
+    },
+    {
+      "path": "models/stonewater/spillway_steps_6m_lod1.glb",
+      "sha256": "52a4c3484d9af1bb51326dc5a9a96358293dbc93e3e4b5abc2d8bb24b66a00c7",
+      "bytes": 16080,
+      "git_blob": "2653c3bac5e4565f95f2fa74932102d3d06c3c71"
+    },
+    {
+      "path": "models/stonewater/spillway_steps_6m_lod2.glb",
+      "sha256": "57329e473ff88bda7cd5be11e2adebe41e4d5f78718e5bb731d061a59a09245d",
+      "bytes": 5996,
+      "git_blob": "418821f9c4d63253599d86e711bdab348d41ddd3"
+    },
+    {
+      "path": "models/stonewater/water_outlet_lod0.glb",
+      "sha256": "88a6619602f6d9692eb65b0fcf66c8ba23394830a099e5af24022d52d2b447a6",
+      "bytes": 55212,
+      "git_blob": "83f4e5e4d6659fc5bb0cfc09765069ab1240ed05"
+    },
+    {
+      "path": "models/stonewater/water_outlet_lod1.glb",
+      "sha256": "ea58a715a9b60d2432e95ca2fae8c3ac7af3a29a0646575090b665be5d205a75",
+      "bytes": 10224,
+      "git_blob": "99fdcda02ed36c8c8fedaaa0313403b33a5f5ded"
+    },
+    {
+      "path": "models/stonewater/water_outlet_lod2.glb",
+      "sha256": "3ad7a1a8381daa1f2121d17cd066c140ef9bddb2b86269c966ab38ca94d68d21",
+      "bytes": 6848,
+      "git_blob": "54b4f98e9e1f74182b03a006832b8cd67fd802d0"
+    },
+    {
+      "path": "assets/stonewater_manifest.json",
+      "sha256": "fe744de98baeb881c024ee07968b430c11eb3f707595212f065e4aac3f14dfb8",
+      "bytes": 194855,
+      "git_blob": "614ed9cf1cb727bade5501e00d2668ae10e3dd6a"
+    },
+    {
+      "path": "environment/stonewater/aqueduct_broken_end.tscn",
+      "sha256": "e6842018c80803b45fe95bab520fd0e3584bc0b3e3d318b3b133e586ee27c34b",
+      "bytes": 223,
+      "git_blob": "88d9051c0574a8dbf96e5a5d5bef8854deed122b"
+    },
+    {
+      "path": "environment/stonewater/aqueduct_span_12m.tscn",
+      "sha256": "bb3049d43f7e1a6b32d444ccede2c5006ad0bb972a0de68b6f5244753c98e507",
+      "bytes": 219,
+      "git_blob": "65d3842b016f96799bb21af88b4c08a190435815"
+    },
+    {
+      "path": "environment/stonewater/basin_corner_6m.tscn",
+      "sha256": "bebb279ae54348cd73cd922fda1b3a50277dd323b1d4548329a22d4e587207c7",
+      "bytes": 215,
+      "git_blob": "c06ce2d65cd34fe4824d0a840df749a73f507728"
+    },
+    {
+      "path": "environment/stonewater/bridge_abutment.tscn",
+      "sha256": "a72cfe027337cff54a0bf275906c7ad35c3a498ac9ff69fdcb599b576256fb91",
+      "bytes": 215,
+      "git_blob": "664747c7eef4699b8d265c86b992d2e8c8dbbebb"
+    },
+    {
+      "path": "environment/stonewater/bridge_deck_12m.tscn",
+      "sha256": "6c87e535409c9a63406fa7dafd54aaf607ce218674109662d906e3d42a1b565b",
+      "bytes": 215,
+      "git_blob": "a506c8438ce638fcfc90d164eab7a1c9822dfc8f"
+    },
+    {
+      "path": "environment/stonewater/bridge_ramp_8m.tscn",
+      "sha256": "b708cc50b0e5371e4629b0474b90570991d184a0e55f33599702d29655c89e66",
+      "bytes": 213,
+      "git_blob": "57f7f1bcc60631213d454d6c9e8600f396014aab"
+    },
+    {
+      "path": "environment/stonewater/carved_waymarker.tscn",
+      "sha256": "2ed6b84c50fac3d6791d1c5ef0790a451d8f7831a48b6b169edbddc1270cfac3",
+      "bytes": 217,
+      "git_blob": "34a8fa7c8ca9368b8067521f3b40e25a19f827dc"
+    },
+    {
+      "path": "environment/stonewater/causeway_8m.tscn",
+      "sha256": "9f8be57990455ab24ad9f7df3ce2f965904c526c2938c43094eabf8dfcf81b4a",
+      "bytes": 207,
+      "git_blob": "1f6e5b7002d872f8447fa65d6a17057f7cb344bf"
+    },
+    {
+      "path": "environment/stonewater/cistern_vault_8m.tscn",
+      "sha256": "e97457d9b636c5f1617a1f063923631e7b117f959d16554628eaff385aa8d061",
+      "bytes": 217,
+      "git_blob": "f1d647617fd1a0942f76218cfcbd5d01467a347a"
+    },
+    {
+      "path": "environment/stonewater/flying_buttress.tscn",
+      "sha256": "6cbd73e3d7424d87fe66646e8bf18ea832fa9cdae1814926896b109e52eec310",
+      "bytes": 215,
+      "git_blob": "fe3a9973c9ddf6c86fbba84e5c6c0439cac176ea"
+    },
+    {
+      "path": "environment/stonewater/monumental_portal.tscn",
+      "sha256": "2edf9654a3f4156a2c0708a42488179eaf457d076ba1edde420e3fdc7cffeb21",
+      "bytes": 219,
+      "git_blob": "7d5e7602baf9fe81f6537d9c73616f1238941b9a"
+    },
+    {
+      "path": "environment/stonewater/oculus_roof_8m.tscn",
+      "sha256": "fba0f4be8f4996a915d78c14b66194d72574fab5424d3dd637490a6fd64d8e0e",
+      "bytes": 213,
+      "git_blob": "e7c49c3879e32809ac6ea92a1fe6a24423c5508a"
+    },
+    {
+      "path": "environment/stonewater/parapet_4m.tscn",
+      "sha256": "4c5d7ed663399abcc28daedbffee58a0975972ceadd9623fbf821af277877758",
+      "bytes": 205,
+      "git_blob": "6a158f6e86b7b12a5ce50f56f87db980640e274a"
+    },
+    {
+      "path": "environment/stonewater/parapet_end.tscn",
+      "sha256": "bfe50dcaa4536f1d29a7e93a5f8922ff8aa0d61dc07960b0dba7a251b383f88c",
+      "bytes": 207,
+      "git_blob": "5d8bcfca44fda789b2c295e14492c17215db11a6"
+    },
+    {
+      "path": "environment/stonewater/ribbed_pier_10m.tscn",
+      "sha256": "2360bfbb8f205211735b5bb555c2efce8529dda7cf752678607fcb9a561a9ca1",
+      "bytes": 215,
+      "git_blob": "3ac607ff20c0b024ad78843ec802e822132146f0"
+    },
+    {
+      "path": "environment/stonewater/sluice_frame_6m.tscn",
+      "sha256": "a6a0a81b6a00c0e962a9c67ad5c0e5cbf1ee29342607504d760dde0bd81a0899",
+      "bytes": 215,
+      "git_blob": "432cb3918a923410ce21f4d8b54cf8beb4fcb9dd"
+    },
+    {
+      "path": "environment/stonewater/spillway_steps_6m.tscn",
+      "sha256": "bb5725ca8f494474d1799242bc079ff3902754d3f3f0a14850220239becf6d01",
+      "bytes": 219,
+      "git_blob": "9a6767169b240c46b0457c8a27c49b9cf61365e4"
+    },
+    {
+      "path": "environment/stonewater/water_outlet.tscn",
+      "sha256": "1b664e3b030d17cebbd39eaffcf982492fefb323c5b0a84a061285b02fe1e7af",
+      "bytes": 209,
+      "git_blob": "8ab8fd97738209f7a78e054041ccf8f5a558acac"
+    },
+    {
+      "path": "environment/stonewater_crossing.tscn",
+      "sha256": "9a0ff182a6517c02374588e1977db869f6e4552226e747c1cb92e3dbb87443d9",
+      "bytes": 254,
+      "git_blob": "3bec42e48b2dcc3046e7b22bc79e16dd53b5563a"
+    },
+    {
+      "path": "art/tests/stonewater.tscn",
+      "sha256": "16f2726403349c9901621590760c87c3c367770d76b187bdf9e2247905dfb1d5",
+      "bytes": 200,
+      "git_blob": "dcc462ddee1dd7e7330403398bd87f87a17300fc"
+    },
+    {
+      "path": "art/tests/test_stonewater.gd",
+      "sha256": "687647f78aebd6781043e875f60fcc96755b7f986922dae70395d60c5341e186",
+      "bytes": 3309,
+      "git_blob": "87cfd44c904ddec8eebb20907f4d0dfbb3cebce0"
+    },
+    {
+      "path": "art/tests/test_stonewater.gd.uid",
+      "sha256": "dda125e23aeb7c2cf1b20c13d097ad2512c25fe4884968533f7bfd3838f8f38c",
+      "bytes": 20,
+      "git_blob": "a055894f86c0ed57fbaad2ac20b7597e8e6eda13"
+    },
+    {
+      "path": "art/scripts/stonewater_asset.gd",
+      "sha256": "cd535243d6f626f5f1b1565b900b62b64ab2533944c97c77c6f07465eac1a7e4",
+      "bytes": 3403,
+      "git_blob": "718389a63300eb9fb6544d1e0bf4fa3a49189be8"
+    },
+    {
+      "path": "art/scripts/stonewater_asset.gd.uid",
+      "sha256": "291b6f7392342fa99da64fbd9998255871e0fee023553dc1d5a126967486ba43",
+      "bytes": 19,
+      "git_blob": "d7275f631ebea7786aae319e0bc81bb3b3776b86"
+    },
+    {
+      "path": "art/scripts/stonewater_environment.gd",
+      "sha256": "1e130cd3658bfee2554cc8ab8762fde31ead4fa0cde121e9cf9cb8d9738f01b1",
+      "bytes": 14780,
+      "git_blob": "b169ef37637e18be81ef88ee5938289453242079"
+    },
+    {
+      "path": "art/scripts/stonewater_environment.gd.uid",
+      "sha256": "63ee60ca5110b04e72b38386c6da1cb2c1277c1d82cf53ae6d0c11e9221052aa",
+      "bytes": 20,
+      "git_blob": "130f0af15ee8bdc0e4d449e1ac4ae065ed6a4467"
+    },
+    {
+      "path": "art/scripts/stonewater_review.gd",
+      "sha256": "3b21987557f39cf7da284d15ef0c256f847cbc16671ece017ad4a7285c8a3803",
+      "bytes": 15088,
+      "git_blob": "5c2e6c9c76f923eaee2e0210d2935bb6c9148e64"
+    },
+    {
+      "path": "art/scripts/stonewater_review.gd.uid",
+      "sha256": "37acaaa3787ad8739d5990072f3080044b428bd8cd810ca1fcc9d5df772d8909",
+      "bytes": 20,
+      "git_blob": "ec5e378e02c1f8b4293efb26b573e516775f5321"
+    },
+    {
+      "path": "models/ancient_valley/altar_collision.glb",
+      "sha256": "1d3add2e436423f71530590d886379cd1225faa1133e2c20d4e4fd673b759993",
+      "bytes": 4452,
+      "git_blob": "ab343eb2de5e4783810105deb825d51196cf718f"
+    },
+    {
+      "path": "models/ancient_valley/altar_lod0.glb",
+      "sha256": "6bfcd32273da96a35a8837b377eb99c8775c9b28c6afe906c13cb698e5bf0f94",
+      "bytes": 14436,
+      "git_blob": "4b4e6855dc08b50eb772711e127236c2265990ae"
+    },
+    {
+      "path": "models/ancient_valley/altar_lod1.glb",
+      "sha256": "222d18701c12874521bb05a583ffbb9d1b3f856f49fa078144ece323896b6c17",
+      "bytes": 10396,
+      "git_blob": "65dad641687756edbfbda90abe666dd4151f1a50"
+    },
+    {
+      "path": "models/ancient_valley/altar_lod2.glb",
+      "sha256": "1f5796e78969280442396ad8f7e5b0fd823cbb48ccd31d4bf63126b7ecd87e2c",
+      "bytes": 4456,
+      "git_blob": "79ab4f06a46af1a916f57d0b58fba6b024409a6c"
+    },
+    {
+      "path": "models/ancient_valley/arch_lod0.glb",
+      "sha256": "590c360067223be124f7972fcd749022d7aa94d2c1c25cfcb17e1d68b30e51d0",
+      "bytes": 16880,
+      "git_blob": "c937ee579a1176597049c6a3bb386c98e7c164ac"
+    },
+    {
+      "path": "models/ancient_valley/arch_lod1.glb",
+      "sha256": "6d60d53bf3f4fc33e8281ecf317ba323757f365a83a6da52a04d26b918fce3c0",
+      "bytes": 11080,
+      "git_blob": "16a4635b188c84c303848e06ddb3f647d8f54db2"
+    },
+    {
+      "path": "models/ancient_valley/arch_lod2.glb",
+      "sha256": "d31022300117703679a6d8449789232e9aa51e95db3caa0c02dd0afd851962fc",
+      "bytes": 4172,
+      "git_blob": "1dcc202318106561caa30a82fdb5ef75de400efe"
+    },
+    {
+      "path": "models/ancient_valley/basalt_0_collision.glb",
+      "sha256": "de4423f633ce118e21c258a644ace4ce851f26e5647c4dcb059d8fdbaaf986c9",
+      "bytes": 4620,
+      "git_blob": "d2d490a32525a2d2284612b7d72d8cc3b010bf25"
+    },
+    {
+      "path": "models/ancient_valley/basalt_0_lod0.glb",
+      "sha256": "c40c4f298a5e4bfc9ebde1660a8724ee42a5758651e8206ec1a7241a146f0732",
+      "bytes": 9160,
+      "git_blob": "525ee2b85aafaff66e98104cfc90a044c192cd5e"
+    },
+    {
+      "path": "models/ancient_valley/basalt_0_lod1.glb",
+      "sha256": "f1504670de343833f90ae478890ec54bc55c351bada5bdf40691f47999e3d706",
+      "bytes": 4896,
+      "git_blob": "2eccce3a1d22171cf12103fafa21d255f1922609"
+    },
+    {
+      "path": "models/ancient_valley/basalt_0_lod2.glb",
+      "sha256": "5e8daf6b038e372a2eb4b44174562a7464c11dd7d54307bcfe0be8dcaf61e6ad",
+      "bytes": 2440,
+      "git_blob": "75c0081a656dbe6d61f7e8312eee716bd8da5191"
+    },
+    {
+      "path": "models/ancient_valley/basalt_1_collision.glb",
+      "sha256": "f24d2e4daaf2890734f9d542e68dd7be002e38a95b4d23c8e8af5ff3c658ec88",
+      "bytes": 4620,
+      "git_blob": "10e98c665a39ab703ca4ef7ae9d936d872f8b0aa"
+    },
+    {
+      "path": "models/ancient_valley/basalt_1_lod0.glb",
+      "sha256": "775a0cbfe32bc4e4588540eb18ae09ea8f04f0970051c011fc70a67a7620e4bc",
+      "bytes": 9164,
+      "git_blob": "1d9f148533d65c85d8fbe54a146e260c72ec39e8"
+    },
+    {
+      "path": "models/ancient_valley/basalt_1_lod1.glb",
+      "sha256": "03e4daf16b7f1591e0f35d77b4b2dff6e7a171507638b71e8a26e1c05f060158",
+      "bytes": 4896,
+      "git_blob": "834f47f05bd161a40f5e48a966bcf4414ec3ea9d"
+    },
+    {
+      "path": "models/ancient_valley/basalt_1_lod2.glb",
+      "sha256": "03338effb8247ce9f90b2d2d35a7d8923577c8639663603a5a669cfcecbd1d8a",
+      "bytes": 2436,
+      "git_blob": "73116414ad67eff8633d1f2be2959efe31f86021"
+    },
+    {
+      "path": "models/ancient_valley/basalt_2_collision.glb",
+      "sha256": "2622a9b424a6a5f7c0f41df36dee78bca5d79ecb34a88fd24da31c2cfbeb6f6e",
+      "bytes": 4620,
+      "git_blob": "87a1fe3f25298d72b0a828a7555272fd1e435ca1"
+    },
+    {
+      "path": "models/ancient_valley/basalt_2_lod0.glb",
+      "sha256": "68096ec087e5de7fcc435e618602efb27e3e1bcb73ecb6604411eceef6ae0e1a",
+      "bytes": 9160,
+      "git_blob": "55d2277c0446db8183cadd037076bb7e1ea11265"
+    },
+    {
+      "path": "models/ancient_valley/basalt_2_lod1.glb",
+      "sha256": "6672a3a33760473b9a47b855eedfa8bfd62f9873aa134fb57216741635e1bb6f",
+      "bytes": 4896,
+      "git_blob": "e47c2b8db8b093f21c51fcb8b575902da5610618"
+    },
+    {
+      "path": "models/ancient_valley/basalt_2_lod2.glb",
+      "sha256": "d5810acc8e692b6074cca415f15dbfde5ed4a31c71f530d752efab358bf43db9",
+      "bytes": 2436,
+      "git_blob": "c6d83f28658a5f55a217ecd0700c3153369cbb53"
+    },
+    {
+      "path": "models/ancient_valley/beam_4m_collision.glb",
+      "sha256": "228181dbf65485272bba9289b2d7108353e6121b7541c742ee5df5543fc6f8b9",
+      "bytes": 3848,
+      "git_blob": "3c042180b0b2dc02aa5fad97d3de54659702e49d"
+    },
+    {
+      "path": "models/ancient_valley/beam_4m_lod0.glb",
+      "sha256": "99e90acb93c943dff4ef355ab52ea6bc67f6af409f5aa42437e7040fb48ef4e0",
+      "bytes": 7636,
+      "git_blob": "936edaa359cfa552527900b41354679d8a364c25"
+    },
+    {
+      "path": "models/ancient_valley/beam_4m_lod1.glb",
+      "sha256": "a2ec1c3beb4c81da184c127b848d3dc9ec0bf6283cfbc74ed5a90817cfdde455",
+      "bytes": 5248,
+      "git_blob": "fae28a298faa2179c076185ecb0ae56a0bb6007a"
+    },
+    {
+      "path": "models/ancient_valley/beam_4m_lod2.glb",
+      "sha256": "2e0690d5f335731680843e83cd8ca47b49d1393ee6b19ab2daf5dbb81d1f8738",
+      "bytes": 2336,
+      "git_blob": "865f1844a0d83b115859eb945ed9d6be0e98f3a1"
+    },
+    {
+      "path": "models/ancient_valley/chalk_0_collision.glb",
+      "sha256": "36c838efa102702276785f3843cd8564ddb2521a3898eec2869fbfe427dab636",
+      "bytes": 4620,
+      "git_blob": "af721e80495e68a77198f1df8c4f10306cd3d875"
+    },
+    {
+      "path": "models/ancient_valley/chalk_0_lod0.glb",
+      "sha256": "d4113b07bd19d156b874f72ee0b69611baa87b76d5a2a9c5724b5935955d4194",
+      "bytes": 9164,
+      "git_blob": "62e388a6348a1cb82812aa16a1d84d0fd037059f"
+    },
+    {
+      "path": "models/ancient_valley/chalk_0_lod1.glb",
+      "sha256": "49d1ecf89d509ada93733cb3da08c3bf3afbdceddd3e56b8786a38e9d133a091",
+      "bytes": 4896,
+      "git_blob": "ec6940bc813a6a0304dea50298ed4c8a76690d5f"
+    },
+    {
+      "path": "models/ancient_valley/chalk_0_lod2.glb",
+      "sha256": "1d37be059151dd9cd39c3ed3b0ff9b22852ed26e6385e2dfeceedd5514ee7b8c",
+      "bytes": 2440,
+      "git_blob": "ef4cca1826ee9233e3ab630a60f663a8864ba08a"
+    },
+    {
+      "path": "models/ancient_valley/chalk_1_collision.glb",
+      "sha256": "c0f0295003fc32250511bd4140d6aed6ff4bfc199a4a515f6e1e081ae6bc1ae5",
+      "bytes": 4616,
+      "git_blob": "1f637667c272776c70a794dfdf45bfebcbaac25b"
+    },
+    {
+      "path": "models/ancient_valley/chalk_1_lod0.glb",
+      "sha256": "a384fac384a37845c85ab680b81a60ad9713bc3594f774373151579a5e08831b",
+      "bytes": 9160,
+      "git_blob": "7bdac6b4323ab636d08b2e504a9b37077de42a12"
+    },
+    {
+      "path": "models/ancient_valley/chalk_1_lod1.glb",
+      "sha256": "9562552159cfe362a2c609a1101e313b8b1636a1bc4f8c8c561aa3262778d370",
+      "bytes": 4892,
+      "git_blob": "2bd6e6d0dbb3339a7d09eb83a5bcdfed3e8c9fe4"
+    },
+    {
+      "path": "models/ancient_valley/chalk_1_lod2.glb",
+      "sha256": "d812e64cdfab8316a6a1d8762129a439684b02d4071c6f321590eaa039e48141",
+      "bytes": 2436,
+      "git_blob": "4964b5c0a42c11523bd18e1d39fd3d73643944eb"
+    },
+    {
+      "path": "models/ancient_valley/chalk_2_collision.glb",
+      "sha256": "774486ca418a342d1b8c715145aa2d9992c66c66cf26ec7887885b4b57f7053d",
+      "bytes": 4616,
+      "git_blob": "36a4f75aa57141bbd95795f54c90c4011f9b9e86"
+    },
+    {
+      "path": "models/ancient_valley/chalk_2_lod0.glb",
+      "sha256": "1c0e821fb92078bdeb9177428a4ec3cca388a78d03e0d59220dd994b90f95e52",
+      "bytes": 9160,
+      "git_blob": "1a133abf99bca7b77c45860d08ba86a109daeb3f"
+    },
+    {
+      "path": "models/ancient_valley/chalk_2_lod1.glb",
+      "sha256": "cf9b43f0a72dbfd7badbfc13a52d798d0ee80eaa7ead7604b5a355033fdc224c",
+      "bytes": 4892,
+      "git_blob": "aba33e12b0ca99371435f5dce5b83ab1898966f8"
+    },
+    {
+      "path": "models/ancient_valley/chalk_2_lod2.glb",
+      "sha256": "5b5d9fbda3b95ffcb29314cef2cdb4cf3db3ba1e195ce82f38258fabf35d13f7",
+      "bytes": 2436,
+      "git_blob": "3ba15885d85795890e696a5fcb7ece10d60d0f01"
+    },
+    {
+      "path": "models/ancient_valley/channel_lod0.glb",
+      "sha256": "57cb88f8c66d0d331a50231556d3c90edd9593a1562160f2f8f59dbd10fe7e98",
+      "bytes": 10992,
+      "git_blob": "6c44e4fbfb5c1b50ca77a1e7426d4c2dfd4c806c"
+    },
+    {
+      "path": "models/ancient_valley/channel_lod1.glb",
+      "sha256": "2b29966a557461e735c1d42979fc2be96c2fef724b7b6df15eb3b224f8700237",
+      "bytes": 7308,
+      "git_blob": "4176c02abadc4a8d7c39854b01108f5c08013567"
+    },
+    {
+      "path": "models/ancient_valley/channel_lod2.glb",
+      "sha256": "3674176a6f31b5109d42bd0de2a105829e2057198922cff3eeb8d4b33343f2b0",
+      "bytes": 3252,
+      "git_blob": "e47c744916046074fe9d00a2e7d755be597e4725"
+    },
+    {
+      "path": "models/ancient_valley/cliff_collision.glb",
+      "sha256": "7f6cbd7b98a0db61e5ec4ce0ccfedd7f862c8db85e178335a46e67f679d8e44d",
+      "bytes": 4616,
+      "git_blob": "55a8896cd983654d76277f040c1105c4f8729715"
+    },
+    {
+      "path": "models/ancient_valley/cliff_lod0.glb",
+      "sha256": "4907ffe7e0e258bc20561f87555abc52f5bf098c492eb1f0b69358ffb87795cb",
+      "bytes": 49260,
+      "git_blob": "480d889b91ee8f56dcc499be4d2e8490cc9364fe"
+    },
+    {
+      "path": "models/ancient_valley/cliff_lod1.glb",
+      "sha256": "07a89506d6bc3bcd32b561b418f7264e2ebefe9ad292d5c3a621fe9021d97cd7",
+      "bytes": 23812,
+      "git_blob": "1e4e545656881b800583929183cbaec65336f916"
+    },
+    {
+      "path": "models/ancient_valley/cliff_lod2.glb",
+      "sha256": "a0cfe0325516a732f54c96dee4d655ad986907d0dacb78630d4585b334aad19f",
+      "bytes": 9796,
+      "git_blob": "975c8391b54f9fa52a3e387922cf030f1768aacd"
+    },
+    {
+      "path": "models/ancient_valley/column_base_collision.glb",
+      "sha256": "74addf55fb2095987b95ebeb1f2e5b5ab9e347a91552b908c18a228f61f3c65d",
+      "bytes": 4060,
+      "git_blob": "289d49361feefce53f869f468e71159080e96037"
+    },
+    {
+      "path": "models/ancient_valley/column_base_lod0.glb",
+      "sha256": "ab88a198fe109bc8c6d4cd458b283e31809410247310254cae6b7a56f1a7f96b",
+      "bytes": 7604,
+      "git_blob": "58238c0d5ae3bd63d74f51b0792a203dcd8c175b"
+    },
+    {
+      "path": "models/ancient_valley/column_base_lod1.glb",
+      "sha256": "d98d6374e8315a3ac8aa940fccc46554af6381a18db94dd9970cb92fce9c8ca6",
+      "bytes": 5252,
+      "git_blob": "a96269c659d4ca7f2d1372d8172d1fc41be6d7d7"
+    },
+    {
+      "path": "models/ancient_valley/column_base_lod2.glb",
+      "sha256": "c4a0b8dd2a74a8b92d2229e9d707b9a0e98b67260dcb96a2bec3f2b3f6c1002e",
+      "bytes": 2440,
+      "git_blob": "88a2b9b96c16742449c02c17007c76181dcfb58c"
+    },
+    {
+      "path": "models/ancient_valley/column_broken_collision.glb",
+      "sha256": "58130f3c6388b0b7c9de484815e4686a0370ff40f8cb5337342fae1c9cd3c09b",
+      "bytes": 4596,
+      "git_blob": "30a3dab256f059aa73280a63566861af9f8804f8"
+    },
+    {
+      "path": "models/ancient_valley/column_broken_lod0.glb",
+      "sha256": "2ae8c6342a3e315f5e7ff6344353196374ad8b9d435cf0e4ecb9c976638c6582",
+      "bytes": 27676,
+      "git_blob": "87541b614f8d90eb412ee0b1ea2ccaf53af98030"
+    },
+    {
+      "path": "models/ancient_valley/column_broken_lod1.glb",
+      "sha256": "16e60113240473204b86e1f17f124562d3e2f0df28ac00914fdc494fc25d8162",
+      "bytes": 18216,
+      "git_blob": "96c53768711d43d501c659e04cda384e176ff4f6"
+    },
+    {
+      "path": "models/ancient_valley/column_broken_lod2.glb",
+      "sha256": "889c657e9a241d87c9b229172c777a74d512ee2fe4d64f300cc5213dec9f61e7",
+      "bytes": 8160,
+      "git_blob": "973b36d7737a92cafa29fcd9fae4daf9fe9255cb"
+    },
+    {
+      "path": "models/ancient_valley/column_collision.glb",
+      "sha256": "8a06f81fc9cb94929674cec6a3371d236852291ecefc8f09b6790dedc757b84e",
+      "bytes": 4020,
+      "git_blob": "cff7e4e1ec557387bfa84a8eda2914060f3ab2e1"
+    },
+    {
+      "path": "models/ancient_valley/column_lod0.glb",
+      "sha256": "0be529f5b1dbc0d2cd8741f642ddb88b05b7c31d7987acb5594dc8aefd96b1a4",
+      "bytes": 32552,
+      "git_blob": "cf50baafd117e7c638efe8d44df961122f552e57"
+    },
+    {
+      "path": "models/ancient_valley/column_lod1.glb",
+      "sha256": "62f6eab851c809953f4fd8078a64ffd12782d84d6f71a23fb92ce6bdebf5c7bb",
+      "bytes": 22476,
+      "git_blob": "4284345dd13c6016dc44ba25a07a28779f3cdeb8"
+    },
+    {
+      "path": "models/ancient_valley/column_lod2.glb",
+      "sha256": "e5f2cb19fd89c998b16687b8b836575c2b87712d9ee1c0d27aa36144f1a29759",
+      "bytes": 9784,
+      "git_blob": "eb60eec5d0cf0595f9e17981b93a5e2ee1809469"
+    },
+    {
+      "path": "models/ancient_valley/door_lod0.glb",
+      "sha256": "aa173a29814f2e0790b433e7126627c131cb639b287546c23bbf7632d6db7615",
+      "bytes": 16844,
+      "git_blob": "0b3826fd6d2b1dddb77092525fc21e9af3874b5a"
+    },
+    {
+      "path": "models/ancient_valley/door_lod1.glb",
+      "sha256": "54ac30e7c1244601105d5adce303f626ff5f4c8264732407c79747da6defe8e4",
+      "bytes": 11076,
+      "git_blob": "dc0bcc713c56fa2b12224bed83600eb85b347e85"
+    },
+    {
+      "path": "models/ancient_valley/door_lod2.glb",
+      "sha256": "772cdba159d456fd84ab31a6ee65e65c0567f25c7c2e6e45be7ffc2aa78c99e7",
+      "bytes": 4172,
+      "git_blob": "029944d7060aaba22ef02b0f8f14e2ea1c52d03f"
+    },
+    {
+      "path": "models/ancient_valley/fern_lod0.glb",
+      "sha256": "0c23daa655faf28a354d34ce5ef5b84b4879baff4cf64ddab62d859de253b339",
+      "bytes": 3408,
+      "git_blob": "995cfd33e9e0f71d78bae05b3391f5c802e1f7ad"
+    },
+    {
+      "path": "models/ancient_valley/fern_lod1.glb",
+      "sha256": "175c4ad7362d25d1663733683a53df443e6baef9f1a38020188c8eedcc0dad70",
+      "bytes": 2160,
+      "git_blob": "d7d72bf7463cf9e2c3671e60f2371717d84b1343"
+    },
+    {
+      "path": "models/ancient_valley/fern_lod2.glb",
+      "sha256": "18d691624483f3fb61e850367cdf61eaeeca296ccd471994b43cecf4f13d1513",
+      "bytes": 1500,
+      "git_blob": "09c7d952d3f00926953354efd00497431058e681"
+    },
+    {
+      "path": "models/ancient_valley/floor_collision.glb",
+      "sha256": "dfc4a784b637db417bb94f451d46c007e9f3372f00805ec5c952495ee55187cb",
+      "bytes": 3616,
+      "git_blob": "833aa319842852154e7c8e4cef3628d88b7a432c"
+    },
+    {
+      "path": "models/ancient_valley/floor_lod0.glb",
+      "sha256": "1e59080647be8de1e79b67e8bf4dc2df0201a1e9272c06f68ea2feeef534ab80",
+      "bytes": 5104,
+      "git_blob": "8579d79ee615c836cc00e9a98b6da01fb501ce32"
+    },
+    {
+      "path": "models/ancient_valley/floor_lod1.glb",
+      "sha256": "4231252e805d74c4e4b214df11ff41ca099c10ecf13609c8bce9b3d791d5581a",
+      "bytes": 3624,
+      "git_blob": "c369bf5830774c4dc80c9842376fad64fbfa056b"
+    },
+    {
+      "path": "models/ancient_valley/floor_lod2.glb",
+      "sha256": "83d7a297c78b955524fbb141be8064f8d8f74338009ba2431b05d26a13114477",
+      "bytes": 1920,
+      "git_blob": "6928893e83fde51607fa2f774d23763aaf42d68d"
+    },
+    {
+      "path": "models/ancient_valley/grass_dry_v2_lod0.glb",
+      "sha256": "fb219e02220c63b552d13245cacb067042b8a0e66a86fa9ad538a2d16e552063",
+      "bytes": 3172,
+      "git_blob": "6c1ed96849692dfd606e5efec4bf1a6e824481f3"
+    },
+    {
+      "path": "models/ancient_valley/grass_dry_v2_lod1.glb",
+      "sha256": "90a2cd36c19d46ae9ecb45d8e7ca08866aac59e77409038137bae6762eb33e3f",
+      "bytes": 2024,
+      "git_blob": "492b87528228a12f2c0bed9fa4e46d19cfb54c21"
+    },
+    {
+      "path": "models/ancient_valley/grass_dry_v2_lod2.glb",
+      "sha256": "1616b2a57943a71e2915f0d88a718d09069c7ef1ebfe37f1fa20067901ca2af9",
+      "bytes": 1404,
+      "git_blob": "95af5750012658048fbd87aa02a70614b018a9c5"
+    },
+    {
+      "path": "models/ancient_valley/ledge_collision.glb",
+      "sha256": "b1ca238312bbbb0eb6188cab87eeae5a6794e54689cec73dcff4b8730f3a1a4a",
+      "bytes": 4496,
+      "git_blob": "2162c6316eba9630e24ede1fb5e026571a4fe254"
+    },
+    {
+      "path": "models/ancient_valley/ledge_lod0.glb",
+      "sha256": "297b24b54ce49ca6f2eb9555e4db1ecc1c8ee8bbe61d6adb34eab46109c5865b",
+      "bytes": 49252,
+      "git_blob": "88c2f88e635b08975c546d01c8fc35b5483dad90"
+    },
+    {
+      "path": "models/ancient_valley/ledge_lod1.glb",
+      "sha256": "7fe86e7f592c05c347b857c934a91fdb3f9843937d9fb38b39bf326c50fc531e",
+      "bytes": 24064,
+      "git_blob": "3c0d0f2001ddd2b9a548a2cf1e6128171d5fc1d0"
+    },
+    {
+      "path": "models/ancient_valley/ledge_lod2.glb",
+      "sha256": "9f39e43c0469a64c3ecac338dc4b890a496166d67e5b98c9d0c152a41ccaa86e",
+      "bytes": 9792,
+      "git_blob": "24838c51e6dfb27c190801929dc1f4e11bf7cb0d"
+    },
+    {
+      "path": "models/ancient_valley/moss_patch_lod0.glb",
+      "sha256": "f79202429041dc47de0fad52832b1de970f2f870e6e9a9b24bb75652286b27f5",
+      "bytes": 3904,
+      "git_blob": "e7975b04bed2ea6c609b019a41c4f8bb9f4aa141"
+    },
+    {
+      "path": "models/ancient_valley/moss_patch_lod1.glb",
+      "sha256": "7367f0823fc30f2e13a8c40c27cd4acf0c6f8c19da6433cdb861e0eb59500d3c",
+      "bytes": 2412,
+      "git_blob": "836228442b578af8feb09a6553663fea9f2124f2"
+    },
+    {
+      "path": "models/ancient_valley/moss_patch_lod2.glb",
+      "sha256": "373237779a5a3e5a883bedc3529d78d85c9845ab538f624f291244f184f9c068",
+      "bytes": 1604,
+      "git_blob": "2c4b345acbd2f0c51c0ce82a67bdb239210cc6a7"
+    },
+    {
+      "path": "models/ancient_valley/platform_collision.glb",
+      "sha256": "91a06bd630a82b790db3a523d2edf7443c2dd7e5fc5494894543678af5b00088",
+      "bytes": 3624,
+      "git_blob": "baf40f78a3310fe40125ed45dc6f885221a04c6f"
+    },
+    {
+      "path": "models/ancient_valley/platform_lod0.glb",
+      "sha256": "8e4c4a515490448c0948e953eff3a18ad877d09718392677bf542f77538ddb64",
+      "bytes": 5104,
+      "git_blob": "471a706e7fbc5111a8e1a15bd6ebed618f42a99e"
+    },
+    {
+      "path": "models/ancient_valley/platform_lod1.glb",
+      "sha256": "752169e69a3f4641f410a3c5ba8581b49ef8307abae263a513d0b13f865d2581",
+      "bytes": 3624,
+      "git_blob": "9407fa736992ff780e33833b5511d5c6fa5088b3"
+    },
+    {
+      "path": "models/ancient_valley/platform_lod2.glb",
+      "sha256": "7421e6ecf0247ee3564cbb092790e1a857d8465e84ffb34585c174779c06a623",
+      "bytes": 1924,
+      "git_blob": "95b9c2fada84ff8c383fa1577ed1376bea875465"
+    },
+    {
+      "path": "models/ancient_valley/reed_lod0.glb",
+      "sha256": "ff4c496511ef9b3a12c994c991307fb3dd733a2261e122fd1c5bafde98b1390f",
+      "bytes": 3168,
+      "git_blob": "45aa09e19f806a4cb0282aa1c06f94d3ea505597"
+    },
+    {
+      "path": "models/ancient_valley/reed_lod1.glb",
+      "sha256": "e3c0144de383f10059a37abe1f58cb30aa8cffd984f51493362b171d3c0a7212",
+      "bytes": 2020,
+      "git_blob": "82722a7eda3358f6f46519828e35d46544b3192a"
+    },
+    {
+      "path": "models/ancient_valley/reed_lod2.glb",
+      "sha256": "57245f69d5d0722a9498544ee82d4f6a3d50072b711fb427f309cdb7494814cd",
+      "bytes": 1396,
+      "git_blob": "219ef3a7df9aa7503de00ba89cd1acba276d3a1e"
+    },
+    {
+      "path": "models/ancient_valley/relief_collision.glb",
+      "sha256": "869fc1ad10d8dc09bf00044d1f095a85f3b7f0ec0022f2db37496edb2f1f6d17",
+      "bytes": 4324,
+      "git_blob": "61e84b625a6de8808626e85b9614452c83286d33"
+    },
+    {
+      "path": "models/ancient_valley/relief_lod0.glb",
+      "sha256": "3851b2a0823225dba685475a496186e88c05800d933cb76f240d2b66994d9778",
+      "bytes": 27656,
+      "git_blob": "3be2e65be5f1fa862da5b5a875b9a1fcb904a5e6"
+    },
+    {
+      "path": "models/ancient_valley/relief_lod1.glb",
+      "sha256": "dc7e73230e1b7fa6eb4b698c3275c2e283e61515fb6a2a3477d9ebeaa6b8f7a7",
+      "bytes": 16952,
+      "git_blob": "272a509b7994cd575603262f180234425d98b4c0"
+    },
+    {
+      "path": "models/ancient_valley/relief_lod2.glb",
+      "sha256": "24d3b5ab5dcda403dd582808ec605a3c4d334c076dc9645e68fac7cbc81edb33",
+      "bytes": 7340,
+      "git_blob": "ec11eaf45dc19e500fc26bb7b6e8b4183032816e"
+    },
+    {
+      "path": "models/ancient_valley/rock_arch_lod0.glb",
+      "sha256": "817327166335bd4127b4cf747a48c0731d967da51aa5b5f3f1f5c3b113ce97fb",
+      "bytes": 25484,
+      "git_blob": "b6f672810a721fea48ff3b4502dee81fe4ac01c2"
+    },
+    {
+      "path": "models/ancient_valley/rock_arch_lod1.glb",
+      "sha256": "8ee99f6929029070f80ec8712a810dff4c70517da2ba70079e9f9d5b8e629877",
+      "bytes": 12652,
+      "git_blob": "533f5e1550d4034410e2563f0410d1b225a7e79e"
+    },
+    {
+      "path": "models/ancient_valley/rock_arch_lod2.glb",
+      "sha256": "b8cb4be1a72bce3286b8786178e605fecce15fa78ef14ea6b957f506fa0a599c",
+      "bytes": 5300,
+      "git_blob": "a0e9086ff4cebaa598fe0be469e9a8531d8ddf3d"
+    },
+    {
+      "path": "models/ancient_valley/roots_lod0.glb",
+      "sha256": "0a1b7c660195c965c0b4017566312e8dfd14b532fdb3df300e98481552522339",
+      "bytes": 10004,
+      "git_blob": "f782467dd7d885382934cc021cedd93bcf526ad6"
+    },
+    {
+      "path": "models/ancient_valley/roots_lod1.glb",
+      "sha256": "a366e89b37bd7b2b51b5d93b1c5328ed0e71a21d03e03297f829e7876b7be7df",
+      "bytes": 7564,
+      "git_blob": "4493fb2e8beb3212b2039ba4655da649899a64a6"
+    },
+    {
+      "path": "models/ancient_valley/roots_lod2.glb",
+      "sha256": "693c90434d605f370e6040965aaf570abcc274e429472ca2a5e218a1627e5e4a",
+      "bytes": 3452,
+      "git_blob": "1ecdd3976856ff7f76b43c27e476f0552c1d4b28"
+    },
+    {
+      "path": "models/ancient_valley/rubble_0_collision.glb",
+      "sha256": "47f9b81d751ab63ece8f907058628bceb59100e022a203ca282aeec9845aef48",
+      "bytes": 4620,
+      "git_blob": "1b87c399e10f12d2970ec1e1b241671123f2e927"
+    },
+    {
+      "path": "models/ancient_valley/rubble_0_lod0.glb",
+      "sha256": "0bd5478036dccf1225ebe980b7427c79e2309060027a294eaf7636085cd6c9b1",
+      "bytes": 31368,
+      "git_blob": "97a7a6500a89ee0272888b1fd63b1bd80a99b3f4"
+    },
+    {
+      "path": "models/ancient_valley/rubble_0_lod1.glb",
+      "sha256": "b66e6ce8afd0c37c8e941cc7e5a5baf91051115b5947ced5a0a4169147403c3a",
+      "bytes": 20400,
+      "git_blob": "9806970abbe9566ea7c07afdcfbc6f172dc9464a"
+    },
+    {
+      "path": "models/ancient_valley/rubble_0_lod2.glb",
+      "sha256": "b6fc7b7dbacf193a0da4492a57e9966cf44b95abc214fef70603332da2ac15b7",
+      "bytes": 8156,
+      "git_blob": "a8414c04e145b88dda16d785fe2bff4f198c45e0"
+    },
+    {
+      "path": "models/ancient_valley/rubble_1_collision.glb",
+      "sha256": "7318ef107bc493edc4f65687061fa078962c7001c85b9b9c405e12945ec6c3e6",
+      "bytes": 4620,
+      "git_blob": "44028ed124b84ffba2ea657f0a7f1d340cb0c778"
+    },
+    {
+      "path": "models/ancient_valley/rubble_1_lod0.glb",
+      "sha256": "7e98c56b0ef2bcfc0d602ab7d08eccaffedba8fb0741dedc3c7200fa6632c418",
+      "bytes": 44396,
+      "git_blob": "7a2dd78026ae8bf8d37d418bddee17a8f22e4318"
+    },
+    {
+      "path": "models/ancient_valley/rubble_1_lod1.glb",
+      "sha256": "277875fcd5c9c80b3a3ca9bd7154b7a2acb61e639615604fe93b04071dbaaca8",
+      "bytes": 28968,
+      "git_blob": "612b34d55aa899a8c7e3c5507e4ba7d8f9971f09"
+    },
+    {
+      "path": "models/ancient_valley/rubble_1_lod2.glb",
+      "sha256": "492df648413a95e3f9c9c7b98fe89ff7cd308010a1586d645064fcfb4ac8a18a",
+      "bytes": 11420,
+      "git_blob": "690bd2d98bfbc765656fa3f2da3576962a020480"
+    },
+    {
+      "path": "models/ancient_valley/shrub_heather_lod0.glb",
+      "sha256": "a5209dab418a1254ad1173530bfdac7158038c602f765ac5b6adf673eca5758d",
+      "bytes": 33132,
+      "git_blob": "d2a23ce28956937b65903eac4c6d715da532f351"
+    },
+    {
+      "path": "models/ancient_valley/shrub_heather_lod1.glb",
+      "sha256": "832a2edee7ef053db153b8dbe9f3e6f19ef9e6812b507d3a7f30ca8e41903b4f",
+      "bytes": 19492,
+      "git_blob": "be78980bd1496119481fa4a607f81a107eec998a"
+    },
+    {
+      "path": "models/ancient_valley/shrub_heather_lod2.glb",
+      "sha256": "e5d3211075326cac452071aafb15464c6c0f84f5aa0f9bc60472426c0513a480",
+      "bytes": 7244,
+      "git_blob": "1137d96b37f1d062a03964ea22b245bb80b50785"
+    },
+    {
+      "path": "models/ancient_valley/shrub_thorn_lod0.glb",
+      "sha256": "f01addeef3c631d32bec563ecc4b3001bd515a5a8b376d27b8b5f4776c4d16fd",
+      "bytes": 15340,
+      "git_blob": "ea5b723fd5a676fea2f0baaa1123b67f54c3df30"
+    },
+    {
+      "path": "models/ancient_valley/shrub_thorn_lod1.glb",
+      "sha256": "a49a45b0a48db68f990c589f307e281a09db82a0474a7666c104017451c334e8",
+      "bytes": 11424,
+      "git_blob": "23eb9e57052d5c58c0ce1d850433feb1a69a73b1"
+    },
+    {
+      "path": "models/ancient_valley/shrub_thorn_lod2.glb",
+      "sha256": "cdb13d62c79bfa022304dc428c1a2564f60e5d68c4aa377d52679ecb87c09e7e",
+      "bytes": 4896,
+      "git_blob": "4cb4f14e0a3f3834f9c4bbef5bc8ab025699f30e"
+    },
+    {
+      "path": "models/ancient_valley/slate_0_collision.glb",
+      "sha256": "a8b56c0380b882c8e0536b966629802c25a3c5a257486de8ba08f0c5cf08a52a",
+      "bytes": 4600,
+      "git_blob": "8a2de6639af6da8a1f319b32c0d788de7353b228"
+    },
+    {
+      "path": "models/ancient_valley/slate_0_lod0.glb",
+      "sha256": "b6ebb4a5269102725988dad61c9af26d932cc5b150c89a15f065ab8baf56a96d",
+      "bytes": 9160,
+      "git_blob": "0cdb61d45e59a196b6283bf7b57116fcd01ddd32"
+    },
+    {
+      "path": "models/ancient_valley/slate_0_lod1.glb",
+      "sha256": "6484b59f749aee4ac99457b25f1c0693121d3156516f92ad0fe45a33f0be2df6",
+      "bytes": 4896,
+      "git_blob": "0dab7a667659da9c1ddf1de98d15d6eab1ca6541"
+    },
+    {
+      "path": "models/ancient_valley/slate_0_lod2.glb",
+      "sha256": "bd2412eebd703ca1b70089407e970beafa1008705c92a0364ed7ccebed804b93",
+      "bytes": 2440,
+      "git_blob": "9d3e0e65b39d405799222fb577ce1da91490f87f"
+    },
+    {
+      "path": "models/ancient_valley/slate_1_collision.glb",
+      "sha256": "c68dbf4b11d3ab15236068a9d53cb9d56191aca9a79e559e7cea86d04bade004",
+      "bytes": 4616,
+      "git_blob": "6458176736984f1cf956f83b7f1a38b19cc7e6f9"
+    },
+    {
+      "path": "models/ancient_valley/slate_1_lod0.glb",
+      "sha256": "bca157cd480320a730a97ad25ee3ca37c568e22fee34c8aaf40f7d2dbaf45f2c",
+      "bytes": 9160,
+      "git_blob": "7b0ae8fa34af788f0d92a6b95fe5be4824fb8359"
+    },
+    {
+      "path": "models/ancient_valley/slate_1_lod1.glb",
+      "sha256": "2682ff55999270e8c1bcbba68c3c9c904237af1f2b0e4c58eb303e0aa46649ae",
+      "bytes": 4896,
+      "git_blob": "358c065ca0ea36d22aecfb0ad71783e429259d48"
+    },
+    {
+      "path": "models/ancient_valley/slate_1_lod2.glb",
+      "sha256": "c1a2c026a09e21e1413d6ce33718344192374bda5609e59fe10c1e1cb0fa0808",
+      "bytes": 2436,
+      "git_blob": "285caf3014ebf8a854db2de54f23954f16991fd1"
+    },
+    {
+      "path": "models/ancient_valley/slate_2_collision.glb",
+      "sha256": "12536df68673dbb7d672f1ac31e55efe19e6d16824df69d80ef41a54de1e6c59",
+      "bytes": 4612,
+      "git_blob": "c2fc73a073656765d4145860064c55008e207feb"
+    },
+    {
+      "path": "models/ancient_valley/slate_2_lod0.glb",
+      "sha256": "3c535914384f1e51e05c742e674ee669876e664880b24be9cfa237f4253cfac2",
+      "bytes": 9160,
+      "git_blob": "daff5ce5ad1d2dd023ee0eeecd2995f71caa8e50"
+    },
+    {
+      "path": "models/ancient_valley/slate_2_lod1.glb",
+      "sha256": "f6d766377374955a5c1584dfa2af5dcde43dbf95462a23b4a131d2e3eab0803b",
+      "bytes": 4892,
+      "git_blob": "9712b5417b40bed87ae77e431de018b3deb5cabf"
+    },
+    {
+      "path": "models/ancient_valley/slate_2_lod2.glb",
+      "sha256": "9964a55aa0809fc0a6f86c84fcb956165c5be65d8acb97982bbff40c8287d466",
+      "bytes": 2436,
+      "git_blob": "895e3bd4ce90e1885d21652f7cff8f1eccff9002"
+    },
+    {
+      "path": "models/ancient_valley/stairs_lod0.glb",
+      "sha256": "8d0b9098e41ea768b6ae850d5a55ce076d947f7b8a493447f23da4f21c71472c",
+      "bytes": 27652,
+      "git_blob": "35abb284219bc4ab3f9690a62147ec4354a1fe37"
+    },
+    {
+      "path": "models/ancient_valley/stairs_lod1.glb",
+      "sha256": "3cce496b1f68f803bb2dd76597fa5e4138987042ad845b9f9c11f9ed1b2eb4bf",
+      "bytes": 18100,
+      "git_blob": "912fc94f0eef8d05de5da1026464a8a65a5cbe0f"
+    },
+    {
+      "path": "models/ancient_valley/stairs_lod2.glb",
+      "sha256": "370636d4609f1ba8b7d515cb03ff975b2c8b6865fe016579f60d5cdd3622dba7",
+      "bytes": 7328,
+      "git_blob": "2180623a752b68f2f2f08b63a20f71a2b7d505cb"
+    },
+    {
+      "path": "models/ancient_valley/tree_cypress_lod0.glb",
+      "sha256": "2c3d64c3cb64936624526fa2827d43c30d390d1c8315e97ed4a2f28dc6ba6c95",
+      "bytes": 39340,
+      "git_blob": "1aac545115082752775a4bf753ad40fedbd00226"
+    },
+    {
+      "path": "models/ancient_valley/tree_cypress_lod1.glb",
+      "sha256": "93cc41359e5b06e1d97d3669c74a62eb7527c620360b3039515c8f947568651e",
+      "bytes": 25708,
+      "git_blob": "45df62361a8017efad2bcc6b0b4a6da95721ff5c"
+    },
+    {
+      "path": "models/ancient_valley/tree_cypress_lod2.glb",
+      "sha256": "09aa2aff4ed5e10ac16f19f57cab4169927b0ac16d0c021421f3c5d6f26bf671",
+      "bytes": 8772,
+      "git_blob": "5ce2458c2ca36434e3ca2feb2ca9a347bc41eb8e"
+    },
+    {
+      "path": "models/ancient_valley/tree_dead_lod0.glb",
+      "sha256": "d9321733d674bad58285cc23d591c51c1fa0ac36080adbf5842846d57229ea0c",
+      "bytes": 23396,
+      "git_blob": "e8a315ef1f6aa479f72cafb3a533f03e30aadda8"
+    },
+    {
+      "path": "models/ancient_valley/tree_dead_lod1.glb",
+      "sha256": "e5af551e0090e3fb4a6eb66f9c21c154570fb548223616ec732015e76e90a13f",
+      "bytes": 16576,
+      "git_blob": "275bd61077127f71ca849a41790a574c09bfb70a"
+    },
+    {
+      "path": "models/ancient_valley/tree_dead_lod2.glb",
+      "sha256": "40bf4f431675baab0114686f74e2f3fe356499b88d32072638904ac3a967aa42",
+      "bytes": 7340,
+      "git_blob": "7356a7f47d5cae48d75673448bce2971b95ac527"
+    },
+    {
+      "path": "models/ancient_valley/tree_oak_lod0.glb",
+      "sha256": "9b6632908a6e6daefa31f996a7f4e56e9029b018d7c613c4eade4131cd5f7354",
+      "bytes": 39716,
+      "git_blob": "ccbcd8a0c013452ca6f3159d7d4e2fb8b7af023f"
+    },
+    {
+      "path": "models/ancient_valley/tree_oak_lod1.glb",
+      "sha256": "f5f0cbe2f2b54dcd874e0c695fc9b6044fa84ea2550953583050ff951278c143",
+      "bytes": 25700,
+      "git_blob": "fdddc2e214f25c8659ba82f3637d7c0b5a3b893b"
+    },
+    {
+      "path": "models/ancient_valley/tree_oak_lod2.glb",
+      "sha256": "2979b83492526abd8a27bd0c2114dc621c37a8310d9818ec8891bf428f12d6e0",
+      "bytes": 8768,
+      "git_blob": "fa0ecfd0aa92871f27061c9c333f9f22662bfa27"
+    },
+    {
+      "path": "models/ancient_valley/tree_willow_lod0.glb",
+      "sha256": "4ea87f9b23b356b99923fb4c3922dff49eebafa79ee855ff9cbf31dc87c6c134",
+      "bytes": 39912,
+      "git_blob": "c6b4d205c91ffaeb054b7ea0e9182750c9ff5349"
+    },
+    {
+      "path": "models/ancient_valley/tree_willow_lod1.glb",
+      "sha256": "8cd447ff8910e06fa0cb475cfc1dff0d1ca2d9fc4fefa16c6cf7d71f1763bc7a",
+      "bytes": 25704,
+      "git_blob": "e0d00d05ae25372245550e9ba570b00072b906a2"
+    },
+    {
+      "path": "models/ancient_valley/tree_willow_lod2.glb",
+      "sha256": "0ee5488f6192ada47be9adab028112d969afac046e9f65176f3ba67d27431ee1",
+      "bytes": 8768,
+      "git_blob": "7b7611bfb7881f72d5299390292d35fa0b46598b"
+    },
+    {
+      "path": "models/ancient_valley/wall_broken_collision.glb",
+      "sha256": "12edb75b68e6725abccee1562fd1eb27659ad754afbbfbc2a81ce06ecc222836",
+      "bytes": 3812,
+      "git_blob": "ee89df0643e24e465730830960ea600915593e1e"
+    },
+    {
+      "path": "models/ancient_valley/wall_broken_lod0.glb",
+      "sha256": "8ebb259c0bb20a1a57437a2eeb3d3697bd9f6910780b49fc28c97c349801d04e",
+      "bytes": 44400,
+      "git_blob": "215585bfb1bc953ded73d4317f9035444b26dbda"
+    },
+    {
+      "path": "models/ancient_valley/wall_broken_lod1.glb",
+      "sha256": "f422a08fc8e61e252f9e32c07bf145fc4cc6f2e7bf3a014df84ca8c473e6b7a1",
+      "bytes": 28972,
+      "git_blob": "57172e338567323504ccd6795a0c2a10f99c8ee3"
+    },
+    {
+      "path": "models/ancient_valley/wall_broken_lod2.glb",
+      "sha256": "6ad579c9766f80d74d6bca745b6c6d7c24c5db9d79107dc5af7b92be92c45e1e",
+      "bytes": 11420,
+      "git_blob": "ea12d5efabf6a370284712f1f4a5c29da480b59d"
+    },
+    {
+      "path": "models/ancient_valley/wall_collision.glb",
+      "sha256": "53ea23ba89fcac3760330b63adf1cbb1a47b6ed8769fc03043b7ac71831edbe8",
+      "bytes": 3436,
+      "git_blob": "5b0c91664fa8f3be56597764a3cb18fafab7be60"
+    },
+    {
+      "path": "models/ancient_valley/wall_corner_collision.glb",
+      "sha256": "00f43baadb2c364c423f3ded24da7515bbb5b4a91e116c4a3d4a53a9ea4c3d1d",
+      "bytes": 4036,
+      "git_blob": "cf87c7d1cd558ea52dbe62f83c1d0d219b59da06"
+    },
+    {
+      "path": "models/ancient_valley/wall_corner_lod0.glb",
+      "sha256": "20363c9e2ddba9f17cce70366bc11b53fd9690f7ca2f61b931af268b7026cec4",
+      "bytes": 94424,
+      "git_blob": "de59d034916a8396bcf8e7ce702bbf9f1fa5f716"
+    },
+    {
+      "path": "models/ancient_valley/wall_corner_lod1.glb",
+      "sha256": "a2d1eaaddb8024b4477023f0cc1e01c773d8960901e23da1261ae199cef99f93",
+      "bytes": 61196,
+      "git_blob": "78baabab2b086e46443a1eb544bd92c8aa9fd5fd"
+    },
+    {
+      "path": "models/ancient_valley/wall_corner_lod2.glb",
+      "sha256": "0c94e1a2b85eb5014a017953d8d5ab4e7be97212c84880e36bcd95604623a17e",
+      "bytes": 23460,
+      "git_blob": "c3ea838cb9a1016da5378ed2e26581a91de3ad8e"
+    },
+    {
+      "path": "models/ancient_valley/wall_lod0.glb",
+      "sha256": "178bc75b5553f33f0c7356bab5271280aa6587a32d1291d831dfe5c3c19b2363",
+      "bytes": 54400,
+      "git_blob": "bce31479826aad29f19d05b10e780cf7b5fa61e8"
+    },
+    {
+      "path": "models/ancient_valley/wall_lod1.glb",
+      "sha256": "de1755a6aeb5d148700a979c2dec6bc6a0e55cac9f1f6fa728c298e334781cc4",
+      "bytes": 35296,
+      "git_blob": "10689ab2f4ddaad430b7143edbae29743d6ac184"
+    },
+    {
+      "path": "models/ancient_valley/wall_lod2.glb",
+      "sha256": "24d781616d0685e6e5234d6ad1f43d9c20c598acbf8077145fd97459229e7ec3",
+      "bytes": 13864,
+      "git_blob": "13fb0bfc20746f41a204de5937ce8ff3bef1d55b"
+    },
+    {
+      "path": "textures/ancient_valley/atlas_1k.png",
+      "sha256": "1e88b5bbf09552bfc21ae3e37bec092ab3d01583f7981a0c7aac0e0ef1d1f9a0",
+      "bytes": 1345515,
+      "git_blob": "7a6abcee2d2e7711311e9a5e7ef2cefcb9e9e6d7"
+    },
+    {
+      "path": "materials/ancient_valley/atlas.tres",
+      "sha256": "c3fcb80d89b5b4fee2454046485443b2c52d6fb5aec0f7d1a22d1ec2950da1af",
+      "bytes": 213,
+      "git_blob": "6d020ed6096d8bc5fd94d46dee9d2453921e60e4"
+    },
+    {
+      "path": "materials/ancient_valley/terrain.gdshader",
+      "sha256": "f0dde67a0a86e83cbf3d832f355dec8fa91edc3a515f6eb09580cff7fa12f74b",
+      "bytes": 1727,
+      "git_blob": "272651e4da1dd1d79502817009ee9c170159a3cd"
+    },
+    {
+      "path": "materials/ancient_valley/terrain.gdshader.uid",
+      "sha256": "6bab95242a26ea3f8e77bd2a8d2fb80bb981d31cf3c3fed439c50b4595f71358",
+      "bytes": 20,
+      "git_blob": "a51e51ab3f5090219ededd29b4095ac6f114b584"
+    },
+    {
+      "path": "materials/ancient_valley/terrain.tres",
+      "sha256": "dfb8a39d24ca7e7c829fed0eaa4ab90decb9a1b46e2a085e98d2b67b34546980",
+      "bytes": 973,
+      "git_blob": "d87cf0978fe0558c960e8926b79d30f50038db39"
+    },
+    {
+      "path": "materials/ancient_valley/water.gdshader",
+      "sha256": "d21b9c9ccfd329bbe4f4484e79a58b60e0d96ea537ad9ce866f6c8aca5dee904",
+      "bytes": 589,
+      "git_blob": "8f3e180f93cb01326d3574d68c83c082d1b48664"
+    },
+    {
+      "path": "materials/ancient_valley/water.gdshader.uid",
+      "sha256": "6f2864c15b39cae3e78337c662ea5331a872a8e1b79ddc1c7022e11b9a4d3b5c",
+      "bytes": 20,
+      "git_blob": "31ca5d78aeb6250d36acaaffdb141b89c8807267"
+    },
+    {
+      "path": "materials/ancient_valley/wind.gdshader",
+      "sha256": "a58332ddff0171081282943f0c3c7b2afb342f2441a2addf1c2f1647f82615cb",
+      "bytes": 593,
+      "git_blob": "87a9f008707062404e0eb05627f0536a25e59a9d"
+    },
+    {
+      "path": "materials/ancient_valley/wind.gdshader.uid",
+      "sha256": "deca35b3849d2f6489d6819427b0b4507ef390fde7323b152b6bfa493ec31944",
+      "bytes": 20,
+      "git_blob": "8cefcc59baf9ffbf875a85f97682dd8c5ec57eea"
+    },
+    {
+      "path": "materials/ancient_valley/wind.tres",
+      "sha256": "958d7c9a3e49bc3cce9a7638cd9ac41894a19d6a299affe0d148c3415299c9da",
+      "bytes": 404,
+      "git_blob": "37db97bbd86e12b6c5e15f70dc6435fe5e1736d8"
+    },
+    {
+      "path": "art/scripts/valley_asset.gd",
+      "sha256": "607c139d87b090172e8a697e61c9cf498ba265c7f5bcb9252902e5dbae64fdf7",
+      "bytes": 4815,
+      "git_blob": "7954cbb1bdc8f83689d9adc011b97b5fdb7561e4"
+    },
+    {
+      "path": "art/scripts/valley_asset.gd.uid",
+      "sha256": "a0d0b9b7b0f132f71a3821428b3918164959a14d5afa48b7169b4e79b6cea447",
+      "bytes": 20,
+      "git_blob": "cd11a56ebb1a9406146a6accb929e435eaf0c7c1"
+    }
+  ],
+  "final_refresh_utc": "2026-10-01T19:21:23.232077+00:00",
+  "refreshed_files": [
+    "art/scripts/stonewater_environment.gd"
+  ],
+  "final_art_commit": "d6ccd4f47315b3f7d9943392c91b5bda0d067d7c"
+}

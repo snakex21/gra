@@ -1,0 +1,19 @@
+{
+  "command": [
+    "godot",
+    "--headless",
+    "--path",
+    ".",
+    "--fixed-fps",
+    "60",
+    "--quit-after",
+    "600",
+    "res://scenes/gaius_arena.tscn"
+  ],
+  "exit_code": 0,
+  "wall_seconds": 1.5707482459984021,
+  "finished_utc": "2026-10-01T19:19:18.507753+00:00",
+  "scope": "Launch for 600 frames; does not validate a complete Gaius fight or player route.",
+  "script_errors": 0,
+  "errors": 0
+}

@@ -1,0 +1,30 @@
+{
+  "started_utc": "2026-10-01T19:12:00.822594+00:00",
+  "commit": "f84dd100fcb29442dc66f68a0c2d91d03f994805",
+  "engine": "4.6.3.stable.official.7d41c59c4",
+  "command": "bash tools/run_tests.sh",
+  "environment": {
+    "HOME": "/tmp/stonewater-baseline-home",
+    "XDG_CACHE_HOME": "/tmp/stonewater-baseline-cache",
+    "XDG_DATA_HOME": "/tmp/stonewater-baseline-data",
+    "XDG_CONFIG_HOME": "/tmp/stonewater-baseline-config",
+    "XDG_STATE_HOME": "/tmp/stonewater-baseline-state"
+  },
+  "note": "Final upstream snapshot for this art tranche. Gaius commit changes shared PlayerSword strike selection and ValusBot; full existing regression suite rerun. Concurrent parent art generation/rendering may occur, so no controlled CPU comparison claim.",
+  "exit_code": 1,
+  "finished_utc": "2026-10-01T19:19:16.936517+00:00",
+  "wall_seconds": 436.11192009799925,
+  "passed": 116,
+  "failed": 4,
+  "failure_summary": [
+    "test_performance_budget: regression vs Milestone 1 benchmark (~0.25 ms): 0.645 ms",
+    "existing_colossus_tests_still_pass: earlier tests failed: [\"test_performance_budget\"]",
+    "all_existing_tests_still_pass: earlier tests failed: [\"test_performance_budget\", \"existing_colossus_tests_still_pass\"]",
+    "all_valus_and_earlier_tests_still_pass: earlier tests failed: [\"test_performance_budget\", \"existing_colossus_tests_still_pass\", \"all_existing_tests_still_pass\"]"
+  ],
+  "test_performance_budget_climb_ms": 0.645,
+  "threshold_ms": 0.6,
+  "script_errors": 0,
+  "metric_warning_count": 9,
+  "interpretation": "Shared source changes from Gaius commit covered by existing 120-callable regression suite; sole direct failure remains the CPU timing threshold. No full Gaius fight acceptance implied because test_runner contains no Gaius-specific tests."
+}

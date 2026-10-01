@@ -60,3 +60,13 @@ and the actual viewport captures in `art/screenshots/v2/` and `art/screenshots/s
 Their new generators, adapters, tests and shaders are under `tools/art/LICENSE` (MIT).
 These are original procedural assets. Existing gameplay code and repository-wide
 licensing remain outside this scope.
+
+## Part 3 original additions — Stonewater Crossing
+
+The same asset-only CC0-1.0 dedication applies to `art/source/stonewater.blend`,
+`models/stonewater/`, `environment/stonewater/`, `environment/stonewater_crossing.tscn`,
+`assets/stonewater_manifest.json`, and actual viewport captures in `art/screenshots/v3/`.
+The new generators, single-model exporter, render adapter, showcase scripts and tests
+are MIT under `tools/art/LICENSE`. Geometry and composition are original procedural
+work. Existing Ancient Valley atlas is reused, with no additional external assets,
+photos, fonts, audio or commercial reference geometry. This does not relicense gameplay.
