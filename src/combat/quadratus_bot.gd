@@ -312,7 +312,12 @@ func _ride() -> void:
 	# Ride a wide circle behind it; shoot from the saddle when a sole shows.
 	var behind := quadratus.global_transform * Vector3(_side * 6.0, 0, 5.0 + shoot_distance + 6.0)
 	var to := _flat(behind - player.global_position)
-	var aiming := _aim_and_release() or player.bow.is_aiming()
+	# Draw only once in bow range (a drawn bow slows the ride: the stick steers the horse).
+	var aiming := false
+	if _flat(quadratus.global_position - player.global_position).length() < 40.0:
+		aiming = _aim_and_release() or player.bow.is_aiming()
+	else:
+		a.attack_held = false
 	var c := horse.controller
 	if aiming:
 		# Horse-relative steering while aiming: keep the heading, a gentle turn back
@@ -344,10 +349,13 @@ func _dismount() -> void:
 		return
 	var leg_spot := _thigh_entry()
 	var to := _flat(leg_spot - player.global_position)
-	if to.length() > 9.0:
+	if to.length() > 30.0:
+		# Far: ride closer at a trot or faster (on foot is 5.5 m/s).
 		_look(to)
 		a.move = Vector2(0, 1)
 		a.grab_held = false
+		if horse.controller.speed < 4.0 and int(phase_time * 60.0) % 30 == 0:
+			a.press_jump()
 	else:
 		a.grab_held = true
 		if horse.controller.speed < 1.5 and int(phase_time * 60.0) % 20 == 0:
@@ -457,10 +465,13 @@ func _on_back() -> void:
 			_look(_target_wp().world_point() - player.grip.world_point())
 			a.move = Vector2(0, 1)
 			if _target_wp() == quadratus.crown and bone == &"body" and quadratus.region_of(player) == &"back":
-				# The stone saddle and the neck are walked: stand up near the front.
+				# The stone saddle and the neck are walked: stand up near the front, but only
+				# on a level back (kneeling, it is tilted: wait gripping until it stands).
 				var local := (player.grip.body as BodySegment).target_transform.affine_inverse() * player.grip.world_point()
 				if local.z < 2.0:
-					a.grab_held = false
+					a.move = Vector2.ZERO
+					var level := absf(quadratus.loco.body_roll) < 0.12 and absf(quadratus.loco.body_pitch) < 0.12
+					a.grab_held = not level
 		return
 	var wp := _target_wp()
 	var target := wp.world_point()

@@ -3785,10 +3785,14 @@ func test_quadratus_body_lowers_after_foot_hit() -> void:
 	q._on_sole_hit({"tag": i, "point": q.sole_world(i)})
 	var max_step := 0.0
 	var prev := body.target_transform.origin
+	var steps0 := q.loco.step_count
+	var max_swing := 0
 	for k in 60 * 5:
 		await _ticks(1)
 		max_step = maxf(max_step, body.target_transform.origin.distance_to(prev))
 		prev = body.target_transform.origin
+		max_swing = maxi(max_swing, q.loco.swinging_count())
+	var kneel_steps := q.loco.step_count - steps0
 	var corner := _hip_height(q, i)
 	var centre := q.loco.pelvis.y
 	var fur := (thigh.target_transform * Vector3(0, -2.7, 0)).y
@@ -3800,7 +3804,7 @@ func test_quadratus_body_lowers_after_foot_hit() -> void:
 	for k in int((q.kneel_time + q.rise_time + 2.0) * 60.0):
 		await _ticks(1)
 	var corner_back := _hip_height(q, i)
-	_log.append("hind-left hit: hip there %.2f -> %.2f m, body centre %.2f -> %.2f m, pitch %.3f roll %.3f rad, lowest thigh fur %.2f -> %.2f m, loads %s (others %.2f), body max %.3f m/tick; after the kneel: buckle %s, support %.2f, hip %.2f m" % [corner0, corner, centre0, centre, pitch, roll, fur0, fur, str(loads.map(func(v: float) -> String: return "%.2f" % v)), others, max_step, q.buckle_name(), q.loco.legs[i].support, corner_back])
+	_log.append("hind-left hit: hip there %.2f -> %.2f m, body centre %.2f -> %.2f m, pitch %.3f roll %.3f rad, lowest thigh fur %.2f -> %.2f m, loads %s (others %.2f), body max %.3f m/tick, steps while going down %d (max %d legs up); after the kneel: buckle %s, support %.2f, hip %.2f m" % [corner0, corner, centre0, centre, pitch, roll, fur0, fur, str(loads.map(func(v: float) -> String: return "%.2f" % v)), others, max_step, kneel_steps, max_swing, q.buckle_name(), q.loco.legs[i].support, corner_back])
 	_metric("quad_kneel_corner_drop", corner0 - corner, "info")
 	_check(corner0 - corner > 2.5, "the corner did not come down (%.2f m)" % (corner0 - corner))
 	_check(centre0 - centre > 0.8, "the body did not lower")
@@ -3808,6 +3812,7 @@ func test_quadratus_body_lowers_after_foot_hit() -> void:
 	_check(loads[i] < 0.05 and others > 0.95, "the other legs do not take over the weight")
 	_check(fur < 3.2, "thigh fur still out of reach (%.2f m)" % fur)
 	_check(max_step < 0.06, "the body dropped abruptly (%.3f m/tick)" % max_step)
+	_check(max_swing <= 1, "two legs stepped at once while one was weakened")
 	_check(q.buckle == Quadratus.Buckle.NONE and q.loco.legs[i].support > 0.99 and absf(corner_back - corner0) < 0.3, "did not rise again")
 
 
@@ -4124,7 +4129,7 @@ func test_quadratus_cost_stays_within_budget() -> void:
 	var per := func(k: StringName) -> float: return float(u.get(k, 0)) / ticks
 	var qp := func(k: StringName) -> float: return float(qq.get(k, 0)) / ticks
 	var colossus: float = per.call(&"colossus")
-	_log.append("Quadratus fight (bot from Agro, then climbing, 30 s; phases seen up to %s): colossus %.1f us/tick = brain %.1f + combat %.1f + hits %.1f + pose %.1f + quadruped locomotion (incl. balance / weight transfer) %.1f + four-leg IK %.1f; arrows %.1f (max %d alive); player %.1f (bow incl.); Agro %.1f; camera %.1f us/frame; queries/tick: arrow rays %.2f, arrow target tests %.2f, bow aim rays %.3f, climb %.2f, horse %.2f, camera %.2f, colossus ground probes %d total" % [QuadratusBot.Phase.keys()[bot.phase], colossus, per.call(&"brain"), per.call(&"boss_combat"), per.call(&"boss_hits"), per.call(&"boss_pose"), per.call(&"locomotion"), per.call(&"ik"), per.call(&"arrows"), arrows_max, per.call(&"player"), per.call(&"horse"), per.call(&"camera"), qp.call(&"arrow_rays"), qp.call(&"arrow_target_tests"), qp.call(&"bow_aim_rays"), qp.call(&"climb_rays"), qp.call(&"horse_rays"), qp.call(&"camera_queries"), q.loco.step_count])
+	_log.append("Quadratus fight (bot from Agro, then climbing, 30 s; phases seen up to %s): colossus %.1f us/tick = brain %.1f + combat %.1f + hits %.1f + pose %.1f + quadruped locomotion %.1f (of it balance / weight transfer %.1f) + four-leg IK %.1f; arrows %.1f (max %d alive); player %.1f (of it bow %.1f, climbing %.1f); Agro %.1f; camera %.1f us/frame; queries/tick: arrow rays %.2f, arrow target tests %.2f, bow aim rays %.3f, climb %.2f, horse %.2f, camera %.2f, colossus ground probes %d total" % [QuadratusBot.Phase.keys()[bot.phase], colossus, per.call(&"brain"), per.call(&"boss_combat"), per.call(&"boss_hits"), per.call(&"boss_pose"), per.call(&"locomotion"), per.call(&"loco_balance"), per.call(&"ik"), per.call(&"arrows"), arrows_max, per.call(&"player"), per.call(&"bow"), per.call(&"climb"), per.call(&"horse"), per.call(&"camera"), qp.call(&"arrow_rays"), qp.call(&"arrow_target_tests"), qp.call(&"bow_aim_rays"), qp.call(&"climb_rays"), qp.call(&"horse_rays"), qp.call(&"camera_queries"), q.loco.step_count])
 	_log.append("whole physics tick (engine monitor, incl. physics server): mean %.3f ms, max %.3f ms" % [physics_ms / ticks, physics_max])
 	_metric("quad_physics_tick_ms", physics_ms / ticks, "lower")
 	_metric("quad_colossus_us", colossus, "lower")

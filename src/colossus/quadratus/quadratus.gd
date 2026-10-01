@@ -461,9 +461,12 @@ func _effective_intent(it: ColossusIntent) -> ColossusIntent:
 		return e
 	if buckle != Buckle.NONE:
 		return e
+	var on_us: bool = is_instance_valid(it.target_player) and it.target_player.has_method(&"get_support_body") and owns_body(it.target_player.get_support_body())
 	match it.kind:
 		OBSERVE, TURN:
-			if is_instance_valid(it.target_player):
+			# Someone on its back is felt, not watched: it stands (no turning on the spot
+			# after its own rider).
+			if is_instance_valid(it.target_player) and not on_us:
 				e = ColossusIntent.make(ColossusIntent.FOCUS_PLAYER)
 				e.target_player = it.target_player
 		APPROACH:

@@ -207,6 +207,14 @@ func update_steps(delta: float, space: PhysicsDirectSpaceState3D) -> void:
 	var ready := time - last_touchdown >= double_support * (1.0 if moving else 0.5)
 	if not gait_sequence.is_empty():
 		ready = time - last_step_start >= step_period * (1.0 if moving else 0.5)
+	# A weakened leg (support < 1): the others hold the body up, so nothing steps unless
+	# it has to, and never two at once.
+	var weakened := false
+	for leg in legs:
+		weakened = weakened or leg.support < 0.99
+	if weakened and (not urgent or swinging > 0):
+		ready = false
+		urgent = false
 	if swinging < max_swinging and (urgent or ready):
 		var best := -1
 		var best_err := 0.0
@@ -245,7 +253,9 @@ func update_steps(delta: float, space: PhysicsDirectSpaceState3D) -> void:
 	if n > 0:
 		position.y = lerpf(position.y, ground_y / n, 1.0 - exp(-3.0 * delta))
 
+	var tb := Perf.begin()
 	_update_pelvis(delta, double_support)
+	Perf.end(&"loco_balance", tb)
 
 
 ## Where a leg should land if it started a step now, given ``t_ahead`` until touchdown.

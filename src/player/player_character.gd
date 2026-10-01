@@ -162,7 +162,9 @@ func _physics_process(delta: float) -> void:
 			riding.try_dismount()
 		riding.update(delta)
 	elif state == State.CLIMB:
+		var tc := Perf.begin()
 		_climb(delta)
+		Perf.end(&"climb", tc)
 	else:
 		_locomotion(delta)
 		if actions.consume_interact() and riding.try_mount():
@@ -172,7 +174,9 @@ func _physics_process(delta: float) -> void:
 	if actions.consume_switch_weapon():
 		set_weapon(Weapon.BOW if weapon == Weapon.SWORD else Weapon.SWORD)
 	if weapon == Weapon.BOW:
+		var tb := Perf.begin()
 		bow.update(self, delta)
+		Perf.end(&"bow", tb)
 	else:
 		sword.update(self, delta)
 	visual.update_visual(self, delta)
