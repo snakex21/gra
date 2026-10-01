@@ -205,3 +205,17 @@ Nowy komplementarny zestaw akweduktu, przeprawy i sklepionej cysterny:
 `art/tests/stonewater.tscn`. Nie wymaga adaptera kolosa ani żadnego skryptu
 rozgrywki. Reużywa atlasu Ancient Valley; nowe moduły mają własne LODy i jawne
 receptury prostych kolizji w `assets/stonewater_manifest.json`.
+
+## Część 4 — Saltwind Expanse
+
+32 nowe moduły solnej pustyni, kanionu, suchych roślin i zasypanych ruin.
+[Inwentarz, edycja, koszt i ograniczenia](SALTWIND_KIT.md).
+Oddzielny przegląd: `art/tests/saltwind.tscn`; renderer nie ładuje gameplayu
+ani adaptera kolosa. Jawne proxy, 96 GLB, pięć nowych współdzielonych map.
+
+## Część 5 — Mirewood Fen
+
+31 modułów bagiennych, korzenne wyspy, puste pnie, pomosty i omszałe ruiny:
+[Mirewood — inwentarz, kolizje, edycja i ograniczenia](MIREWOOD_KIT.md).
+Samodzielny przegląd: `art/tests/mirewood.tscn`; 93 jawne LOD GLB,
+pięć map 1024 px i osobne receptury kolizji. Bez zależności od gameplayu.

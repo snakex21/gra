@@ -1,0 +1,635 @@
+{
+  "algorithm": "SHA-256",
+  "files": [
+    {
+      "path": "art/source/mirewood.blend",
+      "sha256": "875e224fbe631dc05456412ed5f154a9a31eb05903b5609201f15d032f902c53",
+      "bytes": 3852193
+    },
+    {
+      "path": "assets/mirewood_manifest.json",
+      "sha256": "f9f24d0f8205dd9a25b5e6006e066982c304f3df7c253fc77ff5b86ba5b1525d",
+      "bytes": 767079
+    },
+    {
+      "path": "environment/mirewood/boardwalk_8m.tscn",
+      "sha256": "8aa42196f2851398804d7728d2cccb05e643e48a79f5dc9a9f12fd1f70e5631b",
+      "bytes": 205
+    },
+    {
+      "path": "environment/mirewood/boardwalk_broken.tscn",
+      "sha256": "a7683b86f4659d06051257fe06b7da8b1c000d0a936c4dafbc7eaf736195fe1c",
+      "bytes": 213
+    },
+    {
+      "path": "environment/mirewood/boardwalk_railed.tscn",
+      "sha256": "30a94bc8960b60cd30db719f931fc23a94168a5718674079b1bedf147c6b0669",
+      "bytes": 213
+    },
+    {
+      "path": "environment/mirewood/boardwalk_turn.tscn",
+      "sha256": "7178633160921afb06a04b4e4ab97364075b70465ca561712c4d1c7242f28de9",
+      "bytes": 209
+    },
+    {
+      "path": "environment/mirewood/broad_sedge.tscn",
+      "sha256": "0ff93d0dcf6dc0280f4e87b60ed991fd9962ada11ad29a1047d9dd160fdcd049",
+      "bytes": 203
+    },
+    {
+      "path": "environment/mirewood/buried_moss_passage.tscn",
+      "sha256": "f049b150a53333276a385749ba895c9be4247d70e19a811a9e9837dd03ec1c0d",
+      "bytes": 219
+    },
+    {
+      "path": "environment/mirewood/buttress_root.tscn",
+      "sha256": "962fba8ca4a112ba556d7a0d84b82175278d62a5a9f132519d91e3ac7f6d1d6b",
+      "bytes": 207
+    },
+    {
+      "path": "environment/mirewood/cattail_rush.tscn",
+      "sha256": "f0ec780cdf8a0a916623090d53d6139bbd17fd6607a96a5b2aa8a0303ee0a202",
+      "bytes": 205
+    },
+    {
+      "path": "environment/mirewood/crescent_island.tscn",
+      "sha256": "0ed32aee5b2f5681c73e704d7bba00e3b99640359a43cd88bbdcfdb3a716afa4",
+      "bytes": 211
+    },
+    {
+      "path": "environment/mirewood/crown_stump.tscn",
+      "sha256": "c4e4f30daf0099b108e47279d0db8972c8bafff8e9af45851dd719462f8f2814",
+      "bytes": 203
+    },
+    {
+      "path": "environment/mirewood/cypress_knees.tscn",
+      "sha256": "c1b15ab668ea7651cc636644f7ed7906d32ec0460a5141879d51e73c8a74d871",
+      "bytes": 207
+    },
+    {
+      "path": "environment/mirewood/drowned_shrine.tscn",
+      "sha256": "5c969873f154b45487cf99402ad9d12470c9aeb745f73ed38ddd2f79f53d6dce",
+      "bytes": 209
+    },
+    {
+      "path": "environment/mirewood/drowned_stairs.tscn",
+      "sha256": "2e8b8ed4d3d51612aaaaa789a53810e4ffea0be9230e9a989774a750e2d89523",
+      "bytes": 209
+    },
+    {
+      "path": "environment/mirewood/fallen_root_tree.tscn",
+      "sha256": "ab0a745d3a480206edd72faecaec8ae27e4b9a3d0630a28ea70bf8d64d2bbe2c",
+      "bytes": 213
+    },
+    {
+      "path": "environment/mirewood/fen_elder_tree.tscn",
+      "sha256": "29911d1e8927176d17706a1e3cde94c8bd17d04617b45df89ff86d971e0df811",
+      "bytes": 209
+    },
+    {
+      "path": "environment/mirewood/fen_waystone.tscn",
+      "sha256": "600b68289d66fd77dbe45d6ca640a9bc2acfa453b81ba15f5b7bbfde33574d1c",
+      "bytes": 205
+    },
+    {
+      "path": "environment/mirewood/hanging_moss.tscn",
+      "sha256": "d0de2e7059ccc5d4ec25743eaa49cc322d72e4f58f82367602b655ae7ef06ff9",
+      "bytes": 205
+    },
+    {
+      "path": "environment/mirewood/hollow_elder_trunk.tscn",
+      "sha256": "5418e61ec74e803c88fa6d95eb2e0d927a6d1f59245d8846aeb05c1279eb21e3",
+      "bytes": 217
+    },
+    {
+      "path": "environment/mirewood/hollow_fallen_log.tscn",
+      "sha256": "067cea144146521e313594edc8392f2d054593f9be6c5edc87181a800d27ea1d",
+      "bytes": 215
+    },
+    {
+      "path": "environment/mirewood/lily_pad_raft.tscn",
+      "sha256": "ff4b1235bc6f6dbe184064398c00ca972d1252f2e2c0b06837b6c2812bc9a2a6",
+      "bytes": 207
+    },
+    {
+      "path": "environment/mirewood/marsh_fern.tscn",
+      "sha256": "9acea5921e4b424c7372006f83eb8193097bdd5747e573285b58f9581c107f33",
+      "bytes": 201
+    },
+    {
+      "path": "environment/mirewood/mooring_landing.tscn",
+      "sha256": "8df1353f60770f4943fdcbf099a53b4e6ae52067a8d6b07054807c414feb1232",
+      "bytes": 211
+    },
+    {
+      "path": "environment/mirewood/moss_retaining_wall.tscn",
+      "sha256": "9c695d738fc4c7022421ac5a9010c41c4245ef9e7dc401ef4b258fca61e88892",
+      "bytes": 219
+    },
+    {
+      "path": "environment/mirewood/old_mooring_piles.tscn",
+      "sha256": "4883d43a9e3d9b9c3d51d45575b174d33b82e03f57ba81d3612009de8b8bbb2f",
+      "bytes": 215
+    },
+    {
+      "path": "environment/mirewood/peat_hummock.tscn",
+      "sha256": "f0ba4f5c07ded03a829c902d73f9b1d0c5e660d89921066d1814b79308b53136",
+      "bytes": 205
+    },
+    {
+      "path": "environment/mirewood/root_bank_16m.tscn",
+      "sha256": "f4dd98a13d5441ece5a65e78c16afc0523a2e13a92c6fc9265bb6b8efceba6d8",
+      "bytes": 207
+    },
+    {
+      "path": "environment/mirewood/root_bank_corner.tscn",
+      "sha256": "0dc3137fa3e9e949bb60f8b8d0253eeaae4bae3821a0dd36e321b46845214221",
+      "bytes": 213
+    },
+    {
+      "path": "environment/mirewood/root_island.tscn",
+      "sha256": "75f0e0aab15be1de30f58d9e325ddc6de066770432b042846fcc261eec55dac1",
+      "bytes": 203
+    },
+    {
+      "path": "environment/mirewood/rootbound_gate.tscn",
+      "sha256": "f6813a8d33eddbef3629216552e80d6b0a0a25b2147ff3a88c5e66f5f3247507",
+      "bytes": 209
+    },
+    {
+      "path": "environment/mirewood/rootwell_ring.tscn",
+      "sha256": "6058dad0e83988c1aef73a62ce0b1e32180c7894cc880329a6adc36d65990ceb",
+      "bytes": 207
+    },
+    {
+      "path": "environment/mirewood/woven_root_bridge.tscn",
+      "sha256": "cc3d2b8c8ee5d902837ea6036034bc06719771c1aa559cc74aa4b31df2de126a",
+      "bytes": 215
+    },
+    {
+      "path": "models/mirewood/boardwalk_8m_lod0.glb",
+      "sha256": "1bd9899b4879e900eaad564d25ba52f409c41adada885a659fd13c80689f0bb8",
+      "bytes": 77724
+    },
+    {
+      "path": "models/mirewood/boardwalk_8m_lod1.glb",
+      "sha256": "dce0f6ebc546cf7d36fd645b4b8ac533e3a6c898b8e9476250db50772aaa0ff7",
+      "bytes": 16980
+    },
+    {
+      "path": "models/mirewood/boardwalk_8m_lod2.glb",
+      "sha256": "5c67798b551923669ee9f3c8f804b9b72b3cb469558062d9dfcfbba4ca34b7e7",
+      "bytes": 13620
+    },
+    {
+      "path": "models/mirewood/boardwalk_broken_lod0.glb",
+      "sha256": "f2eb6f25f727bf4b2a2df89e8cbc6211e91b95db5e8971efcfffb73186c2015a",
+      "bytes": 67736
+    },
+    {
+      "path": "models/mirewood/boardwalk_broken_lod1.glb",
+      "sha256": "18a5f34bb63345f9b315a8b5fc9ef857e6402ecdc8680a0c46608b78ee7f7dea",
+      "bytes": 14464
+    },
+    {
+      "path": "models/mirewood/boardwalk_broken_lod2.glb",
+      "sha256": "81843127b4c725ee996b5be25e9f103a3760a75cc979cb05a40e76cdc8960bf8",
+      "bytes": 12784
+    },
+    {
+      "path": "models/mirewood/boardwalk_railed_lod0.glb",
+      "sha256": "e9a7bef7f7847de5bb6de65bb8963b71696ca524183c0d2b26ba7f541bcf7af3",
+      "bytes": 104420
+    },
+    {
+      "path": "models/mirewood/boardwalk_railed_lod1.glb",
+      "sha256": "1bab081594eb3ae6a5b6d591662dc56a9895ccac881e5a70aa0c36947d988590",
+      "bytes": 23708
+    },
+    {
+      "path": "models/mirewood/boardwalk_railed_lod2.glb",
+      "sha256": "d86181842382fee98c30b76b5d6670468cd539794e36822fa3c24269f0c86e90",
+      "bytes": 20348
+    },
+    {
+      "path": "models/mirewood/boardwalk_turn_lod0.glb",
+      "sha256": "a9ef1120bca6512403887bae1c8f609b14f9c73d32f713b6bd243ded2f165a86",
+      "bytes": 84380
+    },
+    {
+      "path": "models/mirewood/boardwalk_turn_lod1.glb",
+      "sha256": "b2cba8f019623a44906ac23175807b253a89e6728084d889fda6a8c52912f9d0",
+      "bytes": 18644
+    },
+    {
+      "path": "models/mirewood/boardwalk_turn_lod2.glb",
+      "sha256": "4ae4c6317ad0b9cd709610cfdaac31e66c4610f11625951ea2caf2fb6d72b3a7",
+      "bytes": 15284
+    },
+    {
+      "path": "models/mirewood/broad_sedge_lod0.glb",
+      "sha256": "bc1f5e3dc28f42eaa6a28259f8000a3dac4b70838dac599fa0b2019215f32613",
+      "bytes": 7548
+    },
+    {
+      "path": "models/mirewood/broad_sedge_lod1.glb",
+      "sha256": "c49eb91a0d2fcfda8199a797e8fea8d991481a0728b9f687ecf4efc520c3bfc1",
+      "bytes": 4888
+    },
+    {
+      "path": "models/mirewood/broad_sedge_lod2.glb",
+      "sha256": "98590dd1177e0a7a11125af063cb8f69314af8e628c8aed1abb9c77ea4db27e2",
+      "bytes": 2944
+    },
+    {
+      "path": "models/mirewood/buried_moss_passage_lod0.glb",
+      "sha256": "ec85e62bdf4a2e52efd5e1387b5f8c70ed393219493bae294b51cd7b893a0483",
+      "bytes": 160504
+    },
+    {
+      "path": "models/mirewood/buried_moss_passage_lod1.glb",
+      "sha256": "4b5cb1e07b1d4e0696b573a393fc4bfed7accc2cc6dcc990e56707e01f6a38b4",
+      "bytes": 34056
+    },
+    {
+      "path": "models/mirewood/buried_moss_passage_lod2.glb",
+      "sha256": "28a729e6b45f225f1bc8beab039cb6c549c2382a50cd6502b710654f2f1138a8",
+      "bytes": 13316
+    },
+    {
+      "path": "models/mirewood/buttress_root_lod0.glb",
+      "sha256": "78d8dd54302a74d39b6837f3aab94fdc8fb8f17f1b7f1cf5154ea4dc46eaf3ac",
+      "bytes": 207452
+    },
+    {
+      "path": "models/mirewood/buttress_root_lod1.glb",
+      "sha256": "5269247eb0f2ef72d254bb0ea26be81649c026c2d9f4cf5e510c3220361c0a05",
+      "bytes": 62108
+    },
+    {
+      "path": "models/mirewood/buttress_root_lod2.glb",
+      "sha256": "b1aece4ff1208b86e2479cc84fb6506eda86cd43c4a2c65891a54b68c17e5e64",
+      "bytes": 23996
+    },
+    {
+      "path": "models/mirewood/cattail_rush_lod0.glb",
+      "sha256": "495d0601ecfdcccdc1345f9faea6d24ac1208c10e5adad09ef7ddb602b256e99",
+      "bytes": 336976
+    },
+    {
+      "path": "models/mirewood/cattail_rush_lod1.glb",
+      "sha256": "ecd536f5ed1ed814b105d10b21467269680bd0a2fbac7f76db4345d34895d6a4",
+      "bytes": 96048
+    },
+    {
+      "path": "models/mirewood/cattail_rush_lod2.glb",
+      "sha256": "ebc3b2e5914319104b93479e93f7dbc2e278851a7de9a9994bc758b6d2890b57",
+      "bytes": 13440
+    },
+    {
+      "path": "models/mirewood/crescent_island_lod0.glb",
+      "sha256": "b405909a1feb9ef478d09136ee88518d180d49cdbfa1452dc8f54ab54966b630",
+      "bytes": 343180
+    },
+    {
+      "path": "models/mirewood/crescent_island_lod1.glb",
+      "sha256": "c7d482f9fab12f87b4a511447e202db9655d7b37935625519a801f513a972fd3",
+      "bytes": 116952
+    },
+    {
+      "path": "models/mirewood/crescent_island_lod2.glb",
+      "sha256": "8b8a58b7e7ac4c376480f2f775a927a0e181d4f60b99f9ed70c0daa29db18dd8",
+      "bytes": 46656
+    },
+    {
+      "path": "models/mirewood/crown_stump_lod0.glb",
+      "sha256": "a88d420408a3f63ca61c3b0f91fee8aac637fcb1300ee0e91ab10e88e3028c71",
+      "bytes": 207276
+    },
+    {
+      "path": "models/mirewood/crown_stump_lod1.glb",
+      "sha256": "73b76b549d31f484727c60f8740cc50581513800523babf41bb14b2d9466a21d",
+      "bytes": 61460
+    },
+    {
+      "path": "models/mirewood/crown_stump_lod2.glb",
+      "sha256": "49234a6fcf80bd4c7821720c967eeb4375db7bc301414ce294e8b4f99c9766f9",
+      "bytes": 22504
+    },
+    {
+      "path": "models/mirewood/cypress_knees_lod0.glb",
+      "sha256": "111f5c1f0c32a61f04835e004dd191b84069c61b8a722eafd519736194a77d56",
+      "bytes": 104732
+    },
+    {
+      "path": "models/mirewood/cypress_knees_lod1.glb",
+      "sha256": "216b3511c2734b58eb6bca2321e864b3a3a7bc87ffcbb3b76b01948f3a5f3abf",
+      "bytes": 32144
+    },
+    {
+      "path": "models/mirewood/cypress_knees_lod2.glb",
+      "sha256": "b6ea4933c95bfb488dbe5b138439cd2bea8a851c76311e8451b976ebb4a4078a",
+      "bytes": 8228
+    },
+    {
+      "path": "models/mirewood/drowned_shrine_lod0.glb",
+      "sha256": "9fa065641ac6e0ad83dac260d747090e3f05c77ef38d212b9931727ef70822b2",
+      "bytes": 246816
+    },
+    {
+      "path": "models/mirewood/drowned_shrine_lod1.glb",
+      "sha256": "fca4560d550841d546a7977a079a29f0552cc1f91c3fa36d5d19ad2fa2d629c4",
+      "bytes": 49384
+    },
+    {
+      "path": "models/mirewood/drowned_shrine_lod2.glb",
+      "sha256": "6a8ffcfbec6878a18fe38b3ac849f4648ca4873112ccb656927d2d157802db53",
+      "bytes": 18856
+    },
+    {
+      "path": "models/mirewood/drowned_stairs_lod0.glb",
+      "sha256": "4abe970815d7cdbbb6cfa052bfba92ce6128f68edd6c9877a4c4caeeaf7b6bdf",
+      "bytes": 121384
+    },
+    {
+      "path": "models/mirewood/drowned_stairs_lod1.glb",
+      "sha256": "077923e1cfb7f93376238fe26d2d38aa9219beafaa73f5cfd17f4c9df6d5032b",
+      "bytes": 34120
+    },
+    {
+      "path": "models/mirewood/drowned_stairs_lod2.glb",
+      "sha256": "ab71da1b2732194c945500f6e84a3f8b384ac0fa2b2b2070d5143a8c3288691d",
+      "bytes": 6848
+    },
+    {
+      "path": "models/mirewood/fallen_root_tree_lod0.glb",
+      "sha256": "fef96c2d157d77931f10a0bc95d89560800b4b6139d13d28b499a9bf34a2487b",
+      "bytes": 187176
+    },
+    {
+      "path": "models/mirewood/fallen_root_tree_lod1.glb",
+      "sha256": "44ed2ff179dda37940191560f8743f1d6b16a03be424c58a7ce88e6eb80c89dd",
+      "bytes": 58620
+    },
+    {
+      "path": "models/mirewood/fallen_root_tree_lod2.glb",
+      "sha256": "73f5cb14d67236b030892a8dabd062f7b65ea1b041b551c7194387fabd23acb9",
+      "bytes": 22656
+    },
+    {
+      "path": "models/mirewood/fen_elder_tree_lod0.glb",
+      "sha256": "f601bb7b7f292c50d070fa5cccd06a45fad6b8f315b9e0f4fa03d81444b4cdb5",
+      "bytes": 759840
+    },
+    {
+      "path": "models/mirewood/fen_elder_tree_lod1.glb",
+      "sha256": "cd791b547cde532898e61915487ede2345dc75f62262978fb23063f5ca7f5e8e",
+      "bytes": 152756
+    },
+    {
+      "path": "models/mirewood/fen_elder_tree_lod2.glb",
+      "sha256": "6ec0bf18b529dee363b930ea1be0a7c8411afed6d884f099bd8ba43e1f46fbaa",
+      "bytes": 50200
+    },
+    {
+      "path": "models/mirewood/fen_waystone_lod0.glb",
+      "sha256": "9417f2d579863026c7a7ebcc95c07ae240f0e602b44196b98ddaabb9e6bc0660",
+      "bytes": 150884
+    },
+    {
+      "path": "models/mirewood/fen_waystone_lod1.glb",
+      "sha256": "e40a9b2d448bc811676384865ec632e4abd9dae73bf5923bc152f0439ff652c2",
+      "bytes": 33360
+    },
+    {
+      "path": "models/mirewood/fen_waystone_lod2.glb",
+      "sha256": "e98359234a3207b9d442bf468f5cfef307d6ff88469a56d1425947f31567ac21",
+      "bytes": 12920
+    },
+    {
+      "path": "models/mirewood/hanging_moss_lod0.glb",
+      "sha256": "137f7ec1ddfe4a01314864f85c1708080800b5bce3bafd447912399d3bbb5866",
+      "bytes": 197456
+    },
+    {
+      "path": "models/mirewood/hanging_moss_lod1.glb",
+      "sha256": "b521d8d2935641808d3d80c0f8ebd2ec46669023de170d3a7d1fe546d6462075",
+      "bytes": 57508
+    },
+    {
+      "path": "models/mirewood/hanging_moss_lod2.glb",
+      "sha256": "e2df98d418cff268cc30a31336dbd7435b2aede800c7afc5eefa17dadd2f160f",
+      "bytes": 13116
+    },
+    {
+      "path": "models/mirewood/hollow_elder_trunk_lod0.glb",
+      "sha256": "22e44bba10131bf985230bff6cf4a11b6a972c2a86b51097747e09d3e8136cad",
+      "bytes": 284460
+    },
+    {
+      "path": "models/mirewood/hollow_elder_trunk_lod1.glb",
+      "sha256": "0e40de1115b116de2dd62a4eb06ffc4efbe1c8d3c13e699ea4ea91c875059300",
+      "bytes": 98168
+    },
+    {
+      "path": "models/mirewood/hollow_elder_trunk_lod2.glb",
+      "sha256": "fa99e948296c7d6468df8e1f34c5fb90636f0562ddf6e8dad134ac67f7cb12f0",
+      "bytes": 42180
+    },
+    {
+      "path": "models/mirewood/hollow_fallen_log_lod0.glb",
+      "sha256": "9c7afd12af239e82ddac7c73177ff631894efc007e8ac1429b3c23fc4fc0c499",
+      "bytes": 167176
+    },
+    {
+      "path": "models/mirewood/hollow_fallen_log_lod1.glb",
+      "sha256": "26cf86fb4a280b8be15dd564f421a69c52b4a650f8fcf95bea5a8982fbbf0033",
+      "bytes": 57580
+    },
+    {
+      "path": "models/mirewood/hollow_fallen_log_lod2.glb",
+      "sha256": "aad83453c97f6dfc0858973d11889d2ec60d04752b4c20f04fa9a28756e6169a",
+      "bytes": 21476
+    },
+    {
+      "path": "models/mirewood/lily_pad_raft_lod0.glb",
+      "sha256": "bbedbac94aa250757e9315f0e25899db4cb23f91978724500e1d620b255b774f",
+      "bytes": 11132
+    },
+    {
+      "path": "models/mirewood/lily_pad_raft_lod1.glb",
+      "sha256": "9f34885952b43021cd06ca4cabda2adb9761755ea40d97597ffa29dc87c30d0f",
+      "bytes": 5320
+    },
+    {
+      "path": "models/mirewood/lily_pad_raft_lod2.glb",
+      "sha256": "9a46a258acb95160a7d765d3ae2128df5cada73a6b1fa8b29db0eb9c4ced73b0",
+      "bytes": 2560
+    },
+    {
+      "path": "models/mirewood/marsh_fern_lod0.glb",
+      "sha256": "1fcfce0eb580bce81661f5aecc8f596de6ff69d8ee8b48448d6d4477369164d8",
+      "bytes": 175388
+    },
+    {
+      "path": "models/mirewood/marsh_fern_lod1.glb",
+      "sha256": "f3496a02b5362ba5e407f03275c513bda34191ba552a0ecfe6f8c6cfc395d726",
+      "bytes": 67104
+    },
+    {
+      "path": "models/mirewood/marsh_fern_lod2.glb",
+      "sha256": "b0c2c982a90da4cecaeaa6574561806c70125c0f45334d6a70f163d0f5aa355a",
+      "bytes": 19472
+    },
+    {
+      "path": "models/mirewood/mooring_landing_lod0.glb",
+      "sha256": "33458f3a2beda5db0faddcb1caa112d12a1c4197d70a769c4d798655520921e4",
+      "bytes": 74364
+    },
+    {
+      "path": "models/mirewood/mooring_landing_lod1.glb",
+      "sha256": "9c3bcc75e9d52b561624987b9e6f6663ac4c615824b1128fd4875a80d54ff175",
+      "bytes": 15276
+    },
+    {
+      "path": "models/mirewood/mooring_landing_lod2.glb",
+      "sha256": "c61ad7cc6b9ba9b1bb9258491d25b5277adab2049c0319ab4d1f783240f2594e",
+      "bytes": 11916
+    },
+    {
+      "path": "models/mirewood/moss_retaining_wall_lod0.glb",
+      "sha256": "fd8727bc8382dbbe055cd42f02485b4de67bd06f726820cd7f5ca722b2408ca2",
+      "bytes": 200784
+    },
+    {
+      "path": "models/mirewood/moss_retaining_wall_lod1.glb",
+      "sha256": "4f14298e3cacc325dc3b416849e6d0ed3f929bb8390863e964f4d09e0d2d56fe",
+      "bytes": 66756
+    },
+    {
+      "path": "models/mirewood/moss_retaining_wall_lod2.glb",
+      "sha256": "2517c082a53522797165640647994e27ab548a04ef9deac4f89493d8334cc2a0",
+      "bytes": 26976
+    },
+    {
+      "path": "models/mirewood/old_mooring_piles_lod0.glb",
+      "sha256": "af9be2a5141cd07f28e7881c53148bc64defcf4896ca55d210c10a50451bdc95",
+      "bytes": 26280
+    },
+    {
+      "path": "models/mirewood/old_mooring_piles_lod1.glb",
+      "sha256": "4db52d1cca3bcb8fef263d08a4c2d7a62e0139ca6893d56d48c1c9f06762273f",
+      "bytes": 11032
+    },
+    {
+      "path": "models/mirewood/old_mooring_piles_lod2.glb",
+      "sha256": "e7086c0ff93d97e8d71f31931b416533eec6fcf5f368c117ef5f8b7c6d42982e",
+      "bytes": 4208
+    },
+    {
+      "path": "models/mirewood/peat_hummock_lod0.glb",
+      "sha256": "13975ed77ec78740c9f369768039668278489a18a356cc0a7d0801bce9abf7cd",
+      "bytes": 24668
+    },
+    {
+      "path": "models/mirewood/peat_hummock_lod1.glb",
+      "sha256": "f70a63d3c41f4a58f02200ad770ee8533f03a911f2f6ed678e259b8354eeec2d",
+      "bytes": 16248
+    },
+    {
+      "path": "models/mirewood/peat_hummock_lod2.glb",
+      "sha256": "0a1432796aadd4af0aaa44c2d11bf2f48d1fc4629440d026761f72ca2bd1ce43",
+      "bytes": 7896
+    },
+    {
+      "path": "models/mirewood/root_bank_16m_lod0.glb",
+      "sha256": "2752bab73832041328395ea2932a340bc9f180bb7c866ea15a83d5fea4fc44b2",
+      "bytes": 276252
+    },
+    {
+      "path": "models/mirewood/root_bank_16m_lod1.glb",
+      "sha256": "7b8c52bb6dd7292e7a7ede34bb89b54053a8f6d3d951ef45c667160e44094d00",
+      "bytes": 85276
+    },
+    {
+      "path": "models/mirewood/root_bank_16m_lod2.glb",
+      "sha256": "97b2fdd93902a32f9b5f9065d90166a02ccada2188e3acbadd4ffde5e6982891",
+      "bytes": 33280
+    },
+    {
+      "path": "models/mirewood/root_bank_corner_lod0.glb",
+      "sha256": "57f1d087d718c195d053a9d461f0d7b73a839b2b0ad3006fc64770291d7bc67b",
+      "bytes": 228580
+    },
+    {
+      "path": "models/mirewood/root_bank_corner_lod1.glb",
+      "sha256": "64949fca9b790b03cd34b87985c75b7f841c933332eee786ddae168637a06dd3",
+      "bytes": 78184
+    },
+    {
+      "path": "models/mirewood/root_bank_corner_lod2.glb",
+      "sha256": "af4feccc710e9274922fd801eeb6097ce717b151bbb94e9b3a66d97d24594210",
+      "bytes": 31468
+    },
+    {
+      "path": "models/mirewood/root_island_lod0.glb",
+      "sha256": "5518c2c9aa10bb4411141578fa9c4a0dadfdb9193abe63793ef4ceac2b753978",
+      "bytes": 244148
+    },
+    {
+      "path": "models/mirewood/root_island_lod1.glb",
+      "sha256": "f11b7beddc99db3b2817a018bc2ecca130c9b519ba74d09cffdf7eaf35e007fc",
+      "bytes": 76100
+    },
+    {
+      "path": "models/mirewood/root_island_lod2.glb",
+      "sha256": "be2cc038cb5069749c9c3daa40fffe832837e09a8e22bff62a34125f330b94a4",
+      "bytes": 29940
+    },
+    {
+      "path": "models/mirewood/rootbound_gate_lod0.glb",
+      "sha256": "f6501a9a034c9b3f558592d6c8f5b80233714190e299ad370f7f75336eeeb393",
+      "bytes": 398964
+    },
+    {
+      "path": "models/mirewood/rootbound_gate_lod1.glb",
+      "sha256": "36e10bd022256ac9bcd48f7750a6706377461b1132d55959073da9470e320c1c",
+      "bytes": 100676
+    },
+    {
+      "path": "models/mirewood/rootbound_gate_lod2.glb",
+      "sha256": "165185002318bd0999252a146b7cb9ed8ad0be207737c23c01bb7df27bec392b",
+      "bytes": 39556
+    },
+    {
+      "path": "models/mirewood/rootwell_ring_lod0.glb",
+      "sha256": "f5979441ef84788b9f980a675ff081e1181af8813fa38565c94706b1a9e75695",
+      "bytes": 146452
+    },
+    {
+      "path": "models/mirewood/rootwell_ring_lod1.glb",
+      "sha256": "c231156e0ddd9c43185d93b4acbc4d560137761bd94439168f237aec23dfad65",
+      "bytes": 49172
+    },
+    {
+      "path": "models/mirewood/rootwell_ring_lod2.glb",
+      "sha256": "588a05fed9df735a002e26c868852036c8fd70496b5f94eb28dc0b4390356036",
+      "bytes": 23104
+    },
+    {
+      "path": "models/mirewood/woven_root_bridge_lod0.glb",
+      "sha256": "72a4614eadb84c5affc6ead973cf8fba239e2ec315884ca53004283cee18a160",
+      "bytes": 143056
+    },
+    {
+      "path": "models/mirewood/woven_root_bridge_lod1.glb",
+      "sha256": "f8f5cf3058e825da1195ba93d5c94a17f842e6ba4b3e1354dffea6e4a5e8fd30",
+      "bytes": 56340
+    },
+    {
+      "path": "models/mirewood/woven_root_bridge_lod2.glb",
+      "sha256": "35b63cc5240209dd4b7afd15968dab4ac95b441829f3079258d16ec2e22dd6b2",
+      "bytes": 17108
+    }
+  ]
+}

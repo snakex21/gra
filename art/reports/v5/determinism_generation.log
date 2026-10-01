@@ -1,0 +1,503 @@
+ERROR Draco mesh compression is not available because library could not be found at /usr/bin/4.3/python/lib/python3.13/site-packages/libextern_draco.so
+22:54:59 | INFO: Starting glTF 2.0 export
+22:54:59 | INFO: Extracting primitive: root island
+22:54:59 | INFO: Primitives created: 1
+22:54:59 | INFO: Finished glTF 2.0 export in 0.005913734436035156 s
+
+22:54:59 | INFO: Starting glTF 2.0 export
+22:54:59 | INFO: Extracting primitive: root island.001
+22:54:59 | INFO: Primitives created: 1
+22:54:59 | INFO: Finished glTF 2.0 export in 0.003307342529296875 s
+
+22:54:59 | INFO: Starting glTF 2.0 export
+22:54:59 | INFO: Extracting primitive: root island.002
+22:54:59 | INFO: Primitives created: 1
+22:54:59 | INFO: Finished glTF 2.0 export in 0.0019376277923583984 s
+
+MIREWOOD_ASSET root_island [2604, 842, 328] 22
+22:54:59 | INFO: Starting glTF 2.0 export
+22:54:59 | INFO: Extracting primitive: crescent lobe
+22:54:59 | INFO: Primitives created: 1
+22:54:59 | INFO: Finished glTF 2.0 export in 0.005799531936645508 s
+
+22:54:59 | INFO: Starting glTF 2.0 export
+22:54:59 | INFO: Extracting primitive: crescent lobe.003
+22:54:59 | INFO: Primitives created: 1
+22:54:59 | INFO: Finished glTF 2.0 export in 0.003980398178100586 s
+
+22:54:59 | INFO: Starting glTF 2.0 export
+22:54:59 | INFO: Extracting primitive: crescent lobe.006
+22:54:59 | INFO: Primitives created: 1
+22:54:59 | INFO: Finished glTF 2.0 export in 0.003143310546875 s
+
+MIREWOOD_ASSET crescent_island [3828, 1398, 552] 30
+22:54:59 | INFO: Starting glTF 2.0 export
+22:54:59 | INFO: Extracting primitive: shore bank
+22:54:59 | INFO: Primitives created: 1
+22:54:59 | INFO: Finished glTF 2.0 export in 0.0066814422607421875 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: shore bank.001
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.0035638809204101562 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: shore bank.002
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.0027458667755126953 s
+
+MIREWOOD_ASSET root_bank_16m [2936, 936, 364] 25
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: bank turn left
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.004805564880371094 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: bank turn left.001
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.004385948181152344 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: bank turn left.002
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.0025653839111328125 s
+
+MIREWOOD_ASSET root_bank_corner [2552, 932, 368] 20
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.120
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.004057645797729492 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.129
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.0029227733612060547 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.136
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.002327442169189453 s
+
+MIREWOOD_ASSET woven_root_bridge [1464, 574, 170] 8
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.141
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.005215644836425781 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.154
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.002888202667236328 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.161
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.0021064281463623047 s
+
+MIREWOOD_ASSET buttress_root [2128, 630, 242] 20
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: bent open hollow trunk
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.005762815475463867 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: bent open hollow trunk.001
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.00475764274597168 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: bent open hollow trunk.002
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.003232717514038086 s
+
+MIREWOOD_ASSET hollow_elder_trunk [2984, 1050, 460] 42
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: bent open hollow trunk.003
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.0046727657318115234 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: bent open hollow trunk.004
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.0037238597869873047 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: bent open hollow trunk.005
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.0022428035736083984 s
+
+MIREWOOD_ASSET hollow_fallen_log [1820, 664, 264] 24
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.214
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.004705190658569336 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.233
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.003738880157470703 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.244
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.002146005630493164 s
+
+MIREWOOD_ASSET crown_stump [2344, 698, 244] 24
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.253
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.012226104736328125 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.286
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.0047376155853271484 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.300
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.004081249237060547 s
+
+MIREWOOD_ASSET fen_elder_tree [7668, 1556, 512] 24
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.312
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.005085468292236328 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.323
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.00400543212890625 s
+
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.329
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.0026292800903320312 s
+
+MIREWOOD_ASSET fallen_root_tree [1916, 592, 226] 19
+22:55:00 | INFO: Starting glTF 2.0 export
+22:55:00 | INFO: Extracting primitive: organic continuous root.335
+22:55:00 | INFO: Primitives created: 1
+22:55:00 | INFO: Finished glTF 2.0 export in 0.004303455352783203 s
+
+22:55:01 | INFO: Starting glTF 2.0 export
+22:55:01 | INFO: Extracting primitive: organic continuous root.343
+22:55:01 | INFO: Primitives created: 1
+22:55:01 | INFO: Finished glTF 2.0 export in 0.0029244422912597656 s
+
+22:55:01 | INFO: Starting glTF 2.0 export
+22:55:01 | INFO: Extracting primitive: organic continuous root.348
+22:55:01 | INFO: Primitives created: 1
+22:55:01 | INFO: Finished glTF 2.0 export in 0.0023796558380126953 s
+
+MIREWOOD_ASSET cypress_knees [1088, 330, 78] 0
+22:55:01 | INFO: Starting glTF 2.0 export
+22:55:01 | INFO: Extracting primitive: Cube.001
+22:55:01 | INFO: Primitives created: 1
+22:55:01 | INFO: Finished glTF 2.0 export in 0.0044820308685302734 s
+
+22:55:01 | INFO: Starting glTF 2.0 export
+22:55:01 | INFO: Extracting primitive: Cube.024
+22:55:01 | INFO: Primitives created: 1
+22:55:01 | INFO: Finished glTF 2.0 export in 0.004041910171508789 s
+
+22:55:01 | INFO: Starting glTF 2.0 export
+22:55:01 | INFO: Extracting primitive: Cube.043
+22:55:01 | INFO: Primitives created: 1
+22:55:01 | INFO: Finished glTF 2.0 export in 0.0043790340423583984 s
+
+MIREWOOD_ASSET boardwalk_8m [1012, 228, 180] 7
+22:55:01 | INFO: Starting glTF 2.0 export
+22:55:01 | INFO: Extracting primitive: Cube.058
+22:55:01 | INFO: Primitives created: 1
+22:55:01 | INFO: Finished glTF 2.0 export in 0.0033922195434570312 s
+
+22:55:01 | INFO: Starting glTF 2.0 export
+22:55:01 | INFO: Extracting primitive: Cube.078
+22:55:01 | INFO: Primitives created: 1
+22:55:01 | INFO: Finished glTF 2.0 export in 0.0029387474060058594 s
+
+22:55:01 | INFO: Starting glTF 2.0 export
+22:55:01 | INFO: Extracting primitive: Cube.094
+22:55:01 | INFO: Primitives created: 1
+22:55:01 | INFO: Finished glTF 2.0 export in 0.002480030059814453 s
+
+MIREWOOD_ASSET boardwalk_broken [880, 192, 168] 10
+22:55:02 | INFO: Starting glTF 2.0 export
+22:55:02 | INFO: Extracting primitive: Cube.108
+22:55:02 | INFO: Primitives created: 1
+22:55:02 | INFO: Finished glTF 2.0 export in 0.004073143005371094 s
+
+22:55:02 | INFO: Starting glTF 2.0 export
+22:55:02 | INFO: Extracting primitive: Cube.139
+22:55:02 | INFO: Primitives created: 1
+22:55:02 | INFO: Finished glTF 2.0 export in 0.003221273422241211 s
+
+22:55:02 | INFO: Starting glTF 2.0 export
+22:55:02 | INFO: Extracting primitive: Cube.166
+22:55:02 | INFO: Primitives created: 1
+22:55:02 | INFO: Finished glTF 2.0 export in 0.0027403831481933594 s
+
+MIREWOOD_ASSET boardwalk_railed [1364, 324, 276] 15
+22:55:02 | INFO: Starting glTF 2.0 export
+22:55:02 | INFO: Extracting primitive: Cube.189
+22:55:02 | INFO: Primitives created: 1
+22:55:02 | INFO: Finished glTF 2.0 export in 0.004376649856567383 s
+
+22:55:02 | INFO: Starting glTF 2.0 export
+22:55:02 | INFO: Extracting primitive: Cube.214
+22:55:02 | INFO: Primitives created: 1
+22:55:02 | INFO: Finished glTF 2.0 export in 0.0033540725708007812 s
+
+22:55:02 | INFO: Starting glTF 2.0 export
+22:55:02 | INFO: Extracting primitive: Cube.235
+22:55:02 | INFO: Primitives created: 1
+22:55:02 | INFO: Finished glTF 2.0 export in 0.002575397491455078 s
+
+MIREWOOD_ASSET boardwalk_turn [1100, 252, 204] 9
+22:55:03 | INFO: Starting glTF 2.0 export
+22:55:03 | INFO: Extracting primitive: Cube.252
+22:55:03 | INFO: Primitives created: 1
+22:55:03 | INFO: Finished glTF 2.0 export in 0.0038716793060302734 s
+
+22:55:03 | INFO: Starting glTF 2.0 export
+22:55:03 | INFO: Extracting primitive: Cube.274
+22:55:03 | INFO: Primitives created: 1
+22:55:03 | INFO: Finished glTF 2.0 export in 0.0030181407928466797 s
+
+22:55:03 | INFO: Starting glTF 2.0 export
+22:55:03 | INFO: Extracting primitive: Cube.291
+22:55:03 | INFO: Primitives created: 1
+22:55:03 | INFO: Finished glTF 2.0 export in 0.003124713897705078 s
+
+MIREWOOD_ASSET mooring_landing [968, 204, 156] 7
+22:55:03 | INFO: Starting glTF 2.0 export
+22:55:03 | INFO: Extracting primitive: organic continuous root.351
+22:55:03 | INFO: Primitives created: 1
+22:55:03 | INFO: Finished glTF 2.0 export in 0.0033502578735351562 s
+
+22:55:03 | INFO: Starting glTF 2.0 export
+22:55:03 | INFO: Extracting primitive: organic continuous root.354
+22:55:03 | INFO: Primitives created: 1
+22:55:03 | INFO: Finished glTF 2.0 export in 0.003021717071533203 s
+
+22:55:03 | INFO: Starting glTF 2.0 export
+22:55:03 | INFO: Extracting primitive: organic continuous root.357
+22:55:03 | INFO: Primitives created: 1
+22:55:03 | INFO: Finished glTF 2.0 export in 0.002728700637817383 s
+
+MIREWOOD_ASSET old_mooring_piles [360, 150, 48] 3
+22:55:03 | INFO: Starting glTF 2.0 export
+22:55:03 | INFO: Extracting primitive: Cube.310
+22:55:03 | INFO: Primitives created: 1
+22:55:03 | INFO: Finished glTF 2.0 export in 0.007506132125854492 s
+
+22:55:03 | INFO: Starting glTF 2.0 export
+22:55:03 | INFO: Extracting primitive: Cube.340
+22:55:03 | INFO: Primitives created: 1
+22:55:03 | INFO: Finished glTF 2.0 export in 0.005202293395996094 s
+
+22:55:03 | INFO: Starting glTF 2.0 export
+22:55:03 | INFO: Extracting primitive: Cube.350
+22:55:03 | INFO: Primitives created: 1
+22:55:03 | INFO: Finished glTF 2.0 export in 0.0032625198364257812 s
+
+MIREWOOD_ASSET rootbound_gate [4352, 1098, 432] 41
+22:55:04 | INFO: Starting glTF 2.0 export
+22:55:04 | INFO: Extracting primitive: Cube.352
+22:55:04 | INFO: Primitives created: 1
+22:55:04 | INFO: Finished glTF 2.0 export in 0.004680156707763672 s
+
+22:55:04 | INFO: Starting glTF 2.0 export
+22:55:04 | INFO: Extracting primitive: Cube.383
+22:55:04 | INFO: Primitives created: 1
+22:55:04 | INFO: Finished glTF 2.0 export in 0.0033953189849853516 s
+
+22:55:04 | INFO: Starting glTF 2.0 export
+22:55:04 | INFO: Extracting primitive: Cube.394
+22:55:04 | INFO: Primitives created: 1
+22:55:04 | INFO: Finished glTF 2.0 export in 0.0028390884399414062 s
+
+MIREWOOD_ASSET buried_moss_passage [1916, 448, 164] 7
+22:55:04 | INFO: Starting glTF 2.0 export
+22:55:04 | INFO: Extracting primitive: Cube.397
+22:55:04 | INFO: Primitives created: 1
+22:55:04 | INFO: Finished glTF 2.0 export in 0.005417823791503906 s
+
+22:55:04 | INFO: Starting glTF 2.0 export
+22:55:04 | INFO: Extracting primitive: Cube.431
+22:55:04 | INFO: Primitives created: 1
+22:55:04 | INFO: Finished glTF 2.0 export in 0.0035202503204345703 s
+
+22:55:04 | INFO: Starting glTF 2.0 export
+22:55:04 | INFO: Extracting primitive: Cube.445
+22:55:04 | INFO: Primitives created: 1
+22:55:05 | INFO: Finished glTF 2.0 export in 0.00682377815246582 s
+
+MIREWOOD_ASSET drowned_shrine [2824, 544, 204] 17
+22:55:05 | INFO: Starting glTF 2.0 export
+22:55:05 | INFO: Extracting primitive: Cube.450
+22:55:05 | INFO: Primitives created: 1
+22:55:05 | INFO: Finished glTF 2.0 export in 0.00718379020690918 s
+
+22:55:05 | INFO: Starting glTF 2.0 export
+22:55:05 | INFO: Extracting primitive: Cube.465
+22:55:05 | INFO: Primitives created: 1
+22:55:05 | INFO: Finished glTF 2.0 export in 0.004321575164794922 s
+
+22:55:05 | INFO: Starting glTF 2.0 export
+22:55:05 | INFO: Extracting primitive: Cube.470
+22:55:05 | INFO: Primitives created: 1
+22:55:05 | INFO: Finished glTF 2.0 export in 0.0032012462615966797 s
+
+MIREWOOD_ASSET moss_retaining_wall [2496, 894, 348] 10
+22:55:05 | INFO: Starting glTF 2.0 export
+22:55:05 | INFO: Extracting primitive: Cube.471
+22:55:05 | INFO: Primitives created: 1
+22:55:05 | INFO: Finished glTF 2.0 export in 0.005123138427734375 s
+
+22:55:05 | INFO: Starting glTF 2.0 export
+22:55:05 | INFO: Extracting primitive: Cube.478
+22:55:05 | INFO: Primitives created: 1
+22:55:05 | INFO: Finished glTF 2.0 export in 0.0027484893798828125 s
+
+22:55:05 | INFO: Starting glTF 2.0 export
+22:55:05 | INFO: Extracting primitive: Cube.485
+22:55:05 | INFO: Primitives created: 1
+22:55:05 | INFO: Finished glTF 2.0 export in 0.0030684471130371094 s
+
+MIREWOOD_ASSET drowned_stairs [1304, 366, 84] 10
+22:55:05 | INFO: Starting glTF 2.0 export
+22:55:05 | INFO: Extracting primitive: open stone well ring
+22:55:05 | INFO: Primitives created: 1
+22:55:05 | INFO: Finished glTF 2.0 export in 0.0046672821044921875 s
+
+22:55:05 | INFO: Starting glTF 2.0 export
+22:55:05 | INFO: Extracting primitive: open stone well ring.020
+22:55:05 | INFO: Primitives created: 1
+22:55:05 | INFO: Finished glTF 2.0 export in 0.003396272659301758 s
+
+22:55:05 | INFO: Starting glTF 2.0 export
+22:55:05 | INFO: Extracting primitive: open stone well ring.034
+22:55:05 | INFO: Primitives created: 1
+22:55:05 | INFO: Finished glTF 2.0 export in 0.0032868385314941406 s
+
+MIREWOOD_ASSET rootwell_ring [1568, 544, 264] 32
+22:55:05 | INFO: Starting glTF 2.0 export
+22:55:05 | INFO: Extracting primitive: Cube.492
+22:55:05 | INFO: Primitives created: 1
+22:55:05 | INFO: Finished glTF 2.0 export in 0.006362438201904297 s
+
+22:55:05 | INFO: Starting glTF 2.0 export
+22:55:05 | INFO: Extracting primitive: Cube.508
+22:55:05 | INFO: Primitives created: 1
+22:55:05 | INFO: Finished glTF 2.0 export in 0.0027556419372558594 s
+
+22:55:05 | INFO: Starting glTF 2.0 export
+22:55:05 | INFO: Extracting primitive: Cube.514
+22:55:05 | INFO: Primitives created: 1
+22:55:05 | INFO: Finished glTF 2.0 export in 0.004220724105834961 s
+
+MIREWOOD_ASSET fen_waystone [1700, 354, 132] 11
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: broad wetland blade
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.0037550926208496094 s
+
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: broad wetland blade.027
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.0024895668029785156 s
+
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: broad wetland blade.043
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.0037927627563476562 s
+
+MIREWOOD_ASSET broad_sedge [81, 48, 24] 0
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: organic continuous root.466
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.007609367370605469 s
+
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: organic continuous root.504
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.004895448684692383 s
+
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: organic continuous root.526
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.0032966136932373047 s
+
+MIREWOOD_ASSET cattail_rush [4028, 1144, 130] 0
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: organic continuous root.531
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.008043527603149414 s
+
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: organic continuous root.539
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.004184722900390625 s
+
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: organic continuous root.545
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.003239870071411133 s
+
+MIREWOOD_ASSET marsh_fern [1792, 684, 192] 0
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: notched lily pad
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.003142118453979492 s
+
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: notched lily pad.009
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.00403285026550293 s
+
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: notched lily pad.015
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.003069162368774414 s
+
+MIREWOOD_ASSET lily_pad_raft [99, 42, 15] 0
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: peat hummock
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.003080606460571289 s
+
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: peat hummock.001
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.0036318302154541016 s
+
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: peat hummock.002
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.0029718875885009766 s
+
+MIREWOOD_ASSET peat_hummock [361, 232, 100] 1
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: organic continuous root.549
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.006554603576660156 s
+
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: organic continuous root.564
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.0058231353759765625 s
+
+22:55:06 | INFO: Starting glTF 2.0 export
+22:55:06 | INFO: Extracting primitive: organic continuous root.573
+22:55:06 | INFO: Primitives created: 1
+22:55:06 | INFO: Finished glTF 2.0 export in 0.0029430389404296875 s
+
+MIREWOOD_ASSET hanging_moss [2040, 594, 130] 0
+Info: Packed 1 file(s)
+Info: Saved "mirewood.blend"
+MIREWOOD_GENERATION_OK 31 [63577, 18544, 7059]
+Blender 4.3.2
+
+Blender quit

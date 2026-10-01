@@ -1,0 +1,655 @@
+{
+  "algorithm": "SHA-256",
+  "files": [
+    {
+      "path": "art/source/saltwind.blend",
+      "sha256": "9143f6d0fb11f6b096b6adbb9035499ddede27aa170c79c383135f8817dc74f3",
+      "bytes": 2136145
+    },
+    {
+      "path": "assets/saltwind_manifest.json",
+      "sha256": "7d9c4fbd00156d31f1fffb6aa6dfe8d1f020da06b41cac2a04d7e3a7268f867a",
+      "bytes": 157124
+    },
+    {
+      "path": "environment/saltwind/arched_thorn.tscn",
+      "sha256": "6ebad90cce4c4b47c455593c32f99ff6d3ee02c07e6e990db139932e557e15e3",
+      "bytes": 205
+    },
+    {
+      "path": "environment/saltwind/blade_fin.tscn",
+      "sha256": "61d13dbff76a61dcaf5ee8982b7e5352b33c7c4e4f6974416da1ffd9966c2b69",
+      "bytes": 199
+    },
+    {
+      "path": "environment/saltwind/buried_stair_8m.tscn",
+      "sha256": "467f4374ef35735b6246fb15226962bf0c4f175fbba9a38b0939847a476ceec4",
+      "bytes": 211
+    },
+    {
+      "path": "environment/saltwind/crust_shelf.tscn",
+      "sha256": "d54a946623aa739019afe09b5c672af24cf7409ae3957180a7b4ae331828b820",
+      "bytes": 203
+    },
+    {
+      "path": "environment/saltwind/dead_flat_acacia.tscn",
+      "sha256": "93b320f76b5e06c5c11efb26749608054898cfcc21de6f8c506d311c17f1ff6e",
+      "bytes": 213
+    },
+    {
+      "path": "environment/saltwind/dry_fan_grass.tscn",
+      "sha256": "c379bba1a6d40a20c8aa6dbaa9fc837e9c9545b91a0144073eda715f574771a9",
+      "bytes": 207
+    },
+    {
+      "path": "environment/saltwind/dry_rill_banks.tscn",
+      "sha256": "38728067f0a81d5e1e0ae2034a447a609554713ed135123ed101783056cc9026",
+      "bytes": 209
+    },
+    {
+      "path": "environment/saltwind/dry_seed_reeds.tscn",
+      "sha256": "c2edb558fb805c132fcadbfed8d43b3d681340098f1833a9d58f4df0ee8d04ba",
+      "bytes": 209
+    },
+    {
+      "path": "environment/saltwind/eroded_needle.tscn",
+      "sha256": "28f2071dcc8e215b260774dd50121a4b394c976c22515ec039e3ae86fd7de692",
+      "bytes": 207
+    },
+    {
+      "path": "environment/saltwind/fallen_fractured_lintel.tscn",
+      "sha256": "6ad9ee57cc056b09503469be83e4c1f02eda660a38eb79d679823f778b4312c5",
+      "bytes": 227
+    },
+    {
+      "path": "environment/saltwind/forked_spire.tscn",
+      "sha256": "e34859e07986341279ec8ff7deab649a21d6fb5ec4e4a3999204cdb6a8bd16d2",
+      "bytes": 205
+    },
+    {
+      "path": "environment/saltwind/hoodoo_crown.tscn",
+      "sha256": "0857758cff9ba11d1eee60f43c56d5c6288d13d15146875447d16af911f17613",
+      "bytes": 205
+    },
+    {
+      "path": "environment/saltwind/mineral_blades.tscn",
+      "sha256": "0fd5d7aea860ce60454bac272c5a875650947af7f7d58a8f0133af2c0cdac2ff",
+      "bytes": 209
+    },
+    {
+      "path": "environment/saltwind/mushroom_outcrop.tscn",
+      "sha256": "f5db6150cee73e86c1b2e5a080c313c7e7ad36b970c6e7859ad118d94d03e0da",
+      "bytes": 213
+    },
+    {
+      "path": "environment/saltwind/notched_waystone.tscn",
+      "sha256": "38690d6b844a807d7b06c0ade506e8bc89a40d2eb03d9b8714d5a355f2015faa",
+      "bytes": 213
+    },
+    {
+      "path": "environment/saltwind/ribbed_salt_pillar.tscn",
+      "sha256": "96986a24517f74979d63c5dfe36165ee9d3b15ee01962320c0b3f2ac42786323",
+      "bytes": 217
+    },
+    {
+      "path": "environment/saltwind/root_snag.tscn",
+      "sha256": "0b7b5e35df4c43d4534119db292cccbc1c981210f041651353d7389784f549ff",
+      "bytes": 199
+    },
+    {
+      "path": "environment/saltwind/salt_polygon_plates.tscn",
+      "sha256": "f748da15bf7bfc5f7bfdd942aa9ee68390898caffd8294a37c7d882353bfe916",
+      "bytes": 219
+    },
+    {
+      "path": "environment/saltwind/salt_pressure_ridge.tscn",
+      "sha256": "1e2aec602b1b62cde5a51b8b6832712b32c472a63605bf290ae30669c3f07579",
+      "bytes": 219
+    },
+    {
+      "path": "environment/saltwind/salt_rosette.tscn",
+      "sha256": "186161a2a9519c0fe64c85516d7aeb028b325ebabe84a603abc5c192a947c580",
+      "bytes": 205
+    },
+    {
+      "path": "environment/saltwind/saltbrush_cushion.tscn",
+      "sha256": "82504d0ff99189258d07aa85153b5937a83d4098a5ea25a3064aefb48caa043b",
+      "bytes": 215
+    },
+    {
+      "path": "environment/saltwind/serrated_ridge.tscn",
+      "sha256": "99fd07a9944cb8e2fd80fbd9aa1b02d5abb0244ff8cfd8225df22bf482b26e94",
+      "bytes": 209
+    },
+    {
+      "path": "environment/saltwind/spear_fan.tscn",
+      "sha256": "09fd09d8b03864c84fd4e4e77065378c6f0466281ac499edbb32e21f807f0604",
+      "bytes": 199
+    },
+    {
+      "path": "environment/saltwind/stepped_sun_plinth.tscn",
+      "sha256": "db7636708b98a32b406adc7a9ace54b1085158d5f102ca61c5397a9f9ded44d8",
+      "bytes": 217
+    },
+    {
+      "path": "environment/saltwind/sunken_retaining_wall.tscn",
+      "sha256": "8e701712ea991b008848b8fa949817653239793da12fca267f3ea9a243abdeeb",
+      "bytes": 223
+    },
+    {
+      "path": "environment/saltwind/tabletop_mesa.tscn",
+      "sha256": "5cd10097c088f4b805ca5b1387c765d8c504d42ddbacd450757002d20150ecc1",
+      "bytes": 207
+    },
+    {
+      "path": "environment/saltwind/tiered_escarpment.tscn",
+      "sha256": "107c3867df86158d7029faea54d5fdb608cde11631adcdebe1b48c89c2cb52ba",
+      "bytes": 215
+    },
+    {
+      "path": "environment/saltwind/tumble_cage.tscn",
+      "sha256": "4b454083d0be5ffc103e9e187a74f75473aedaed1508aade964ae632ea4b0926",
+      "bytes": 203
+    },
+    {
+      "path": "environment/saltwind/undercut_bank.tscn",
+      "sha256": "bbbf3f457e09685f5d77089a36a48d24b09dca64b243c45ae5f479a7bc52dcf2",
+      "bytes": 207
+    },
+    {
+      "path": "environment/saltwind/wind_gate_13m.tscn",
+      "sha256": "dda6c7bf9c489679e65f9e1a4968a473e45fdc2bf59535d5912fad5c6d40e839",
+      "bytes": 207
+    },
+    {
+      "path": "environment/saltwind/wind_sieve_tower.tscn",
+      "sha256": "636e3af45f7df58cb6c2293dc093ffb6e5f1216ef39628b53520c27b16e9863e",
+      "bytes": 213
+    },
+    {
+      "path": "environment/saltwind/wind_yardang.tscn",
+      "sha256": "c4c82cef5ae28a175699ec9d0f4b7d143ccf08de098c8f66438ccb1bc04e6d36",
+      "bytes": 205
+    },
+    {
+      "path": "models/saltwind/arched_thorn_lod0.glb",
+      "sha256": "20ea869bd2e3d8a94f7530555ff111fd4a6b901728a40e625f3335d60c959525",
+      "bytes": 44408
+    },
+    {
+      "path": "models/saltwind/arched_thorn_lod1.glb",
+      "sha256": "efec89d055ec73360fdf3631f18c6778c4026f2510088ee54a9a9b3f9a442187",
+      "bytes": 22800
+    },
+    {
+      "path": "models/saltwind/arched_thorn_lod2.glb",
+      "sha256": "10d891eb1e1da3bcf8fab50ba51fd39d0787e7a0cca06e91fc1306c06aa2fb1f",
+      "bytes": 4844
+    },
+    {
+      "path": "models/saltwind/blade_fin_lod0.glb",
+      "sha256": "51cbf36f39a3b21df612b3dba8ce7d341398aa568f62f3077bdc5c1058ccdacb",
+      "bytes": 35112
+    },
+    {
+      "path": "models/saltwind/blade_fin_lod1.glb",
+      "sha256": "f36c5a592ddb0a6a4265d7ef9b39632f8fed9e87f1c039c90be9243e1727cbec",
+      "bytes": 13728
+    },
+    {
+      "path": "models/saltwind/blade_fin_lod2.glb",
+      "sha256": "807eb17365e6af64bc6293d0a43e9ac5008f0a565b3e7378efb00de08457ef5a",
+      "bytes": 7156
+    },
+    {
+      "path": "models/saltwind/buried_stair_8m_lod0.glb",
+      "sha256": "894b46777655a7dfa59b437a7ffadcadb2d5e0c6ea1ca4b5587f7ebc499f3ed5",
+      "bytes": 35132
+    },
+    {
+      "path": "models/saltwind/buried_stair_8m_lod1.glb",
+      "sha256": "fc0682d6fe7e842803b21d2effbeed88023545a0baaf80d0893d305375d106ff",
+      "bytes": 6820
+    },
+    {
+      "path": "models/saltwind/buried_stair_8m_lod2.glb",
+      "sha256": "e9cd773cbd761ca63b2f779b8057a41966803f7c1b8e44ac87d2d53fad106ad5",
+      "bytes": 4280
+    },
+    {
+      "path": "models/saltwind/crust_shelf_lod0.glb",
+      "sha256": "33a547ca05577bbf526cda0a9d9e8f0490324c47f93ed2bc91814fff80b5b5c9",
+      "bytes": 30312
+    },
+    {
+      "path": "models/saltwind/crust_shelf_lod1.glb",
+      "sha256": "c91ec9a612f2a7b0c8ea40c07138d691de6db5e139020a78e219dc2d32ca3395",
+      "bytes": 13668
+    },
+    {
+      "path": "models/saltwind/crust_shelf_lod2.glb",
+      "sha256": "ed0d4d18f777871dc4626856cedf801016efe3c271ee5391b7f03738e3cc49a5",
+      "bytes": 7164
+    },
+    {
+      "path": "models/saltwind/dead_flat_acacia_lod0.glb",
+      "sha256": "61a57e8319ed2c5f7e58cb9d23506680c2b754e81ca51d00c77ffbab9e46f048",
+      "bytes": 63336
+    },
+    {
+      "path": "models/saltwind/dead_flat_acacia_lod1.glb",
+      "sha256": "3583b6ac2556c781c6c01150326aed93deb39d07f36f2acb549ef3ea12f1155b",
+      "bytes": 28912
+    },
+    {
+      "path": "models/saltwind/dead_flat_acacia_lod2.glb",
+      "sha256": "9bc860dd3ad3b1a0ca2fbba783c017fe81d2c720edf12b725983fe640ebed17d",
+      "bytes": 4908
+    },
+    {
+      "path": "models/saltwind/dry_fan_grass_lod0.glb",
+      "sha256": "cd99888d2878e514efe13c94c69aed2219824b91d6820b414ee62af809b65513",
+      "bytes": 59928
+    },
+    {
+      "path": "models/saltwind/dry_fan_grass_lod1.glb",
+      "sha256": "8527876b88ae72237657fc920ee7a99b865b498f2f1d46c7c47d3ec1e1e5dd96",
+      "bytes": 24592
+    },
+    {
+      "path": "models/saltwind/dry_fan_grass_lod2.glb",
+      "sha256": "91f835121a9dfb97f017becc244e2359c4695ecaeee00773a37e4077a0953c38",
+      "bytes": 7276
+    },
+    {
+      "path": "models/saltwind/dry_rill_banks_lod0.glb",
+      "sha256": "c70436f69b797358d98e7844e8a1498e74c9fced5a9e0b322a75706f87d7b141",
+      "bytes": 50708
+    },
+    {
+      "path": "models/saltwind/dry_rill_banks_lod1.glb",
+      "sha256": "7432631c999a45f0b9084f26f868dec97d235bdd4dccc408755a1df04a987e9f",
+      "bytes": 29008
+    },
+    {
+      "path": "models/saltwind/dry_rill_banks_lod2.glb",
+      "sha256": "cb4aa65e04554feb9ddbc17889ea4e00fd8ffcd11d713e19250f2cd670764a0a",
+      "bytes": 13348
+    },
+    {
+      "path": "models/saltwind/dry_seed_reeds_lod0.glb",
+      "sha256": "f4f2b74f98b54f27042073bb32f295d793d396ef55e43ac968ddfe5b2d0f0519",
+      "bytes": 38008
+    },
+    {
+      "path": "models/saltwind/dry_seed_reeds_lod1.glb",
+      "sha256": "2b8226fb9aa07296a77311f3bdb2ab83453489ee972d0502fa3714d4e59e5cb1",
+      "bytes": 16176
+    },
+    {
+      "path": "models/saltwind/dry_seed_reeds_lod2.glb",
+      "sha256": "768667f895b1385f95a17869de0a44bba6b2e91893f11bbcbf183ebdbfeddc3e",
+      "bytes": 4784
+    },
+    {
+      "path": "models/saltwind/eroded_needle_lod0.glb",
+      "sha256": "3394877483ea7e2833cca4ea453af1850374cd10395bfbd50f1d03fd21f525c6",
+      "bytes": 35384
+    },
+    {
+      "path": "models/saltwind/eroded_needle_lod1.glb",
+      "sha256": "1cb4edb7ce1a19680a9c7df99b5a6d13363a52d5e6fd60c701ccd515612345f2",
+      "bytes": 13804
+    },
+    {
+      "path": "models/saltwind/eroded_needle_lod2.glb",
+      "sha256": "144a3c9f9e9bee76fa7b60ebbd08de61beba2098ab9be9e126b64453565f8af3",
+      "bytes": 7172
+    },
+    {
+      "path": "models/saltwind/fallen_fractured_lintel_lod0.glb",
+      "sha256": "584e6dc63fd244e9e03c913df07fc6b63bc377bf3a72dba90ffe390daa0578af",
+      "bytes": 42196
+    },
+    {
+      "path": "models/saltwind/fallen_fractured_lintel_lod1.glb",
+      "sha256": "75fd74944312b50d30bc07fc44ee6b0089161bf7f9ac8a121d4e3ccf3722f096",
+      "bytes": 6100
+    },
+    {
+      "path": "models/saltwind/fallen_fractured_lintel_lod2.glb",
+      "sha256": "df6f5846194159a16f32d8bd9034b1e23e679a710e2098450d84750f12f8be89",
+      "bytes": 2732
+    },
+    {
+      "path": "models/saltwind/forked_spire_lod0.glb",
+      "sha256": "8132a5a525ae88851d7d34c86286374e03a4e3ef0e09eaa018d7d50d0b785909",
+      "bytes": 60940
+    },
+    {
+      "path": "models/saltwind/forked_spire_lod1.glb",
+      "sha256": "ce9527fbb7b54812ea76ea4e9d21c8e703dc78fbbba1a86bc45a54a3c69bd541",
+      "bytes": 26472
+    },
+    {
+      "path": "models/saltwind/forked_spire_lod2.glb",
+      "sha256": "29f15d5da637d1ea3aafa12c5245aac69d75b199aadedef2fa9ca13084030f77",
+      "bytes": 13336
+    },
+    {
+      "path": "models/saltwind/hoodoo_crown_lod0.glb",
+      "sha256": "53b4eb3147014d7ed8c514cec98e393ebcec23e1dfe91fdce0b7c8d9b6a49140",
+      "bytes": 44340
+    },
+    {
+      "path": "models/saltwind/hoodoo_crown_lod1.glb",
+      "sha256": "783fc51227ef33d00deae892ed188b330693cd33cbd293183f2ccdef5b4456af",
+      "bytes": 19660
+    },
+    {
+      "path": "models/saltwind/hoodoo_crown_lod2.glb",
+      "sha256": "e0817b8e6c25711d1ea707a8180ef3b141ae4adf0294eaa9927d155ee84c13c9",
+      "bytes": 7168
+    },
+    {
+      "path": "models/saltwind/mineral_blades_lod0.glb",
+      "sha256": "9ededd5430f68f12e3eca464908242d1d663c8b55cf6729da117f8d71f317a0e",
+      "bytes": 20080
+    },
+    {
+      "path": "models/saltwind/mineral_blades_lod1.glb",
+      "sha256": "414ff02a7ec298b404919a64a95501f6cbec631a2d5079178c9cd3aa39e68d04",
+      "bytes": 11544
+    },
+    {
+      "path": "models/saltwind/mineral_blades_lod2.glb",
+      "sha256": "9acb6315786733f9753692eeec1d7d19f5cab00bc5be4d2ec139b6caa3fbf2b5",
+      "bytes": 5284
+    },
+    {
+      "path": "models/saltwind/mushroom_outcrop_lod0.glb",
+      "sha256": "f4aa6bfe272276a02323f54a37191693f4f1d3fd963f567ab2a9e754c4ba808e",
+      "bytes": 44156
+    },
+    {
+      "path": "models/saltwind/mushroom_outcrop_lod1.glb",
+      "sha256": "06ba4c88976d4a92fbcc3e35a44d8bab39cfbd91d21acfa9c84aa86e2f8fabbd",
+      "bytes": 19664
+    },
+    {
+      "path": "models/saltwind/mushroom_outcrop_lod2.glb",
+      "sha256": "3097904cea9a79c225af4d8e5098f02e04a11c4cb2deae118244049ba765bde3",
+      "bytes": 7172
+    },
+    {
+      "path": "models/saltwind/notched_waystone_lod0.glb",
+      "sha256": "67dc07919d50e77f3b855e89b0e53fda8968c12398630664b5ea3fa1e068345a",
+      "bytes": 43604
+    },
+    {
+      "path": "models/saltwind/notched_waystone_lod1.glb",
+      "sha256": "c68db026046b98fef6338181c830827cf6cee146493a3788b23900c4295c3be8",
+      "bytes": 14524
+    },
+    {
+      "path": "models/saltwind/notched_waystone_lod2.glb",
+      "sha256": "77a35bbce7bcf31760007f80c4c2286f533369291a10f30231731cf570793b9e",
+      "bytes": 7176
+    },
+    {
+      "path": "models/saltwind/ribbed_salt_pillar_lod0.glb",
+      "sha256": "bb511f1f6e239007b82e7b187f96a91fbc11b342ea8fbb1836527db25c58267c",
+      "bytes": 81080
+    },
+    {
+      "path": "models/saltwind/ribbed_salt_pillar_lod1.glb",
+      "sha256": "ebf0cf0b1fac8c4ba6fc68d7deee3a0ef8c713beb6be58c656c9994da36823b3",
+      "bytes": 8564
+    },
+    {
+      "path": "models/saltwind/ribbed_salt_pillar_lod2.glb",
+      "sha256": "0456b9395766264d19e37f111f5fe3278318de868150789283aacd5adae083c6",
+      "bytes": 5204
+    },
+    {
+      "path": "models/saltwind/root_snag_lod0.glb",
+      "sha256": "732bb14014cf7cb856e11537fbec7cdbfa51770e2e2d3d3c66770054cc036ce8",
+      "bytes": 31184
+    },
+    {
+      "path": "models/saltwind/root_snag_lod1.glb",
+      "sha256": "76aa1312f1aa32f258e3463682bb8db6dd30ae9de6d203bf269112b848bd464e",
+      "bytes": 9480
+    },
+    {
+      "path": "models/saltwind/root_snag_lod2.glb",
+      "sha256": "255350186f0b9a14c593f444f05cd13a5f1924086d203910e74e26062829f23b",
+      "bytes": 4148
+    },
+    {
+      "path": "models/saltwind/salt_polygon_plates_lod0.glb",
+      "sha256": "2c6fb0981e361cab22c09dde4effc1ff7af63d9852852562ff871191632b5eb5",
+      "bytes": 15500
+    },
+    {
+      "path": "models/saltwind/salt_polygon_plates_lod1.glb",
+      "sha256": "335c26a1fb65889d07cc842db444e790aadc39664e27fdbd604c2cbc7556128d",
+      "bytes": 8656
+    },
+    {
+      "path": "models/saltwind/salt_polygon_plates_lod2.glb",
+      "sha256": "31299695fac6bd26121fb3b28280fa44867e79fe178ddc5c7a308ac44952cafe",
+      "bytes": 5372
+    },
+    {
+      "path": "models/saltwind/salt_pressure_ridge_lod0.glb",
+      "sha256": "02e4ff624cc3974fba71c35430ee6e8d95beba2f86a409d64722f5a2b0a76746",
+      "bytes": 30088
+    },
+    {
+      "path": "models/saltwind/salt_pressure_ridge_lod1.glb",
+      "sha256": "5225f10a0a964d4c032a3b9ce2e71679795cab2574e1b3eb216ed16d481ec7b5",
+      "bytes": 13704
+    },
+    {
+      "path": "models/saltwind/salt_pressure_ridge_lod2.glb",
+      "sha256": "1cb602cf8fa9a8f851098bfa27274c16a8b959c73982faa0ad618ee31deb800f",
+      "bytes": 7196
+    },
+    {
+      "path": "models/saltwind/salt_rosette_lod0.glb",
+      "sha256": "fb3eecfabceaa4cc9816ca38a1c8414fb7354a5a36ce548905911e744f1f73e3",
+      "bytes": 21864
+    },
+    {
+      "path": "models/saltwind/salt_rosette_lod1.glb",
+      "sha256": "21c3e9bf0b602517bfc42651f95feb84bc6ce61c8c4bc864ad24f0f504bfe59f",
+      "bytes": 10536
+    },
+    {
+      "path": "models/saltwind/salt_rosette_lod2.glb",
+      "sha256": "0e9eb4ea3811802fdc7967ebc0549410d5558438396372c4313110f6293c550b",
+      "bytes": 5232
+    },
+    {
+      "path": "models/saltwind/saltbrush_cushion_lod0.glb",
+      "sha256": "0a6312f6b312d0e319343a0a1f93e9f10fa6c5e768884ae7cde3eb9a555e2244",
+      "bytes": 79324
+    },
+    {
+      "path": "models/saltwind/saltbrush_cushion_lod1.glb",
+      "sha256": "303315e3414b90d25742c3c556f6951c503e75977d840441445a4f9032c5f5cc",
+      "bytes": 32180
+    },
+    {
+      "path": "models/saltwind/saltbrush_cushion_lod2.glb",
+      "sha256": "e64339d1d81ecec666b07347d2cd1c8552c0ab566ec168e3faeaf9ad64d6e9ff",
+      "bytes": 9244
+    },
+    {
+      "path": "models/saltwind/serrated_ridge_lod0.glb",
+      "sha256": "ba6fd5e54aaeb15a550f2c0502f865dc9cf390c8e8a06a62e80a5f82dde0bcef",
+      "bytes": 34992
+    },
+    {
+      "path": "models/saltwind/serrated_ridge_lod1.glb",
+      "sha256": "bea36667bd33cac60e32de8dd8949a2829df30e0310207f863ac391ba37a1d74",
+      "bytes": 13796
+    },
+    {
+      "path": "models/saltwind/serrated_ridge_lod2.glb",
+      "sha256": "e712af8b6c8705c561103c46f57c263c45b83f90b0b53efc828fdc9dcb4b9c1d",
+      "bytes": 7164
+    },
+    {
+      "path": "models/saltwind/spear_fan_lod0.glb",
+      "sha256": "c98a2d8be999e7ddccdfc69867898d2095e0cb821a85d33c53e605895a8601bc",
+      "bytes": 41012
+    },
+    {
+      "path": "models/saltwind/spear_fan_lod1.glb",
+      "sha256": "0dc9f73bdf07efbd64790fb13bbb9a0638242f694956b6bf1298d38454cfd1ea",
+      "bytes": 9672
+    },
+    {
+      "path": "models/saltwind/spear_fan_lod2.glb",
+      "sha256": "8df2e4bba3978c5bd7d14f15bed4feac3f833fe626866a9fdf8a6d40ce29d395",
+      "bytes": 3520
+    },
+    {
+      "path": "models/saltwind/stepped_sun_plinth_lod0.glb",
+      "sha256": "ee3def434daa08b123d13735ce8d6e3fcef722999caa21ac32bb7d3346322c59",
+      "bytes": 20400
+    },
+    {
+      "path": "models/saltwind/stepped_sun_plinth_lod1.glb",
+      "sha256": "def4fbd4e29c73ca98c03a8478427623f14a4318edc0c77efdb4e83e73d4a17e",
+      "bytes": 5140
+    },
+    {
+      "path": "models/saltwind/stepped_sun_plinth_lod2.glb",
+      "sha256": "166f9b499943674d02381881fa4a35b138989a818aa04e287d9b84c38cb08d59",
+      "bytes": 3452
+    },
+    {
+      "path": "models/saltwind/sunken_retaining_wall_lod0.glb",
+      "sha256": "0c8e29a0f0a97c5994ad6a1200cae581954f8508aed9d8ec2c47267f830b44b7",
+      "bytes": 73844
+    },
+    {
+      "path": "models/saltwind/sunken_retaining_wall_lod1.glb",
+      "sha256": "d60141b66a85a9e4aa03ff30101f79b6f320b43f6e5d55224a4c33e145232748",
+      "bytes": 8520
+    },
+    {
+      "path": "models/saltwind/sunken_retaining_wall_lod2.glb",
+      "sha256": "c8a7a5acf9cc91ffb3ced419c53546267f01e6226cf9382b5cc9625179ae9cae",
+      "bytes": 5132
+    },
+    {
+      "path": "models/saltwind/tabletop_mesa_lod0.glb",
+      "sha256": "2dfb9ed58117b78d18c6700f4a782fee53fff4832dacf7925a9cab03fa25be2c",
+      "bytes": 35004
+    },
+    {
+      "path": "models/saltwind/tabletop_mesa_lod1.glb",
+      "sha256": "5ae32995410689712c05c6427078553f6c695125d04a640fd0e0740c3e1f6147",
+      "bytes": 13744
+    },
+    {
+      "path": "models/saltwind/tabletop_mesa_lod2.glb",
+      "sha256": "cce3d4cd02ef6a6a4b6a2a950d54926a17443bcb1151f5c0d4e560d7072d7e5e",
+      "bytes": 7176
+    },
+    {
+      "path": "models/saltwind/tiered_escarpment_lod0.glb",
+      "sha256": "2b4bcc697b30122eec830489acd0cd5488c571312d4dcb3eaf058b3d89e95091",
+      "bytes": 178776
+    },
+    {
+      "path": "models/saltwind/tiered_escarpment_lod1.glb",
+      "sha256": "95d61ddde1dfbb4d51788c4a3805150e1dc0e10cca60db28913a02ba465076b8",
+      "bytes": 115100
+    },
+    {
+      "path": "models/saltwind/tiered_escarpment_lod2.glb",
+      "sha256": "877f42603746beb0bbbe314db45b8befbb817d24df96a05333ba7ac6e93687ee",
+      "bytes": 16880
+    },
+    {
+      "path": "models/saltwind/tumble_cage_lod0.glb",
+      "sha256": "88d8bbb96321085b488a94a6194e53ca06f14b347a908a3977eaefd134a6d151",
+      "bytes": 68340
+    },
+    {
+      "path": "models/saltwind/tumble_cage_lod1.glb",
+      "sha256": "f9228a2bef1dfa20b5ace34e5d357667a6caa67e7f4fad0ec7d8de7d7f494a8f",
+      "bytes": 26988
+    },
+    {
+      "path": "models/saltwind/tumble_cage_lod2.glb",
+      "sha256": "4ed23744155d903c92c838521f75628335b3d8170df823104bc3c11451b84397",
+      "bytes": 8648
+    },
+    {
+      "path": "models/saltwind/undercut_bank_lod0.glb",
+      "sha256": "ac1e222b6fad0f3e741031ac0548f7798762a29ac8314035f86377b303b8cffc",
+      "bytes": 34804
+    },
+    {
+      "path": "models/saltwind/undercut_bank_lod1.glb",
+      "sha256": "edb6879b2eea2edaa0a083cdf6cb0cf5498604db1b57aa5cf1b8002677b71ce6",
+      "bytes": 13672
+    },
+    {
+      "path": "models/saltwind/undercut_bank_lod2.glb",
+      "sha256": "e761dc5868b4cf43724ed848be578cc739737aa9184d4e188377cbbe041d0c19",
+      "bytes": 7164
+    },
+    {
+      "path": "models/saltwind/wind_gate_13m_lod0.glb",
+      "sha256": "505d54513ba1f0bba1f2bf388c7002f4e3c6d4b8047108f70958cad9ea907356",
+      "bytes": 189068
+    },
+    {
+      "path": "models/saltwind/wind_gate_13m_lod1.glb",
+      "sha256": "56f854be04bff5f3767f6d0debc6f1b3bf44db7d72589f016e1a1d93404af758",
+      "bytes": 18632
+    },
+    {
+      "path": "models/saltwind/wind_gate_13m_lod2.glb",
+      "sha256": "3761050d6b7e306adea35eb14f2dc5a48567a47060da7106b6acaa5a6d587ca6",
+      "bytes": 6028
+    },
+    {
+      "path": "models/saltwind/wind_sieve_tower_lod0.glb",
+      "sha256": "1795e09a65a523e666ff1ce2ea22368cdb1a365182957393d0203f7279fe82eb",
+      "bytes": 217800
+    },
+    {
+      "path": "models/saltwind/wind_sieve_tower_lod1.glb",
+      "sha256": "2709d86b25a84326a534cbb1213290cc31fcd9f0d4ecf1f14ff121483d6a0291",
+      "bytes": 20284
+    },
+    {
+      "path": "models/saltwind/wind_sieve_tower_lod2.glb",
+      "sha256": "a5ca12892c59a89405c46dd91ed440ea55524c3949ca934377ff2d4c2812b90a",
+      "bytes": 6840
+    },
+    {
+      "path": "models/saltwind/wind_yardang_lod0.glb",
+      "sha256": "01c686b619355eff727a4657497a63f84abff6dbfd9a08f50a98d8b5dd2dd1b9",
+      "bytes": 34872
+    },
+    {
+      "path": "models/saltwind/wind_yardang_lod1.glb",
+      "sha256": "4c3f0954697fb2f8faecc6aa648176e93afdb551ec97cc978e5c696c1cb6a402",
+      "bytes": 13744
+    },
+    {
+      "path": "models/saltwind/wind_yardang_lod2.glb",
+      "sha256": "48199c1885439e3cd527adc0deb6c7241db7a7bcd853b303418f25e8a573a013",
+      "bytes": 7172
+    }
+  ]
+}

@@ -1,0 +1,345 @@
+{
+  "checks": 1261,
+  "asset_count": 31,
+  "lod_glbs": 93,
+  "assets": [
+    {
+      "id": "root_island",
+      "triangles": [
+        2604,
+        842,
+        328
+      ],
+      "proxy_shapes": 22,
+      "glb_bytes": 350188
+    },
+    {
+      "id": "crescent_island",
+      "triangles": [
+        3828,
+        1398,
+        552
+      ],
+      "proxy_shapes": 30,
+      "glb_bytes": 506788
+    },
+    {
+      "id": "root_bank_16m",
+      "triangles": [
+        2936,
+        936,
+        364
+      ],
+      "proxy_shapes": 25,
+      "glb_bytes": 394808
+    },
+    {
+      "id": "root_bank_corner",
+      "triangles": [
+        2552,
+        932,
+        368
+      ],
+      "proxy_shapes": 20,
+      "glb_bytes": 338232
+    },
+    {
+      "id": "woven_root_bridge",
+      "triangles": [
+        1464,
+        574,
+        170
+      ],
+      "proxy_shapes": 8,
+      "glb_bytes": 216504
+    },
+    {
+      "id": "buttress_root",
+      "triangles": [
+        2128,
+        630,
+        242
+      ],
+      "proxy_shapes": 20,
+      "glb_bytes": 293556
+    },
+    {
+      "id": "hollow_elder_trunk",
+      "triangles": [
+        2984,
+        1050,
+        460
+      ],
+      "proxy_shapes": 42,
+      "glb_bytes": 424808
+    },
+    {
+      "id": "hollow_fallen_log",
+      "triangles": [
+        1820,
+        664,
+        264
+      ],
+      "proxy_shapes": 24,
+      "glb_bytes": 246232
+    },
+    {
+      "id": "crown_stump",
+      "triangles": [
+        2344,
+        698,
+        244
+      ],
+      "proxy_shapes": 24,
+      "glb_bytes": 291240
+    },
+    {
+      "id": "fen_elder_tree",
+      "triangles": [
+        7668,
+        1556,
+        512
+      ],
+      "proxy_shapes": 24,
+      "glb_bytes": 962796
+    },
+    {
+      "id": "fallen_root_tree",
+      "triangles": [
+        1916,
+        592,
+        226
+      ],
+      "proxy_shapes": 19,
+      "glb_bytes": 268452
+    },
+    {
+      "id": "cypress_knees",
+      "triangles": [
+        1088,
+        330,
+        78
+      ],
+      "proxy_shapes": 0,
+      "glb_bytes": 145104
+    },
+    {
+      "id": "boardwalk_8m",
+      "triangles": [
+        1012,
+        228,
+        180
+      ],
+      "proxy_shapes": 7,
+      "glb_bytes": 108324
+    },
+    {
+      "id": "boardwalk_broken",
+      "triangles": [
+        880,
+        192,
+        168
+      ],
+      "proxy_shapes": 10,
+      "glb_bytes": 94984
+    },
+    {
+      "id": "boardwalk_railed",
+      "triangles": [
+        1364,
+        324,
+        276
+      ],
+      "proxy_shapes": 15,
+      "glb_bytes": 148476
+    },
+    {
+      "id": "boardwalk_turn",
+      "triangles": [
+        1100,
+        252,
+        204
+      ],
+      "proxy_shapes": 9,
+      "glb_bytes": 118308
+    },
+    {
+      "id": "mooring_landing",
+      "triangles": [
+        968,
+        204,
+        156
+      ],
+      "proxy_shapes": 7,
+      "glb_bytes": 101556
+    },
+    {
+      "id": "old_mooring_piles",
+      "triangles": [
+        360,
+        150,
+        48
+      ],
+      "proxy_shapes": 3,
+      "glb_bytes": 41520
+    },
+    {
+      "id": "rootbound_gate",
+      "triangles": [
+        4352,
+        1098,
+        432
+      ],
+      "proxy_shapes": 41,
+      "glb_bytes": 539196
+    },
+    {
+      "id": "buried_moss_passage",
+      "triangles": [
+        1916,
+        448,
+        164
+      ],
+      "proxy_shapes": 7,
+      "glb_bytes": 207876
+    },
+    {
+      "id": "drowned_shrine",
+      "triangles": [
+        2824,
+        544,
+        204
+      ],
+      "proxy_shapes": 17,
+      "glb_bytes": 315056
+    },
+    {
+      "id": "moss_retaining_wall",
+      "triangles": [
+        2496,
+        894,
+        348
+      ],
+      "proxy_shapes": 10,
+      "glb_bytes": 294516
+    },
+    {
+      "id": "drowned_stairs",
+      "triangles": [
+        1304,
+        366,
+        84
+      ],
+      "proxy_shapes": 10,
+      "glb_bytes": 162352
+    },
+    {
+      "id": "rootwell_ring",
+      "triangles": [
+        1568,
+        544,
+        264
+      ],
+      "proxy_shapes": 32,
+      "glb_bytes": 218728
+    },
+    {
+      "id": "fen_waystone",
+      "triangles": [
+        1700,
+        354,
+        132
+      ],
+      "proxy_shapes": 11,
+      "glb_bytes": 197164
+    },
+    {
+      "id": "broad_sedge",
+      "triangles": [
+        81,
+        48,
+        24
+      ],
+      "proxy_shapes": 0,
+      "glb_bytes": 15380
+    },
+    {
+      "id": "cattail_rush",
+      "triangles": [
+        4028,
+        1144,
+        130
+      ],
+      "proxy_shapes": 0,
+      "glb_bytes": 446464
+    },
+    {
+      "id": "marsh_fern",
+      "triangles": [
+        1792,
+        684,
+        192
+      ],
+      "proxy_shapes": 0,
+      "glb_bytes": 261964
+    },
+    {
+      "id": "lily_pad_raft",
+      "triangles": [
+        99,
+        42,
+        15
+      ],
+      "proxy_shapes": 0,
+      "glb_bytes": 19012
+    },
+    {
+      "id": "peat_hummock",
+      "triangles": [
+        361,
+        232,
+        100
+      ],
+      "proxy_shapes": 1,
+      "glb_bytes": 48812
+    },
+    {
+      "id": "hanging_moss",
+      "triangles": [
+        2040,
+        594,
+        130
+      ],
+      "proxy_shapes": 0,
+      "glb_bytes": 268080
+    }
+  ],
+  "unique_triangles_by_lod": [
+    63577,
+    18544,
+    7059
+  ],
+  "collision_shape_count": 438,
+  "runtime_glb_bytes": 8046476,
+  "source_blend_bytes": 3852193,
+  "new_textures": 5,
+  "source_texture_bytes": 6950433,
+  "texture_dimensions": {
+    "atlas_1k.png": 1024,
+    "peat_albedo.png": 1024,
+    "peat_normal.png": 1024,
+    "moss_albedo.png": 1024,
+    "moss_normal.png": 1024
+  },
+  "shared_original_atlas": "textures/mirewood/atlas_1k.png",
+  "shared_atlas_estimate_rgba8_full_mips_bytes": 5592405,
+  "all_five_maps_estimate_rgba8_full_mips_bytes": 27962025,
+  "scope_base": "f48162425002ec23562a271c11b4abd8b6c593cf",
+  "scope_fence": "src, scenes, tests, project.godot and original colossus contract unchanged",
+  "notes": [
+    "Exactly one surface per GLB, new shared atlas override, no embedded images; five shared texture maps.",
+    "Collision recipes remain separate from visual LODs and retain openings.",
+    "Triangle totals are unique library geometry, not the rendered-frame workload.",
+    "Atlas memory is an uncompressed theoretical estimate; actual renderer counters are reported separately."
+  ]
+}

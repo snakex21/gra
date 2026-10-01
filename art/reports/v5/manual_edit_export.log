@@ -1,0 +1,26 @@
+Info: Saved "mirewood.blend"
+Blender 4.3.2
+Read blend: "/tmp/mirewood-edit-nrjx5je4/art/source/mirewood.blend"
+
+Blender quit
+ERROR Draco mesh compression is not available because library could not be found at /usr/bin/4.3/python/lib/python3.13/site-packages/libextern_draco.so
+22:54:56 | INFO: Starting glTF 2.0 export
+22:54:56 | INFO: Extracting primitive: Cube.002
+22:54:56 | INFO: Primitives created: 1
+22:54:56 | INFO: Finished glTF 2.0 export in 0.008257627487182617 s
+
+22:54:56 | INFO: Starting glTF 2.0 export
+22:54:56 | INFO: Extracting primitive: Cube.003
+22:54:56 | INFO: Primitives created: 1
+22:54:56 | INFO: Finished glTF 2.0 export in 0.010091543197631836 s
+
+22:54:56 | INFO: Starting glTF 2.0 export
+22:54:56 | INFO: Extracting primitive: Cube.004
+22:54:56 | INFO: Primitives created: 1
+22:54:56 | INFO: Finished glTF 2.0 export in 0.006520271301269531 s
+
+MIREWOOD_EDITED_EXPORT_OK boardwalk_8m [1012, 228, 180]
+Blender 4.3.2
+Read blend: "/tmp/mirewood-edit-nrjx5je4/art/source/mirewood.blend"
+
+Blender quit

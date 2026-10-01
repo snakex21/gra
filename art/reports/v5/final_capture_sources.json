@@ -1,0 +1,69 @@
+{
+  "asset_commit": "2847f477157bc15a96dd88944e247832e0b5564b",
+  "hash_algorithm": "sha256",
+  "capture_files": [
+    {
+      "path": "art/screenshots/v5/01_quiet_fen_day.png",
+      "sha256": "341ae642522e16c4bb86a37fe56838b1075c3f9851ba1f94603e8d908dbf6bed"
+    },
+    {
+      "path": "art/screenshots/v5/02_quiet_fen_sunset.png",
+      "sha256": "243162f31300b97b325be7ba282ffb70aeedbc6e36d023e1c298baa405e89f8a"
+    },
+    {
+      "path": "art/screenshots/v5/03_quiet_fen_blue_hour.png",
+      "sha256": "116a6a8c07c92ee1270defa694028bddab63afe6a97d1021e6934b9dd5786bb3"
+    },
+    {
+      "path": "art/screenshots/v5/04_rootbound_gate.png",
+      "sha256": "8ece5fb75b7fbefe9443ae78f27d4e76901c1d09fcd2bfb2d1032bed8ed12e30"
+    },
+    {
+      "path": "art/screenshots/v5/05_hollow_log.png",
+      "sha256": "0f041d6dfcbf8c26976aa465e292d372fbd25cec7a560f2a76ec6c43e351193a"
+    },
+    {
+      "path": "art/screenshots/v5/06_broken_boardwalk.png",
+      "sha256": "23b7086e705d07f6db3549ecee40292b9fd9f0c39918e93291196a132b351aee"
+    },
+    {
+      "path": "art/screenshots/v5/07_elder_silhouettes.png",
+      "sha256": "013e65fec29003b8d7530341d79ee22c5700f3ff5489136095dded7e9bef19e4"
+    },
+    {
+      "path": "art/screenshots/v5/08_shore_roots_catalogue.png",
+      "sha256": "ac4a754eab06b7d7478e12991f3f5800e21cb5f170d260b661c2211098d5e922"
+    },
+    {
+      "path": "art/screenshots/v5/09_trees_walkways_catalogue.png",
+      "sha256": "e5e3b2950e6af2553680b4d0e731992146fc3f35a465b8db2a0192d74b1370ed"
+    },
+    {
+      "path": "art/screenshots/v5/10_landings_ruins_catalogue.png",
+      "sha256": "0270b156daaea9e757ca7562983caaea9d1f6721c54648b91194c6ecaf763fa1"
+    },
+    {
+      "path": "art/screenshots/v5/11_moss_understory_catalogue.png",
+      "sha256": "160447ee894de619da98c0751f67787765609bb2c351551f10a074fab072a358"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "art/scripts/mirewood_asset.gd",
+      "sha256": "1ba9f8d5de9078ec3d58b6cda6478ae6f0996100d0f27d2492ab50e192391aeb"
+    },
+    {
+      "path": "art/scripts/mirewood_environment.gd",
+      "sha256": "54a6553a44630368475f1eaaa5af2f794a3f5b6da24ee68733c4fcd87cdff25d"
+    },
+    {
+      "path": "art/scripts/mirewood_review.gd",
+      "sha256": "a3a8260d2edb11d1c9538416b8c2aaabaded2d0b32874e8f065250dabd78a29d"
+    }
+  ],
+  "post_capture_nonvisual_fix": {
+    "path": "art/scripts/mirewood_asset.gd",
+    "description": "Default id changed from inherited invalid id to root_island. Every captured scene/catalogue placement explicitly assigns model_id before entering the tree, so rendered geometry, layout, materials, light and cameras are unchanged. Final default construction was runtime-tested. Original capture hashes above retained.",
+    "final_sha256": "550c6e20bf7623aa6f29962e6d90ed9b2f7738b0af4e8f360bc1dafb6b983bab"
+  }
+}

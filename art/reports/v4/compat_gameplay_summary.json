@@ -1,0 +1,25 @@
+{
+  "snapshot": "23ec961224956a095d5b7be7f0e11deae07ec228",
+  "engine": "Godot 4.6.3",
+  "passed": 134,
+  "failed": 5,
+  "total": 139,
+  "failure_names": [
+    "test_performance_budget",
+    "existing_colossus_tests_still_pass",
+    "all_existing_tests_still_pass",
+    "all_valus_and_earlier_tests_still_pass",
+    "all_etap6_and_earlier_tests_still_pass"
+  ],
+  "direct_failure": "test_performance_budget",
+  "measured_M1_ms": 0.702,
+  "M1_budget_ms": 0.6,
+  "dependent_aggregate_failures": 4,
+  "flagged_regression_metrics": 11,
+  "exit_code": 1,
+  "notes": [
+    "Unmodified gameplay tests; no Saltwind scene is introduced into their scenarios.",
+    "Shared software environment; timings are not target-hardware FPS.",
+    "Game source identity verified for all 177 gameplay files."
+  ]
+}
