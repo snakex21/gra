@@ -20,4 +20,5 @@
 - The humanoid is a rigid visual kit preserving the existing 17-joint contract, not a new weighted skin/IK system
 - Captured performance counters are from software llvmpipe. Target-GPU frame time, shader texture-fetch cost and memory residency require hardware profiling
 - Existing source assets, gameplay code, gameplay scenes/tests and project configuration are unchanged; integration/merge belongs to the gameplay owner
+- Newer gameplay a3ef45a was tested using an art-only detached overlay: 430 adapter assertions pass with the extended feet; 116 full-suite checks passed, one timing test failed and caused three aggregate failures. Three interleaved clean/overlay timing pairs all exceed the same 0.6 ms threshold; hardware performance acceptance remains open. See `art/reports/v2/latest_gameplay_compatibility.json`
 - Local commits are prepared on a branch based on the user’s uploaded assets commit. Publication is separate and must be verified before claiming files are on GitHub
