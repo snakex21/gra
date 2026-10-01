@@ -70,3 +70,14 @@ The new generators, single-model exporter, render adapter, showcase scripts and 
 are MIT under `tools/art/LICENSE`. Geometry and composition are original procedural
 work. Existing Ancient Valley atlas is reused, with no additional external assets,
 photos, fonts, audio or commercial reference geometry. This does not relicense gameplay.
+
+## Part 4 original additions — Saltwind Expanse
+
+The same asset-only CC0-1.0 dedication applies to `art/source/saltwind.blend`,
+`models/saltwind/`, `textures/saltwind/`, `environment/saltwind/`,
+`environment/saltwind_expanse.tscn`, `assets/saltwind_manifest.json`, and actual
+viewport captures in `art/screenshots/v4/`. New generators, exporter, render
+scripts, shaders and tests are MIT under `tools/art/LICENSE`. Geometry, texture
+fields and composition are original local procedural work. No reference-game
+assets, third-party art libraries, photos, fonts, AI-generated images or audio
+are included. Existing gameplay code is not relicensed.

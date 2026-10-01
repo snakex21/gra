@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" load_steps=4 format=3]
+[ext_resource type="Shader" path="res://materials/saltwind/terrain.gdshader" id="1"]
+[ext_resource type="Texture2D" path="res://textures/saltwind/salt_crust_albedo.png" id="2"]
+[ext_resource type="Texture2D" path="res://textures/saltwind/wind_sediment_albedo.png" id="3"]
+[resource]
+resource_name = "Saltwind_TwoSampleGround"
+shader = ExtResource("1")
+shader_parameter/salt_albedo = ExtResource("2")
+shader_parameter/sediment_albedo = ExtResource("3")
