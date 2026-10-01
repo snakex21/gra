@@ -90,6 +90,13 @@ const REGIONS := {
 @export var recover_time := 1.3
 ## Distance to the weak point that counts as "player near the weak point".
 @export var weakpoint_alert_distance := 3.5
+@export_group("Defeat")
+## The defeated colossus sinks onto its knees (pelvis drop, m) and bows forward (rad), so
+## whoever holds on to its head ends up low enough to step off (no stranding up high).
+@export var defeat_drop := 5.6
+@export var defeat_bow := 1.6
+## Seconds the whole sinking takes (slow: whoever holds on rides it down).
+@export var defeat_time := 9.0
 
 var encounter := Encounter.DORMANT
 var encounter_time := 0.0
@@ -106,9 +113,12 @@ var stats := {}
 var brain_seed := 7
 var effects_enabled := true
 
-var _slam_point := Vector3.ZERO
-var _hover_point := Vector3.ZERO
-var _stomp_impacted := false
+## The stomp motion (shared with every stomping colossus).
+var _stomp := LimbStomp.new()
+## Where the current / last stomp comes down (danger zone, shockwave centre).
+var _slam_point: Vector3:
+	get:
+		return _stomp.slam_point
 var _sweep_w := 0.0
 var _protect_w := 0.0
 var _stagger := 0.0
@@ -349,7 +359,7 @@ func _adjust_movement(it: ColossusIntent, delta: float) -> void:
 	drop += 0.35 * _brace_w
 	drop += sweep_crouch * _sweep_w
 	if encounter == Encounter.DEFEATED:
-		drop += 3.0 * _defeat_weight()
+		drop += defeat_drop * _defeat_weight()
 	extra_pelvis_drop = drop
 	if attacking and attack.kind == STOMP:
 		_update_stomp_leg()
@@ -472,14 +482,9 @@ func _start_attack(it: ColossusIntent) -> void:
 func _end_attack(finished: bool) -> void:
 	if attack == null:
 		return
-	if attack.kind == STOMP:
-		var leg := loco.legs[attack.limb] if attack.limb >= 0 else null
-		if leg and leg.scripted:
-			# Never leave a foot hanging: plant it where it is (over the ground).
-			leg.target_pos = _ground_under(leg.foot_pos)
-			leg.target_normal = Vector3.UP
-			StepMath.plant(leg, loco.time)
-			leg.scripted = false
+	if attack.kind == STOMP and _stomp.leg != null:
+		# Never leave a foot hanging: plant it where it is (over the ground).
+		_stomp.abort(_ground_under(_stomp.leg.foot_pos), loco.time)
 	if finished or attack.phase != ColossusAttack.Phase.PREPARE:
 		rules.on_attack_end(attack, _time)
 	for h in hit_volumes.values():
@@ -494,17 +499,8 @@ func _on_phase(a: ColossusAttack) -> void:
 		STOMP:
 			if a.phase == ColossusAttack.Phase.TELEGRAPH:
 				var leg := loco.legs[a.limb]
-				leg.scripted = true
-				leg.phase = LegState.Phase.SWING
-				leg.swing_t = 0.0
-				leg.lift_pos = leg.plant_pos
-				leg.lift_normal = leg.plant_normal
-				leg.lift_yaw = leg.plant_yaw
-				leg.target_yaw = leg.plant_yaw
-				leg.target_normal = Vector3.UP
-				_stomp_impacted = false
-				_slam_point = _stomp_goal(a.target_point, leg)
-				leg.target_pos = _slam_point
+				_stomp.height = stomp_height
+				_stomp.begin(leg, _stomp_goal(a.target_point, leg))
 		ARM_SWEEP:
 			if a.phase == ColossusAttack.Phase.ACTIVE and effects_enabled:
 				Sfx.play(self, &"swing", global_position + Vector3.UP * 6.0)
@@ -532,42 +528,14 @@ func _ground_under(p: Vector3) -> Vector3:
 ## During the first 60% of the wind-up the raised foot drifts after the target (2 m/s at
 ## most); after that the slam point is locked, so a late dodge always works.
 func _track_stomp_target(delta: float) -> void:
-	if attack.phase_t() > 0.6 or not is_instance_valid(attack.target_player):
+	if not is_instance_valid(attack.target_player):
 		return
-	var leg := loco.legs[attack.limb]
-	var want := _stomp_goal(attack.target_player.global_position, leg)
-	var step := _flat(want - _slam_point)
-	if step.length() > 2.0 * delta:
-		step = step.normalized() * 2.0 * delta
-	_slam_point = _ground_under(_slam_point + step) if step.length() > 1e-4 else _slam_point
-	leg.target_pos = _slam_point
+	_stomp.track(_stomp_goal(attack.target_player.global_position, loco.legs[attack.limb]), attack, delta, _ground_under)
 
 
 func _update_stomp_leg() -> void:
-	var leg := loco.legs[attack.limb]
-	if not leg.scripted:
-		return
-	var up := Vector3.UP * stomp_height
-	match attack.phase:
-		ColossusAttack.Phase.TELEGRAPH:
-			var t := minf(1.0, attack.phase_t() / 0.75)
-			var s := t * t * t * (t * (t * 6.0 - 15.0) + 10.0)
-			_hover_point = leg.lift_pos.lerp(_slam_point, s * 0.85) + up * s
-			# A slight tremble at the top of the wind-up.
-			if t >= 1.0:
-				_hover_point += Vector3.UP * 0.05 * sin(attack.phase_time * 30.0)
-			leg.foot_pos = _hover_point
-			leg.swing_t = 0.5 * s
-		ColossusAttack.Phase.ACTIVE:
-			var t := minf(1.0, attack.phase_time / 0.18)
-			leg.foot_pos = _hover_point.lerp(_slam_point, t * t)
-			leg.swing_t = 0.5 + 0.5 * t
-			if t >= 1.0 and not _stomp_impacted:
-				_stomp_impacted = true
-				leg.target_pos = _slam_point
-				StepMath.plant(leg, loco.time)
-				leg.scripted = false
-				_on_stomp_impact()
+	if _stomp.update(attack, loco.time):
+		_on_stomp_impact()
 
 
 func _on_stomp_impact() -> void:
@@ -595,7 +563,7 @@ func _post_sync(delta: float) -> void:
 
 func _test_hits() -> void:
 	var volumes: Array[HitVolume] = []
-	if attack.kind == STOMP and attack.phase == ColossusAttack.Phase.ACTIVE and not _stomp_impacted:
+	if attack.kind == STOMP and attack.phase == ColossusAttack.Phase.ACTIVE and not _stomp.impacted:
 		volumes.append(hit_volumes[&"foot_l" if attack.limb == 0 else &"foot_r"])
 	elif attack.kind == ARM_SWEEP and attack.phase == ColossusAttack.Phase.ACTIVE:
 		var side := "l" if attack.limb == 0 else "r"
@@ -603,7 +571,7 @@ func _test_hits() -> void:
 		volumes.append(hit_volumes[StringName("hand_" + side)])
 	for v in volumes:
 		v.active = true
-	var shock := attack.kind == STOMP and attack.phase == ColossusAttack.Phase.ACTIVE and _stomp_impacted
+	var shock := attack.kind == STOMP and attack.phase == ColossusAttack.Phase.ACTIVE and _stomp.impacted
 	if volumes.is_empty() and not shock:
 		return
 	for p in get_tree().get_nodes_in_group(&"players"):
@@ -698,7 +666,7 @@ func _on_weak_point_destroyed() -> void:
 
 
 func _defeat_weight() -> float:
-	var t := clampf(_defeat_t / 6.0, 0.0, 1.0)
+	var t := clampf(_defeat_t / defeat_time, 0.0, 1.0)
 	return t * t * t * (t * (t * 6.0 - 15.0) + 10.0)
 
 
@@ -717,7 +685,7 @@ func _pose_overrides(delta: float) -> void:
 	var dw := _defeat_weight() if encounter == Encounter.DEFEATED else 0.0
 	# Torso: bow while dormant / defeated, rise for the roar, bend into a sweep, flinch.
 	var stag := _stagger
-	var pitch := -0.25 * _dormant_w + 0.18 * _roar_w - sweep_bow * _sweep_w - 0.5 * dw + 0.05 * stag * sin(_stagger_phase)
+	var pitch := -0.25 * _dormant_w + 0.18 * _roar_w - sweep_bow * _sweep_w - defeat_bow * dw + 0.05 * stag * sin(_stagger_phase)
 	var twist := 0.0
 	var arm_l := Vector3.ZERO
 	var arm_r := Vector3.ZERO
