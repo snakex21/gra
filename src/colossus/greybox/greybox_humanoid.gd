@@ -58,7 +58,7 @@ const PARTS := [
 	[&"thigh_l", Kind.FUR, Vector2(1.0, 4.4), Vector3(0, -1.9, 0)],
 	[&"shin_l", Kind.FUR, Vector2(0.85, 4.0), Vector3(0, -1.7, 0)],
 	[&"shin_l", Kind.ARMOR, Vector3(1.3, 2.8, 0.45), Vector3(0, -1.7, -0.85)],
-	[&"foot_l", Kind.STONE, Vector3(1.7, 0.7, 2.8), Vector3(0, -0.05, -0.45)],
+	[&"foot_l", Kind.STONE, Vector3(1.7, 0.7, 3.6), Vector3(0, -0.05, -0.85)],
 ]
 
 const COLORS := {
@@ -126,6 +126,8 @@ var _clip_height: Array[float] = [0.0, 0.0]
 ## Accumulated foot statistics since the last reset_foot_stats() (tests / A/B).
 var foot_stats := {}
 var _ik_usec := 0
+var _anim_pelvis := 0.0
+var _anim_pelvis_v := 0.0
 # Second-order smoothed pose drivers. Every term that rotates the body must be C2-smooth:
 # with 6-10 m between a joint and the shoulders, a mere kink in an angle is felt as a
 # jolt by a player standing or hanging up there.
@@ -271,6 +273,7 @@ func _pose_bones(delta: float) -> void:
 	match locomotion_mode:
 		LocomotionMode.PROCEDURAL:
 			loco.pelvis_drop = 0.55 * sh
+			loco.bracing = _target_shake > 0.0
 			loco.update_steps(delta, space)
 			_pose_hips_procedural()
 			_pose_legs_ik()
@@ -409,10 +412,14 @@ func _correct_legs_ik(space: PhysicsDirectSpaceState3D) -> void:
 		_clip_height[i] = clip_h
 		lowest = minf(lowest, ground_local.y)
 		targets.append([Vector3(ankle_local.x, ground_local.y + maxf(clip_h, 0.0), ankle_local.z), (inv.basis * (g[1] as Vector3)).normalized()])
+	# Pelvis offset smoothed (standard practice), otherwise terrain edges pop the body.
+	var dt := get_physics_process_delta_time()
+	_anim_pelvis_v += ((lowest - _anim_pelvis) * 9.0 - _anim_pelvis_v * 6.0) * dt
+	_anim_pelvis += _anim_pelvis_v * dt
 	var hips := skeleton.get_bone_pose_position(_bone[&"hips"])
-	skeleton.set_bone_pose_position(_bone[&"hips"], hips + Vector3(0, lowest, 0))
+	skeleton.set_bone_pose_position(_bone[&"hips"], hips + Vector3(0, _anim_pelvis, 0))
 	for i in 2:
-		var contact: bool = _clip_height[i] < 0.15
+		var contact := _clip_stance(i)
 		_solve_leg(i, targets[i][0], targets[i][1], Vector3.FORWARD, -1.0 if contact else 1.0)
 		loco.legs[i].reach_error = _last_reach_error
 	_ik_usec += Time.get_ticks_usec() - t0
@@ -428,7 +435,8 @@ func _pose_upper_body(delta: float, sh: float) -> void:
 	var swing := 0.0
 	if locomotion_mode == LocomotionMode.PROCEDURAL:
 		var fwd := -global_basis.z
-		swing = clampf((loco.legs[0].foot_pos - loco.legs[1].foot_pos).dot(fwd) / 2.5, -1.0, 1.0)
+		# tanh, not clamp: a clamp's kink at long strides is a jolt at the shoulders.
+		swing = tanh((loco.legs[0].foot_pos - loco.legs[1].foot_pos).dot(fwd) / 2.5)
 	else:
 		swing = sin(_gait_phase) * w
 	# Upper body starts turns early and leans into acceleration.
@@ -492,10 +500,10 @@ func _measure_feet(delta: float) -> void:
 				contact = leg.is_planted()
 				_ground_y[i] = leg.plant_pos.y
 			LocomotionMode.ANIM_IK:
-				contact = _clip_height[i] < 0.08
+				contact = _clip_stance(i)
 			LocomotionMode.LEGACY_FK:
 				_ground_y[i] = global_position.y
-				contact = sole.y - _ground_y[i] < 0.08
+				contact = _clip_stance(i)
 		_contact[i] = contact
 		leg.slip_speed = 0.0
 		if contact and _contact_prev[i]:
@@ -506,6 +514,15 @@ func _measure_feet(delta: float) -> void:
 		foot_stats.reach_max = maxf(foot_stats.reach_max, leg.reach_error if contact else 0.0)
 		_sole_prev[i] = sole
 		_contact_prev[i] = contact
+
+
+## Stance phase of the looping cycle (the clip's "foot plant" markers): the leg moves
+## backwards (thigh angle decreasing) and its knee is straight.
+func _clip_stance(i: int) -> bool:
+	var c := cos(_gait_phase)
+	if loco.speed < 0.05:
+		return true
+	return c <= 0.0 if i == 0 else c >= 0.0
 
 
 func foot_in_contact(i: int) -> bool:

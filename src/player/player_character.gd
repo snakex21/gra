@@ -416,6 +416,10 @@ func _try_grab(rescue := false) -> void:
 	# Search around the hands (above the head), so catching a surface mid-leap keeps the height.
 	# Same height as where the hands end up when hanging, so a caught leap keeps its height.
 	var anchor := ClimbQuery.find_grip(space, global_position + Vector3.UP * hand_reach, grab_radius, facing, _exclude)
+	# Fur in front of the chest (e.g. a leg that slants away above the head). While
+	# rescuing, the wider body search below already covers this region.
+	if anchor == null and not rescue:
+		anchor = ClimbQuery.find_grip(space, global_position + Vector3.UP * 0.3, grab_radius, facing, _exclude)
 	# Rescue: anything within reach of the whole body (edge under the feet, limb passing by).
 	if anchor == null and rescue:
 		anchor = ClimbQuery.find_grip(space, global_position + Vector3.DOWN * 0.3, grab_radius + 0.35, facing, _exclude)

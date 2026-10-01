@@ -26,6 +26,8 @@ var idle_step_period := 1.8
 ## Fraction of a step period spent swinging; the rest is double support (weight transfer).
 var swing_fraction := 0.6
 var lift_height := 0.8
+## Peak horizontal acceleration of a swinging foot (m/s^2).
+var max_foot_accel := 16.0
 ## A stopped (or slowly turning) body only corrects feet that are further off than this.
 var settle_distance := 0.35
 ## While moving, a foot steps when its plan error exceeds this.
@@ -42,8 +44,11 @@ var ankle_height := 0.4         ## ankle joint above the sole
 ## How far the pelvis moves over the supporting foot (0 = never, 1 = fully).
 var sway := 0.35
 var pelvis_stiffness := 4.5
+var pelvis_stiffness_vertical := 3.0
 ## Extra pelvis drop (m), e.g. bracing while shaking.
 var pelvis_drop := 0.0
+## Braced stance: no settling steps unless a foot is far off.
+var bracing := false
 
 # --- state ----------------------------------------------------------------------------
 var position := Vector3.ZERO    ## body ground reference point (the colossus root)
@@ -155,8 +160,11 @@ func update_steps(delta: float, space: PhysicsDirectSpaceState3D) -> void:
 				var g := probe_ground(space, goal, leg.target_goal.y)
 				leg.target_goal = g[0]
 				leg.target_normal = g[1]
-		if leg.swing_t < 0.85:
-			leg.target_pos = leg.target_pos.lerp(leg.target_goal, 1.0 - exp(-6.0 * delta))
+		# The landing spot follows a re-planned goal through a critically damped spring
+		# (continuous velocity), so a re-plan never jerks the foot.
+		var k := 6.0
+		leg.target_velocity += ((leg.target_goal - leg.target_pos) * k * k - leg.target_velocity * 2.0 * k) * delta
+		leg.target_pos += leg.target_velocity * delta
 		_update_swing_pose(leg)
 		if leg.swing_t >= 1.0:
 			leg.phase = LegState.Phase.STANCE
@@ -169,9 +177,19 @@ func update_steps(delta: float, space: PhysicsDirectSpaceState3D) -> void:
 		else:
 			swinging += 1
 
-	# 2) Start a new step when allowed and needed.
+	# 2) Start a new step when allowed and needed. A stance leg that is close to full
+	# extension (the body has moved away from it, e.g. in a tight fast turn) steps at once,
+	# without waiting for the rest of the double support.
 	var moving := speed > 0.05 or absf(yaw_rate) > 0.03 or desired_velocity.length() > 0.05
-	if swinging < max_swinging and time - last_touchdown >= double_support * (1.0 if moving else 0.5):
+	var urgent := false
+	if swinging < max_swinging:
+		var b := body_basis()
+		for leg in legs:
+			if leg.is_planted():
+				var hip := pelvis + b * Vector3(leg.hip_local.x, 0.0, leg.hip_local.z)
+				if hip.distance_to(leg.plant_pos + Vector3.UP * ankle_height) > leg_length * 0.985:
+					urgent = true
+	if swinging < max_swinging and (urgent or time - last_touchdown >= double_support * (1.0 if moving else 0.5)):
 		var best := -1
 		var best_err := 0.0
 		for i in legs.size():
@@ -179,13 +197,17 @@ func update_steps(delta: float, space: PhysicsDirectSpaceState3D) -> void:
 			if leg.phase != LegState.Phase.STANCE:
 				continue
 			var err := plan_error(leg, swing_time)
+			if urgent:
+				var hip_u := pelvis + body_basis() * Vector3(leg.hip_local.x, 0.0, leg.hip_local.z)
+				err += maxf(0.0, hip_u.distance_to(leg.plant_pos + Vector3.UP * ankle_height) - leg_length * 0.97) * 10.0
 			# Alternate legs while walking.
 			if moving and i == last_step_leg and legs.size() > 1:
 				err *= 0.3
 			if err > best_err:
 				best_err = err
 				best = i
-		var threshold := moving_step_distance if moving else settle_distance
+		# Braced (e.g. shaking): only a really displaced foot is re-placed.
+		var threshold := moving_step_distance if moving else (settle_distance * 4.0 if bracing else settle_distance)
 		if best >= 0 and best_err > threshold:
 			_start_swing(best, swing_time, space)
 
@@ -249,25 +271,31 @@ func _start_swing(i: int, swing_time: float, space: PhysicsDirectSpaceState3D) -
 	leg.lift_normal = leg.plant_normal
 	leg.lift_yaw = leg.plant_yaw
 	var goal := target_for(leg, leg.swing_duration)
+	# Heavy limbs: a long step takes longer rather than whipping the foot (smootherstep peak
+	# acceleration is 5.77 * distance / duration^2).
+	var dist := _flat(goal - leg.plant_pos).length()
+	leg.swing_duration = maxf(leg.swing_duration, sqrt(5.77 * dist / max_foot_accel))
+	goal = target_for(leg, leg.swing_duration)
 	var g := probe_ground(space, goal, leg.plant_pos.y)
 	leg.target_goal = g[0]
 	leg.target_pos = g[0]
+	leg.target_velocity = Vector3.ZERO
 	leg.target_normal = g[1]
 	leg.target_yaw = yaw + yaw_rate * leg.swing_duration
 	last_step_leg = i
 	step_count += 1
 
 
-## Smooth arc: horizontal smootherstep (zero velocity and acceleration at both ends) and a
-## sin^2 lift (zero vertical velocity at lift-off and touchdown), so anything attached to
-## the foot (a climbing player) never gets a velocity jump.
+## Smooth arc, C2 at lift-off and touchdown: horizontal smootherstep and a 64 t^3 (1-t)^3
+## lift both start and end with zero velocity AND zero acceleration, so anything attached
+## to the leg (a climbing player) never gets a jolt.
 func _update_swing_pose(leg: LegState) -> void:
 	var t := leg.swing_t
 	var s := t * t * t * (t * (t * 6.0 - 15.0) + 10.0)
 	var p := leg.lift_pos.lerp(leg.target_pos, s)
 	var dist := _flat(leg.target_pos - leg.lift_pos).length()
 	var clearance := lift_height * clampf(dist / 1.5, 0.35, 1.0) + maxf(0.0, leg.target_pos.y - leg.lift_pos.y) * 0.6
-	p.y += clearance * pow(sin(PI * t), 2.0)
+	p.y += clearance * 64.0 * pow(t * (1.0 - t), 3.0)
 	_set_foot(leg, p, leg.lift_normal.slerp(leg.target_normal, s).normalized(), lerp_angle(leg.lift_yaw, leg.target_yaw, s))
 
 
@@ -316,24 +344,31 @@ func _update_pelvis(delta: float, double_support: float) -> void:
 	_prev_speed = speed
 	var ahead := fwd * (speed * 0.12 + clampf(accel, -1.0, 1.0) * 0.3)
 	var target := position + lateral + ahead
-	# Height: nominal, but never higher than the legs can reach. A swinging leg's landing
-	# spot is phased in over its swing, so the constraint changes continuously.
-	var h := position.y + nominal_hip_height - pelvis_drop
+	# Height: nominal, but never higher than the legs can reach. Each leg constrains the
+	# height through an *effective* foot: its plant, or while swinging a smooth blend from
+	# lift-off to landing (so the constraint never appears or vanishes in one tick). The
+	# constraints are combined with a soft minimum (no kinks where they cross).
+	var nominal := position.y + nominal_hip_height - pelvis_drop
+	var terms: Array[float] = [nominal]
 	for leg in legs:
 		var foot := leg.plant_pos
-		var weight := 1.0
 		if leg.phase == LegState.Phase.SWING:
-			foot = leg.target_pos
-			weight = smoothstep(0.3, 1.0, leg.swing_t)
+			# Phase the landing spot in during the first ~60% of the swing, so the (soft)
+			# pelvis is already low enough when the foot lands lower (step down, downhill).
+			var t := minf(1.0, leg.swing_t * 1.6)
+			foot = leg.lift_pos.lerp(leg.target_pos, t * t * (3.0 - 2.0 * t))
 		var hip := target + b * Vector3(leg.hip_local.x, 0.0, leg.hip_local.z)
 		var d := _flat(foot - hip).length()
-		var reach := leg_length * 0.97
-		var max_h := foot.y + ankle_height + sqrt(maxf(0.0, reach * reach - d * d))
-		h = minf(h, lerpf(h, max_h, weight))
+		var reach := leg_length * 0.95
+		terms.append(foot.y + ankle_height + sqrt(maxf(0.0, reach * reach - d * d)))
+	var h := _soft_min(terms, 0.08)
 	target.y = h
 	# Critically damped spring: weight, not snapping.
-	var k := pelvis_stiffness
-	var acc := (target - pelvis) * k * k - pelvis_velocity * 2.0 * k
+	# Vertical motion is softer than sideways sway: a giant's bob is slow and heavy.
+	var k := Vector3(pelvis_stiffness, pelvis_stiffness_vertical, pelvis_stiffness)
+	# Feed-forward of the body velocity: no lag behind the feet while walking.
+	var target_velocity := fwd * speed
+	var acc := (target - pelvis) * k * k + (target_velocity - pelvis_velocity) * 2.0 * k
 	pelvis_velocity += acc * delta
 	pelvis += pelvis_velocity * delta
 	# The body leans into its acceleration (forward/back, into turns, over the support).
@@ -343,6 +378,17 @@ func _update_pelvis(delta: float, double_support: float) -> void:
 	com = pelvis + up * 3.5
 	if not _initialised:
 		pelvis = target
+
+
+## Smooth minimum (log-sum-exp); ``k`` is the blend width in the values' units.
+static func _soft_min(values: Array[float], k: float) -> float:
+	var m: float = values[0]
+	for v in values:
+		m = minf(m, v)
+	var sum := 0.0
+	for v in values:
+		sum += exp(-(v - m) / k)
+	return m - k * log(sum)
 
 
 static func _flat(v: Vector3) -> Vector3:

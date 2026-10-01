@@ -21,6 +21,7 @@ var lift_normal := Vector3.UP
 var lift_yaw := 0.0
 var target_pos := Vector3.ZERO
 var target_goal := Vector3.ZERO
+var target_velocity := Vector3.ZERO
 var target_normal := Vector3.UP
 var target_yaw := 0.0
 var swing_t := 0.0

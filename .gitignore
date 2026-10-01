@@ -6,3 +6,4 @@ export_presets.cfg
 # Test output
 /tests/output/*
 !/tests/output/.gdignore
+/tests/tmp/

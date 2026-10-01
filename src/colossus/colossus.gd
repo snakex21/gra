@@ -28,7 +28,7 @@ var segments: Array[BodySegment] = []
 var brain: ColossusBrain
 var intent: ColossusIntent = ColossusIntent.make(ColossusIntent.IDLE)
 var arena_center := Vector3.ZERO
-## Debug override of the brain: &"" (brain), &"frozen", &"walk", &"turn", &"shake".
+## Debug override of the brain: &"" (brain), &"frozen", &"walk", &"turn", &"shake", &"manual".
 var debug_override: StringName = &""
 ## Shake strength used by the &"shake" debug override (0..1).
 var debug_shake_strength := 1.0
@@ -163,7 +163,8 @@ func _rules_block() -> Array[StringName]:
 
 func _choose_intent(obs: ColossusObservation) -> ColossusIntent:
 	match debug_override:
-		&"frozen":
+		&"frozen", &"manual":
+			# "manual": movement comes from debug values set by tests/tools, never the brain.
 			return ColossusIntent.make(ColossusIntent.IDLE)
 		&"walk":
 			var w := ColossusIntent.make(ColossusIntent.REPOSITION)

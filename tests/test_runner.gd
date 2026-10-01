@@ -59,6 +59,23 @@ func _ready() -> void:
 		test_camera_does_not_clip_into_colossus,
 		test_camera_focus_frames_player_and_colossus,
 		test_bone_local_grip_still_has_no_drift,
+		# --- ETAP 3 ---
+		test_planted_foot_does_not_slide,
+		test_walking_on_slope_places_feet_correctly,
+		test_turning_uses_stable_steps,
+		test_start_and_stop_are_smooth,
+		test_walk_shake_walk_transition,
+		test_pelvis_tracks_support_area,
+		test_grip_does_not_drift_during_procedural_step,
+		test_standing_player_remains_attached_during_step,
+		test_standing_on_shoulder_during_start_stop,
+		test_player_on_leg_survives_step_transition,
+		test_grip_on_hips_during_turn,
+		test_grip_on_back_during_sudden_direction_change,
+		test_shake_behavior_unchanged_after_locomotion,
+		test_locomotion_is_independent_of_render_fps,
+		test_locomotion_cost_stays_within_reasonable_budget,
+		ab_locomotion_comparison,
 		probe_balance_disturbance,
 	]
 	for t in tests:
@@ -873,6 +890,555 @@ func test_bone_local_grip_still_has_no_drift() -> void:
 	_check(max_err < 0.08, "anchor left the collider surface")
 
 
+# --- ETAP 3: locomotion, foot planting, IK, balance of the body ----------------------
+
+func test_planted_foot_does_not_slide() -> void:
+	var w := await _setup(&"frozen")
+	var c: GreyboxHumanoid = w.colossus
+	var t := _tracker(c)
+	_drive(c, 1.4, 0.0)
+	await _run_tracked(t, 60 * 6)
+	_drive(c, 1.4, 0.2)
+	await _run_tracked(t, 60 * 4)
+	c.reset_foot_stats()
+	_drive(c, 1.6, -0.15)
+	await _run_tracked(t, 60 * 6)
+	var st := c.foot_stats
+	var avg: float = st.slip_sum / maxf(1.0, st.contact_ticks)
+	_log.append("steps %d, stance slip max %.4f m/s avg %.4f m/s, IK reach error max %.3f m, speed %.2f" % [c.loco.step_count, st.slip_max, avg, st.reach_max, c.loco.speed])
+	_metric("loco_slip_max_mps", st.slip_max, "lower")
+	_metric("loco_reach_err_max_m", st.reach_max, "lower")
+	_check(c.loco.step_count >= 8, "too few steps (%d)" % c.loco.step_count)
+	_check(st.slip_max < 0.02, "planted feet slide (%.3f m/s)" % st.slip_max)
+	_check(st.reach_max < 0.05, "IK could not reach the planned feet (%.3f m)" % st.reach_max)
+
+
+func test_walking_on_slope_places_feet_correctly() -> void:
+	var w := await _setup(&"frozen", false, true)
+	var c: GreyboxHumanoid = w.colossus
+	var t := _tracker(c)
+	_drive(c, 1.4, 0.0)
+	var y0 := c.global_position.y
+	var max_h_err := 0.0
+	var min_n_dot := 1.0
+	var checked := 0
+	var max_y := y0
+	for i in 60 * 34:
+		await _ticks(1)
+		t.step(DT)
+		max_y = maxf(max_y, c.global_position.y)
+		if not t.touchdowns.is_empty() and t.touchdowns[-1][1] == t.ticks - 1:
+			var leg: int = t.touchdowns[-1][0]
+			var sole := c.sole_world(leg)
+			var g := _ground_at(sole)
+			if g.is_empty():
+				continue
+			checked += 1
+			max_h_err = maxf(max_h_err, absf(sole.y - (g.position as Vector3).y))
+			min_n_dot = minf(min_n_dot, c.loco.legs[leg].foot_normal.dot(g.normal))
+	var st := c.foot_stats
+	_log.append("course: %d touchdowns checked, max sole height error %.3f m, min normal match %.3f, rose %.2f m (max), slip max %.4f m/s, reach err %.3f, max shoulder accel %.1f m/s2" % [checked, max_h_err, min_n_dot, max_y - y0, st.slip_max, st.reach_max, t.max_shoulder_accel])
+	_metric("slope_sole_height_err_m", max_h_err, "lower")
+	_metric("slope_shoulder_accel_max", t.max_shoulder_accel, "lower")
+	_check(checked >= 10, "too few touchdowns checked (%d)" % checked)
+	_check(max_y - y0 > 3.0, "colossus did not climb the ramp (%.2f m)" % (max_y - y0))
+	_check(max_h_err < 0.06, "feet not placed on the terrain (%.3f m off)" % max_h_err)
+	_check(min_n_dot > 0.97, "feet not aligned to the ground normal (%.3f)" % min_n_dot)
+	_check(st.slip_max < 0.02, "feet slide on uneven terrain (%.3f m/s)" % st.slip_max)
+	_check(st.reach_max < 0.08, "IK could not reach terrain (%.3f m)" % st.reach_max)
+
+
+func test_turning_uses_stable_steps() -> void:
+	var w := await _setup(&"frozen")
+	var c: GreyboxHumanoid = w.colossus
+	var t := _tracker(c)
+	var yaw0 := c.loco.yaw
+	_drive(c, 0.0, 0.3)
+	await _run_tracked(t, 60 * 9)
+	var turned := absf(angle_difference(yaw0, c.loco.yaw))
+	var st := c.foot_stats
+	var left_steps := 0
+	for td in t.touchdowns:
+		if td[0] == 0:
+			left_steps += 1
+	_log.append("turn on the spot: turned %.2f rad, %d steps (%d left), max swinging %d, slip max %.4f m/s, yaw accel max %.3f rad/s2" % [turned, t.touchdowns.size(), left_steps, t.max_swinging, st.slip_max, t.max_yaw_accel])
+	_check(turned > 1.5, "did not turn (%.2f rad)" % turned)
+	_check(t.touchdowns.size() >= 4, "turning without stepping (%d steps): turntable" % t.touchdowns.size())
+	_check(left_steps >= 1 and left_steps < t.touchdowns.size(), "only one leg stepped")
+	_check(t.max_swinging <= 1, "both feet in the air at once")
+	_check(st.slip_max < 0.02, "planted feet slide while turning (%.3f m/s)" % st.slip_max)
+	_check(t.max_yaw_accel <= c.loco.max_turn_accel + 0.01, "turn rate changes abruptly")
+
+
+func test_start_and_stop_are_smooth() -> void:
+	var w := await _setup(&"frozen")
+	var c: GreyboxHumanoid = w.colossus
+	var t := _tracker(c)
+	await _run_tracked(t, 60 * 2)              # idle
+	_drive(c, 1.4, 0.0)
+	await _run_tracked(t, 60 * 7)              # idle -> walk
+	_drive(c, 2.2, 0.0)
+	await _run_tracked(t, 60 * 5)              # walk -> faster walk
+	_drive(c, 0.7, 0.3)
+	await _run_tracked(t, 60 * 5)              # walk forward -> turn
+	_drive(c, 1.4, 0.0)
+	await _run_tracked(t, 60 * 5)              # turn -> walk
+	_drive(c, 0.0, 0.0)
+	await _run_tracked(t, 60 * 6)              # walk -> stop
+	var steps_at_rest := c.loco.step_count
+	await _run_tracked(t, 60 * 3)
+	var st := c.foot_stats
+	_log.append("max |accel| %.2f m/s2, max |jerk| %.2f m/s3, max shoulder accel %.2f m/s2, slip max %.4f m/s, steps %d (+%d after stopping), final speed %.3f" % [t.max_accel, t.max_jerk, t.max_shoulder_accel, st.slip_max, c.loco.step_count, c.loco.step_count - steps_at_rest, c.loco.speed])
+	_metric("startstop_shoulder_accel_max", t.max_shoulder_accel, "lower")
+	_check(t.max_accel <= c.loco.max_decel + 0.05, "speed changes faster than the body's mass allows")
+	_check(t.max_jerk <= c.loco.max_jerk + 0.2, "acceleration changes abruptly (jerk %.2f)" % t.max_jerk)
+	_check(t.max_shoulder_accel < 6.0, "shoulders jolt during start/stop/turn (%.1f m/s2)" % t.max_shoulder_accel)
+	_check(st.slip_max < 0.02, "feet slide (%.3f m/s)" % st.slip_max)
+	_check(c.loco.speed < 0.01, "did not stop")
+	_check(c.loco.step_count == steps_at_rest, "keeps stepping in place after stopping")
+
+
+func test_walk_shake_walk_transition() -> void:
+	var w := await _setup(&"walk")
+	var c: GreyboxHumanoid = w.colossus
+	var t := _tracker(c)
+	await _run_tracked(t, 60 * 5)
+	var walking_speed := c.loco.speed
+	c.debug_override = &"shake"
+	c._think_left = 0.0
+	await _run_tracked(t, 60 * 2)
+	var steps_in_shake := c.loco.step_count
+	await _run_tracked(t, 60 * 2)
+	var speed_in_shake := c.loco.speed
+	steps_in_shake = c.loco.step_count - steps_in_shake
+	c.debug_override = &"walk"
+	c._think_left = 0.0
+	await _run_tracked(t, 60 * 6)
+	_log.append("walk %.2f m/s -> shake %.2f m/s (%d steps during the last 2 s of shaking) -> walk %.2f m/s, max |accel| %.2f, slip max %.4f" % [walking_speed, speed_in_shake, steps_in_shake, c.loco.speed, t.max_accel, c.foot_stats.slip_max])
+	_check(walking_speed > 1.0 and c.loco.speed > 1.0, "did not walk before/after the shake")
+	_check(speed_in_shake < 0.1, "kept walking while shaking")
+	_check(steps_in_shake <= 1, "feet kept stepping while braced for a shake")
+	_check(t.max_accel <= c.loco.max_decel + 0.05, "abrupt speed change around the shake")
+	_check(c.foot_stats.slip_max < 0.02, "feet slide during the shake")
+
+
+func test_pelvis_tracks_support_area() -> void:
+	var w := await _setup(&"frozen")
+	var c: GreyboxHumanoid = w.colossus
+	_drive(c, 1.4, 0.0)
+	await _ticks(60 * 4)
+	var side_sum := [0.0, 0.0]
+	var side_n := [0, 0]
+	var max_com_dist := 0.0
+	var lift_loads := []
+	var prev_phase := [LegState.Phase.STANCE, LegState.Phase.STANCE]
+	for k in 60 * 10:
+		await _ticks(1)
+		var b := c.loco.body_basis()
+		var lateral := (c.loco.pelvis - c.loco.position).dot(b.x)
+		for i in 2:
+			var leg := c.loco.legs[i]
+			if leg.phase == LegState.Phase.SWING and prev_phase[i] == LegState.Phase.STANCE:
+				lift_loads.append(leg.load)
+			prev_phase[i] = leg.phase
+		var swing := c.loco.swinging_count()
+		if swing == 1:
+			var stance := 0 if c.loco.legs[0].is_planted() else 1
+			var side := 1.0 if stance == 0 else -1.0
+			side_sum[stance] += lateral * side
+			side_n[stance] += 1
+		# Dynamic walking: the COM travels between the current support and the next
+		# foothold, it is not held over the single stance foot.
+		var com_g := Vector3(c.loco.com.x, 0, c.loco.com.z)
+		var a: Vector3 = c.loco.legs[0].plant_pos if c.loco.legs[0].is_planted() else c.loco.legs[0].target_pos
+		var bb: Vector3 = c.loco.legs[1].plant_pos if c.loco.legs[1].is_planted() else c.loco.legs[1].target_pos
+		a.y = 0.0
+		bb.y = 0.0
+		max_com_dist = maxf(max_com_dist, com_g.distance_to(Geometry3D.get_closest_point_to_segment(com_g, a, bb)))
+	var shift_l: float = side_sum[0] / maxf(1, side_n[0])
+	var shift_r: float = side_sum[1] / maxf(1, side_n[1])
+	var max_lift_load := 0.0
+	for l in lift_loads:
+		max_lift_load = maxf(max_lift_load, l)
+	_log.append("pelvis shift towards stance foot: left %.2f m, right %.2f m; load on a foot when it lifts <= %.2f; COM distance from the support line (current to next foothold) max %.2f m" % [shift_l, shift_r, max_lift_load, max_com_dist])
+	_check(shift_l > 0.1 and shift_r > 0.1, "pelvis does not move over the supporting foot")
+	_check(max_lift_load < 0.15, "a foot lifts while still carrying weight (%.2f)" % max_lift_load)
+	# Regression guard: in this dynamic walk the pelvis moves ~35% of the way over the
+	# stance foot, so the COM stays within ~1.3 m of the support line.
+	_metric("pelvis_com_support_dist_m", max_com_dist, "lower")
+	_check(max_com_dist < 1.5, "centre of mass wanders away from the support line (%.2f m)" % max_com_dist)
+
+
+func test_grip_does_not_drift_during_procedural_step() -> void:
+	var w := await _setup(&"frozen")
+	var p: PlayerCharacter = w.player
+	var c: GreyboxHumanoid = w.colossus
+	await _ticks(10)
+	await _grab_behind(w, &"thigh_l", -2.4)
+	_check(p.is_climbing(), "no grip")
+	var start_local := p.grip.local_point
+	_drive(c, 1.4, 0.0)
+	var max_err := 0.0
+	var max_speed := 0.0
+	var swings := 0
+	var was_swinging := false
+	var max_jump := 0.0
+	var prev := p.global_position
+	var prev2 := p.global_position
+	for i in 60 * 8:
+		p.stamina.value = maxf(p.stamina.value, 50.0)  # isolate grip kinematics from stamina
+		await _ticks(1)
+		if not p.is_climbing():
+			break
+		var swinging := c.loco.legs[0].phase == LegState.Phase.SWING
+		if swinging and not was_swinging:
+			swings += 1
+		was_swinging = swinging
+		max_err = maxf(max_err, _surface_error(p))
+		max_speed = maxf(max_speed, p.surface_velocity.length())
+		# Teleport = velocity discontinuity: second difference of the position.
+		if i > 1:
+			max_jump = maxf(max_jump, (p.global_position - 2.0 * prev + prev2).length())
+		prev2 = prev
+		prev = p.global_position
+	var drift := p.grip.local_point.distance_to(start_local) if p.grip else 99.0
+	_log.append("thigh through %d swings: drift %.5f m, surface err %.4f, surface speed max %.2f m/s, max position 2nd difference %.4f m" % [swings, drift, max_err, max_speed, max_jump])
+	_metric("grip_drift_procedural_step_m", drift, "lower")
+	_check(p.is_climbing(), "lost grip (%s)" % p.last_release_reason)
+	_check(swings >= 2, "leg did not swing (%d)" % swings)
+	_check(drift < 0.01, "grip drifted %.4f m" % drift)
+	_check(max_err < 0.08, "anchor left the collider")
+	_check(max_jump < 0.01, "teleport while stepping (%.3f m)" % max_jump)
+
+
+func test_standing_player_remains_attached_during_step() -> void:
+	var w := await _setup(&"frozen")
+	var p: PlayerCharacter = w.player
+	var c: GreyboxHumanoid = w.colossus
+	await _ticks(5)
+	var foot := _segment(c, &"foot_l")
+	# Stand on top of the left foot (the box top is 0.3 m above the ankle).
+	p.global_position = foot.global_transform * Vector3(0, 0.35 + 1.0, -2.2)  # on the toes, clear of the shin
+	p.velocity = Vector3.ZERO
+	await _ticks(30)
+	_check(p.get_support_body() == foot, "not standing on the foot")
+	_drive(c, 1.0, 0.0)
+	var lifted := false
+	var landed_with_player := false
+	var max_jump := 0.0
+	var prev := p.global_position
+	var prev2 := p.global_position
+	var min_balance := 1.0
+	for i in 60 * 6:
+		await _ticks(1)
+		var leg := c.loco.legs[0]
+		if leg.phase == LegState.Phase.SWING and p.get_support_body() == foot:
+			lifted = true
+		if lifted and leg.is_planted() and p.get_support_body() == foot:
+			landed_with_player = true
+		if i > 1:
+			max_jump = maxf(max_jump, (p.global_position - 2.0 * prev + prev2).length())
+		prev2 = prev
+		prev = p.global_position
+		min_balance = minf(min_balance, p.balance.value)
+		if landed_with_player:
+			break
+	_log.append("rode the foot through its swing: lifted %s, landed still on it %s, min balance %.2f, max jump %.4f m, state %s" % [lifted, landed_with_player, min_balance, max_jump, p.get_display_state()])
+	_metric("ride_foot_min_balance", min_balance, "higher")
+	_check(lifted, "foot never lifted with the player on it")
+	_check(landed_with_player, "player was not carried through the step")
+	_check(max_jump < 0.02, "teleport while riding the foot (%.3f m)" % max_jump)
+
+
+func test_standing_on_shoulder_during_start_stop() -> void:
+	var w := await _setup(&"frozen")
+	var p: PlayerCharacter = w.player
+	var c: GreyboxHumanoid = w.colossus
+	await _stand_on_shoulder(w, Vector3(1.9, 0, 0))
+	var chest := _segment(c, &"chest")
+	var start := chest.global_transform.affine_inverse() * p.global_position
+	var min_balance := 1.0
+	for phase in [[1.4, 0.0, 6], [2.2, 0.0, 4], [0.0, 0.0, 5], [0.6, 0.3, 4], [0.0, -0.3, 4], [0.0, 0.0, 3]]:
+		_drive(c, phase[0], phase[1])
+		for i in 60 * int(phase[2]):
+			await _ticks(1)
+			min_balance = minf(min_balance, p.balance.value)
+	var drift := (chest.global_transform.affine_inverse() * p.global_position).distance_to(start)
+	_log.append("shoulder through start/fast/stop/turn/stop: min balance %.2f, drift %.3f m, still on chest %s" % [min_balance, drift, p.get_support_body() == chest])
+	_metric("shoulder_startstop_min_balance", min_balance, "higher")
+	_metric("shoulder_startstop_drift_m", drift, "lower")
+	_check(p.get_support_body() == chest, "fell off the shoulder")
+	_check(min_balance > 0.7, "start/stop destabilised a standing player (%.2f)" % min_balance)
+	_check(drift < 0.3, "player drifted %.2f m on the shoulder" % drift)
+
+
+func test_player_on_leg_survives_step_transition() -> void:
+	var w := await _setup(&"frozen")
+	var p: PlayerCharacter = w.player
+	var c: GreyboxHumanoid = w.colossus
+	await _ticks(10)
+	await _grab_behind(w, &"shin_l", -1.5)
+	_check(p.is_climbing(), "no grip")
+	_drive(c, 1.4, 0.0)
+	var transitions := 0
+	var prev_phase := LegState.Phase.STANCE
+	var max_jump := 0.0
+	var prev := p.global_position
+	var prev2 := p.global_position
+	var max_shake := 0.0
+	for i in 60 * 7:
+		p.stamina.value = maxf(p.stamina.value, 50.0)
+		await _ticks(1)
+		if not p.is_climbing():
+			break
+		var ph := c.loco.legs[0].phase
+		if ph != prev_phase:
+			transitions += 1
+		prev_phase = ph
+		if i > 1:
+			max_jump = maxf(max_jump, (p.global_position - 2.0 * prev + prev2).length())
+		prev2 = prev
+		prev = p.global_position
+		max_shake = maxf(max_shake, p.shake_level)
+	_log.append("shin through %d lift-off/touchdown transitions: still gripping %s, max jump %.4f m, max shake level %.2f" % [transitions, p.is_climbing(), max_jump, max_shake])
+	_metric("shin_step_max_shake_level", max_shake)
+	_check(p.is_climbing(), "fell off the leg at a step transition (%s)" % p.last_release_reason)
+	_check(transitions >= 3, "too few step transitions (%d)" % transitions)
+	_check(max_jump < 0.01, "teleport at a step transition (%.3f m)" % max_jump)
+
+
+func test_grip_on_hips_during_turn() -> void:
+	var w := await _setup(&"frozen")
+	var p: PlayerCharacter = w.player
+	var c: GreyboxHumanoid = w.colossus
+	await _ticks(10)
+	await _grab_behind(w, &"hips", 0.3, 1.75)
+	_check(p.is_climbing() and p.grip.body == _segment(c, &"hips"), "no grip on the hips")
+	var start_local := p.grip.local_point
+	_drive(c, 0.2, 0.3)
+	var max_shake := 0.0
+	for i in 60 * 6:
+		await _ticks(1)
+		max_shake = maxf(max_shake, p.shake_level)
+	var drift := p.grip.local_point.distance_to(start_local) if p.grip else 99.0
+	_log.append("hips during a turn: drift %.5f m, max shake level %.2f, still gripping %s" % [drift, max_shake, p.is_climbing()])
+	_check(p.is_climbing(), "fell off the hips while turning")
+	_check(drift < 0.01, "grip drifted %.4f m" % drift)
+	_check(max_shake < 0.3, "a calm turn feels like a shake (%.2f)" % max_shake)
+
+
+func test_grip_on_back_during_sudden_direction_change() -> void:
+	var w := await _setup(&"frozen")
+	var p: PlayerCharacter = w.player
+	var c: GreyboxHumanoid = w.colossus
+	_drive(c, 2.0, 0.3)
+	await _ticks(60 * 4)
+	await _grab_back_patch(w)
+	_check(p.is_climbing(), "no grip on the back")
+	var start_local := p.grip.local_point
+	_drive(c, 2.0, -0.3)            # the brain changes its mind at once
+	var max_shake := 0.0
+	var max_accel := 0.0
+	for i in 60 * 5:
+		await _ticks(1)
+		max_shake = maxf(max_shake, p.shake_level)
+		max_accel = maxf(max_accel, p.surface_accel.length())
+	_drive(c, 0.0, 0.0)             # and stops
+	for i in 60 * 4:
+		await _ticks(1)
+		max_shake = maxf(max_shake, p.shake_level)
+		max_accel = maxf(max_accel, p.surface_accel.length())
+	var drift := p.grip.local_point.distance_to(start_local) if p.grip else 99.0
+	_log.append("back during turn reversal + stop: drift %.5f m, max surface accel %.2f m/s2, max shake level %.2f" % [drift, max_accel, max_shake])
+	_metric("back_reversal_surface_accel_max", max_accel, "lower")
+	_check(p.is_climbing(), "fell off during a direction change")
+	_check(drift < 0.01, "grip drifted")
+	_check(max_shake < 0.2, "a direction change shakes the climber off (%.2f)" % max_shake)
+
+
+## Re-measures the shake behaviour and compares it with the frozen Etap 2 baseline.
+func test_shake_behavior_unchanged_after_locomotion() -> void:
+	if not FileAccess.file_exists(BASELINE_PATH):
+		_check(false, "no baseline")
+		return
+	var base: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(BASELINE_PATH))
+	# Grip: stamina cost of a full shake.
+	var w := await _setup(&"frozen")
+	var p: PlayerCharacter = w.player
+	var c: Colossus = w.colossus
+	await _ticks(10)
+	await _grab_back_patch(w)
+	c.debug_override = &"shake"
+	c._think_left = 0.0
+	var st0 := p.stamina.value
+	await _ticks(150)
+	var grip_cost := st0 - p.stamina.value
+	await _teardown()
+	# Standing: time to lose balance.
+	w = await _setup(&"frozen")
+	p = w.player
+	c = w.colossus
+	await _stand_on_shoulder(w, Vector3(1.25, 0, 0.1))
+	c.debug_override = &"shake"
+	c._think_left = 0.0
+	var lost := -1
+	for i in 240:
+		await _ticks(1)
+		if p.balance.state >= Balance.State.STUMBLE:
+			lost = i
+			break
+	var b_cost: float = base["shake_full_grip_stamina_cost"].value
+	var b_lost: float = base["shake_full_balance_loss_s"].value
+	_log.append("grip stamina cost %.1f (baseline %.1f), balance lost after %.2f s (baseline %.2f)" % [grip_cost, b_cost, lost * DT, b_lost])
+	_check(absf(grip_cost - b_cost) < b_cost * 0.25, "grip shake cost changed: %.1f vs %.1f" % [grip_cost, b_cost])
+	_check(lost >= 0 and absf(lost * DT - b_lost) < 0.6, "standing balance loss time changed: %.2f vs %.2f s" % [lost * DT, b_lost])
+
+
+## Runs the same deterministic scenario as separate processes at different render rates
+## (physics stays at 60 Hz) and compares the simulation results.
+func test_locomotion_is_independent_of_render_fps() -> void:
+	var exe := OS.get_executable_path()
+	var results := {}
+	for fps in [30, 60, 144, 240]:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/fps_%d.json" % fps)
+		var output := []
+		var code := OS.execute(exe, ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "20000", "res://tests/fps_scenario.tscn", "--", "--out=" + out_path], output, true)
+		if code != 0 or not FileAccess.file_exists(out_path):
+			_check(false, "scenario at %d fps failed (code %d)" % [fps, code])
+			return
+		results[fps] = JSON.parse_string(FileAccess.get_file_as_string(out_path))
+	var ref: Dictionary = results[60]
+	var max_diff := 0.0
+	for fps in results:
+		var r: Dictionary = results[fps]
+		for k in ref:
+			if k == "frames":
+				continue  # differs on purpose
+			if ref[k] is Array:
+				for j in (ref[k] as Array).size():
+					max_diff = maxf(max_diff, absf(float(r[k][j]) - float(ref[k][j])))
+			else:
+				max_diff = maxf(max_diff, absf(float(r[k]) - float(ref[k])))
+	_log.append("render 30/60/144/240 fps, physics 60 Hz: frames rendered %s, max difference of simulation state %.8f" % [str([results[30].frames, results[60].frames, results[144].frames, results[240].frames]), max_diff])
+	_metric("fps_independence_max_diff", max_diff, "lower")
+	_check(max_diff < 1e-4, "simulation depends on render fps (diff %.6f)" % max_diff)
+	_check(int(results[240].frames) > int(results[30].frames) * 6, "render rate did not actually differ")
+
+
+func test_locomotion_cost_stays_within_reasonable_budget() -> void:
+	var w := await _setup(&"frozen", false, true)
+	var c: GreyboxHumanoid = w.colossus
+	_drive(c, 1.4, 0.1)
+	await _ticks(60)
+	var m := await _measure_loco(c, 600)
+	_log.append("procedural locomotion on the course: colossus %.1f us/tick (locomotion %.1f, IK %.1f), ground probes %.3f/tick" % [m.colossus, m.locomotion, m.ik, m.rays])
+	_metric("loco_colossus_us", m.colossus, "lower")
+	_metric("loco_ik_us", m.ik, "lower")
+	_metric("loco_probes_per_tick", m.rays, "lower")
+	_check(m.colossus < 400.0, "colossus logic too expensive: %.0f us/tick" % m.colossus)
+	_check(m.ik < 100.0, "IK too expensive: %.0f us/tick" % m.ik)
+	_check(m.rays < 0.2, "too many ground probes: %.2f per tick" % m.rays)
+
+
+func _measure_loco(c: GreyboxHumanoid, ticks: int) -> Dictionary:
+	Perf.take()
+	await _ticks(ticks)
+	var pr := Perf.take()
+	var us: Dictionary = pr.usec
+	return {
+		"colossus": us.get(&"colossus", 0) / float(ticks),
+		"locomotion": us.get(&"locomotion", 0) / float(ticks),
+		"ik": us.get(&"ik", 0) / float(ticks),
+		"rays": pr.queries.get(&"climb_rays", 0) / float(ticks),
+	}
+
+
+## A/B: the same scripted walk over the course and the same climb in every leg mode.
+func ab_locomotion_comparison() -> void:
+	var rows := []
+	for mode in [GreyboxHumanoid.LocomotionMode.PROCEDURAL, GreyboxHumanoid.LocomotionMode.ANIM_IK, GreyboxHumanoid.LocomotionMode.LEGACY_FK]:
+		GreyboxHumanoid.default_mode = mode
+		var w := await _setup(&"frozen", false, true)
+		var c: GreyboxHumanoid = w.colossus
+		var t := _tracker(c)
+		_drive(c, 1.4, 0.0)
+		await _run_tracked(t, 60 * 3)
+		c.reset_foot_stats()
+		Perf.take()
+		var h_err := 0.0
+		var samples := 0
+		for i in 60 * 24:
+			await _ticks(1)
+			t.step(DT)
+			if i % 6 == 0:
+				for k in 2:
+					if c.foot_in_contact(k):
+						var sole := c.sole_world(k)
+						var g := _ground_at(sole)
+						if not g.is_empty():
+							h_err = maxf(h_err, absf(sole.y - (g.position as Vector3).y))
+							samples += 1
+		var pr := Perf.take()
+		var ticks := 60 * 24
+		var st := c.foot_stats
+		var row := {
+			"mode": GreyboxHumanoid.MODE_NAMES[mode],
+			"slip_avg": st.slip_sum / maxf(1.0, st.contact_ticks), "slip_max": st.slip_max,
+			"ground_err": h_err, "shoulder_accel": t.max_shoulder_accel,
+			"colossus_us": pr.usec.get(&"colossus", 0) / float(ticks), "ik_us": pr.usec.get(&"ik", 0) / float(ticks),
+			"rays": pr.queries.get(&"climb_rays", 0) / float(ticks),
+		}
+		await _teardown()
+		# Turn response: time to reach 90% of a commanded turn rate from a straight walk.
+		w = await _setup(&"frozen")
+		c = w.colossus
+		_drive(c, 1.4, 0.0)
+		await _ticks(60 * 4)
+		_drive(c, 1.0, 0.3)
+		var resp := -1
+		var turn_slip := 0.0
+		c.reset_foot_stats()
+		for i in 60 * 6:
+			await _ticks(1)
+			if resp < 0 and c.loco.yaw_rate > 0.27:
+				resp = i
+		turn_slip = c.foot_stats.slip_max
+		row["turn_response_s"] = resp * DT
+		row["turn_slip_max"] = turn_slip
+		await _teardown()
+		# Climbing stability: the leg-to-shoulders route on a walking colossus.
+		w = await _setup(&"walk")
+		var p: PlayerCharacter = w.player
+		await _ticks(20)
+		await _wait_planted(w.colossus, 0)
+		await _grab_behind(w, &"shin_l", -1.8)
+		var mantled := [false]
+		p.mantled.connect(func() -> void: mantled[0] = true)
+		p.actions.move = Vector2(0, 1)
+		var max_shake := 0.0
+		for i in 60 * 20:
+			_aim_view_at(p, w.colossus)
+			await _ticks(1)
+			max_shake = maxf(max_shake, p.shake_level)
+			if mantled[0] or not p.is_climbing():
+				break
+		row["climb_ok"] = mantled[0]
+		row["climb_stamina"] = p.stamina.value
+		row["climb_max_shake"] = max_shake
+		await _teardown()
+		rows.append(row)
+	GreyboxHumanoid.default_mode = GreyboxHumanoid.LocomotionMode.PROCEDURAL
+	_log.append("%-20s %9s %9s %10s %10s %9s %7s %7s %9s %9s %9s %9s" % ["mode", "slip avg", "slip max", "ground err", "shoulder a", "colossus", "IK", "rays", "turn resp", "turn slip", "climb", "stamina"])
+	for r in rows:
+		_log.append("%-20s %9.4f %9.4f %10.3f %10.2f %7.0fus %5.0fus %7.3f %8.2fs %9.4f %9s %9.0f" % [r.mode, r.slip_avg, r.slip_max, r.ground_err, r.shoulder_accel, r.colossus_us, r.ik_us, r.rays, r.turn_response_s, r.turn_slip_max, "ok" if r.climb_ok else "FAILED", r.climb_stamina])
+	var f := FileAccess.open("res://tests/output/ab_locomotion.json", FileAccess.WRITE)
+	f.store_string(JSON.stringify(rows, "  "))
+	f.close()
+	for r in rows:
+		_metric("ab_%s_slip_max" % String(r.mode).split(" ")[0], r.slip_max)
+		_metric("ab_%s_ground_err" % String(r.mode).split(" ")[0], r.ground_err)
+
+
 ## Not a pass/fail test: prints what a standing player feels in each colossus mode.
 ## Run with --only=probe when re-tuning Balance.
 func probe_balance_disturbance() -> void:
@@ -899,7 +1465,7 @@ func probe_balance_disturbance() -> void:
 
 # --- helpers --------------------------------------------------------------------------
 
-func _setup(mode: StringName, with_wall := false) -> Dictionary:
+func _setup(mode: StringName, with_wall := false, terrain := false) -> Dictionary:
 	_world = Node3D.new()
 	_world.name = "World_" + _current
 	add_child(_world)
@@ -928,6 +1494,8 @@ func _setup(mode: StringName, with_wall := false) -> Dictionary:
 		vines.position = Vector3(0, -0.2, 1.1)
 		wall.add_child(vines)
 		_world.add_child(wall)
+	if terrain:
+		TerrainKit.build_course(_world, Vector3(0, 0, -6))
 	var c := GreyboxHumanoid.new()
 	c.name = "Colossus"
 	c.debug_override = mode
@@ -1006,6 +1574,75 @@ func _segment(c: Colossus, bone: StringName) -> BodySegment:
 	return null
 
 
+# --- ETAP 3 helpers ---------------------------------------------------------------------
+
+## Drives a GreyboxHumanoid through the "manual" override: desired forward speed and turn.
+func _drive(c: GreyboxHumanoid, speed: float, turn: float) -> void:
+	c.debug_override = &"manual"
+	c.debug_desired_speed = speed
+	c.debug_desired_turn = turn
+
+
+## Tracks shoulder (chest top) acceleration, speed derivatives and touchdowns per tick.
+class Tracker:
+	var c: GreyboxHumanoid
+	var chest: BodySegment
+	var local := Vector3(1.9, 2.8, 0)
+	var prev_v := Vector3.ZERO
+	var prev_speed := 0.0
+	var prev_rate := 0.0
+	var prev_yaw_rate := 0.0
+	var ticks := 0
+	var max_shoulder_accel := 0.0
+	var max_accel := 0.0
+	var max_jerk := 0.0
+	var max_yaw_accel := 0.0
+	var max_swinging := 0
+	var phases: Array = [LegState.Phase.STANCE, LegState.Phase.STANCE]
+	var touchdowns := []  # [leg index, tick]
+
+	func step(dt: float) -> void:
+		var v := chest.local_point_velocity(local, dt)
+		if ticks > 2:
+			max_shoulder_accel = maxf(max_shoulder_accel, (v - prev_v).length() / dt)
+			var rate := (c.loco.speed - prev_speed) / dt
+			max_accel = maxf(max_accel, absf(rate))
+			if ticks > 3:
+				max_jerk = maxf(max_jerk, absf(rate - prev_rate) / dt)
+			prev_rate = rate
+			max_yaw_accel = maxf(max_yaw_accel, absf(c.loco.yaw_rate - prev_yaw_rate) / dt)
+		prev_v = v
+		prev_speed = c.loco.speed
+		prev_yaw_rate = c.loco.yaw_rate
+		max_swinging = maxi(max_swinging, c.loco.swinging_count())
+		for i in 2:
+			var ph: LegState.Phase = c.loco.legs[i].phase
+			if phases[i] == LegState.Phase.SWING and ph == LegState.Phase.STANCE:
+				touchdowns.append([i, ticks])
+			phases[i] = ph
+		ticks += 1
+
+
+func _tracker(c: GreyboxHumanoid) -> Tracker:
+	var t := Tracker.new()
+	t.c = c
+	t.chest = _segment(c, &"chest")
+	return t
+
+
+func _run_tracked(t: Tracker, ticks: int) -> void:
+	for i in ticks:
+		await _ticks(1)
+		t.step(DT)
+
+
+## Independent ground height under a point (straight ray, WORLD only).
+func _ground_at(p: Vector3) -> Dictionary:
+	var space := _world.get_world_3d().direct_space_state
+	var q := PhysicsRayQueryParameters3D.create(p + Vector3.UP * 10.0, p + Vector3.DOWN * 10.0, Layers.WORLD)
+	return space.intersect_ray(q)
+
+
 ## Waits until leg i of a GreyboxHumanoid is in stance (procedural mode), max 4 s.
 func _wait_planted(c: Colossus, i: int) -> void:
 	var g := c as GreyboxHumanoid
@@ -1018,13 +1655,13 @@ func _wait_planted(c: Colossus, i: int) -> void:
 
 
 ## Puts the player right behind a limb segment (colossus back side) and holds grip.
-func _grab_behind(w: Dictionary, bone: StringName, along: float) -> void:
+func _grab_behind(w: Dictionary, bone: StringName, along: float, dist := 1.25) -> void:
 	var c: Colossus = w.colossus
 	var p: PlayerCharacter = w.player
 	var seg := _segment(c, bone)
 	var back := c.global_basis.z
 	# Behind the limb in the segment's own frame (limbs are not vertical any more: knees bend).
-	var target := seg.global_transform * Vector3(0, along, 1.25)
+	var target := seg.global_transform * Vector3(0, along, dist)
 	p.global_position = target
 	p.velocity = Vector3.ZERO
 	p.facing = -back
@@ -1032,6 +1669,19 @@ func _grab_behind(w: Dictionary, bone: StringName, along: float) -> void:
 	p.actions.grab_held = true
 	p.reset_physics_interpolation()
 	await _ticks(3)
+	# A walking leg may have moved away in between: retry while it stands.
+	for attempt in 3:
+		if OS.get_environment("TRACE") != "":
+			var g := c as GreyboxHumanoid
+			_log.append("grab attempt %d: climbing %s, L %s R %s, p %s seg %s, state %s" % [attempt, p.is_climbing(), g.loco.legs[0].phase_name(), g.loco.legs[1].phase_name(), str(p.global_position.snapped(Vector3.ONE * 0.01)), str(seg.global_transform.origin.snapped(Vector3.ONE * 0.01)), p.get_display_state()])
+		if p.is_climbing():
+			return
+		await _wait_planted(c, 0)
+		target = seg.global_transform * Vector3(0, along, dist)
+		p.global_position = target
+		p.velocity = Vector3.ZERO
+		p.reset_physics_interpolation()
+		await _ticks(3)
 
 
 func _grab_back_patch(w: Dictionary) -> void:
