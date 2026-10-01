@@ -2441,10 +2441,16 @@ func test_horse_simulation_independent_of_render_fps() -> void:
 	var exe := OS.get_executable_path()
 	var results := {}
 	var rates := [30, 60, 90, 120, 144, 240]
+	# All rates at once (separate processes, each its own fixed step).
+	var jobs := []
 	for fps in rates:
 		var out_path := ProjectSettings.globalize_path("res://tests/output/horse_fps_%d.json" % fps)
-		var output := []
-		var code := OS.execute(exe, ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "20000", "res://tests/fps_scenario.tscn", "--", "--scenario=horse", "--out=" + out_path], output, true)
+		DirAccess.remove_absolute(out_path)
+		jobs.append(["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "20000", "res://tests/fps_scenario.tscn", "--", "--scenario=horse", "--out=" + out_path])
+	var codes := await _execute_parallel(exe, jobs)
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/horse_fps_%d.json" % fps)
+		var code: int = codes[rates.find(fps)]
 		if code != 0 or not FileAccess.file_exists(out_path):
 			_check(false, "horse scenario at %d fps failed (code %d)" % [fps, code])
 			return
@@ -3432,10 +3438,16 @@ func test_boss_simulation_independent_of_render_fps() -> void:
 	var exe := OS.get_executable_path()
 	var results := {}
 	var rates := [30, 60, 90, 120, 144, 240]
+	# All rates at once (separate processes, each its own fixed step).
+	var jobs := []
 	for fps in rates:
 		var out_path := ProjectSettings.globalize_path("res://tests/output/boss_fps_%d.json" % fps)
-		var output := []
-		var code := OS.execute(exe, ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=boss", "--out=" + out_path], output, true)
+		DirAccess.remove_absolute(out_path)
+		jobs.append(["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=boss", "--out=" + out_path])
+	var codes := await _execute_parallel(exe, jobs)
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/boss_fps_%d.json" % fps)
+		var code: int = codes[rates.find(fps)]
 		if code != 0 or not FileAccess.file_exists(out_path):
 			_check(false, "boss scenario at %d fps failed (code %d)" % [fps, code])
 			return
@@ -4126,10 +4138,16 @@ func test_quadratus_simulation_independent_of_render_fps() -> void:
 	var rates := [30, 60, 90, 120, 144, 240]
 	for scenario in ["quadratus", "quadratus_horse"]:
 		var results := {}
+		# All rates at once (separate processes, each its own fixed step).
+		var jobs := []
 		for fps in rates:
 			var out_path := ProjectSettings.globalize_path("res://tests/output/%s_fps_%d.json" % [scenario, fps])
-			var output := []
-			var code := OS.execute(exe, ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=" + scenario, "--out=" + out_path], output, true)
+			DirAccess.remove_absolute(out_path)
+			jobs.append(["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=" + scenario, "--out=" + out_path])
+		var codes := await _execute_parallel(exe, jobs)
+		for fps in rates:
+			var out_path := ProjectSettings.globalize_path("res://tests/output/%s_fps_%d.json" % [scenario, fps])
+			var code: int = codes[rates.find(fps)]
 			if code != 0 or not FileAccess.file_exists(out_path):
 				_check(false, "%s at %d fps failed (code %d)" % [scenario, fps, code])
 				return
@@ -4140,6 +4158,31 @@ func test_quadratus_simulation_independent_of_render_fps() -> void:
 		_metric("%s_fps_max_diff" % scenario, diff, "lower")
 		_check(int(ref.won) == 1, "%s reference run did not win" % scenario)
 		_check(diff < 1e-4, "%s depends on the render rate (diff %.6f)" % [scenario, diff])
+
+
+
+## Runs ``exe`` once per argument list, in parallel (at most one per CPU core), and waits.
+## Returns 0 per job whose process finished, -1 for one that could not start.
+func _execute_parallel(exe: String, jobs: Array) -> Array:
+	var codes := []
+	codes.resize(jobs.size())
+	var running := {}
+	var next := 0
+	var slots := maxi(1, OS.get_processor_count())
+	while next < jobs.size() or not running.is_empty():
+		while next < jobs.size() and running.size() < slots:
+			var pid := OS.create_process(exe, jobs[next])
+			if pid <= 0:
+				codes[next] = -1
+			else:
+				running[pid] = next
+			next += 1
+		for pid in running.keys():
+			if not OS.is_process_running(pid):
+				codes[running[pid]] = 0
+				running.erase(pid)
+		await get_tree().process_frame
+	return codes
 
 
 func _max_json_diff(results: Dictionary, rates: Array) -> float:
@@ -4392,10 +4435,16 @@ func test_bow_is_independent_of_render_fps() -> void:
 	var exe := OS.get_executable_path()
 	var rates := [30, 60, 90, 120, 144, 240]
 	var results := {}
+	# All rates at once (separate processes, each its own fixed step).
+	var jobs := []
 	for fps in rates:
 		var out_path := ProjectSettings.globalize_path("res://tests/output/bow_fps_%d.json" % fps)
-		var output := []
-		var code := OS.execute(exe, ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=bow", "--out=" + out_path], output, true)
+		DirAccess.remove_absolute(out_path)
+		jobs.append(["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=bow", "--out=" + out_path])
+	var codes := await _execute_parallel(exe, jobs)
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/bow_fps_%d.json" % fps)
+		var code: int = codes[rates.find(fps)]
 		if code != 0 or not FileAccess.file_exists(out_path):
 			_check(false, "bow scenario at %d fps failed (code %d)" % [fps, code])
 			return
@@ -4853,10 +4902,16 @@ func test_gaius_simulation_independent_of_render_fps() -> void:
 	var exe := OS.get_executable_path()
 	var rates := [30, 60, 90, 120, 144, 240]
 	var results := {}
+	# All rates at once (separate processes, each its own fixed step).
+	var jobs := []
 	for fps in rates:
 		var out_path := ProjectSettings.globalize_path("res://tests/output/gaius_fps_%d.json" % fps)
-		var output := []
-		var code := OS.execute(exe, ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=gaius", "--out=" + out_path], output, true)
+		DirAccess.remove_absolute(out_path)
+		jobs.append(["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=gaius", "--out=" + out_path])
+	var codes := await _execute_parallel(exe, jobs)
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/gaius_fps_%d.json" % fps)
+		var code: int = codes[rates.find(fps)]
 		if code != 0 or not FileAccess.file_exists(out_path):
 			_check(false, "gaius scenario at %d fps failed (code %d)" % [fps, code])
 			return
@@ -5436,10 +5491,16 @@ func test_valley_simulation_independent_of_render_fps() -> void:
 	var exe := OS.get_executable_path()
 	var rates := [30, 60, 144, 240]
 	var results := {}
+	# All rates at once (separate processes, each its own fixed step).
+	var jobs := []
 	for fps in rates:
 		var out_path := ProjectSettings.globalize_path("res://tests/output/valley_fps_%d.json" % fps)
-		var output := []
-		var code := OS.execute(exe, ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=valley", "--out=" + out_path], output, true)
+		DirAccess.remove_absolute(out_path)
+		jobs.append(["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=valley", "--out=" + out_path])
+	var codes := await _execute_parallel(exe, jobs)
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/valley_fps_%d.json" % fps)
+		var code: int = codes[rates.find(fps)]
 		if code != 0 or not FileAccess.file_exists(out_path):
 			_check(false, "valley scenario at %d fps failed (code %d)" % [fps, code])
 			return
