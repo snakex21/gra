@@ -16,16 +16,6 @@ class PlayerInfo:
 	var height_ratio := 0.0
 	var segment: StringName = &""
 	var stamina_ratio := 1.0
-	## Body region the player is on (foot, calf, thigh, pelvis, back, shoulder, head, arm).
-	var region: StringName = &""
-	var near_weakpoint := false
-	## Angle of the player from the colossus' forward (rad, + = to its left).
-	var bearing := 0.0
-	var riding := false
-	## Attack opportunities seen by the colossus: foot index that can stomp (-1 none),
-	## arm side that can sweep (+1 left, -1 right, 0 none).
-	var stomp_foot := -1
-	var sweep_side := 0
 
 var time := 0.0
 var self_position := Vector3.ZERO
@@ -37,11 +27,6 @@ var blocked_intents: Array[StringName] = []
 var current_intent: StringName = ColossusIntent.IDLE
 var arena_center := Vector3.ZERO
 var arena_radius := 60.0
-## Boss encounter facts (empty / defaults for colossi without an encounter).
-var encounter: StringName = &""
-var attack_running := false
-var weak_point_open := true
-var weak_point_progress := 0.0
 
 
 func players_on_body() -> Array[PlayerInfo]:

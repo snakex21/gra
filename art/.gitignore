@@ -1,0 +1,5 @@
+*.blend1
+*.blend2
+/tests/output/
+__pycache__/
+*.pyc

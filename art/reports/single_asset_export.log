@@ -1,0 +1,27 @@
+ERROR Draco mesh compression is not available because library could not be found at /usr/bin/4.3/python/lib/python3.13/site-packages/libextern_draco.so
+11:23:07 | INFO: Starting glTF 2.0 export
+11:23:07 | INFO: Extracting primitive: Icosphere.015
+11:23:07 | INFO: Primitives created: 1
+11:23:07 | INFO: Finished glTF 2.0 export in 0.006711483001708984 s
+
+11:23:07 | INFO: Starting glTF 2.0 export
+11:23:07 | INFO: Extracting primitive: Icosphere.016
+11:23:07 | INFO: Primitives created: 1
+11:23:07 | INFO: Finished glTF 2.0 export in 0.005006074905395508 s
+
+11:23:07 | INFO: Starting glTF 2.0 export
+11:23:07 | INFO: Extracting primitive: Icosphere.018
+11:23:07 | INFO: Primitives created: 1
+11:23:07 | INFO: Finished glTF 2.0 export in 0.005184650421142578 s
+
+11:23:07 | INFO: Starting glTF 2.0 export
+11:23:07 | INFO: Extracting primitive: rock_01_COL.001
+11:23:07 | INFO: Primitives created: 1
+11:23:07 | INFO: Finished glTF 2.0 export in 0.005395412445068359 s
+
+Info: Saved "saltward_kit.blend"
+ART_SINGLE_EXPORT_OK rock_01 [320, 152, 56]
+Blender 4.3.2
+Read blend: "/workspace/scratch/cdc79842cc4e/gra-art/art/source/saltward_kit.blend"
+
+Blender quit

@@ -27,7 +27,7 @@ static var _sphere: SphereShape3D
 
 
 ## Single raycast. Reuses one parameters object, so no per-call allocation.
-static func ray(space: PhysicsDirectSpaceState3D, from: Vector3, to: Vector3, exclude: Array[RID], mask := Layers.SOLID, perf_label := &"climb_rays") -> Dictionary:
+static func ray(space: PhysicsDirectSpaceState3D, from: Vector3, to: Vector3, exclude: Array[RID], mask := Layers.SOLID) -> Dictionary:
 	if _ray_params == null:
 		_ray_params = PhysicsRayQueryParameters3D.new()
 		_ray_params.hit_back_faces = false
@@ -35,7 +35,7 @@ static func ray(space: PhysicsDirectSpaceState3D, from: Vector3, to: Vector3, ex
 	_ray_params.to = to
 	_ray_params.collision_mask = mask
 	_ray_params.exclude = exclude
-	Perf.count(perf_label)
+	Perf.count(&"climb_rays")
 	return space.intersect_ray(_ray_params)
 
 

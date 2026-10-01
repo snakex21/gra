@@ -37,88 +37,83 @@ func _run() -> void:
 	for n in sandbox.find_children("*", "PlayerHud", true, false):
 		hud = n
 	_hud = hud
-	var g := colossus as GreyboxHumanoid
-	g.debug_draw.visible = true
-	g.debug_override = &"manual"
-	# Colossus just before the test course (ramp starts at z = -16), walking -Z.
-	g.teleport(Vector3(26, 0, -10), 0.0)
-	_watch_from(Vector3(38, 0.95, -12))
-	g.debug_desired_speed = 1.4
-	await _drive(Vector2.ZERO, 150)
-	await _shot("01_walk_steps_overlay")
-	await _drive(Vector2.ZERO, 250)
-	_watch_from(Vector3(37, 0.95, -22))
-	await _drive(Vector2.ZERO, 1)
-	await _shot("02_ramp")
-	await _drive(Vector2.ZERO, 500)
-	_watch_from(Vector3(36, 4.5, -36))
-	await _drive(Vector2.ZERO, 1)
-	await _shot("03_bumps")
-	await _drive(Vector2.ZERO, 300)
-	_watch_from(Vector3(36, 2.7, -52))
-	await _drive(Vector2.ZERO, 60)
-	await _shot("04_step_down")
-	g.debug_desired_speed = 0.0
-	g.debug_desired_turn = 0.3
-	await _drive(Vector2.ZERO, 240)
-	await _shot("05_turn_in_place")
-	# A/B: classic cycle + foot IK on the same bumps.
-	g.debug_desired_turn = 0.0
-	g.set_locomotion_mode(GreyboxHumanoid.LocomotionMode.ANIM_IK)
-	g.teleport(Vector3(26, 3.53, -33), 0.0)
-	g.debug_desired_speed = 1.4
-	await _drive(Vector2.ZERO, 200)
-	_watch_from(Vector3(35, 4.5, -38))
-	await _drive(Vector2.ZERO, 60)
-	await _shot("06_anim_ik_bumps")
-	g.set_locomotion_mode(GreyboxHumanoid.LocomotionMode.PROCEDURAL)
-	g.teleport(Vector3(26, 3.53, -33), 0.0)
-	await _drive(Vector2.ZERO, 200)
-	_watch_from(Vector3(35, 4.5, -38))
-	await _drive(Vector2.ZERO, 60)
-	await _shot("07_procedural_bumps")
-	# Player on a stepping leg.
-	g.teleport(Vector3(0, 0, -20), 0.0)
-	g.debug_desired_speed = 1.2
-	await _drive(Vector2.ZERO, 60)
+	colossus.debug_override = &"frozen"
+	await _wait(30)
+
+	# 1) Approach on foot: "near colossus" framing.
 	var seg := _segment(&"shin_l")
-	for attempt in 4:
-		if player.is_climbing():
+	var back := colossus.global_basis.z
+	player.global_position = seg.global_transform * Vector3(0, -2.2, 0) + back * 9.0
+	player.facing = -back
+	player.reset_physics_interpolation()
+	cam.snap_behind_player()
+	cam.pitch = -0.05
+	await _drive(Vector2(0, 0.5), 60)
+	await _shot("01_approach_scale")
+
+	# 2) Grab the leg and climb a walking colossus (camera leads along the route).
+	await _drive(Vector2(0, 1), 50)
+	player.actions.grab_held = true
+	colossus.debug_override = &"walk"
+	await _drive(Vector2(0, 1), 200)
+	await _shot("02_climb_lookahead")
+
+	# 3) Pull up onto the shoulders, stand on the walking colossus.
+	var mantled := [false]
+	player.mantled.connect(func() -> void: mantled[0] = true)
+	for i in 400:
+		if mantled[0]:
 			break
-		while not g.loco.legs[0].is_planted():
-			await _drive(Vector2.ZERO, 1)
-		player.global_position = seg.global_transform * Vector3(0, -1.6, 1.25)
-		player.velocity = Vector3.ZERO
-		player.facing = -colossus.global_basis.z
-		player.reset_physics_interpolation()
-		cam.snap_behind_player()
-		player.actions.grab_held = true
-		await _drive(Vector2.ZERO, 3)
-	await _drive(Vector2(0, 1), 140)
-	await _shot("08_climbing_stepping_leg")
-	# Player standing on the shoulder of the walking colossus.
-	var chest := _segment(&"chest")
+		await _drive(Vector2(0, 1), 1)
 	player.actions.grab_held = false
-	await _drive(Vector2.ZERO, 2)
-	player.global_position = chest.global_transform * Vector3(1.9, 3.8, 0.0)
-	player.velocity = Vector3.ZERO
-	player.reset_physics_interpolation()
-	cam.yaw = colossus.rotation.y + PI * 0.6
-	cam.pitch = -0.3
-	g.debug_desired_turn = 0.15
-	await _drive(Vector2.ZERO, 180)
-	await _shot("09_standing_on_walking_colossus")
+	await _drive(Vector2.ZERO, 20)
+	# Step out to the middle of the shoulder.
+	var chest := _segment(&"chest")
+	var to_side := (chest.global_transform * Vector3(1.9, 2.8, 0.0)) - player.global_position
+	to_side.y = 0.0
+	player.actions.view_basis = Basis.looking_at(to_side.normalized())
+	for i in 30:
+		if (chest.global_transform.affine_inverse() * player.global_position).x > 1.8:
+			break
+		player.actions.move = Vector2(0, 0.6)
+		player.actions.view_basis = Basis.looking_at(to_side.normalized())
+		await get_tree().physics_frame
+	player.actions.move = Vector2.ZERO
+	cam.yaw = colossus.rotation.y + PI * 0.5
+	cam.pitch = -0.35
+	await _drive(Vector2.ZERO, 90)
+	await _shot("03_standing_on_walking_colossus")
 
-
-## Puts the (idle) player at a viewpoint and points the camera at the colossus' legs.
-func _watch_from(p: Vector3) -> void:
-	player.global_position = p
-	player.velocity = Vector3.ZERO
-	player.reset_physics_interpolation()
+	# 4) Shake: balance drains continuously.
+	colossus.debug_override = &"shake"
+	colossus._think_left = 0.0
+	for i in 200:
+		await _drive(Vector2.ZERO, 1)
+		if player.balance.state >= Balance.State.UNSTABLE and not _taken.has("04"):
+			await _drive(Vector2.ZERO, 10)
+			await _shot("04_unstable")
+		if player.balance.state >= Balance.State.STUMBLE:
+			break
+	await _shot("05_slipping")
+	# 5) Save yourself: grab.
+	player.actions.grab_held = true
+	await _drive(Vector2.ZERO, 40)
+	await _shot("06_rescue_grab")
+	# 6) Let go while it shakes: thrown off, hard landing.
+	player.actions.grab_held = false
+	for i in 240:
+		await _drive(Vector2.ZERO, 1)
+		if player.state == PlayerCharacter.State.GROUND and player.last_impact_tier != FallImpact.Tier.NONE and not player.is_on_colossus():
+			break
+	await _drive(Vector2.ZERO, 15)
+	await _shot("07_landed_after_throw")
+	# 7) Back on the ground: frame the colossus (focus).
+	colossus.debug_override = &""
+	await _drive(Vector2.ZERO, 120)
+	player.actions.focus_held = true
+	await _drive(Vector2.ZERO, 90)
+	await _shot("08_focus_colossus")
 	player.actions.focus_held = false
-	var to := colossus.global_position + Vector3.UP * 3.0 - p
-	cam.yaw = atan2(-to.x, -to.z)
-	cam.pitch = atan2(to.y, Vector2(to.x, to.z).length())
 
 
 var _hud: PlayerHud
@@ -146,8 +141,7 @@ func _shot(name: String) -> void:
 	_taken[name.substr(0, 2)] = true
 	if _hud:
 		print("---- %s HUD ----\n%s" % [name, _hud._label.text])
-	var g := colossus as GreyboxHumanoid
-	print("shot %s  player=%s balance=%.2f | %s | slip max %.4f m/s" % [name, player.get_display_state(), player.balance.value, g.locomotion_debug_text().replace("\n", " | "), g.foot_stats.slip_max])
+	print("shot %s  state=%s balance=%.2f y=%.1f stamina=%.0f health=%.0f intent=%s camera=%s %.1f m" % [name, player.get_display_state(), player.balance.value, player.global_position.y, player.stamina.value, player.health, colossus.intent.kind, cam.debug_state, cam.get_distance()])
 
 
 func _segment(bone: StringName) -> BodySegment:

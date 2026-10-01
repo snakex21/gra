@@ -16,10 +16,8 @@ signal mantled
 ## Emitted on every landing; ``tier`` is FallImpact.Tier.
 signal landed(impact_speed: float, tier: int, damage: float)
 signal died
-## A colossus attack (or anything else) hit the player.
-signal hit_taken(damage: float, source: StringName)
 
-enum State { GROUND, AIR, CLIMB, RIDE }
+enum State { GROUND, AIR, CLIMB }
 
 @export_group("Locomotion")
 @export var run_speed := 5.5
@@ -39,8 +37,6 @@ enum State { GROUND, AIR, CLIMB, RIDE }
 @export var climb_jump_speed := 6.5
 ## In the air, the wider "rescue" grab search only runs while falling faster than this.
 @export var rescue_fall_speed := 3.0
-## How fast the body settles into a new hanging posture (1/s), e.g. round an edge.
-@export var hang_follow_rate := 10.0
 
 @export_group("Stamina")
 @export var drain_hang := 3.0       ## per second, just holding on
@@ -58,9 +54,6 @@ enum State { GROUND, AIR, CLIMB, RIDE }
 @export var health_regen := 4.0          ## per second
 @export var health_regen_delay := 4.0    ## seconds after damage
 @export var respawn_delay := 3.0
-## Respawn by itself after dying. An encounter that resets the whole fight turns this off
-## and calls respawn() when it is done.
-@export var auto_respawn := true
 
 @export_group("Shake response")
 ## Surface acceleration (m/s^2) where the climber starts to feel the shake...
@@ -95,8 +88,6 @@ var last_impact_tier := FallImpact.Tier.NONE
 ## Body is out of play (health 0) and waiting to respawn.
 var dead := false
 var visual: PlayerVisual
-var riding: PlayerRiding
-var sword := PlayerSword.new()
 ## Stats for debugging / tests.
 var last_release_reason: StringName = &""
 
@@ -119,9 +110,6 @@ var _carry_basis := Basis.IDENTITY
 var _climb_slipping := false
 var _since_damage := 999.0
 var _dead_time := 0.0
-var _invulnerable := 0.0
-var _hang_body: Node3D
-var _hang_local := Vector3.ZERO
 
 
 func _ready() -> void:
@@ -144,7 +132,6 @@ func _ready() -> void:
 	add_child(visual)
 	_exclude = [get_rid()]
 	spawn_transform = global_transform
-	riding = PlayerRiding.new(self)
 
 
 func _physics_process(delta: float) -> void:
@@ -153,19 +140,10 @@ func _physics_process(delta: float) -> void:
 	if not actions.grab_held:
 		_grab_needs_release = false
 	_update_health(delta)
-	if state == State.RIDE:
-		if actions.consume_interact():
-			riding.try_dismount()
-		riding.update(delta)
-	elif state == State.CLIMB:
+	if state == State.CLIMB:
 		_climb(delta)
 	else:
 		_locomotion(delta)
-		if actions.consume_interact() and riding.try_mount():
-			state = State.RIDE
-	if actions.consume_call():
-		_call_horse()
-	sword.update(self, delta)
 	visual.update_visual(self, delta)
 	if global_position.y < -60.0:
 		respawn()
@@ -176,8 +154,6 @@ func _physics_process(delta: float) -> void:
 func get_support_body() -> Object:
 	if state == State.CLIMB and grip:
 		return grip.body
-	if state == State.RIDE:
-		return riding.horse
 	return _support
 
 
@@ -191,8 +167,6 @@ func get_display_state() -> String:
 	if dead:
 		return "DEAD"
 	match state:
-		State.RIDE:
-			return riding.display_state()
 		State.CLIMB:
 			if _climb_slipping:
 				return "SLIP"
@@ -205,8 +179,6 @@ func get_display_state() -> String:
 		Balance.State.STUMBLE:
 			return "SLIP"
 	var s := "STAND" if is_on_colossus() else "GROUND"
-	if s == "GROUND" and riding.horse_in_reach() != null:
-		s = "APPROACH HORSE"
 	if balance.state == Balance.State.UNSTABLE:
 		s += " (unstable)"
 	return s
@@ -216,36 +188,7 @@ func is_on_colossus() -> bool:
 	return get_support_body() is BodySegment
 
 
-func is_riding() -> bool:
-	return state == State.RIDE
-
-
-## Called by a horse every tick it is ridden by this player.
-func build_ride_intent(intent: HorseInputIntent) -> void:
-	riding.build_ride_intent(intent)
-
-
-## Called by PlayerRiding when the rider is back on foot.
-func end_riding() -> void:
-	state = State.AIR
-	_carry_body = null
-	reset_physics_interpolation()
-
-
-func _call_horse() -> void:
-	var best: Horse = null
-	for h in get_tree().get_nodes_in_group(&"horses"):
-		if not is_instance_valid((h as Horse).current_rider):
-			if best == null or h.global_position.distance_to(global_position) < best.global_position.distance_to(global_position):
-				best = h
-	if best:
-		best.command_come(self)
-
-
 func respawn() -> void:
-	if state == State.RIDE:
-		riding.phase = PlayerRiding.Phase.RIDING
-		riding._finish(Vector3.ZERO)
 	grip = null
 	state = State.AIR
 	dead = false
@@ -255,10 +198,7 @@ func respawn() -> void:
 	global_transform = spawn_transform
 	stamina.refill()
 	balance.reset()
-	sword.reset()
 	health = fall.max_health
-	_since_damage = 999.0
-	_invulnerable = 0.0
 	reset_physics_interpolation()
 
 
@@ -273,8 +213,6 @@ func _locomotion(delta: float) -> void:
 		wish = wish.normalized()
 	if dead:
 		wish = Vector3.ZERO
-	if sword.is_busy():
-		wish *= 0.35
 	var on_floor := is_on_floor()
 	# Ride the body exactly (same idea as the grip anchor), before anything else moves us.
 	_apply_carry(on_floor)
@@ -435,37 +373,11 @@ func _take_damage(amount: float) -> void:
 		died.emit()
 
 
-## A hit from an attack: damage, a push (world velocity change) and optionally being
-## knocked down for ``knockdown`` seconds. Being hit tears the player off a grip or a horse.
-## A short invulnerability after a hit avoids one blow counting twice.
-func apply_hit(damage: float, impulse: Vector3, knockdown := 0.0, source: StringName = &"attack") -> bool:
-	if dead or _invulnerable > 0.0:
-		return false
-	_invulnerable = 0.5
-	if state == State.RIDE:
-		riding.phase = PlayerRiding.Phase.RIDING
-		riding._finish(Vector3.ZERO)
-	if state == State.CLIMB:
-		_release(&"hit", impulse)
-	else:
-		velocity += impulse
-		if impulse.y > 0.0:
-			state = State.AIR
-	if knockdown > 0.0:
-		balance.knock_down(knockdown)
-	elif damage > 0.0:
-		balance.hit(0.5)
-	_take_damage(damage)
-	hit_taken.emit(damage, source)
-	return true
-
-
 func _update_health(delta: float) -> void:
 	_since_damage += delta
-	_invulnerable = maxf(0.0, _invulnerable - delta)
 	if dead:
 		_dead_time += delta
-		if auto_respawn and _dead_time >= respawn_delay:
+		if _dead_time >= respawn_delay:
 			respawn()
 		return
 	if _since_damage > health_regen_delay:
@@ -480,23 +392,13 @@ func _update_support() -> void:
 	for i in get_slide_collision_count():
 		var c := get_slide_collision(i)
 		if c.get_normal().dot(Vector3.UP) > 0.6:
-			_set_support(c.get_collider(), c.get_normal(), c.get_position(), previous)
+			_support = c.get_collider()
+			_support_normal = c.get_normal()
+			if _support is BodySegment:
+				_support_local = (_support as Node3D).global_transform.affine_inverse() * c.get_position()
+			if _support != previous:
+				_support_ticks = 0
 			return
-	# Floor snapping can keep us on the floor without reporting a collision: confirm the
-	# support with one short ray instead of losing it for a tick.
-	var feet := global_position + Vector3.DOWN * (_shape.height * 0.5 - 0.1)
-	var hit := ClimbQuery.ray(get_world_3d().direct_space_state, feet, feet + Vector3.DOWN * (floor_snap_length + 0.2), _exclude)
-	if not hit.is_empty() and (hit.normal as Vector3).dot(Vector3.UP) > 0.6:
-		_set_support(hit.collider, hit.normal, hit.position, previous)
-
-
-func _set_support(collider: Object, nrm: Vector3, point: Vector3, previous: Object) -> void:
-	_support = collider
-	_support_normal = nrm
-	if _support is BodySegment:
-		_support_local = (_support as Node3D).global_transform.affine_inverse() * point
-	if _support != previous:
-		_support_ticks = 0
 
 
 func _try_grab(rescue := false) -> void:
@@ -504,13 +406,6 @@ func _try_grab(rescue := false) -> void:
 	# Search around the hands (above the head), so catching a surface mid-leap keeps the height.
 	# Same height as where the hands end up when hanging, so a caught leap keeps its height.
 	var anchor := ClimbQuery.find_grip(space, global_position + Vector3.UP * hand_reach, grab_radius, facing, _exclude)
-	# Fur in front of the chest (e.g. a leg that slants away above the head). While
-	# rescuing, the wider body search below already covers this region.
-	if anchor == null and not rescue:
-		anchor = ClimbQuery.find_grip(space, global_position + Vector3.UP * 0.3, grab_radius, facing, _exclude)
-	# Fur under the feet (standing on a furry back or head): crouch and hold on to it.
-	if anchor == null and not rescue and is_on_floor() and _support is BodySegment:
-		anchor = ClimbQuery.find_grip(space, global_position + Vector3.DOWN * (_shape.height * 0.5), 0.45, facing, _exclude)
 	# Rescue: anything within reach of the whole body (edge under the feet, limb passing by).
 	if anchor == null and rescue:
 		anchor = ClimbQuery.find_grip(space, global_position + Vector3.DOWN * 0.3, grab_radius + 0.35, facing, _exclude)
@@ -521,10 +416,6 @@ func _try_grab(rescue := false) -> void:
 func _attach(anchor: SurfaceAnchor) -> void:
 	grip = anchor
 	state = State.CLIMB
-	# Forget where we last stood: is_on_floor() keeps its old value while climbing, and a
-	# stale carry anchor would pull the body back there on the first tick after letting go.
-	_carry_body = null
-	_support = null
 	_grip_ticks = 0
 	var n := anchor.world_normal()
 	_last_normal = n
@@ -540,7 +431,7 @@ func _attach(anchor: SurfaceAnchor) -> void:
 	_slide_velocity = Vector3.ZERO
 	# Holding on steadies you: balance is restored while gripping.
 	balance.reset()
-	_place_on_grip(true)
+	_place_on_grip()
 	reset_physics_interpolation()
 	grabbed.emit(anchor)
 
@@ -576,14 +467,13 @@ func _climb(delta: float) -> void:
 		var move_dir := _climb_direction(actions.move, n)
 		var push := n * 0.8 + Vector3.UP * 0.6
 		if move_dir != Vector3.ZERO:
-			push = move_dir + n * 0.1
+			push = move_dir + n * 0.25
 		stamina.drain(jump_cost)
 		_release(&"jump", push.normalized() * climb_jump_speed)
 		return
 
 	# 3) Crawl.
-	# No crawling while the sword is charging / striking (both hands are busy).
-	_moving = actions.move.length() > 0.1 and not sword.is_busy()
+	_moving = actions.move.length() > 0.1
 	if _moving:
 		var dir := _climb_direction(actions.move, n)
 		var speed := climb_speed * (1.0 - 0.75 * shake_level)
@@ -665,23 +555,7 @@ func _try_mantle() -> bool:
 		return false
 	var stand := (hit.position as Vector3) + Vector3.UP * (_shape.height * 0.5 + 0.05)
 	if _overlaps(stand):
-		# Something stands right there (a neck, a head): look for room along the edge.
-		var along := n.cross(Vector3.UP)
-		along.y = 0.0
-		along = along.normalized() if along.length() > 0.01 else Vector3.RIGHT
-		var found := false
-		for off in [0.4, -0.4, 0.8, -0.8]:
-			var c: Vector3 = stand + along * off
-			var h2 := ClimbQuery.ray(space, Vector3(c.x, stand.y + 1.5, c.z), Vector3(c.x, stand.y - 1.5, c.z), _exclude)
-			if h2.is_empty() or h2.normal.dot(Vector3.UP) < 0.7:
-				continue
-			c = (h2.position as Vector3) + Vector3.UP * (_shape.height * 0.5 + 0.05)
-			if not _overlaps(c):
-				stand = c
-				found = true
-				break
-		if not found:
-			return false
+		return false
 	var carried := surface_velocity
 	grip = null
 	_climb_slipping = false
@@ -698,30 +572,9 @@ func _try_mantle() -> bool:
 	return true
 
 
-func _place_on_grip(snap := false) -> void:
+func _place_on_grip() -> void:
 	var n := grip.world_normal()
-	var hang := n * hang_distance - climb_up * hand_reach
-	# On a top surface (fur on a back or a head) the climber crouches over his hands instead
-	# of hanging beside them: letting go leaves him standing right there.
-	var w := smoothstep(0.82, 0.95, n.y)
-	if w > 0.0:
-		hang = hang.lerp(n * (_shape.height * 0.5 + 0.05), w)
-	# The hands stay exactly on the anchor; the body follows its offset from the hands
-	# smoothly (in the gripped segment's frame), so wrapping round an edge or onto a top
-	# does not pop the body by a metre in one tick.
-	var body := grip.body as Node3D
-	var basis := body.global_basis.orthonormalized()
-	if snap or _hang_body != body:
-		if not snap and is_instance_valid(_hang_body):
-			# Moving onto another segment: keep the current world offset, re-expressed.
-			var world_offset := _hang_body.global_basis.orthonormalized() * _hang_local
-			_hang_local = basis.inverse() * world_offset
-		else:
-			_hang_local = basis.inverse() * hang
-		_hang_body = body
-	var target_local := basis.inverse() * hang
-	_hang_local = _hang_local.lerp(target_local, 1.0 - exp(-hang_follow_rate * get_physics_process_delta_time()))
-	global_position = grip.world_point() + basis * _hang_local
+	global_position = grip.world_point() + n * hang_distance - climb_up * hand_reach
 	velocity = surface_velocity
 
 

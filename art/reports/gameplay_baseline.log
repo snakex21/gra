@@ -1,0 +1,72 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS test_rig_segments_follow_bones (92 ms)
+PASS test_physics_server_transform_matches_anchor (98 ms)
+    server vs node transform lag for kinematic segment: 0.0000 m
+PASS test_grab_and_hold_on_walking_leg (362 ms)
+    local drift over 6 s: 0.00000 m, max anchor-to-surface error: 0.0000 m, max surface speed 2.19 m/s
+PASS test_climb_leg_to_shoulders_frozen (341 ms)
+    [frozen] route: shin_l -> thigh_l -> hips -> spine -> chest
+    [frozen] rose 12.9 m, state GROUND, stamina 53, max surface err 0.000, last release
+PASS test_climb_leg_to_shoulders_walking (387 ms)
+    [walk] route: shin_l -> thigh_l -> hips -> spine -> chest
+    [walk] rose 12.5 m, state GROUND, stamina 53, max surface err 0.000, last release
+PASS test_traverse_around_limb (220 ms)
+    sideways around thigh: min normal dot -1.00, still climbing true
+PASS test_armor_blocks_climbing (169 ms)
+    stopped at shin-local (0.69, -1.61, -0.5)
+PASS test_exhaustion_drops_player (326 ms)
+PASS test_brain_shakes_and_rules_limit_it (607 ms)
+    first shake after 2.7 s, longest shake 3.02 s, max shake level 1.00, still climbing true
+PASS test_shake_drains_more_than_hanging (120 ms)
+    stamina/s hanging 3.0, shaking 23.6
+PASS test_release_inherits_surface_velocity (42 ms)
+    surface velocity 7.92 m/s, velocity after release 7.92 m/s
+PASS test_jump_off_and_regrab_midair (27 ms)
+    re-grabbed after 18 ticks at dy 1.37
+PASS test_static_wall_climb_and_mantle (143 ms)
+    static wall: mantled true, y 7.90, state GROUND
+FAIL test_performance_budget (703 ms)
+    climb (M1)   frame 0.758 ms | logic/tick: colossus 63.8 us, player 68.4 us, camera 0.0 us | queries/tick: climb rays 3.0, grab 0.0, camera 0.0
+    climb+cam    frame 0.666 ms | logic/tick: colossus 53.1 us, player 64.4 us, camera 39.8 us | queries/tick: climb rays 2.4, grab 0.0, camera 7.0
+    stand+shake  frame 0.705 ms | logic/tick: colossus 56.5 us, player 88.2 us, camera 66.5 us | queries/tick: climb rays 0.0, grab 0.0, camera 7.7
+    fall+grab    frame 0.749 ms | logic/tick: colossus 63.5 us, player 30.2 us, camera 81.6 us | queries/tick: climb rays 0.0, grab 0.0, camera 7.2
+    object count growth over 300 ticks: -1
+PASS test_standing_on_still_colossus_is_stable (167 ms)
+    min balance 1.000, drift on chest 0.001 m, state STAND
+PASS test_standing_on_walking_colossus_remains_controllable (307 ms)
+    colossus speed 1.39 m/s, min balance 1.00, moved 1.65 m forward on the body, state STAND
+PASS test_standing_on_turning_colossus_is_carried (280 ms)
+    turned 0.61 rad, drift on chest 0.000 m, min balance 1.00
+PASS test_shake_destabilizes_standing_player (141 ms)
+    half-strength shake: min balance 0.15, states ["STABLE", "UNSTABLE", "STUMBLE"], max slide speed 2.92 m/s
+PASS test_player_can_grab_during_slip (235 ms)
+    lost balance after 1.28 s, saved by grab after 1 ticks on Seg_upper_arm_l
+PASS test_severe_shake_can_throw_ungripped_player (331 ms)
+    knocked down after 2.35 s, thrown off after 2.08 s, impact 19.4 m/s (SEVERE), health 100
+PASS test_brain_shake_throws_idle_standing_player (477 ms)
+    brain: first shake at 2.1 s, idle player thrown off at 10.9 s
+PASS test_gripping_player_resists_shake_using_stamina (120 ms)
+    2.5 s full shake: still gripping true, stamina 100 -> 46
+PASS test_small_fall_is_safe (127 ms)
+    drop 1.5 m: impact 8.1 m/s, tier NONE, damage 0.0, min balance 1.00, knocked false, dead false
+PASS test_medium_fall_has_consequence (117 ms)
+    drop 5.0 m: impact 14.7 m/s, tier HARD, damage 27.5, min balance 0.40, knocked false, dead false
+PASS test_large_fall_triggers_fall_consequence (133 ms)
+    drop 12.0 m: impact 23.1 m/s, tier SEVERE, damage 77.1, min balance 0.00, knocked true, dead false
+PASS test_lethal_fall_respawns (179 ms)
+    drop 18.0 m: impact 28.2 m/s, tier SEVERE, damage 100.0, min balance 0.00, knocked true, dead true
+PASS test_late_grab_catches_falling_player (32 ms)
+    falling at -11.0 m/s; let go at 5.0 m, caught at 2.0 m on Seg_shin_l
+PASS test_grip_transfer_while_colossus_turns (363 ms)
+    turning colossus route: shin_l -> thigh_l -> hips -> spine -> chest, max surface err 0.000
+PASS test_camera_does_not_clip_into_colossus (846 ms)
+    camera frames 840, inside colossus 0, min distance 0.12, colossus clamps 172, player FALLEN
+PASS test_camera_focus_frames_player_and_colossus (110 ms)
+    focus under the colossus: distance 9.8 m, pitch 0.40, player in view true, colossus in view true
+PASS test_bone_local_grip_still_has_no_drift (181 ms)
+    walk+shake 2.5 s: drift 0.00000 m, max surface err 0.0000, surface speed up to 8.3 m/s, stamina 46
+PASS probe_balance_disturbance (1 ms)
+
+1 failure(s)
+  - test_performance_budget: regression vs Milestone 1 benchmark (~0.25 ms): 0.758 ms

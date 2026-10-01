@@ -4,7 +4,6 @@ class_name Layers
 const WORLD := 1 << 0
 const PLAYER := 1 << 1
 const COLOSSUS := 1 << 2
-const HORSE := 1 << 3
 
 ## Everything a climber or camera can collide with.
-const SOLID := WORLD | COLOSSUS | HORSE
+const SOLID := WORLD | COLOSSUS

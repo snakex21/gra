@@ -1,4 +1,4 @@
-# Architektura (stan po Etapie 5)
+# Architektura (stan po Etapie 2)
 
 Dokument opisuje decyzje, które mają przetrwać dalszy rozwój. Kod jest komentowany po angielsku
 (open source), a dokumentacja projektowa jest po polsku.
@@ -98,60 +98,6 @@ Colossus.observe() -> ColossusObservation
 - Nowy kolos to podklasa `Colossus`, która dostarcza rig (`_build_body`), kontroler i własne
   reguły. `GreyboxHumanoid` definiuje rig tabelami `BONES`/`PARTS`.
 
-## 2b. Locomotion (Etap 3)
-
-```
-Intent -> desired movement -> LocomotionController (masa, planer kroków, miednica)
-       -> rig: IK nóg + górna część ciała -> Skeleton3D -> BodySegment
-```
-Szczegóły i pomiary: [ETAP_3.md](ETAP_3.md). Zasady:
-- Brain nigdy nie steruje nogami.
-- Kontroler nie zna kości, więc kolejny kolos dostarcza tylko mapowanie na swój szkielet.
-- Każdy człon pozy musi być gładki (C²), inaczej daleki od stawu bark dostaje szarpnięcia.
-- Symulacja działa tylko w stałym kroku. Render, kamera i wejście nie wpływają na stan gry.
-  Pilnuje tego test uruchamiany przy 30/60/144/240 FPS.
-
-## 2c. Agro (Etap 4)
-
-```
-rider / AI / test -> HorseInputIntent -> HorseController (chód, masa, R(v), omijanie, hamowanie)
-                  -> QuadrupedGait (zegar chodu, fazy nóg) -> Horse (tułów, szyja, IK nóg)
-                  -> Skeleton3D -> siodło (kość body) -> PlayerRiding
-```
-Szczegóły i pomiary: [ETAP_4.md](ETAP_4.md). Zasady:
-- Jeździec nigdy nie ustawia prędkości ani kursu. Wyraża zamiar (kierunek, kopnięcie, wodze),
-  a koń przekłada go na ruch w granicach swojej masy i promienia skrętu.
-- Jeźdźcem jest dowolny węzeł z `build_ride_intent()` (`current_rider` się zmienia).
-  `HorseInputIntent` nie zna urządzeń. Polecenia AI (`follow/come/stop`) to wspólne API
-  dla gracza, AI kompana i testów.
-- Autonomia jest lokalna: korekta kursu, zwolnienie, zatrzymanie. Koń nie szuka ścieżki
-  i nie wybiera nowej drogi za jeźdźca.
-- Wspólna z kolosem jest tylko matematyka kroku (`StepMath`, `LegState`, `TwoBoneIK`).
-  Rytm czworonoga to osobny `QuadrupedGait`.
-- Jeździec jest zakotwiczony do kości jak chwyt: zero dryfu. Wsiadanie i zsiadanie to łuki
-  w układzie konia, bez teleportów. Zsiadanie wymaga bezpiecznego miejsca.
-- Kolejność w ticku: kolos (−10) → koń (−9) → gracz (0), więc jeździec czyta siodło
-  z bieżącego ticku.
-
-## 2d. Walka z bossem (Etap 5)
-
-```
-observe -> Brain.decide (proponuje) -> FairnessRules (blokuje, przycina czasy) -> intencja
-       -> ColossusAttack: TELEGRAPH -> ACTIVE -> RECOVERY (pozy kończyn, HitVolume na kościach)
-       -> ruch -> locomotion / IK -> segmenty -> trafienia testowane po synchronizacji kości
-gracz: PlayerActions -> PlayerSword (READY/CHARGE/STRIKE/RECOVERY) -> WeakPoint.try_hit
-SentinelEncounter: śmierć -> pauza -> reset; pokonanie -> DEFEATED
-```
-Szczegóły: [ETAP_5.md](ETAP_5.md). Zasady:
-- Mózg niczego nie wymusza. Reguły fairness to osobny obiekt, silniejszy od każdego mózgu.
-  Test ze „spamującym” mózgiem (zawsze stomp / zawsze shake) to sprawdza.
-- Żaden atak nie zadaje obrażeń w ticku decyzji. Hitboxy to kapsuły na prawdziwych kościach
-  kończyn, aktywne tylko w fazie ACTIVE.
-- Weak point żyje na segmencie (kości) i bierze pozycję z bieżącego ticku. Walkę wygrywa się
-  przez weak point, nie przez pasek HP.
-- Jedna gra dla wszystkich: bot testowy gra wyłącznie przez `PlayerActions`, jak człowiek.
-- Wszystko w stałym kroku: cała walka przy 30–240 FPS daje identyczny stan.
-
 ## 3. Gracze i wejście
 
 - Nie ma singletona gracza. Każdy `PlayerCharacter` jest w grupie `players`, a sandbox trzyma
@@ -160,7 +106,7 @@ Szczegóły: [ETAP_5.md](ETAP_5.md). Zasady:
   Źródła wejścia to `FlatInputSource` (klawiatura/mysz/pad), a w przyszłości VR, AI kompan
   i testy. Sieć będzie synchronizować akcje/intencje, nie przyciski.
 - Kolejność w ticku: wejście (`process_priority -100`) → kolos (`process_physics_priority -10`)
-  → koń (`-9`) → gracz → kamera (`_process`, interpolowana pozycja gracza).
+  → gracz → kamera (`_process`, interpolowana pozycja gracza).
 - Włączona jest interpolacja fizyki (Godot 4.4), więc symulacja idzie w 60 Hz, a obraz jest płynny
   przy dowolnym FPS.
 
@@ -189,10 +135,4 @@ Zasada: kamera nie walczy z graczem.
   chwyt w powietrzu 2 zapytania sferą, kamera ok. 7 zapytań.
 - Zapytania korzystają ze współdzielonych obiektów parametrów, a `find_grip` liczy najbliższy
   punkt analitycznie.
-- Etap 4: Agro kosztuje ~180–230 µs na tick (sondy przeszkód ~75, planer kroków ~25, IK i poza
-  ~60) i ~8 zapytań fizyki na tick. Osobne etykiety: `horse_controller`, `horse_probes`,
-  `horse_steps`, `horse_ik`, `mount`, `camera`.
-- Etap 5: Sentinel w walce ~270–470 µs/tick (mózg ~10, walka/ataki ~35–65, trafienia ~15–30,
-  locomotion ~115–190, IK ~30–45; zakres zależy od obciążenia maszyny). Etykiety: `brain`,
-  `boss_combat`, `boss_hits`, `boss_pose`, `vfx`.
 - Nie ma potrzeby przenosić czegokolwiek do Ziga.

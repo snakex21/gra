@@ -19,12 +19,8 @@ var view_basis := Basis.IDENTITY
 var grab_held := false
 ## Hold to frame the current target (colossus) with the camera.
 var focus_held := false
-## Sword: hold to charge, release to strike.
-var attack_held := false
 
 var _jump_pressed := false
-var _interact_pressed := false
-var _call_pressed := false
 
 
 func press_jump() -> void:
@@ -38,34 +34,9 @@ func consume_jump() -> bool:
 	return pressed
 
 
-## Edge: interact (mount / dismount).
-func press_interact() -> void:
-	_interact_pressed = true
-
-
-func consume_interact() -> bool:
-	var pressed := _interact_pressed
-	_interact_pressed = false
-	return pressed
-
-
-## Edge: call the horse.
-func press_call() -> void:
-	_call_pressed = true
-
-
-func consume_call() -> bool:
-	var pressed := _call_pressed
-	_call_pressed = false
-	return pressed
-
-
 func clear() -> void:
 	move = Vector2.ZERO
 	look_delta = Vector2.ZERO
 	grab_held = false
 	focus_held = false
-	attack_held = false
 	_jump_pressed = false
-	_interact_pressed = false
-	_call_pressed = false

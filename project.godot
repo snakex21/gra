@@ -20,7 +20,6 @@ window/size/viewport_height=900
 3d_physics/layer_1="world"
 3d_physics/layer_2="player"
 3d_physics/layer_3="colossus"
-3d_physics/layer_4="horse"
 
 [physics]
 
