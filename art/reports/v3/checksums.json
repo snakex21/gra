@@ -1,0 +1,375 @@
+{
+  "algorithm": "SHA-256",
+  "files": [
+    {
+      "path": "art/source/stonewater.blend",
+      "sha256": "7d267394d8b590f6756674590828c1a8ce4e600cc68adbddfd387c787f4d223a",
+      "bytes": 1963261
+    },
+    {
+      "path": "assets/stonewater_manifest.json",
+      "sha256": "fe744de98baeb881c024ee07968b430c11eb3f707595212f065e4aac3f14dfb8",
+      "bytes": 194855
+    },
+    {
+      "path": "environment/stonewater/aqueduct_broken_end.tscn",
+      "sha256": "e6842018c80803b45fe95bab520fd0e3584bc0b3e3d318b3b133e586ee27c34b",
+      "bytes": 223
+    },
+    {
+      "path": "environment/stonewater/aqueduct_span_12m.tscn",
+      "sha256": "bb3049d43f7e1a6b32d444ccede2c5006ad0bb972a0de68b6f5244753c98e507",
+      "bytes": 219
+    },
+    {
+      "path": "environment/stonewater/basin_corner_6m.tscn",
+      "sha256": "bebb279ae54348cd73cd922fda1b3a50277dd323b1d4548329a22d4e587207c7",
+      "bytes": 215
+    },
+    {
+      "path": "environment/stonewater/bridge_abutment.tscn",
+      "sha256": "a72cfe027337cff54a0bf275906c7ad35c3a498ac9ff69fdcb599b576256fb91",
+      "bytes": 215
+    },
+    {
+      "path": "environment/stonewater/bridge_deck_12m.tscn",
+      "sha256": "6c87e535409c9a63406fa7dafd54aaf607ce218674109662d906e3d42a1b565b",
+      "bytes": 215
+    },
+    {
+      "path": "environment/stonewater/bridge_ramp_8m.tscn",
+      "sha256": "b708cc50b0e5371e4629b0474b90570991d184a0e55f33599702d29655c89e66",
+      "bytes": 213
+    },
+    {
+      "path": "environment/stonewater/carved_waymarker.tscn",
+      "sha256": "2ed6b84c50fac3d6791d1c5ef0790a451d8f7831a48b6b169edbddc1270cfac3",
+      "bytes": 217
+    },
+    {
+      "path": "environment/stonewater/causeway_8m.tscn",
+      "sha256": "9f8be57990455ab24ad9f7df3ce2f965904c526c2938c43094eabf8dfcf81b4a",
+      "bytes": 207
+    },
+    {
+      "path": "environment/stonewater/cistern_vault_8m.tscn",
+      "sha256": "e97457d9b636c5f1617a1f063923631e7b117f959d16554628eaff385aa8d061",
+      "bytes": 217
+    },
+    {
+      "path": "environment/stonewater/flying_buttress.tscn",
+      "sha256": "6cbd73e3d7424d87fe66646e8bf18ea832fa9cdae1814926896b109e52eec310",
+      "bytes": 215
+    },
+    {
+      "path": "environment/stonewater/monumental_portal.tscn",
+      "sha256": "2edf9654a3f4156a2c0708a42488179eaf457d076ba1edde420e3fdc7cffeb21",
+      "bytes": 219
+    },
+    {
+      "path": "environment/stonewater/oculus_roof_8m.tscn",
+      "sha256": "fba0f4be8f4996a915d78c14b66194d72574fab5424d3dd637490a6fd64d8e0e",
+      "bytes": 213
+    },
+    {
+      "path": "environment/stonewater/parapet_4m.tscn",
+      "sha256": "4c5d7ed663399abcc28daedbffee58a0975972ceadd9623fbf821af277877758",
+      "bytes": 205
+    },
+    {
+      "path": "environment/stonewater/parapet_end.tscn",
+      "sha256": "bfe50dcaa4536f1d29a7e93a5f8922ff8aa0d61dc07960b0dba7a251b383f88c",
+      "bytes": 207
+    },
+    {
+      "path": "environment/stonewater/ribbed_pier_10m.tscn",
+      "sha256": "2360bfbb8f205211735b5bb555c2efce8529dda7cf752678607fcb9a561a9ca1",
+      "bytes": 215
+    },
+    {
+      "path": "environment/stonewater/sluice_frame_6m.tscn",
+      "sha256": "a6a0a81b6a00c0e962a9c67ad5c0e5cbf1ee29342607504d760dde0bd81a0899",
+      "bytes": 215
+    },
+    {
+      "path": "environment/stonewater/spillway_steps_6m.tscn",
+      "sha256": "bb5725ca8f494474d1799242bc079ff3902754d3f3f0a14850220239becf6d01",
+      "bytes": 219
+    },
+    {
+      "path": "environment/stonewater/water_outlet.tscn",
+      "sha256": "1b664e3b030d17cebbd39eaffcf982492fefb323c5b0a84a061285b02fe1e7af",
+      "bytes": 209
+    },
+    {
+      "path": "models/stonewater/aqueduct_broken_end_lod0.glb",
+      "sha256": "a9111629110f7923f02672c107423528e94f46ae4225018a558bc46cc7509926",
+      "bytes": 155032
+    },
+    {
+      "path": "models/stonewater/aqueduct_broken_end_lod1.glb",
+      "sha256": "8dcf5353da0d5cecfcfb0b089eaca1247f012876636c1fb8735c1b3cc5df40af",
+      "bytes": 28780
+    },
+    {
+      "path": "models/stonewater/aqueduct_broken_end_lod2.glb",
+      "sha256": "482f8f1a5700104325b35678794014bd79b11cf7b167cdde31a0d77e77268dde",
+      "bytes": 15276
+    },
+    {
+      "path": "models/stonewater/aqueduct_span_12m_lod0.glb",
+      "sha256": "1ccb523bd21851078ed4a2b1ed3d71755d449acd537c599356861d628edbfd5b",
+      "bytes": 275164
+    },
+    {
+      "path": "models/stonewater/aqueduct_span_12m_lod1.glb",
+      "sha256": "0f21a35772bbdca288fd8e64d07b5cd3983a3daa3d2b4bb539588a66a1f52dd5",
+      "bytes": 78264
+    },
+    {
+      "path": "models/stonewater/aqueduct_span_12m_lod2.glb",
+      "sha256": "90be79de395e95410c70cc8cae4816759593460d3b8eb405354e5162b54f428b",
+      "bytes": 27020
+    },
+    {
+      "path": "models/stonewater/basin_corner_6m_lod0.glb",
+      "sha256": "7003b6feaee3a7b02b41866a64823b90df58f9321ccaa313879e51f9626195d1",
+      "bytes": 27680
+    },
+    {
+      "path": "models/stonewater/basin_corner_6m_lod1.glb",
+      "sha256": "65d72e3710203d6b8b5eec658ed70f02397fa21a2c8d4c998944e51a9b7b1bf3",
+      "bytes": 7656
+    },
+    {
+      "path": "models/stonewater/basin_corner_6m_lod2.glb",
+      "sha256": "edfa379a7c5c1c764892377e3a6e9a4cfbe840927c7b93e2636730f55a4e2aff",
+      "bytes": 5976
+    },
+    {
+      "path": "models/stonewater/bridge_abutment_lod0.glb",
+      "sha256": "5110a38e77175f49db1f6f3d8a4cf61693c533d8639c093c376cb8872e183b2f",
+      "bytes": 144760
+    },
+    {
+      "path": "models/stonewater/bridge_abutment_lod1.glb",
+      "sha256": "88645f1e4109c0adf9f44a007428812ff16cfb5ca49c3b2ba115b5fa403f6da6",
+      "bytes": 13524
+    },
+    {
+      "path": "models/stonewater/bridge_abutment_lod2.glb",
+      "sha256": "3d822954b5cbbd231cad905d4d97350b270e4f457aaabcb3f7c6b868da87647a",
+      "bytes": 5120
+    },
+    {
+      "path": "models/stonewater/bridge_deck_12m_lod0.glb",
+      "sha256": "7e3c5626374d9c94f47c375bdb42fce8a568e03c0da6cb7b148af33f0955fe9c",
+      "bytes": 83112
+    },
+    {
+      "path": "models/stonewater/bridge_deck_12m_lod1.glb",
+      "sha256": "84127c83aac7fd15345a308bc7e32817c9c5ccddbeb1ca682412c6d46e79e6bc",
+      "bytes": 8548
+    },
+    {
+      "path": "models/stonewater/bridge_deck_12m_lod2.glb",
+      "sha256": "dfda724d1132c5dbb258dd80afc1924a8500e8f71de1a0f6bb1b946856e75b81",
+      "bytes": 4344
+    },
+    {
+      "path": "models/stonewater/bridge_ramp_8m_lod0.glb",
+      "sha256": "ef26d3a217911830f462e5567dc0c66fa51844479a8852b9325997cbb2f438b2",
+      "bytes": 9352
+    },
+    {
+      "path": "models/stonewater/bridge_ramp_8m_lod1.glb",
+      "sha256": "3263839fd86d9142fea808583bad4e42032c6119ca9dc97bd7b95e41d48f9fae",
+      "bytes": 3468
+    },
+    {
+      "path": "models/stonewater/bridge_ramp_8m_lod2.glb",
+      "sha256": "90ed4d8ba9334624f6bf84479dc5328ba0399e5226499a9d2f32f7f13e41b0ea",
+      "bytes": 1784
+    },
+    {
+      "path": "models/stonewater/carved_waymarker_lod0.glb",
+      "sha256": "e68f4e8914924609b18df03e990fff21e70102e9b226e51f9b98772f6179141a",
+      "bytes": 35208
+    },
+    {
+      "path": "models/stonewater/carved_waymarker_lod1.glb",
+      "sha256": "a72dcc27fcf8d57cd9f11bd27d38b44dcacf393d7adb6e4752bbb8e73e89c8e8",
+      "bytes": 5200
+    },
+    {
+      "path": "models/stonewater/carved_waymarker_lod2.glb",
+      "sha256": "4452838976b7304b0b4815c0d3f9a5c5de2d10a369beed337951d99f82895ed6",
+      "bytes": 3516
+    },
+    {
+      "path": "models/stonewater/causeway_8m_lod0.glb",
+      "sha256": "5874827bb954d1cc54b95643066edd96ede8c42c70e6323a0e9687430a9bf8d8",
+      "bytes": 91660
+    },
+    {
+      "path": "models/stonewater/causeway_8m_lod1.glb",
+      "sha256": "aee217bffca9aab12f2dcda1fcdb067549596105ce54b779d0d5752943b5a055",
+      "bytes": 48012
+    },
+    {
+      "path": "models/stonewater/causeway_8m_lod2.glb",
+      "sha256": "5b7ba97b3fbfc1f667ec9795f681848a1d99765431f64d95e8dff75cb2f41fed",
+      "bytes": 36248
+    },
+    {
+      "path": "models/stonewater/cistern_vault_8m_lod0.glb",
+      "sha256": "82f29d82ee17224822997f75b29221a44d9913c2908f595236a6b39f1b491d4f",
+      "bytes": 179560
+    },
+    {
+      "path": "models/stonewater/cistern_vault_8m_lod1.glb",
+      "sha256": "f08a86c5c151c5b9e6b4950cd8840e0638a61e8749bb127fc2c4e4e08d96cdb8",
+      "bytes": 60620
+    },
+    {
+      "path": "models/stonewater/cistern_vault_8m_lod2.glb",
+      "sha256": "eab060a9746f8aa34006f6662e2c357dce105546048983700bd164940c093273",
+      "bytes": 11892
+    },
+    {
+      "path": "models/stonewater/flying_buttress_lod0.glb",
+      "sha256": "d88fb8c7c52a5512563542d07b5d12d390c8847832045c78e200147dd44b4cfa",
+      "bytes": 66040
+    },
+    {
+      "path": "models/stonewater/flying_buttress_lod1.glb",
+      "sha256": "38275e5bbe890c2b196ea072995db173ac93bd7870366088425b045f8e6cb098",
+      "bytes": 8500
+    },
+    {
+      "path": "models/stonewater/flying_buttress_lod2.glb",
+      "sha256": "e3a3d0edadb1854217686537a2d364df605fc860611637e5610af70701cb063c",
+      "bytes": 4296
+    },
+    {
+      "path": "models/stonewater/monumental_portal_lod0.glb",
+      "sha256": "cd38882bd1c70797f08a73940679ba3735cbe85f2c7b09506affbb601e5565b9",
+      "bytes": 250560
+    },
+    {
+      "path": "models/stonewater/monumental_portal_lod1.glb",
+      "sha256": "3f392e3f91606b18fbaa1e4489d39ff1e598ff964c3ff40691a43565535c1b47",
+      "bytes": 64812
+    },
+    {
+      "path": "models/stonewater/monumental_portal_lod2.glb",
+      "sha256": "aa9974c0e4fac072086fe05cf07f852f69e4f9be53a46040921351245c5b57ea",
+      "bytes": 22804
+    },
+    {
+      "path": "models/stonewater/oculus_roof_8m_lod0.glb",
+      "sha256": "018b58f217d5edeb3a96eb707919ceba76ac210d59bfdd870911c28319b8a7ca",
+      "bytes": 67972
+    },
+    {
+      "path": "models/stonewater/oculus_roof_8m_lod1.glb",
+      "sha256": "994164c34695b3a0ecc399264c6004515f2e2e3ba29203693fb7eea613ebcdbb",
+      "bytes": 27840
+    },
+    {
+      "path": "models/stonewater/oculus_roof_8m_lod2.glb",
+      "sha256": "b7cef38415c40b8a4031e80d09cfcb81a249522a149ec2938079f9d4a721dfb6",
+      "bytes": 14396
+    },
+    {
+      "path": "models/stonewater/parapet_4m_lod0.glb",
+      "sha256": "31f71e4325ecb5accc9fe406edfd49dc32b3c8c1f189ddb593cb6d9ea39a2b67",
+      "bytes": 64360
+    },
+    {
+      "path": "models/stonewater/parapet_4m_lod1.glb",
+      "sha256": "f256d71734b43395ba0bc64877443727fe740fe37a79af1244093d1d0b039bfa",
+      "bytes": 8524
+    },
+    {
+      "path": "models/stonewater/parapet_4m_lod2.glb",
+      "sha256": "4e2384ad41bfbe7b37bff913fbde0fc56f294808e236dec147a2607534e77dcb",
+      "bytes": 3480
+    },
+    {
+      "path": "models/stonewater/parapet_end_lod0.glb",
+      "sha256": "c16cc108775660f5b5f53a747e3d5042d2ce80e3b12c3db6f480d80e28130ac8",
+      "bytes": 25168
+    },
+    {
+      "path": "models/stonewater/parapet_end_lod1.glb",
+      "sha256": "f800463ab81bf56f8bc915c29835a535a736a0436eb5c56cb08a48b01ec34006",
+      "bytes": 5172
+    },
+    {
+      "path": "models/stonewater/parapet_end_lod2.glb",
+      "sha256": "f63744a40b3665dc453a152737f5429c6d610c2b9dee6835fe19de60954e52f8",
+      "bytes": 4328
+    },
+    {
+      "path": "models/stonewater/ribbed_pier_10m_lod0.glb",
+      "sha256": "7cc44197c005aa4a0fdc0b0b54d3f9c113fa665460130dc1e1c8a87fc0d87f5c",
+      "bytes": 217248
+    },
+    {
+      "path": "models/stonewater/ribbed_pier_10m_lod1.glb",
+      "sha256": "634cddb0c3c9239acfcdb8534369c8a7a4210224cd86c6bd18e5152244b5f1de",
+      "bytes": 9328
+    },
+    {
+      "path": "models/stonewater/ribbed_pier_10m_lod2.glb",
+      "sha256": "b0af60e526697ebdc25372255710db20edceafcf78014185b48e7d0d355157db",
+      "bytes": 6808
+    },
+    {
+      "path": "models/stonewater/sluice_frame_6m_lod0.glb",
+      "sha256": "d432a2022b9ef01b32f0ec8ed59ede791427175311f9014f182b212b45ddb917",
+      "bytes": 158140
+    },
+    {
+      "path": "models/stonewater/sluice_frame_6m_lod1.glb",
+      "sha256": "950e3f15eea2dac4cbc089be1070f481e7098bce1e23048435ff6a5f72c7dd3e",
+      "bytes": 18584
+    },
+    {
+      "path": "models/stonewater/sluice_frame_6m_lod2.glb",
+      "sha256": "9ab73f1f0ed0d53c4c40ccd1d6a9d4832a14eb9480cde793a322951b8f8093b2",
+      "bytes": 6820
+    },
+    {
+      "path": "models/stonewater/spillway_steps_6m_lod0.glb",
+      "sha256": "57a27f391783121537f338c3925ce3c661552477ec30992d81ca68bf2e5c32a8",
+      "bytes": 109432
+    },
+    {
+      "path": "models/stonewater/spillway_steps_6m_lod1.glb",
+      "sha256": "52a4c3484d9af1bb51326dc5a9a96358293dbc93e3e4b5abc2d8bb24b66a00c7",
+      "bytes": 16080
+    },
+    {
+      "path": "models/stonewater/spillway_steps_6m_lod2.glb",
+      "sha256": "57329e473ff88bda7cd5be11e2adebe41e4d5f78718e5bb731d061a59a09245d",
+      "bytes": 5996
+    },
+    {
+      "path": "models/stonewater/water_outlet_lod0.glb",
+      "sha256": "88a6619602f6d9692eb65b0fcf66c8ba23394830a099e5af24022d52d2b447a6",
+      "bytes": 55212
+    },
+    {
+      "path": "models/stonewater/water_outlet_lod1.glb",
+      "sha256": "ea58a715a9b60d2432e95ca2fae8c3ac7af3a29a0646575090b665be5d205a75",
+      "bytes": 10224
+    },
+    {
+      "path": "models/stonewater/water_outlet_lod2.glb",
+      "sha256": "3ad7a1a8381daa1f2121d17cd066c140ef9bddb2b86269c966ab38ca94d68d21",
+      "bytes": 6848
+    }
+  ]
+}

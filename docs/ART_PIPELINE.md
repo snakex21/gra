@@ -197,3 +197,11 @@ jawne kompromisy tego prototypu; nie zastępują testu na sprzęcie docelowym.
 
 Pochodzenie/licencje: [assets/LICENSES.md](../assets/LICENSES.md).
 Nowe assety CC0-1.0, nowy kod pipeline MIT; istniejąca gra nie została relicencjonowana.
+
+## Część 3 — Stonewater Crossing
+
+Nowy komplementarny zestaw akweduktu, przeprawy i sklepionej cysterny:
+[opis, edycja i integracja](STONEWATER_KIT.md). Oddzielny przegląd:
+`art/tests/stonewater.tscn`. Nie wymaga adaptera kolosa ani żadnego skryptu
+rozgrywki. Reużywa atlasu Ancient Valley; nowe moduły mają własne LODy i jawne
+receptury prostych kolizji w `assets/stonewater_manifest.json`.

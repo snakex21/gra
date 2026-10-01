@@ -1,0 +1,55 @@
+{
+	"adapter": "llvmpipe (LLVM 19.1.7, 256 bits)",
+	"asset_instances": 138,
+	"engine": "4.6.3-stable (official)",
+	"note": "Actual render workload, not a target-hardware FPS benchmark. No gameplay implementation changed.",
+	"renderer": "gl_compatibility",
+	"scatter_fingerprint": 24673418,
+	"terrain_triangles": 28800,
+	"texture_memory_bytes": 57733397.0,
+	"vegetation_instances": 1147,
+	"views": [
+		{
+			"draw_calls": 159.0,
+			"objects": 214.0,
+			"primitives": 35447.0,
+			"view": "valley_day"
+		},
+		{
+			"draw_calls": 236.0,
+			"objects": 291.0,
+			"primitives": 38028.0,
+			"view": "valley_sunset"
+		},
+		{
+			"draw_calls": 170.0,
+			"objects": 225.0,
+			"primitives": 36185.0,
+			"view": "valley_night"
+		},
+		{
+			"draw_calls": 219.0,
+			"objects": 274.0,
+			"primitives": 46023.0,
+			"view": "temple"
+		},
+		{
+			"draw_calls": 225.0,
+			"objects": 280.0,
+			"primitives": 29638.0,
+			"view": "shore"
+		},
+		{
+			"draw_calls": 79.0,
+			"objects": 134.0,
+			"primitives": 24275.0,
+			"view": "canyon"
+		},
+		{
+			"draw_calls": 216.0,
+			"objects": 271.0,
+			"primitives": 34448.0,
+			"view": "ground_path"
+		}
+	]
+}

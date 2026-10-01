@@ -1,0 +1,30 @@
+{
+  "started_utc": "2026-10-01T18:54:54.576740+00:00",
+  "commit": "a3ef45af8a3e13b3561245a1449ae3ab9431d665",
+  "command": "bash tools/run_tests.sh",
+  "environment": {
+    "HOME": "/tmp/stonewater-baseline-home",
+    "XDG_CACHE_HOME": "/tmp/stonewater-baseline-cache",
+    "XDG_DATA_HOME": "/tmp/stonewater-baseline-data",
+    "XDG_CONFIG_HOME": "/tmp/stonewater-baseline-config",
+    "XDG_STATE_HOME": "/tmp/stonewater-baseline-state"
+  },
+  "engine": "4.6.3.stable.official.7d41c59c4",
+  "note": "First launch aborted before tests because preconfigured XDG_DATA_HOME was outside writable workspace; changed only runtime user-data directories.",
+  "exit_code": 1,
+  "finished_utc": "2026-10-01T19:01:45.424025+00:00",
+  "wall_seconds": 410.8445558259991,
+  "passed": 116,
+  "failed": 4,
+  "failure_summary": [
+    "test_performance_budget: regression vs Milestone 1 benchmark (~0.25 ms): 0.697 ms",
+    "existing_colossus_tests_still_pass: earlier tests failed: [\"test_performance_budget\"]",
+    "all_existing_tests_still_pass: earlier tests failed: [\"test_performance_budget\", \"existing_colossus_tests_still_pass\"]",
+    "all_valus_and_earlier_tests_still_pass: earlier tests failed: [\"test_performance_budget\", \"existing_colossus_tests_still_pass\", \"all_existing_tests_still_pass\"]"
+  ],
+  "test_performance_budget_climb_ms": 0.697,
+  "threshold_ms": 0.6,
+  "script_errors": 0,
+  "metric_warning_count": 9,
+  "interpretation": "Known direct timing threshold fails on unmodified older gameplay; 3 aggregate failures depend on that. All other direct tests pass. Shared CPU baseline does not identify any art-caused regression."
+}

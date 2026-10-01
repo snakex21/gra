@@ -1,0 +1,43 @@
+{
+  "observed_utc": "2026-10-01T18:58:14.908108+00:00",
+  "os": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "engine": "4.6.3.stable.official.7d41c59c4",
+  "engine_binary": "/opt/godot/4.6.3/Godot_v4.6.3-stable_linux.x86_64",
+  "cpu_models": [
+    "AMD EPYC 9V74 80-Core Processor"
+  ],
+  "cpu_count_reported": 9,
+  "benchmark_limitation": "Shared non-reference cloud runner, headless CPU regressions only; no GPU/FPS or target hardware acceptance claim",
+  "checkouts": {
+    "older_control": {
+      "path": "/workspace/scratch/cdc79842cc4e/gra-gameplay-perf-control",
+      "commit": "a3ef45af8a3e13b3561245a1449ae3ab9431d665",
+      "branch": "",
+      "status": [],
+      "scope_diff": "",
+      "agent_instructions": [],
+      "skills": []
+    },
+    "latest_control": {
+      "path": "/workspace/shared/stonewater-baseline/latest-gameplay-control",
+      "commit": "615f29c43867510758d12389702a6d713433087d",
+      "branch": "",
+      "status": [],
+      "scope_diff": "",
+      "agent_instructions": [],
+      "skills": []
+    },
+    "art_control": {
+      "path": "/workspace/shared/stonewater-baseline/art-baseline",
+      "commit": "99ed94f7f163f6239209f0b1f835c56bd53bab84",
+      "branch": "",
+      "status": [
+        " M art/reports/asset_budgets.json",
+        " M assets/art_checksums.json"
+      ],
+      "scope_diff": "",
+      "agent_instructions": [],
+      "skills": []
+    }
+  }
+}

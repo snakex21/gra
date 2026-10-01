@@ -1,0 +1,386 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS test_rig_segments_follow_bones (86 ms)
+PASS test_physics_server_transform_matches_anchor (68 ms)
+    server vs node transform lag for kinematic segment: 0.0000 m
+PASS test_grab_and_hold_on_walking_leg (326 ms)
+    local drift over 6 s: 0.00000 m, max anchor-to-surface error: 0.0000 m, max surface speed 7.17 m/s
+PASS test_climb_leg_to_shoulders_frozen (313 ms)
+    [frozen] route: shin_l -> thigh_l -> hips -> spine -> chest
+    [frozen] rose 12.2 m, state GROUND, stamina 55, max surface err 0.000, last release 
+PASS test_climb_leg_to_shoulders_walking (296 ms)
+    [walk] route: shin_l -> thigh_l -> hips -> spine -> chest
+    [walk] rose 12.1 m, state GROUND, stamina 56, max surface err 0.000, last release 
+PASS test_traverse_around_limb (215 ms)
+    sideways around thigh: min normal dot -1.00, still climbing true
+PASS test_armor_blocks_climbing (174 ms)
+    stopped at shin-local (0.68, -1.43, -0.51)
+PASS test_exhaustion_drops_player (269 ms)
+PASS test_brain_shakes_and_rules_limit_it (582 ms)
+    first shake after 3.0 s, longest shake 3.02 s, max shake level 1.00, still climbing true
+PASS test_shake_drains_more_than_hanging (116 ms)
+    stamina/s hanging 3.0, shaking 23.7
+PASS test_release_inherits_surface_velocity (49 ms)
+    surface velocity 7.38 m/s, velocity after release 7.38 m/s
+PASS test_jump_off_and_regrab_midair (28 ms)
+    re-grabbed after 18 ticks at dy 1.59
+PASS test_static_wall_climb_and_mantle (170 ms)
+    static wall: mantled true, y 7.90, state GROUND
+FAIL test_performance_budget (647 ms)
+    climb (M1)   frame 0.697 ms | logic/tick: colossus 126.6 us, player 65.1 us, camera 0.0 us | queries/tick: climb rays 3.0, grab 0.0, camera 0.0
+    climb+cam    frame 0.722 ms | logic/tick: colossus 124.1 us, player 70.0 us, camera 41.5 us | queries/tick: climb rays 2.4, grab 0.0, camera 7.0
+    stand+shake  frame 0.780 ms | logic/tick: colossus 123.8 us, player 89.5 us, camera 61.4 us | queries/tick: climb rays 0.3, grab 0.0, camera 7.6
+    fall+grab    frame 0.491 ms | logic/tick: colossus 108.4 us, player 37.8 us, camera 24.5 us | queries/tick: climb rays 0.0, grab 2.0, camera 7.0
+    object count growth over 300 ticks: -1
+PASS test_standing_on_still_colossus_is_stable (150 ms)
+    min balance 1.000, drift on chest 0.004 m, state STAND
+PASS test_standing_on_walking_colossus_remains_controllable (262 ms)
+    colossus speed 1.39 m/s, min balance 0.99, moved 1.63 m forward on the body, state STAND
+PASS test_standing_on_turning_colossus_is_carried (270 ms)
+    turned 0.66 rad, drift on chest 0.006 m, min balance 1.00
+PASS test_shake_destabilizes_standing_player (152 ms)
+    half-strength shake: min balance 0.18, states ["STABLE", "UNSTABLE", "STUMBLE"], max slide speed 2.62 m/s
+PASS test_player_can_grab_during_slip (98 ms)
+    lost balance after 0.95 s, saved by grab after 1 ticks on Seg_upper_arm_l
+PASS test_severe_shake_can_throw_ungripped_player (337 ms)
+    knocked down after 1.80 s, thrown off after 1.65 s, impact 21.3 m/s (SEVERE), health 100
+PASS test_brain_shake_throws_idle_standing_player (187 ms)
+    brain: first shake at 2.4 s, idle player thrown off at 4.2 s
+PASS test_gripping_player_resists_shake_using_stamina (108 ms)
+    2.5 s full shake: still gripping true, stamina 100 -> 46
+PASS test_small_fall_is_safe (131 ms)
+    drop 1.5 m: impact 8.1 m/s, tier NONE, damage 0.0, min balance 1.00, knocked false, dead false
+PASS test_medium_fall_has_consequence (128 ms)
+    drop 5.0 m: impact 14.7 m/s, tier HARD, damage 27.5, min balance 0.40, knocked false, dead false
+PASS test_large_fall_triggers_fall_consequence (125 ms)
+    drop 12.0 m: impact 23.1 m/s, tier SEVERE, damage 77.1, min balance 0.00, knocked true, dead false
+PASS test_lethal_fall_respawns (169 ms)
+    drop 18.0 m: impact 28.2 m/s, tier SEVERE, damage 100.0, min balance 0.00, knocked true, dead true
+PASS test_late_grab_catches_falling_player (32 ms)
+    falling at -9.8 m/s; let go at 4.5 m, caught at 0.8 m on Seg_shin_l
+PASS test_grip_transfer_while_colossus_turns (375 ms)
+    turning colossus route: shin_l -> thigh_l -> hips -> spine, max surface err 0.000
+PASS test_camera_does_not_clip_into_colossus (684 ms)
+    camera frames 840, inside colossus 0, min distance 0.50, colossus clamps 122, player DEAD
+PASS test_camera_focus_frames_player_and_colossus (106 ms)
+    focus under the colossus: distance 9.8 m, pitch 0.38, player in view true, colossus in view true
+PASS test_bone_local_grip_still_has_no_drift (181 ms)
+    walk+shake 2.5 s: drift 0.00000 m, max surface err 0.0000, surface speed up to 9.2 m/s, stamina 47
+PASS test_planted_foot_does_not_slide (634 ms)
+    steps 8, stance slip max 0.0003 m/s avg 0.0001 m/s, IK reach error max 0.000 m, speed 1.60
+PASS test_walking_on_slope_places_feet_correctly (1450 ms)
+    course: 16 touchdowns checked, max sole height error 0.000 m, min normal match 1.000, rose 3.63 m (max), slip max 0.0002 m/s, reach err 0.000, max shoulder accel 4.3 m/s2
+PASS test_turning_uses_stable_steps (360 ms)
+    turn on the spot: turned 2.52 rad, 5 steps (3 left), max swinging 1, slip max 0.0001 m/s, yaw accel max 0.250 rad/s2
+PASS test_start_and_stop_are_smooth (1330 ms)
+    max |accel| 1.25 m/s2, max |jerk| 1.50 m/s3, max shoulder accel 4.91 m/s2, slip max 0.0004 m/s, steps 14 (+0 after stopping), final speed 0.000
+PASS test_walk_shake_walk_transition (613 ms)
+    walk 1.34 m/s -> shake 0.01 m/s (1 steps during the last 2 s of shaking) -> walk 1.40 m/s, max |accel| 1.24, slip max 0.0002
+PASS test_pelvis_tracks_support_area (545 ms)
+    pelvis shift towards stance foot: left 0.35 m, right 0.36 m; load on a foot when it lifts <= 0.00; COM distance from the support line (current to next foothold) max 1.34 m
+PASS test_grip_does_not_drift_during_procedural_step (334 ms)
+    thigh through 2 swings: drift 0.00000 m, surface err 0.0000, surface speed max 4.10 m/s, max position 2nd difference 0.0060 m
+PASS test_standing_player_remains_attached_during_step (83 ms)
+    rode the foot through its swing: lifted true, landed still on it true, min balance 0.99, max jump 0.0133 m, state STAND
+PASS test_standing_on_shoulder_during_start_stop (1124 ms)
+    shoulder through start/fast/stop/turn/stop: min balance 1.00, drift 0.008 m, still on chest true
+PASS test_player_on_leg_survives_step_transition (296 ms)
+    shin through 4 lift-off/touchdown transitions: still gripping true, max jump 0.0074 m, max shake level 0.90
+PASS test_grip_on_hips_during_turn (250 ms)
+    hips during a turn: drift 0.00000 m, max shake level 0.00, still gripping true
+PASS test_grip_on_back_during_sudden_direction_change (523 ms)
+    back during turn reversal + stop: drift 0.00000 m, max surface accel 5.05 m/s2, max shake level 0.02
+PASS test_shake_behavior_unchanged_after_locomotion (164 ms)
+    grip stamina cost 53.9 (baseline 54.2), balance lost after 0.95 s (baseline 1.28)
+PASS test_locomotion_is_independent_of_render_fps (5529 ms)
+    render 30/60/144/240 fps, physics 60 Hz: frames rendered [329.0, 659.0, 1584.0, 2639.0], max difference of simulation state 0.00000000
+PASS test_locomotion_cost_stays_within_reasonable_budget (439 ms)
+    procedural locomotion on the course: colossus 121.8 us/tick (locomotion 64.8, IK 15.5), ground probes 0.010/tick
+PASS ab_locomotion_comparison (5298 ms)
+    mode                  slip avg  slip max ground err shoulder a  colossus      IK    rays turn resp turn slip     climb   stamina
+    procedural + IK         0.0000    0.0002      0.000       4.30     123us    16us   0.008     1.07s    0.0002        ok        48
+    animation + IK          0.6703    1.5067      0.140       1.15     118us    30us   3.000     1.07s    1.4188        ok        47
+    legacy FK (no IK)       0.6788    1.5040      3.458       0.95      75us     0us   0.000     1.07s    1.4160        ok        48
+PASS probe_balance_disturbance (1 ms)
+PASS test_horse_acceleration_is_smooth (391 ms)
+    0 -> 9.50 m/s, gaits [0, 1, 2, 3], gallop after 2.73 s; max accel 2.40 m/s2 (body 2.42), max jerk 7.00 m/s3
+PASS test_horse_braking_is_smooth (506 ms)
+    rein from 9.50 m/s: stopped after 3.48 s / 12.2 m, gaits [3, 2, 1, 0], max decel 5.50 m/s2, max jerk 7.00 m/s3
+PASS test_horse_cannot_instant_turn_at_speed (621 ms)
+    90 deg request at 9.5 m/s: 3.4 deg after 0.25 s, turn done after 2.70 s, slowed to 4.6 m/s, max yaw accel 1.80 rad/s2
+PASS test_horse_turn_radius_increases_with_speed (1254 ms)
+    measured turn radius at 1.7 / 4.2 / 9.5 m/s: 2.2 / 5.5 / 21.7 m
+PASS test_horse_feet_do_not_slide (749 ms)
+    walk/trot/gallop/turns/stop: foot slip max 0.0020 m/s, mean 0.00023 m/s over 1255 contacts; IK reach error max 0.000 m; 154 steps
+PASS test_horse_feet_follow_uneven_terrain (669 ms)
+    course (ramp 10 deg, bumps, 0.8 m step) at a trot: reached z -50.7, top 3.75 m; planted hoof vs ground max 0.037 m (1481 samples); IK reach 0.000 m; slip max 0.0007 m/s
+PASS test_horse_body_lean_is_continuous (502 ms)
+    slalom at a gallop + rein stop: roll rate max 0.73 rad/s (d2 9.8), pitch rate 0.54 (d2 7.8), height rate 0.57 m/s (d2 22.0), hard height clamps 2; leaning into the turn 223/254 ticks
+PASS test_mounted_player_has_no_saddle_drift (640 ms)
+    ride 15 s (gallop, turns, rein stop): rider vs saddle max 0.000000 m; top speed 9.5 m/s
+PASS test_mount_and_dismount_are_stable (324 ms)
+    states APPROACH HORSE -> MOUNT -> RIDE -> DISMOUNT -> AIR -> APPROACH HORSE; max per-tick move 0.104 m (MOUNT); on foot 1.15 m from the horse, 0.89 m above ground, on floor true
+PASS test_dismount_refused_without_space (41 ms)
+    boxed in: still riding true, reason 'no safe place to get off'
+PASS test_horse_avoids_small_obstacle (615 ms)
+    rock field at a trot: reached z -45.5, 0 ticks touching a rock, max sideways 2.38 m, max turn rate 0.42 rad/s (d2 1.4)
+PASS test_horse_keeps_heading_after_avoiding (619 ms)
+    rocks, horse-relative steering: reached z -45.5, final heading 0.0 deg (max 24 deg while going round), 0 contacts
+PASS test_horse_threads_narrow_passage (392 ms)
+    3 m gap at a trot: reached z -23.2, 0 ticks touching a wall
+PASS test_horse_steps_over_low_obstacle (237 ms)
+    0.3 m log at a trot: reached z -10.6, max sideways 0.00 m, classified as step true; IK reach 0.000 m, slip 0.0000 m/s
+PASS test_horse_stops_before_large_obstacle (507 ms)
+    gallop at a 5 m wall, rider keeps pushing: top 9.5 m/s, max speed within 3 m 3.41 m/s, closest nose gap 0.29 m, final speed 0.02, 0 contact ticks
+PASS test_horse_stops_at_cliff_edge (412 ms)
+    galloping at a 4 m drop: top 7.6 m/s, stopped 1.86 m before the edge, lowest 4.00 m, final speed 0.00
+PASS test_horse_simulation_independent_of_render_fps (10163 ms)
+    mount, ride, turn, rein, dismount at render [30, 60, 90, 120, 144, 240] fps: frames [499, 999, 1499, 1999, 2400, 3999], max state difference 0.00000000 (steps 107)
+PASS test_horse_camera_can_look_away_from_travel_direction (471 ms)
+    camera turned 90 deg away; horse heading change 0.0 deg (no stick), 0.0 deg (horse-relative stick); speed 4.2 m/s; camera vs travel 90 deg
+PASS test_horse_comes_when_called (1079 ms)
+    called from 56 m through the rocks: arrived 2.03 m from the player, speed 0.00, command STOP, 0 rock contacts
+PASS test_horse_follows_player (672 ms)
+    follow a running player (5.5 m/s) 10 s: distance 4.3..15.1 m (10.0 m at the end of the run), after the player stops 4.0 m, speed 0.01
+PASS test_horse_cost_stays_within_budget (566 ms)
+    ridden on the course: horse 191.8 us/tick (controller 79.2 of which obstacle probes 68.6, step planner 22.9, IK+body 56.6), mount 5.4, camera 46.1 us/frame; horse queries 8.4/tick
+FAIL existing_colossus_tests_still_pass (1 ms)
+    48 earlier tests ran in this run, 1 failed ["test_performance_budget"]
+PASS test_boss_enters_combat_when_player_enters_arena (1280 ms)
+    dormant while far: true; entered at 42 m, states [["NOTICE", 46713], ["ENGAGED", 46785], ["COMBAT", 46845]], combat 2.22 s after entering (notice 1.2 + engage 1.0)
+PASS test_boss_attack_has_telegraph (4432 ms)
+    telegraphs (kind, seconds): [[&"stomp", 0.9], [&"arm_sweep", 1.1], [&"stomp", 0.9], [&"arm_sweep", 1.1], [&"stomp", 0.9]]; rules clamp 0.05 s -> 0.60 s, recovery 0.1 -> 1.20 s
+PASS test_boss_attack_active_window_is_correct (4269 ms)
+    active windows: stomp 0.30/0.30, arm_sweep 0.60/0.60, stomp 0.30/0.30, arm_sweep 0.60/0.60, stomp 0.30/0.30; hit-volume ticks 105 (outside a window: 0); hits 5 (outside: 0)
+PASS test_boss_attack_has_recovery (4598 ms)
+    recoveries [1.6, 1.2, 1.6, 1.2, 1.6, 1.2] s (min 1.20, rule 1.20); gaps before the next wind-up [2.43333333333333, 1.61666666666667, 2.68333333333333, 1.61666666666667, 2.68333333333333] s (rule 1.5)
+PASS test_boss_attack_can_damage_player (1687 ms)
+    hits [[&"stomp", 51801, 60.0], [&"arm_sweep", 52266, 35.0]]; HP after the stomp 40 (from 100), knocked down true; sweep hit true
+PASS test_boss_cannot_spam_heavy_attack (9537 ms)
+    stomp-only brain, player always at the foot, 60 s: 6 stomps, min gap 8.9 s, max 2 within 20 s; rule interventions 0
+PASS test_boss_cannot_spam_shake (6325 ms)
+    shake-only brain, 40 s on the thigh: 5 shakes, longest 3.02 s (rule 3.0 incl. 0.6 s brace), shortest pause 5.07 s (rule 5.0), shaking 38% of the time
+PASS test_climb_route_is_reachable (4230 ms)
+    frozen Valus, route calf -> thigh -> pelvis -> back -> shoulder -> head; weak point in reach after 35.6 s, stamina 91
+PASS test_weakpoint_moves_with_bone (1313 ms)
+    boss walked and turned 8 s: weak point moved 10.0 m, error vs head bone 0.000000 m, visual node vs its segment 0.000000 m
+PASS test_weakpoint_rejects_invalid_hits (254 ms)
+    stomp on it: not_a_sword; 3 m off: out_of_range; protected: protected; sword from the ground: nothing_in_reach; health 100
+PASS test_weakpoint_accepts_valid_sword_hit (443 ms)
+    standing on the head: head, grip on fur under the feet true; full charge strike: hit, damage 40, weak point 60/100
+PASS test_weakpoint_damage_advances_progress (1265 ms)
+    progress after jab (12 dmg) and full strikes: [0.0, 0.12, 0.52, 0.92, 1.0]; state DESTROYED, encounter DEFEATED
+PASS test_rest_surface_restores_stamina (404 ms)
+    standing on chest (STAND, surface tag 'rest'), no grip: stamina 15 -> 90 in 2.5 s; region shoulder
+PASS test_boss_reacts_to_player_on_body (6072 ms)
+    intents while the player was on: { &"calf": [&"approach", &"reposition", &"shake_player", &"observe_player"], &"back": [&"observe_player", &"shake_player"], &"head": [&"idle", &"protect_weakpoint", &"shake_player", &"observe_player"] }; weak point closed while on the head: true
+PASS test_player_can_fall_and_reenter_climb_route (3492 ms)
+    dropped from the thigh/hips (exhausted): falls 1, grabs 2, climbing again true up to 8.0 m; events: [  21.1] fell off (exhausted) | [  21.1] CLIMB_BODY -> FALLEN | [  21.6] FALLEN -> APPROACH_LEG | [  23.7] APPROACH_LEG -> GRAB_LEG | [  23.8] grabbed shin_l | [  23.8] GRAB_LEG -> CLIMB_BODY
+PASS test_agro_avoids_colossus_legs (5414 ms)
+    3 passes at 6 m/s straight at the walking Valus: 0 body contacts, closest to a foot 1.7 m
+PASS test_agro_reacts_to_stomp_danger (1970 ms)
+    riderless Agro beside a stomp: responses ["none", "flee"], 3.9 m from the stomp when it was decided -> 5.4 m at impact (shockwave 6 m); ridden into a wind-up: refused true, closest to the zone edge 4.2 m
+PASS test_player_death_resets_encounter (498 ms)
+    dead true, banner 'YOU DIED', still dead before the pause ends true; after reset: resets 1, player HP 100 stamina 100 at 0.0 m from spawn, boss DORMANT, weak point 100/100, horse 0.0 m from its start
+PASS test_boss_can_be_defeated (980 ms)
+    3 full strikes: encounter DEFEATED, banner 'COLOSSUS DEFEATED', weak point DESTROYED
+PASS test_boss_stops_attacking_after_defeat (2655 ms)
+    defeated mid wind-up (true): new attacks 0, hits after 0, HP 100 -> 100, intents [&"idle"], speed 0.00, pelvis drop 5.6 m
+PASS test_grip_survives_defeat_sequence (1967 ms)
+    final strike hit, defeated true; through 9 s of kneeling: still gripping true, carried down 15.7 m, max step 0.089 m/tick, anchor error 0.000002 m; body settled true; after letting go: GROUND, HP 100
+PASS test_scripted_driver_can_complete_boss (9184 ms)
+    bot result: WIN in 57.8 s; { "falls": 1, "grabs": 1, "strikes": 3, "weak_hits": 3, "rejected": 0, "evades": 3, "rests": 1, "stalls": [], "deaths": 0, "death_causes": [], "detours": 0, "max_height": 18.0459423065186 }; boss { "attacks": { &"stomp": 1 }, "hits_on_player": 0, "stomp_impacts": 1, "weak_point_hits": 3, "protects": 3, "steps": 23, "defeated_at": 57.8333333333313, "last_hit_damage": 40.0 }; camera inside the colossus 0 frames
+PASS test_boss_simulation_independent_of_render_fps (66294 ms)
+    whole fight (bot) at render [30, 60, 90, 120, 144, 240] fps: won 1.0 at tick 3499, frames [1749, 3498, 5248, 6997, 8397, 13995], max state difference 0.00000000
+PASS test_boss_cost_stays_within_budget (5066 ms)
+    Valus fight (bot climbing, 25 s): colossus 191.6 us/tick = brain 7.1 + combat 23.4 + hits 11.1 + attack pose 4.8 + locomotion 83.2 + IK 18.1; player 71.3; Agro 118.7; camera 59.4 us/frame; vfx 1.6 (14 effects); queries/tick: climb 1.07, horse 0.00, camera 7.10, boss hit tests 0.01, sword 0.000
+    whole physics tick (engine monitor, incl. physics server): mean 2.496 ms, max 9.955 ms
+FAIL all_existing_tests_still_pass (1 ms)
+    70 earlier tests (Milestone 1, Etap 2-4) ran in this run, 2 failed ["test_performance_budget", "existing_colossus_tests_still_pass"]
+PASS test_quadratus_four_leg_locomotion_is_stable (1133 ms)
+    36 s walk/turn/stop: walked 29.3 m, 27 steps, gait order RL-FL-RR-FR 100%, max swinging 2, min planted 2, max tilt 0.109 rad, hip height 7.00..7.20 m, reach error 0.0000 m, steps in the last 4 s still 0
+PASS test_quadratus_feet_do_not_slide (896 ms)
+    30 s walking + turning: planted-foot slip max 0.0004 m/s, mean 0.00007 m/s over 5125 foot-ticks
+PASS test_quadratus_handles_uneven_ground (1222 ms)
+    course (10 deg ramp, bumps, 0.8 m step down): reached z -43.0, height 3.54 m, max body pitch 0.184 rad (ramp 0.175), planted sole vs ground max 0.000 m, slip max 0.0002 m/s, reach error 0.000 m
+PASS test_quadratus_weight_shifts_between_legs (639 ms)
+    walking 16 s: load per leg min ["0.00", "0.00", "0.00", "0.00"] max ["0.50", "0.50", "0.50", "0.50"], swinging leg load max 0.000, |sum-1| max 0.000, support centre sideways -2.84..2.84 m
+PASS test_quadratus_foot_target_can_be_hit_with_arrow (647 ms)
+    standing: sole targets enabled 0 ticks; walking: shot -> hit (leg 3, flight 0.27 s, point (-3.089628, 0.77044, -3.872875))
+PASS test_quadratus_reacts_to_correct_foot_hit (1415 ms)
+    stone hoof hit: surface -> buckle NONE; sole hit: hit (leg 3) -> phases ["REACT", "KNEEL"], intents [&"react_to_foot_hit", &"lower_body"], hit leg support min 0.00, attacks started 0
+PASS test_quadratus_body_lowers_after_foot_hit (2314 ms)
+    hind-left hit: hip there 7.20 -> 3.26 m, body centre 7.20 -> 5.51 m, pitch 0.221 roll 0.396 rad, lowest thigh fur 4.82 -> 2.39 m, loads ["0.33", "0.33", "0.00", "0.33"] (others 1.00), body max 0.047 m/tick; after the kneel: buckle NONE, support 1.00, hip 7.20 m
+PASS test_quadratus_climb_route_becomes_reachable (1049 ms)
+    thigh grab before the foot hit: false; while kneeling: true; reached the rump weak point by climbing: true after 3.1 s (buckle KNEEL, stamina 75)
+PASS test_quadratus_grip_has_no_drift (2638 ms)
+    gripping the hind thigh through kneel, rise and walk: still holding true, carried 8.6 m, anchor vs surface max 0.000001 m, anchor local drift 0.000000 m
+PASS test_quadratus_weakpoint_moves_with_body (460 ms)
+    walk, turn, kneel: rump weak point moved 9.0 m (tilt pitch 0.25 roll -0.40), error vs bone 0.000000 m, visual vs segment 0.000000 m
+PASS test_quadratus_body_reaction_is_fair (8239 ms)
+    player on the back 60 s: 6 shakes, brace before motion min 0.73 s, longest 3.02 s, shortest gap 5.07 s, shakes while kneeling 0 ticks; ground attacks []
+PASS test_quadratus_can_be_defeated (3046 ms)
+      strike on body: hit 40 (player GRIP, body, 0.93 m from it)
+      strike on body: hit 37 (player GRIP, body, 0.93 m from it)
+      strike on body: hit 37 (player GRIP, body, 0.93 m from it)
+      strike on head: hit 40 (player GRIP, head, 0.94 m from it)
+      strike on head: hit 37 (player GRIP, head, 0.94 m from it)
+      strike on head: hit 37 (player GRIP, head, 0.94 m from it)
+    6 full strikes: DEFEATED, banner 'COLOSSUS DEFEATED'; lying down: player 13.0 -> 5.0 m, rump top 6.5 m; let go -> STAND, landing tiers [], HP 100
+PASS test_quadratus_scripted_driver_can_complete_fight (18949 ms)
+    foot: WIN in 58.0 s; { "falls": 2, "grabs": 1, "strikes": 4, "weak_hits": 4, "rejected": 0, "evades": 1, "stalls": [], "deaths": 0, "death_causes": [], "detours": 0, "max_height": 13.1844253540039, "shots": 1, "arrow_hits": 1, "arrow_wrong_side": 0, "arrow_disabled": 0, "arrow_surface": 0, "arrow_lost": 0, "buckles_used": 1, "buckles_missed": 0, "shots_from_horse": 0, "mounts": 0, "dismounts": 0 }; boss { "attacks": { &"head_attack": 1 }, "hits_on_player": 0, "stomp_impacts": 0, "weak_point_hits": 4, "steps": 21, "defeated_at": 57.9833333333313, "last_hit_damage": 40.0, "foot_hits": 1, "buckles": 1 }
+    horse: WIN in 78.3 s; { "falls": 2, "grabs": 1, "strikes": 4, "weak_hits": 4, "rejected": 0, "evades": 0, "stalls": [], "deaths": 0, "death_causes": [], "detours": 0, "max_height": 13.0881280899048, "shots": 1, "arrow_hits": 1, "arrow_wrong_side": 0, "arrow_disabled": 0, "arrow_surface": 0, "arrow_lost": 0, "buckles_used": 1, "buckles_missed": 0, "shots_from_horse": 1, "mounts": 1, "dismounts": 1 }; boss { "attacks": { &"head_attack": 1, &"stomp": 1 }, "hits_on_player": 0, "stomp_impacts": 1, "weak_point_hits": 4, "steps": 26, "defeated_at": 78.3499999999968, "last_hit_damage": 40.0, "foot_hits": 1, "buckles": 1 }
+PASS test_quadratus_simulation_independent_of_render_fps (151721 ms)
+    quadratus (bot) at [30, 60, 90, 120, 144, 240] fps: won 1.0 at tick 3458, arrows 1, max state difference 0.00000000
+    quadratus_horse (bot) at [30, 60, 90, 120, 144, 240] fps: won 1.0 at tick 4702, arrows 1, max state difference 0.00000000
+PASS test_quadratus_cost_stays_within_budget (7197 ms)
+    Quadratus fight (bot from Agro, then climbing, 30 s; phases seen up to STRIKE): colossus 195.7 us/tick = brain 6.6 + combat 30.3 + hits 8.6 + pose 4.2 + quadruped locomotion (incl. balance / weight transfer) 81.9 + four-leg IK 25.2; arrows 3.8 (max 1 alive); player 40.0 (bow incl.); Agro 146.4; camera 43.8 us/frame; queries/tick: arrow rays 0.01, arrow target tests 0.01, bow aim rays 0.694, climb 0.75, horse 5.01, camera 7.03, colossus ground probes 19 total
+    whole physics tick (engine monitor, incl. physics server): mean 3.553 ms, max 8.309 ms
+PASS test_valus_defeat_leaves_a_safe_way_down (1609 ms)
+    gripping the head through the defeat: held true, carried from 18.0 m down to 2.0 m (head top 3.0 m), anchor error 0.00000 m; let go -> GROUND, landing tiers [0], HP 100 -> 100
+PASS test_bow_draw_strength_changes_arrow_velocity (277 ms)
+    hold s / draw / speed m/s / range m: ["0.1/0.00/0.0/0", "0.3/0.31/33.3/33", "0.6/0.65/45.3/53", "1.2/1.00/58.0/81"]
+PASS test_bow_trajectory_is_repeatable (263 ms)
+    two identical shots: 1 / 1 path points, max difference 0.00000000 m, landing (21.80125, 0.0, -108.0727) vs (21.80125, 0.0, -108.0727); deviation from the analytic parabola 0.000000 m
+PASS test_arrow_hits_expected_target (215 ms)
+    distance / hits / impact error m / flight s / predicted s: ["15/1/0.049/0.267/0.268", "30/1/0.277/0.533/0.538", "60/1/0.000/1.083/1.082"]
+PASS test_arrow_misses_when_aim_is_wrong (294 ms)
+    side: miss at (-1.33, 0.0, -55.67), no drop: miss at (0.03, 0.0, -35.83), weak draw: miss at (-0.01, 0.0, -27.46), from behind: miss (wrong_side)
+PASS test_bow_is_independent_of_render_fps (9652 ms)
+    3 shots on foot + 1 from a galloping Agro at [30, 60, 90, 120, 144, 240] fps: 4 impacts, max difference 0.00000000 (impact points and flight times)
+PASS test_player_can_aim_from_agro (213 ms)
+    riding at 5.2 m/s: bow AIM while riding (RIDE), shot true, arrow stuck at (24.82, 1.5, -14.29), mark hits 1
+PASS test_horse_heading_is_not_changed_by_aim (316 ms)
+    aiming around 360 deg for 3 s: horse heading deviation 0.0000 rad (still aiming true); stick right while looking left: horse turned -0.438 rad (right = negative yaw)
+PASS test_arrow_hit_can_trigger_colossus_reaction (602 ms)
+    arrow: hit (target leg 3, colossus Quadratus:<Node3D#5693499246455>) -> foot_hit [3], buckle REACT, intent react_to_foot_hit
+FAIL all_valus_and_earlier_tests_still_pass (1 ms)
+    95 earlier tests (Milestone 1, Etap 2-5) ran in this run, 3 failed ["test_performance_budget", "existing_colossus_tests_still_pass", "all_existing_tests_still_pass"]
+
+--- regression metrics vs frozen baselines (res://tests/baseline/etap2_baseline.json, res://tests/baseline/etap4_horse_baseline.json) ---
+  ab_animation_ground_err                          0.1402   (new)
+  ab_animation_slip_max                            1.5067   (new)
+  ab_legacy_ground_err                             3.4580   (new)
+  ab_legacy_slip_max                               1.5040   (new)
+  ab_procedural_ground_err                         0.0000   (new)
+  ab_procedural_slip_max                           0.0002   (new)
+  back_reversal_surface_accel_max                  5.0454   (new)
+  boss_brain_us                                    7.0900   (new)
+  boss_colossus_us                               191.5620   (new)
+  boss_fps_max_diff                                0.0000   (new)
+  boss_hits_us                                    11.0853   (new)
+  boss_min_telegraph                               0.9000   (new)
+  boss_physics_tick_ms                             2.4961   (new)
+  boss_route_time                                 35.6333   (new)
+  boss_scripted_win_time                          57.8167   (new)
+  boss_spam_shake_share                            0.3758   (new)
+  boss_spam_stomps_per_minute                      6.0000   (new)
+  bow_fps_max_diff                                 0.0000   (new)
+  brain_idle_player_thrown_s                       4.1833   baseline    10.9333
+  camera_inside_colossus_frames                    0.0000   baseline     0.0000
+  climb_route_frozen_stamina_left                 54.8000   baseline    53.3333
+  climb_route_walk_stamina_left                   55.8633   baseline    53.0665
+  fall_12m_damage                                 77.0589   baseline    77.0589
+  fall_18m_damage                                100.0000   baseline   100.0000
+  fall_1m_damage                                   0.0000   baseline     0.0000
+  fall_5m_damage                                  27.4510   baseline    27.4510
+  fps_independence_max_diff                        0.0000   (new)
+  grip_drift_procedural_step_m                     0.0000   (new)
+  grip_drift_walk_m                                0.0000   baseline     0.0000
+  grip_drift_walk_shake_m                          0.0000   baseline     0.0000
+  grip_surface_err_walk_m                          0.0000   baseline     0.0000
+  grip_surface_speed_walk_mps                      7.1716   baseline     2.1860
+  grip_surface_speed_walk_shake_mps                9.1541   baseline     8.3248
+  horse_accel_max                                  2.4000   baseline     2.4000
+  horse_controller_us                             79.1583   baseline    94.1167
+  horse_foot_slip_max                              0.0020   baseline     0.0020
+  horse_fps_max_diff                               0.0000   baseline     0.0000
+  horse_height_d2                                 22.0405   baseline    14.6406  <-- WORSE
+  horse_ik_us                                     56.5950   baseline    74.2583
+  horse_jerk_max                                   7.0000   baseline     7.0000
+  horse_probes_us                                 68.5550   baseline    81.5417
+  horse_radius_gallop                             21.6555   baseline    21.6555
+  horse_rays_per_tick                              8.4317   baseline     8.4317
+  horse_rock_contacts                              0.0000   baseline     0.0000
+  horse_roll_d2                                    9.8070   baseline     9.8054
+  horse_saddle_drift                               0.0000   (new)
+  horse_steps_us                                  22.8500   baseline    28.6417
+  horse_stop_distance                             12.1911   baseline    12.1911
+  horse_terrain_foot_error                         0.0367   baseline     0.0367
+  horse_us                                       191.7917   baseline   233.4117
+  late_grab_caught_height_m                        0.7991   baseline     1.9957
+  leap_regrab_gain_m                               1.5879   baseline     1.3691
+  loco_colossus_us                               121.7917   (new)
+  loco_ik_us                                      15.4800   (new)
+  loco_probes_per_tick                             0.0100   (new)
+  loco_reach_err_max_m                             0.0000   (new)
+  loco_slip_max_mps                                0.0003   (new)
+  pelvis_com_support_dist_m                        1.3390   (new)
+  perf_climb_cam_camera_queries                    7.0083   baseline     7.0000
+  perf_climb_cam_camera_us                        41.5417   baseline    64.9917
+  perf_climb_cam_climb_rays                        2.4000   baseline     2.4083
+  perf_climb_cam_colossus_us                     124.0667   baseline    79.2250  <-- WORSE
+  perf_climb_cam_frame_ms                          0.7216   baseline     0.4898
+  perf_climb_cam_grab_queries                      0.0167   baseline     0.0000
+  perf_climb_cam_player_us                        70.0250   baseline   104.1083
+  perf_climb_camera_queries                        0.0000   baseline     0.0000
+  perf_climb_camera_us                             0.0000   baseline     0.0000
+  perf_climb_climb_rays                            3.0000   baseline     2.9933
+  perf_climb_colossus_us                         126.6400   baseline    56.8467  <-- WORSE
+  perf_climb_frame_ms                              0.6967   baseline     0.2969  <-- WORSE
+  perf_climb_grab_queries                          0.0000   baseline     0.0000
+  perf_climb_player_us                            65.1400   baseline    68.6600
+  perf_fall_grab_camera_queries                    7.0000   baseline     7.0000
+  perf_fall_grab_camera_us                        24.4833   baseline    25.7833
+  perf_fall_grab_climb_rays                        0.0000   baseline     0.0000
+  perf_fall_grab_colossus_us                     108.4167   baseline    43.6833  <-- WORSE
+  perf_fall_grab_frame_ms                          0.4912   baseline     0.1482  <-- WORSE
+  perf_fall_grab_grab_queries                      2.0000   baseline     2.0000
+  perf_fall_grab_player_us                        37.8000   baseline    29.7167
+  perf_stand_shake_camera_queries                  7.5583   baseline     7.6583
+  perf_stand_shake_camera_us                      61.4250   baseline    79.9583
+  perf_stand_shake_climb_rays                      0.3083   baseline     0.0000  <-- WORSE
+  perf_stand_shake_colossus_us                   123.8500   baseline    64.0333  <-- WORSE
+  perf_stand_shake_frame_ms                        0.7800   baseline     0.4339  <-- WORSE
+  perf_stand_shake_grab_queries                    0.0000   baseline     0.0000
+  perf_stand_shake_player_us                      89.5333   baseline    93.7000
+  quad_arrows_us                                   3.8178   (new)
+  quad_bot_foot_time                              57.9667   (new)
+  quad_bot_horse_time                             78.3333   (new)
+  quad_colossus_us                               195.7139   (new)
+  quad_gait_order_ratio                            1.0000   (new)
+  quad_ik_us                                      25.1533   (new)
+  quad_kneel_corner_drop                           3.9377   (new)
+  quad_locomotion_us                              81.8983   (new)
+  quad_physics_tick_ms                             3.5533   (new)
+  quad_slip_max                                    0.0004   (new)
+  quad_terrain_sole_err                            0.0000   (new)
+  quadratus_fps_max_diff                           0.0000   (new)
+  quadratus_horse_fps_max_diff                     0.0000   (new)
+  release_inherit_error_mps                        0.0000   baseline     0.0000
+  rescue_grab_ticks                                1.0000   baseline     1.0000
+  ride_foot_min_balance                            0.9912   (new)
+  shake_full_balance_loss_s                        0.9500   baseline     1.2833
+  shake_full_grip_stamina_cost                    53.8778   baseline    54.2269
+  shake_full_thrown_off_s                          1.6500   baseline     2.0833
+  shake_grip_stamina_drain_per_s                  23.7347   baseline    23.5711
+  shake_half_min_balance                           0.1801   baseline     0.1525
+  shin_step_max_shake_level                        0.9020   (new)
+  shoulder_startstop_drift_m                       0.0080   (new)
+  shoulder_startstop_min_balance                   1.0000   (new)
+  slope_shoulder_accel_max                         4.2950   (new)
+  slope_sole_height_err_m                          0.0000   (new)
+  standing_drift_still_m                           0.0042   baseline     0.0013
+  standing_drift_turning_m                         0.0057   baseline     0.0003
+  standing_walk_min_balance                        0.9869   baseline     1.0000
+  standing_walk_moved_m                            1.6339   baseline     1.6497
+  startstop_shoulder_accel_max                     4.9132   (new)
+  turn_transfer_surface_err_m                      0.0000   baseline     0.0000
+  valus_defeat_head_height                         2.9593   (new)
+  9 metric(s) flagged
+
+4 failure(s)
+  - test_performance_budget: regression vs Milestone 1 benchmark (~0.25 ms): 0.697 ms
+  - existing_colossus_tests_still_pass: earlier tests failed: ["test_performance_budget"]
+  - all_existing_tests_still_pass: earlier tests failed: ["test_performance_budget", "existing_colossus_tests_still_pass"]
+  - all_valus_and_earlier_tests_still_pass: earlier tests failed: ["test_performance_budget", "existing_colossus_tests_still_pass", "all_existing_tests_still_pass"]

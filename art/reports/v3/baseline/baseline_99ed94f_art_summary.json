@@ -1,0 +1,16 @@
+{
+  "commit": "99ed94f7f163f6239209f0b1f835c56bd53bab84",
+  "passed": 31,
+  "failed": 1,
+  "cpu_ms": 0.637,
+  "failure_summary": [
+    "test_performance_budget: regression vs Milestone 1 benchmark (~0.25 ms): 0.637 ms"
+  ],
+  "script_errors": 0,
+  "art_checks": {
+    "v1_runtime": 809,
+    "sentinel_v2_runtime": 430,
+    "valley_runtime": "pass"
+  },
+  "interpretation": "Art base prior32-gameplay suite now has one shared-runner CPU threshold failure; all functional checks pass. Historical checked-in 32/32 report is not the fresh result."
+}

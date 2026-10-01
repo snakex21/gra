@@ -1,0 +1,71 @@
+{
+  "queued_utc": "2026-10-01T18:57:41.042253+00:00",
+  "commit": "99ed94f7f163f6239209f0b1f835c56bd53bab84",
+  "engine": "4.6.3.stable.official.7d41c59c4",
+  "note": "Separate detached worktree, queued behind both clean gameplay suites; no Godot runs in gra-art-v3.",
+  "environment": {
+    "HOME": "/tmp/stonewater-baseline-home",
+    "XDG_CACHE_HOME": "/tmp/stonewater-baseline-cache",
+    "XDG_DATA_HOME": "/tmp/stonewater-baseline-data",
+    "XDG_CONFIG_HOME": "/tmp/stonewater-baseline-config",
+    "XDG_STATE_HOME": "/tmp/stonewater-baseline-state"
+  },
+  "results": [
+    {
+      "name": "art-v1-runtime",
+      "command": [
+        "bash",
+        "tools/art/run_art_tests.sh"
+      ],
+      "started_utc": "2026-10-01T19:09:26.134698+00:00",
+      "exit_code": 0,
+      "wall_seconds": 6.034384165999654,
+      "finished_utc": "2026-10-01T19:09:32.169084+00:00"
+    },
+    {
+      "name": "art-sentinel-runtime",
+      "command": [
+        "godot",
+        "--headless",
+        "--path",
+        ".",
+        "--fixed-fps",
+        "60",
+        "--quit-after",
+        "1800",
+        "res://art/tests/test_sentinel_v2.tscn"
+      ],
+      "started_utc": "2026-10-01T19:09:32.169491+00:00",
+      "exit_code": 0,
+      "wall_seconds": 0.45180320000145,
+      "finished_utc": "2026-10-01T19:09:32.621297+00:00"
+    },
+    {
+      "name": "art-valley-runtime",
+      "command": [
+        "godot",
+        "--headless",
+        "--path",
+        ".",
+        "--script",
+        "res://art/tests/test_ancient_valley.gd"
+      ],
+      "started_utc": "2026-10-01T19:09:32.621677+00:00",
+      "exit_code": 0,
+      "wall_seconds": 0.9103068789991084,
+      "finished_utc": "2026-10-01T19:09:33.531987+00:00"
+    },
+    {
+      "name": "art-gameplay-full",
+      "command": [
+        "bash",
+        "tools/run_tests.sh"
+      ],
+      "started_utc": "2026-10-01T19:09:33.532340+00:00",
+      "exit_code": 1,
+      "wall_seconds": 10.215267988998676,
+      "finished_utc": "2026-10-01T19:09:43.747611+00:00"
+    }
+  ],
+  "finished_utc": "2026-10-01T19:09:43.748085+00:00"
+}

@@ -1,0 +1,28 @@
+{
+	"adapter": "llvmpipe (LLVM 19.1.7, 256 bits)",
+	"attached_segments": 17,
+	"note": "Actual Godot viewport workload; not target-hardware FPS. Rigid visual adapter only.",
+	"renderer": "gl_compatibility",
+	"views": [
+		{
+			"draw_calls": 253.0,
+			"primitives": 60913.0,
+			"view": 0
+		},
+		{
+			"draw_calls": 248.0,
+			"primitives": 62983.0,
+			"view": 1
+		},
+		{
+			"draw_calls": 88.0,
+			"primitives": 44297.0,
+			"view": 2
+		},
+		{
+			"draw_calls": 233.0,
+			"primitives": 54918.0,
+			"view": 3
+		}
+	]
+}

@@ -1,0 +1,76 @@
+{
+  "observed_utc": "2026-10-01T18:56:37.258685+00:00",
+  "art_head": "99ed94f7f163f6239209f0b1f835c56bd53bab84",
+  "gameplay_head": "615f29c43867510758d12389702a6d713433087d",
+  "previous_gameplay_head": "a3ef45af8a3e13b3561245a1449ae3ab9431d665",
+  "files": {
+    "src/colossus/greybox/greybox_humanoid.gd": {
+      "sha256": "f0f4e117d2c07b1559d7d99555f0fea8e43535cb2099cc26eb109f01394c46e7",
+      "git_blob": "a306dfc26e41ffdd3413026e4d2338af0d0334ff"
+    },
+    "src/colossus/body_segment.gd": {
+      "sha256": "19a8d444de368f69e4318f2baf93228f64fcf3d06bc0e236bbc4e0d9dee7d993",
+      "git_blob": "904ded8b5535909719c6eac5a198f90d1b05f56d"
+    },
+    "src/climb/climb_patch.gd": {
+      "sha256": "dbadd427a147a31253536e42e81dc7a0155f69b17d79f7d7b1817916d5988d07",
+      "git_blob": "7d774bbf1e53934c3a492619e65fdc6aad97051e"
+    },
+    "src/climb/surface_anchor.gd": {
+      "sha256": "c2a60f76cceedadbc3def1c2ae9276cf000b26b8506125732c69bcb6e3962cef",
+      "git_blob": "93c5f2c3c42801afcb7d267a15a2181135dd299f"
+    },
+    "src/colossus/valus/valus.gd": {
+      "sha256": "6ead7852a559e805809e5b57ca00ee73cde4a772a8054e292b0ecec558c8b1e6",
+      "git_blob": "0c78427be1cb7f15d163f77c8181578630aceb58"
+    },
+    "src/world/arena_art.gd": {
+      "sha256": "d62c869516736e329011849d7e7bfbfbdcdb8abebad5adfd9d87a4390b3983d5",
+      "git_blob": "4533a2649ba092af0faab55829f05920a201399f"
+    },
+    "tests/test_runner.gd": {
+      "sha256": "842c11a21a05fa209f95cd4e06d9f404f46edbed4416178dde0b844f89792df4",
+      "git_blob": "9bc72834db7ee114b0d2aba449abc1ad9b6163e0"
+    },
+    "tools/run_tests.sh": {
+      "sha256": "63e65cadf5b74101fbafa5b93e1e78e357f49be168d0adf2e47e89d62abbe48e",
+      "git_blob": "1a2f420db6cdf49065676eb7413eaf89d619ab4c"
+    },
+    "project.godot": {
+      "sha256": "5d998d114cd8c67e4fe6a1f2e76d3da34ca50739a08bc2e94132bae8dcbc4ec4",
+      "git_blob": "f4552bf04b126f0cdabc5ebfcb2d7e087756c41b"
+    }
+  },
+  "scope_invariants": {
+    "latest_gameplay_delta": "6 commits after previous gameplay compatibility base",
+    "humanoid_geometry": "unchanged from a3ef45a; only kind and part_size visual metadata added",
+    "humanoid_bones": 17,
+    "humanoid_foot_size": [
+      1.7,
+      0.7,
+      3.6
+    ],
+    "humanoid_foot_center": [
+      0,
+      -0.05,
+      -0.85
+    ],
+    "art_base_foot_contract": "assets 99ed94f original humanoid baseline uses 2.8m foot; v2 adapter has optional extended 3.6m meshes",
+    "latest_runtime_art": "ArenaArt from first tranche is integrated; no v2 Ancient Valley or Sentinel v2 files in gameplay head",
+    "Valus": "extends HumanoidBoss; own VALUS_PARTS and additional climb-route meshes remain significant",
+    "Quadratus": "four additional stone knee parts below thigh fur; no new art adapter changes authorized",
+    "test_harness": "120 callables remain; latest tests add one kneel fairness assertion and detailed instrumentation; timing thresholds unchanged",
+    "no_code_mutation": "No src/scenes/tests/project.godot modified by baseline work. Godot imports and ignored output are confined to separate worktrees."
+  },
+  "final_observed_head": "f84dd100fcb29442dc66f68a0c2d91d03f994805",
+  "final_observed_utc": "2026-10-01T19:10:01Z",
+  "final_head_status": "Existing 120-test suite completed: 116 pass, 4 fail (sole direct failure CPU 0.645ms vs <0.6ms plus 3 aggregates); 600-frame Gaius scene smoke passed. No Gaius-specific fight suite added.",
+  "final_head_changes": {
+    "commit_url": "https://github.com/snakex21/gra/commit/f84dd100fcb29442dc66f68a0c2d91d03f994805",
+    "delta_from_615f": "1 commit adding Gaius third boss and shared bone/armour hooks",
+    "base_humanoid": "BONES and PARTS arrays unchanged. _build_body now calls overridable _bones(), default returning BONES.",
+    "gaius": "Adds sword bone beneath hand_r, distinct GAIUS_PARTS, breakable helmet and sword-ramp climb route. Must not assume every HumanoidBoss has exactly 17 segments or reuse legacy Sentinel contract as its geometry.",
+    "shared_behavior": "PlayerSword handles weak points and armour plates; ValusBot accepts HumanoidBoss. Existing test_runner is unchanged but shared behavior warrants regression rerun.",
+    "scope": "No fixes or model changes to gameplay or legacy contracts."
+  }
+}
