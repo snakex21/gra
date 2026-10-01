@@ -117,16 +117,74 @@ HumanoidBoss (wspólne: encounter, stomp, trafienia, weak point, pokonanie, debu
   w czasie telegrafu jest IDLE, więc przysiad nigdy się nie pokazywał. Teraz czyta
   prawdziwą intencję.
 
+Znalezione przez soaki (zakleszczenia, poprawione przed końcowym soakiem):
+- **Shake'i bez przerwy po trafieniu.** Trafienie w weak point przerywało shake, więc
+  cooldown był krótki (1,5 s). Po 1,3 s wzdrygnięcia kolos znowu potrząsał, a gracz nie
+  miał kiedy wstać i odzyskać staminy. Gaius po otwarciu głowy zrzucał tak bota do
+  skutku. Nowa reguła fairness `Colossus.shake_after_flinch`: wzdrygnięcie liczy się jak
+  shake, a następny shake może przyjść dopiero 2 s po nim. Dotyczy wszystkich kolosów.
+- **Wsiadanie na Agro na leżąco.** Powalony gracz mógł wsiąść, a w siodle równowaga się
+  nie odnawiała, więc łuk był zablokowany do końca walki. Teraz powalony nie wsiada,
+  a w siodle się podnosi.
+- **Bot Quadratusa** po przekroczeniu czasu jazdy chciał zsiąść, ale `_dismount` od razu
+  odsyłał go z powrotem do jazdy. Poprawione.
+
 ## Wyniki
 
-__RESULTS__
+### Testy
+
+Pełny przebieg `tools/run_tests.sh` (razem z testami Etapu 8): __FULLRUN__. Nowe testy Etapu 7:
+
+| Test | Wynik |
+|---|---|
+| `gaius_sword_follows_the_arm` | rękojeść vs dłoń 0,000001 m; wbity: czubek vs punkt ciosu 0,000 m, płaska strona do góry 0,91, nachylenie 24,1° |
+| `gaius_slam_has_telegraph_and_stuck_window` | TELEGRAPH 1,5 s → ACTIVE 0,4 s → RECOVERY 9,6 s (wbity 8,0 s, nic innego), strefa zagrożenia 26 ticków w zamachu |
+| `gaius_slam_point_locks_for_a_late_dodge` | punkt ciosu po 55% zamachu: 0,000 m ruchu; późny unik: HP 100 → 100 |
+| `gaius_blade_is_a_walkable_ramp` | 300 ticków na ostrzu, +2,4 m, do pięści 1,59 m, stan STAND |
+| `gaius_climb_route_blade_to_shoulders` | bot: pięść po 16,7 s, barki po 24,1 s (1 cios miecza) |
+| `gaius_grip_on_sword_arm_has_no_drift` | chwyt ręki przez wyciąganie miecza (12 s, 7,3 m): kotwica vs powierzchnia 0,000002 m |
+| `gaius_helmet_breaks_after_charged_strikes` | słaby cios odbity, 3 naładowane → hełm rozbity, kolizja wyłączona, weak point OPEN |
+| `armor_plate_rejects_invalid_hits` | strzała / poza zasięgiem / słaby: odrzucone, naładowany: pęknięcie |
+| `gaius_can_be_defeated` | DEFEATED, czubek głowy po klęknięciu 3,3 m |
+| `gaius_scripted_driver_can_complete_fight` | wygrana (ostrze 2×, hełm, 3 ciosy) |
+| `gaius_simulation_independent_of_render_fps` | cała walka przy 30–240 FPS: różnica stanu 0,00000000 |
+| `gaius_cost_stays_within_budget` | kolos 305 µs/tick (lokomocja 143, IK 28, poza ręki z mieczem 22) |
+| `attacks_respect_cooldowns_all_bosses` | najkrótsza przerwa między tymi samymi atakami: stomp 9,4 s, sword_slam 20,6 s |
+| `art_layer_does_not_change_gameplay` | 8 s chodu, assety wył./wł. w osobnych procesach: różnica 0,00000000, kolizje identyczne |
+| `quadratus_lurch_unsettles_standing_player_fairly` | 7 zrywów w 40 s: telegraf 0,87 s, szczyt 3,9 m/s, balans min 0,47–0,57, nikt nie spadł |
+| `quadratus_crown_needs_second_kneel` | czoło zamknięte przy 1. klęknięciu i po zniszczeniu zadu, otwarte przy 2., zamyka się po 19,4 s |
+| `bow_aim_zooms_camera_over_shoulder` | 5,0 m / fov 70 → 3,0 m / fov 52, 0,75 m w prawo → po strzale wraca |
+| `arrow_glances_off_stone` | kamienna łydka: odbicie; futro: wbita |
+
+### Soak (100 walk każdego bossa, po poprawkach z sekcji 5)
+
+| | Valus | Quadratus (52 pieszo / 48 z Agro) | Gaius |
+|---|---|---|---|
+| wygrane | **100/100** | **100/100** | **100/100** |
+| czas min / mediana / max | 44,1 / 47,2 / 63,8 s | 59,9 / 87,6 / 234,2 s | 46,6 / 54,7 / 198,0 s |
+| śmierci | 0 | 2 (upadki) | 3 (upadki z głowy) |
+| złe resety | 0 | 0 | 0 |
+| zatrzymania bota | 0 | 3 (2× RIDE, 1× DESCEND) | 4 (APPROACH_LEG) |
+| strzały | — | 638, w podeszwę 219, z konia 226 | — |
+| reakcje kopyt | — | 219, wszystkie pełne REACT→KNEEL→RISE | — |
+
+Uwagi do soaku:
+- Pierwszy soak (przed poprawkami) miał **3 zakleszczenia na 300 walk**. Dwa u Gaiusa:
+  ciągłe shake'i po otwarciu głowy, bot ginął ze zmęczenia. Jedno u Quadratusa: gracz
+  wsiadł na Agro leżąc i łuk był zablokowany. Oba błędy były w grze, nie w bocie.
+- `ai_stuck` u Quadratusa (31) to obracanie się w miejscu za jeźdźcem, który krąży za
+  zadem dłużej niż 25 s. Nie blokuje walki.
+
+### Wydajność
+
+- Gaius ~305 µs/tick logiki, z czego IK ręki z mieczem ~22 µs.
+- Warstwa assetów jest tylko wizualna (0 kolizji, różnica stanu 0).
 
 ## Ograniczenia
 
-- Ciało gracza przeskakuje o ~0,5 m (próg wykrywacza glitchy) przy przejściu chwytu
-  między stykającymi się bryłami u Gaiusa (pięść/przedramię, tył głowy/hełm). Kotwica się
-  nie przesuwa (0 m/tick), przesuwa się ustawienie ciała. Zdarza się rzadko (liczby
-  w soaku).
+- Ciało gracza przeskakuje o ~0,5 m przy owijaniu chwytu przez krawędź u Gaiusa (górna
+  krawędź głowy pod hełmem). Kotwica się nie przesuwa, przeskakuje ustawienie ciała.
+  W Etapie 8 rysowane ciało jest już wygładzane (patrz ETAP_8.md).
 - Quadratus i Gaius nie mają jeszcze modeli z paczki (tylko tekstury na greyboxie).
 - Kamienne kopyto Quadratusa odbija strzałę, ale nie ma żadnego efektu dźwiękowego
   ani wizualnego odbicia.
@@ -144,4 +202,5 @@ __RESULTS__
 
 ## Propozycja Etapu 8
 
-__ETAP8__
+Zrealizowana jako [Etap 8](ETAP_8.md): dolina ze świątynią i bramami, promień miecza,
+pętla gry z zapisem, bot całej gry, Sentinel v2.

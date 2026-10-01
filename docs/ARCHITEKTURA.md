@@ -1,4 +1,4 @@
-# Architektura (stan po Etapie 7)
+# Architektura (stan po Etapie 8)
 
 Dokument opisuje decyzje, które mają przetrwać dalszy rozwój. Kod jest komentowany po angielsku
 (open source), a dokumentacja projektowa jest po polsku.
@@ -192,6 +192,25 @@ Szczegóły: [ETAP_7.md](ETAP_7.md). Zasady:
 - Warstwa assetów nie dotyka kolizji ani logiki: ukrywa siatki greyboxu i dokłada własne.
   Testy budują areny bez niej, a jeden test dowodzi w osobnych procesach, że stan
   symulacji z nią i bez niej jest identyczny.
+
+## 2g. Cała gra: regiony, promień, zapis (Etap 8)
+
+```
+GameWorld ── GameState (kolejność kolosów, zapis JSON)
+   ├─ region DOLINA: Valley.build (Ancient Valley = podłoże), gracz, Agro, kamera, HUD
+   └─ region ARENA:  XxxArena.build_encounter (te same walki co w Etapach 5-7)
+przejście: brama / wygrana / wyjście z areny -> wygaszenie (ticki) -> nowy region
+gracz: PlayerActions.beam_held -> SwordBeam (raise, focus, lit) -> cel z regionu
+       (brama następnego kolosa / Colossus.beam_weak_point)
+```
+Szczegóły: [ETAP_8.md](ETAP_8.md). Zasady:
+- Jeden region naraz: symuluje się tylko jeden kolos. Region buduje własnego gracza, konia,
+  kamerę i HUD. Między regionami przechodzi tylko `GameState` i to, czy gracz jechał konno.
+- Promień nie jest znacznikiem: wynika wyłącznie z kierunku patrzenia, światła słońca
+  (jeden promień co 6 ticków) i celu regionu. Bot całej gry szuka drogi tak samo.
+- Zapis nigdy nie pozwala ominąć kolosa: liczy się tylko ciągły prefiks ustalonej kolejności.
+- Wszystko w tickach fizyki, łącznie z wygaszeniem i przejściami, więc rozgrywka jest
+  niezależna od FPS także między regionami.
 
 ## 3. Gracze i wejście
 

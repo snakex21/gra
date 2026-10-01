@@ -5,7 +5,7 @@ elementy ograniczone w oryginale sprzętem PS2, czasem produkcji albo wycięte z
 Silnik: **Godot 4.4+** (GDScript, a Zig dopiero tam, gdzie profiler pokaże realną potrzebę).
 Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych assetów oryginału.
 
-## Stan: Etap 7 — trzeci boss (Gaius), assety w arenach, pętla Quadratusa
+## Stan: Etap 8 — dolina, promień miecza, cała gra od świątyni do końca
 
 - Milestone 1 (wspinanie po poruszającym się kolosie): [docs/MILESTONE_1.md](docs/MILESTONE_1.md)
 - Etap 2 (równowaga na kolosie, upadki, kamera, przejścia): [docs/ETAP_2.md](docs/ETAP_2.md)
@@ -14,9 +14,14 @@ Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych
 - Etap 5 (Valus: encounter, ataki z telegrafem, weak point, miecz, fairness, reset, bot, 50 walk): [docs/ETAP_5.md](docs/ETAP_5.md)
 - Etap 6 (Quadratus: czworonóg, łuk i strzały, trafienie w kopyto, klęknięcie, dwa weak pointy, łuk z Agro, bezpieczne zejście z Valusa): [docs/ETAP_6.md](docs/ETAP_6.md)
 - Etap 7 (Gaius: miecz jako droga, hełm do rozbicia; assety Saltward; pętla i zryw Quadratusa; widok łuku zza ramienia, odbicia strzał; soaki 3×100): [docs/ETAP_7.md](docs/ETAP_7.md)
+- Etap 8 (dolina Ancient Valley ze świątynią i trzema bramami, promień miecza, pętla gry z zapisem, bot całej gry, Sentinel v2): [docs/ETAP_8.md](docs/ETAP_8.md)
 - Architektura: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md)
 
-Walki z bossami: `scenes/valus_arena.tscn` (Valus), `scenes/quadratus_arena.tscn` (Quadratus)
+**Cała gra: `scenes/game.tscn`** (scena główna): start w świątyni, promień miecza (V / lewy spust)
+wskazuje drogę, brama prowadzi do areny kolejnego kolosa, po wygranej powrót do świątyni i zapis
+(`user://save.json`; nowa gra: `NEW_GAME=1` albo `-- --new-game`).
+
+Pojedyncze walki z bossami: `scenes/valus_arena.tscn` (Valus), `scenes/quadratus_arena.tscn` (Quadratus)
 i `scenes/gaius_arena.tscn` (Gaius); we wszystkich jest Agro, F5 resetuje walkę, Tab przełącza miecz / łuk.
 Areny mają warstwę assetów (paczka Saltward, CC0); `NO_ART=1` pokazuje czysty greybox.
 
@@ -68,12 +73,13 @@ godot --path . # albo otwórz project.godot w edytorze Godot 4.4+
 | Miecz: trzymaj = ładowanie, puść = cios | LPM / F | X |
 | Łuk: trzymaj = naciąganie (celownik na środku), puść = strzał | LPM / F | X |
 | Zmiana broni: miecz / łuk | Tab / R | D-pad prawo |
+| Unieś miecz do słońca (promień prowadzi do kolosa / słabego punktu) | V | lewy spust |
 | Reset walki z bossem | F5 | — |
 
 ## Testy
 
 ```bash
-tools/run_tests.sh                 # 137 testów + A/B + porównanie z zamrożonymi wzorcami, headless, ~12 min
+tools/run_tests.sh                 # 151 testów + A/B + porównanie z zamrożonymi wzorcami, headless, ~12 min
 tools/run_tests.sh --save-baseline # zamraża nowy wzorzec regresji Etapu 2/3 (tylko świadomie)
 tools/run_tests.sh --save-horse-baseline  # zamraża wzorzec metryk Agro (tylko świadomie)
 tools/run_tests.sh --only=horse    # wybrane testy
@@ -84,8 +90,10 @@ tools/capture_screenshots.sh quadratus  # walka z Quadratusem (bot z Agro) -> te
 tools/run_boss_soak.sh 50                # długi test: 50 pełnych walk z Valusem (różne seedy)
 tools/run_boss_soak.sh 50 1 quadratus    # 50 walk z Quadratusem (na zmianę pieszo / z Agro)
 tools/run_boss_soak.sh 50 1 gaius        # 50 walk z Gaiusem
+tools/run_game_soak.sh 20                # 20 całych gier: świątynia -> promień -> jazda -> trzy walki
 tools/capture_screenshots.sh gaius  # walka z Gaiusem grana przez bota -> tests/output/gaius_*.png
 tools/capture_screenshots.sh art    # statyczne widoki aren z assetami -> tests/output/art_*.png
+tools/capture_screenshots.sh game   # dolina, promień, jazda, brama -> tests/output/game_*.png
 ```
 
 Testy sterują graczem wyłącznie przez `PlayerActions`, tak jak robi to człowiek albo AI kompan.
@@ -100,6 +108,7 @@ fizyki (benchmark regresji).
 
 ```
 src/core/       warstwy fizyki, liczniki wydajności (Perf)
+src/game/       GameWorld (regiony: dolina / areny, przejścia), GameState (postęp, zapis)
 src/input/      PlayerActions (abstrakcyjne akcje), FlatInputSource, domyślne bindy
 src/player/     PlayerCharacter (lokomocja + wspinanie + stanie na kolosie), PlayerRiding, Stamina, Balance, FallImpact, PlayerVisual
 src/climb/      ClimbPatch (chwytalny kształt), SurfaceAnchor (punkt na ruchomym ciele), ClimbQuery
@@ -111,14 +120,14 @@ src/colossus/valus/  Valus (pierwszy boss), ValusBrain
 src/colossus/quadratus/  Quadratus (drugi boss, czworonóg), QuadratusBrain
 src/colossus/gaius/  Gaius (trzeci boss, miecz), GaiusBrain; wspólna baza HumanoidBoss w greybox/
 src/combat/     ColossusAttack, HitVolume, WeakPoint, FairnessRules, LimbStomp, PlayerSword, PlayerBow,
-                ArrowSystem, ArrowTarget, ArmorPlate, BossEncounter, ValusBot, QuadratusBot, GaiusBot, debug draw
+                ArrowSystem, ArrowTarget, ArmorPlate, SwordBeam, BossEncounter, ValusBot, QuadratusBot, GaiusBot, GameBot, debug draw
 src/fx/         Sfx (syntezowane dźwięki zastępcze), Fx (lekki kurz / błysk)
-src/world/      TerrainKit, AgroArena, ValusArena, QuadratusArena, GaiusArena — teren testowy;
+src/world/      TerrainKit, AgroArena, ValusArena, QuadratusArena, GaiusArena — teren testowy; Valley (dolina);
                 ArenaArt — warstwa wizualna z assetów (bez wpływu na gameplay)
 src/camera/     PlayerCamera
 src/ui/         PlayerHud
-scenes/         sandbox, agro_test, valus_arena, quadratus_arena, gaius_arena
-models/ textures/ materials/ environment/  assety Saltward (CC0) z gałęzi assets
+scenes/         game (cała gra), sandbox, agro_test, valus_arena, quadratus_arena, gaius_arena
+models/ textures/ materials/ environment/ art/  assety (CC0) od agenta graficznego: Saltward, Ancient Valley, Sentinel v2, Stonewater
 tests/          testy headless + wizualny smoke test
 docs/           dokumentacja projektu
 ```
