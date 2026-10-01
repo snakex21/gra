@@ -1,0 +1,531 @@
+ERROR Draco mesh compression is not available because library could not be found at /usr/bin/4.3/python/lib/python3.13/site-packages/libextern_draco.so
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: slender eroded needle
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.002633333206176758 s
+
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: slender eroded needle.001
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.001970529556274414 s
+
+Warning: No mesh data to join
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: slender eroded needle.002
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0018434524536132812 s
+
+SALTWIND_ASSET eroded_needle [428, 160, 68] 5
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: fork western tine
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0025925636291503906 s
+
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: fork western tine.001
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.004839420318603516 s
+
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: fork western tine.002
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0017933845520019531 s
+
+SALTWIND_ASSET forked_spire [768, 320, 136] 8
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: knife edge fin
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0018477439880371094 s
+
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: knife edge fin.001
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0017197132110595703 s
+
+Warning: No mesh data to join
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: knife edge fin.002
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0013747215270996094 s
+
+SALTWIND_ASSET blade_fin [428, 160, 68] 5
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: hoodoo cap and neck
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.002195119857788086 s
+
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: hoodoo cap and neck.001
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0018525123596191406 s
+
+Warning: No mesh data to join
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: hoodoo cap and neck.002
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0013418197631835938 s
+
+SALTWIND_ASSET hoodoo_crown [556, 240, 68] 6
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: wind undercut mushroom
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.002352476119995117 s
+
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: wind undercut mushroom.001
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0018305778503417969 s
+
+Warning: No mesh data to join
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: wind undercut mushroom.002
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0014505386352539062 s
+
+SALTWIND_ASSET mushroom_outcrop [556, 240, 68] 6
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: long wind abraded yardang
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0034580230712890625 s
+
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: long wind abraded yardang.001
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0025093555450439453 s
+
+Warning: No mesh data to join
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: long wind abraded yardang.002
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0020194053649902344 s
+
+SALTWIND_ASSET wind_yardang [428, 160, 68] 5
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: undercut wind bank
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0028290748596191406 s
+
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: undercut wind bank.001
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.002450704574584961 s
+
+Warning: No mesh data to join
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: undercut wind bank.002
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.002046823501586914 s
+
+SALTWIND_ASSET undercut_bank [428, 160, 68] 5
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: serrated ridge
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0024280548095703125 s
+
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: serrated ridge.001
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.002227306365966797 s
+
+Warning: No mesh data to join
+22:06:32 | INFO: Starting glTF 2.0 export
+22:06:32 | INFO: Extracting primitive: serrated ridge.002
+22:06:32 | INFO: Primitives created: 1
+22:06:32 | INFO: Finished glTF 2.0 export in 0.0032303333282470703 s
+
+SALTWIND_ASSET serrated_ridge [428, 160, 68] 5
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: eroded jagged horizon wall
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.005941867828369141 s
+
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: eroded jagged horizon wall.001
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0041046142578125 s
+
+Warning: No mesh data to join
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: eroded jagged horizon wall.002
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0030188560485839844 s
+
+SALTWIND_ASSET tiered_escarpment [2188, 1388, 172] 4
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: asymmetric receding mesa
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.002785205841064453 s
+
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: asymmetric receding mesa.001
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0021941661834716797 s
+
+Warning: No mesh data to join
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: asymmetric receding mesa.002
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.002870798110961914 s
+
+SALTWIND_ASSET tabletop_mesa [428, 160, 68] 5
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: polygon salt plate
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0031888484954833984 s
+
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: polygon salt plate.004
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0023126602172851562 s
+
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: polygon salt plate.008
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.003186941146850586 s
+
+SALTWIND_ASSET salt_polygon_plates [216, 120, 64] 1
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: heaved salt pressure ridge
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0022966861724853516 s
+
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: heaved salt pressure ridge.001
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0026252269744873047 s
+
+Warning: No mesh data to join
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: heaved salt pressure ridge.002
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0022411346435546875 s
+
+SALTWIND_ASSET salt_pressure_ridge [384, 160, 68] 4
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: opaque mineral blade
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.002413511276245117 s
+
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: opaque mineral blade.009
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0033915042877197266 s
+
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: opaque mineral blade.015
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0021581649780273438 s
+
+SALTWIND_ASSET mineral_blades [288, 156, 60] 0
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: salt shelf lip
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0025284290313720703 s
+
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: salt shelf lip.001
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0025904178619384766 s
+
+Warning: No mesh data to join
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: salt shelf lip.002
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0030062198638916016 s
+
+SALTWIND_ASSET crust_shelf [384, 160, 68] 4
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: radial salt fan
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0029265880584716797 s
+
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: radial salt fan.014
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.002743244171142578 s
+
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: radial salt fan.023
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.002827167510986328 s
+
+SALTWIND_ASSET salt_rosette [336, 144, 60] 0
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: dry rill bank
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.003255128860473633 s
+
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: dry rill bank.002
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.0033304691314697266 s
+
+22:06:33 | INFO: Starting glTF 2.0 export
+22:06:33 | INFO: Extracting primitive: dry rill bank.004
+22:06:33 | INFO: Primitives created: 1
+22:06:33 | INFO: Finished glTF 2.0 export in 0.002401113510131836 s
+
+SALTWIND_ASSET dry_rill_banks [644, 356, 136] 6
+22:06:34 | INFO: Starting glTF 2.0 export
+22:06:34 | INFO: Extracting primitive: Cube.011
+22:06:34 | INFO: Primitives created: 1
+22:06:34 | INFO: Finished glTF 2.0 export in 0.005942344665527344 s
+
+22:06:34 | INFO: Starting glTF 2.0 export
+22:06:34 | INFO: Extracting primitive: Cube.063
+22:06:34 | INFO: Primitives created: 1
+22:06:34 | INFO: Finished glTF 2.0 export in 0.003017902374267578 s
+
+22:06:34 | INFO: Starting glTF 2.0 export
+22:06:34 | INFO: Extracting primitive: Cube.084
+22:06:34 | INFO: Primitives created: 1
+22:06:34 | INFO: Finished glTF 2.0 export in 0.0026476383209228516 s
+
+SALTWIND_ASSET wind_gate_13m [2288, 252, 72] 6
+22:06:34 | INFO: Starting glTF 2.0 export
+22:06:34 | INFO: Extracting primitive: Cube.090
+22:06:34 | INFO: Primitives created: 1
+22:06:34 | INFO: Finished glTF 2.0 export in 0.004739046096801758 s
+
+22:06:34 | INFO: Starting glTF 2.0 export
+22:06:34 | INFO: Extracting primitive: Cube.111
+22:06:34 | INFO: Primitives created: 1
+22:06:34 | INFO: Finished glTF 2.0 export in 0.003211498260498047 s
+
+22:06:34 | INFO: Starting glTF 2.0 export
+22:06:34 | INFO: Extracting primitive: Cube.120
+22:06:34 | INFO: Primitives created: 1
+22:06:34 | INFO: Finished glTF 2.0 export in 0.0024552345275878906 s
+
+SALTWIND_ASSET sunken_retaining_wall [924, 108, 60] 5
+22:06:35 | INFO: Starting glTF 2.0 export
+22:06:35 | INFO: Extracting primitive: Cube.125
+22:06:35 | INFO: Primitives created: 1
+22:06:35 | INFO: Finished glTF 2.0 export in 0.0066013336181640625 s
+
+22:06:35 | INFO: Starting glTF 2.0 export
+22:06:35 | INFO: Extracting primitive: Cube.188
+22:06:35 | INFO: Primitives created: 1
+22:06:35 | INFO: Finished glTF 2.0 export in 0.0038471221923828125 s
+
+22:06:35 | INFO: Starting glTF 2.0 export
+22:06:35 | INFO: Extracting primitive: Cube.211
+22:06:35 | INFO: Primitives created: 1
+22:06:35 | INFO: Finished glTF 2.0 export in 0.0025832653045654297 s
+
+SALTWIND_ASSET wind_sieve_tower [2772, 276, 84] 7
+22:06:35 | INFO: Starting glTF 2.0 export
+22:06:35 | INFO: Extracting primitive: Cube.218
+22:06:35 | INFO: Primitives created: 1
+22:06:35 | INFO: Finished glTF 2.0 export in 0.004225254058837891 s
+
+22:06:35 | INFO: Starting glTF 2.0 export
+22:06:35 | INFO: Extracting primitive: Cube.242
+22:06:35 | INFO: Primitives created: 1
+22:06:35 | INFO: Finished glTF 2.0 export in 0.0030341148376464844 s
+
+22:06:35 | INFO: Starting glTF 2.0 export
+22:06:35 | INFO: Extracting primitive: Cube.251
+22:06:35 | INFO: Primitives created: 1
+22:06:35 | INFO: Finished glTF 2.0 export in 0.0032358169555664062 s
+
+SALTWIND_ASSET ribbed_salt_pillar [1056, 108, 60] 5
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: Cube.256
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.0038862228393554688 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: Cube.264
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.0030944347381591797 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: Cube.269
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.002385854721069336 s
+
+SALTWIND_ASSET stepped_sun_plinth [256, 60, 36] 3
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: Cube.272
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.0037190914154052734 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: Cube.282
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.0031027793884277344 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: Cube.288
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.003032207489013672 s
+
+SALTWIND_ASSET buried_stair_8m [452, 84, 48] 1
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: Cube.291
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.004172086715698242 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: Cube.303
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.0032100677490234375 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: Cube.308
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.003304004669189453 s
+
+SALTWIND_ASSET fallen_fractured_lintel [540, 72, 24] 2
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: asymmetric route stele
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.0041997432708740234 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: asymmetric route stele.001
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.0032820701599121094 s
+
+Warning: No mesh data to join
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: asymmetric route stele.002
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.002390146255493164 s
+
+SALTWIND_ASSET notched_waystone [560, 172, 68] 4
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: dry branching stem
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.004314422607421875 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: dry branching stem.038
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.0033109188079833984 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: dry branching stem.060
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.0028069019317626953 s
+
+SALTWIND_ASSET dry_fan_grass [912, 352, 80] 0
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: dry branching stem.070
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.004145383834838867 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: dry branching stem.112
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.003345966339111328 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: dry branching stem.136
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.0027780532836914062 s
+
+SALTWIND_ASSET tumble_cage [1008, 384, 96] 0
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: dry branching stem.148
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.0035979747772216797 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: dry branching stem.176
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.003566265106201172 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: dry branching stem.196
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.0029540061950683594 s
+
+SALTWIND_ASSET arched_thorn [672, 320, 48] 0
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: dry branching stem.202
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.004349708557128906 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: dry branching stem.218
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.00404047966003418 s
+
+22:06:36 | INFO: Starting glTF 2.0 export
+22:06:36 | INFO: Extracting primitive: dry branching stem.227
+22:06:36 | INFO: Primitives created: 1
+22:06:36 | INFO: Finished glTF 2.0 export in 0.002659320831298828 s
+
+SALTWIND_ASSET saltbrush_cushion [992, 378, 88] 0
+22:06:37 | INFO: Starting glTF 2.0 export
+22:06:37 | INFO: Extracting primitive: dry branching stem.231
+22:06:37 | INFO: Primitives created: 1
+22:06:37 | INFO: Finished glTF 2.0 export in 0.0033440589904785156 s
+
+22:06:37 | INFO: Starting glTF 2.0 export
+22:06:37 | INFO: Extracting primitive: dry branching stem.257
+22:06:37 | INFO: Primitives created: 1
+22:06:37 | INFO: Finished glTF 2.0 export in 0.002892732620239258 s
+
+22:06:37 | INFO: Starting glTF 2.0 export
+22:06:37 | INFO: Extracting primitive: dry branching stem.265
+22:06:37 | INFO: Primitives created: 1
+22:06:37 | INFO: Finished glTF 2.0 export in 0.0024309158325195312 s
+
+SALTWIND_ASSET spear_fan [624, 128, 32] 0
+22:06:37 | INFO: Starting glTF 2.0 export
+22:06:37 | INFO: Extracting primitive: dry branching stem.269
+22:06:37 | INFO: Primitives created: 1
+22:06:37 | INFO: Finished glTF 2.0 export in 0.004996061325073242 s
+
+22:06:37 | INFO: Starting glTF 2.0 export
+22:06:37 | INFO: Extracting primitive: dry branching stem.293
+22:06:37 | INFO: Primitives created: 1
+22:06:37 | INFO: Finished glTF 2.0 export in 0.0034682750701904297 s
+
+22:06:37 | INFO: Starting glTF 2.0 export
+22:06:37 | INFO: Extracting primitive: dry branching stem.307
+22:06:37 | INFO: Primitives created: 1
+22:06:37 | INFO: Finished glTF 2.0 export in 0.0027849674224853516 s
+
+SALTWIND_ASSET dry_seed_reeds [576, 224, 48] 0
+22:06:37 | INFO: Starting glTF 2.0 export
+22:06:37 | INFO: Extracting primitive: dry branching stem.313
+22:06:37 | INFO: Primitives created: 1
+22:06:37 | INFO: Finished glTF 2.0 export in 0.0043222904205322266 s
+
+22:06:37 | INFO: Starting glTF 2.0 export
+22:06:37 | INFO: Extracting primitive: dry branching stem.333
+22:06:37 | INFO: Primitives created: 1
+22:06:37 | INFO: Finished glTF 2.0 export in 0.0037679672241210938 s
+
+22:06:37 | INFO: Starting glTF 2.0 export
+22:06:37 | INFO: Extracting primitive: dry branching stem.341
+22:06:37 | INFO: Primitives created: 1
+22:06:37 | INFO: Finished glTF 2.0 export in 0.002884387969970703 s
+
+SALTWIND_ASSET root_snag [480, 128, 40] 1
+22:06:37 | INFO: Starting glTF 2.0 export
+22:06:37 | INFO: Extracting primitive: dry branching stem.346
+22:06:37 | INFO: Primitives created: 1
+22:06:37 | INFO: Finished glTF 2.0 export in 0.0052149295806884766 s
+
+22:06:37 | INFO: Starting glTF 2.0 export
+22:06:37 | INFO: Extracting primitive: dry branching stem.381
+22:06:37 | INFO: Primitives created: 1
+22:06:37 | INFO: Finished glTF 2.0 export in 0.004628181457519531 s
+
+22:06:37 | INFO: Starting glTF 2.0 export
+22:06:37 | INFO: Extracting primitive: dry branching stem.404
+22:06:37 | INFO: Primitives created: 1
+22:06:37 | INFO: Finished glTF 2.0 export in 0.002943277359008789 s
+
+SALTWIND_ASSET dead_flat_acacia [840, 368, 48] 1
+Info: Packed 1 file(s)
+Info: Saved "saltwind.blend"
+SALTWIND_GENERATION_OK 32 [23840, 7658, 2240]
+Blender 4.3.2
+
+Blender quit

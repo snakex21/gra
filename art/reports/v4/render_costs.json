@@ -1,0 +1,488 @@
+{
+	"adapter": "llvmpipe (LLVM 19.1.7, 256 bits)",
+	"configured_lod_ranges_metres": {
+		"catalogue_lod0_inspection": [
+			900,
+			1100,
+			1500
+		],
+		"saltwind": [
+			55,
+			145,
+			800
+		],
+		"vegetation_cells": [
+			38,
+			78,
+			140
+		]
+	},
+	"configured_shadows": {
+		"configured_shadow_atlas_size": 4096,
+		"directional_mode": "2 parallel splits",
+		"directional_shadow_lights": 1,
+		"local_shadow_lights": 0,
+		"max_distance_metres": 130.0
+	},
+	"display_server": "X11",
+	"distant_terrain_triangles": 10368,
+	"engine": "4.6.3-stable (official)",
+	"expensive_features": {
+		"animated_light_nodes": 0,
+		"sdfgi": false,
+		"ssao": false,
+		"ssil": false,
+		"volumetric_fog": false,
+		"water_reflection_passes": 0,
+		"water_refraction_passes": 0
+	},
+	"measurement_notes": [
+		"Actual rendered frame counters from Godot Performance, after 18 settling frames and frame_post_draw; not source triangle totals.",
+		"Draw calls, primitives and objects may include shadow passes and UI. Scene inventories describe configured nodes/materials separately.",
+		"Memory counters are renderer-reported allocations including render targets, sky, fonts, textures, and buffers. They are not source PNG sizes, resident per-asset VRAM, or peak device memory.",
+		"Software renderer results are workload evidence only, not target GPU FPS benchmarks. PNG readback time is excluded from any performance claim.",
+		"All shots use fixed art-only cameras, one shadow light and static presets. Gameplay scenes/scripts are not loaded."
+	],
+	"near_terrain_triangles": 18432,
+	"new_unique_asset_ids": [
+		"eroded_needle",
+		"forked_spire",
+		"blade_fin",
+		"hoodoo_crown",
+		"mushroom_outcrop",
+		"wind_yardang",
+		"undercut_bank",
+		"serrated_ridge",
+		"tiered_escarpment",
+		"tabletop_mesa",
+		"salt_polygon_plates",
+		"salt_pressure_ridge",
+		"mineral_blades",
+		"crust_shelf",
+		"salt_rosette",
+		"dry_rill_banks",
+		"wind_gate_13m",
+		"sunken_retaining_wall",
+		"wind_sieve_tower",
+		"ribbed_salt_pillar",
+		"stepped_sun_plinth",
+		"buried_stair_8m",
+		"fallen_fractured_lintel",
+		"notched_waystone",
+		"dry_fan_grass",
+		"tumble_cage",
+		"arched_thorn",
+		"saltbrush_cushion",
+		"spear_fan",
+		"dry_seed_reeds",
+		"root_snag",
+		"dead_flat_acacia"
+	],
+	"renderer": "gl_compatibility",
+	"saltwind_catalogue_asset_instances": 32,
+	"saltwind_landscape_asset_instances": 33,
+	"vegetation_instances": 199,
+	"vendor": "Mesa",
+	"viewport_pixels": [
+		1280.0,
+		720.0
+	],
+	"views": [
+		{
+			"buffer_memory_bytes": 10680632.0,
+			"camera_position": [
+				32.0,
+				12.0,
+				92.0
+			],
+			"draw_calls": 103.0,
+			"preset": "CLEAR DAY",
+			"primitives": 35554.0,
+			"rendered_objects": 366.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 65,
+					"LOD1": 65,
+					"LOD2": 65
+				},
+				"loaded_material_keys": [
+					"res://materials/saltwind/terrain.tres",
+					"res://materials/saltwind/atlas.tres",
+					"#-9223371988452505659",
+					"#-9223371988435728442",
+					"#-9223371974544193235"
+				],
+				"loaded_material_resources": 5,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 214,
+				"loaded_shadow_enabled_mesh_nodes": 174,
+				"multimesh_instances": 597,
+				"multimesh_nodes": 72,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 0,
+					"LOD1": 16,
+					"LOD2": 17
+				},
+				"visible_branch_material_resources_approximately_in_range": 4,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 51,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 117,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 37
+			},
+			"texture_memory_bytes": 71845489.0,
+			"video_memory_bytes": 82526121.0,
+			"view": "01_salt_basin_day"
+		},
+		{
+			"buffer_memory_bytes": 10680632.0,
+			"camera_position": [
+				32.0,
+				12.0,
+				92.0
+			],
+			"draw_calls": 102.0,
+			"preset": "LATE SUN",
+			"primitives": 35488.0,
+			"rendered_objects": 362.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 65,
+					"LOD1": 65,
+					"LOD2": 65
+				},
+				"loaded_material_keys": [
+					"res://materials/saltwind/terrain.tres",
+					"res://materials/saltwind/atlas.tres",
+					"#-9223371988452505659",
+					"#-9223371988435728442",
+					"#-9223371974544193235"
+				],
+				"loaded_material_resources": 5,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 214,
+				"loaded_shadow_enabled_mesh_nodes": 174,
+				"multimesh_instances": 597,
+				"multimesh_nodes": 72,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 0,
+					"LOD1": 16,
+					"LOD2": 17
+				},
+				"visible_branch_material_resources_approximately_in_range": 4,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 51,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 117,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 37
+			},
+			"texture_memory_bytes": 71845489.0,
+			"video_memory_bytes": 82526121.0,
+			"view": "02_salt_basin_sunset"
+		},
+		{
+			"buffer_memory_bytes": 10680632.0,
+			"camera_position": [
+				32.0,
+				12.0,
+				92.0
+			],
+			"draw_calls": 103.0,
+			"preset": "BLUE HOUR",
+			"primitives": 35554.0,
+			"rendered_objects": 366.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 65,
+					"LOD1": 65,
+					"LOD2": 65
+				},
+				"loaded_material_keys": [
+					"res://materials/saltwind/terrain.tres",
+					"res://materials/saltwind/atlas.tres",
+					"#-9223371988452505659",
+					"#-9223371988435728442",
+					"#-9223371974544193235"
+				],
+				"loaded_material_resources": 5,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 214,
+				"loaded_shadow_enabled_mesh_nodes": 174,
+				"multimesh_instances": 597,
+				"multimesh_nodes": 72,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 0,
+					"LOD1": 16,
+					"LOD2": 17
+				},
+				"visible_branch_material_resources_approximately_in_range": 4,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 51,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 117,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 37
+			},
+			"texture_memory_bytes": 71845489.0,
+			"video_memory_bytes": 82526121.0,
+			"view": "03_salt_basin_blue_hour"
+		},
+		{
+			"buffer_memory_bytes": 10680632.0,
+			"camera_position": [
+				-19.0,
+				5.0,
+				-31.0
+			],
+			"draw_calls": 65.0,
+			"preset": "CLEAR DAY",
+			"primitives": 40568.0,
+			"rendered_objects": 325.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 65,
+					"LOD1": 65,
+					"LOD2": 65
+				},
+				"loaded_material_keys": [
+					"res://materials/saltwind/terrain.tres",
+					"res://materials/saltwind/atlas.tres",
+					"#-9223371988452505659",
+					"#-9223371988435728442",
+					"#-9223371974544193235"
+				],
+				"loaded_material_resources": 5,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 214,
+				"loaded_shadow_enabled_mesh_nodes": 174,
+				"multimesh_instances": 597,
+				"multimesh_nodes": 72,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 16,
+					"LOD1": 12,
+					"LOD2": 5
+				},
+				"visible_branch_material_resources_approximately_in_range": 4,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 51,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 117,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 37
+			},
+			"texture_memory_bytes": 71845489.0,
+			"video_memory_bytes": 82526121.0,
+			"view": "04_wind_gate"
+		},
+		{
+			"buffer_memory_bytes": 10680632.0,
+			"camera_position": [
+				-8.0,
+				3.0,
+				35.0
+			],
+			"draw_calls": 81.0,
+			"preset": "CLEAR DAY",
+			"primitives": 32584.0,
+			"rendered_objects": 347.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 65,
+					"LOD1": 65,
+					"LOD2": 65
+				},
+				"loaded_material_keys": [
+					"res://materials/saltwind/terrain.tres",
+					"res://materials/saltwind/atlas.tres",
+					"#-9223371988452505659",
+					"#-9223371988435728442",
+					"#-9223371974544193235"
+				],
+				"loaded_material_resources": 5,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 214,
+				"loaded_shadow_enabled_mesh_nodes": 174,
+				"multimesh_instances": 597,
+				"multimesh_nodes": 72,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 11,
+					"LOD1": 16,
+					"LOD2": 6
+				},
+				"visible_branch_material_resources_approximately_in_range": 4,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 51,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 117,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 37
+			},
+			"texture_memory_bytes": 71845489.0,
+			"video_memory_bytes": 82526121.0,
+			"view": "05_salt_crust_detail"
+		},
+		{
+			"buffer_memory_bytes": 10680632.0,
+			"camera_position": [
+				-35.0,
+				8.0,
+				5.0
+			],
+			"draw_calls": 30.0,
+			"preset": "CLEAR DAY",
+			"primitives": 26006.0,
+			"rendered_objects": 305.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 65,
+					"LOD1": 65,
+					"LOD2": 65
+				},
+				"loaded_material_keys": [
+					"res://materials/saltwind/terrain.tres",
+					"res://materials/saltwind/atlas.tres",
+					"#-9223371988452505659",
+					"#-9223371988435728442",
+					"#-9223371974544193235"
+				],
+				"loaded_material_resources": 5,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 214,
+				"loaded_shadow_enabled_mesh_nodes": 174,
+				"multimesh_instances": 597,
+				"multimesh_nodes": 72,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 9,
+					"LOD1": 18,
+					"LOD2": 6
+				},
+				"visible_branch_material_resources_approximately_in_range": 4,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 51,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 117,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 37
+			},
+			"texture_memory_bytes": 71845489.0,
+			"video_memory_bytes": 82526121.0,
+			"view": "06_eroded_needles"
+		},
+		{
+			"buffer_memory_bytes": 10680632.0,
+			"camera_position": [
+				74.0,
+				47.0,
+				135.0
+			],
+			"draw_calls": 89.0,
+			"preset": "CLEAR DAY",
+			"primitives": 30926.0,
+			"rendered_objects": 367.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 65,
+					"LOD1": 65,
+					"LOD2": 65
+				},
+				"loaded_material_keys": [
+					"res://materials/saltwind/terrain.tres",
+					"res://materials/saltwind/atlas.tres",
+					"#-9223371988452505659",
+					"#-9223371988435728442",
+					"#-9223371974544193235"
+				],
+				"loaded_material_resources": 5,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 214,
+				"loaded_shadow_enabled_mesh_nodes": 174,
+				"multimesh_instances": 597,
+				"multimesh_nodes": 72,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 0,
+					"LOD1": 6,
+					"LOD2": 27
+				},
+				"visible_branch_material_resources_approximately_in_range": 4,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 51,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 117,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 37
+			},
+			"texture_memory_bytes": 71845489.0,
+			"video_memory_bytes": 82526121.0,
+			"view": "07_distant_escarpments"
+		},
+		{
+			"buffer_memory_bytes": 10680632.0,
+			"camera_position": [
+				0.0,
+				130.0,
+				695.0
+			],
+			"draw_calls": 71.0,
+			"preset": "CLEAR DAY",
+			"primitives": 17250.0,
+			"rendered_objects": 917.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 65,
+					"LOD1": 65,
+					"LOD2": 65
+				},
+				"loaded_material_keys": [
+					"res://materials/saltwind/terrain.tres",
+					"res://materials/saltwind/atlas.tres",
+					"#-9223371988452505659",
+					"#-9223371988435728442",
+					"#-9223371974544193235"
+				],
+				"loaded_material_resources": 5,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 214,
+				"loaded_shadow_enabled_mesh_nodes": 174,
+				"multimesh_instances": 597,
+				"multimesh_nodes": 72,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 16,
+					"LOD1": 0,
+					"LOD2": 0
+				},
+				"visible_branch_material_resources_approximately_in_range": 2,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 17,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 49,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 15
+			},
+			"texture_memory_bytes": 71845489.0,
+			"video_memory_bytes": 82526121.0,
+			"view": "08_geology_salt_catalogue"
+		},
+		{
+			"buffer_memory_bytes": 10680632.0,
+			"camera_position": [
+				0.0,
+				130.0,
+				695.0
+			],
+			"draw_calls": 69.0,
+			"preset": "CLEAR DAY",
+			"primitives": 28944.0,
+			"rendered_objects": 966.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 65,
+					"LOD1": 65,
+					"LOD2": 65
+				},
+				"loaded_material_keys": [
+					"res://materials/saltwind/terrain.tres",
+					"res://materials/saltwind/atlas.tres",
+					"#-9223371988452505659",
+					"#-9223371988435728442",
+					"#-9223371974544193235"
+				],
+				"loaded_material_resources": 5,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 214,
+				"loaded_shadow_enabled_mesh_nodes": 174,
+				"multimesh_instances": 597,
+				"multimesh_nodes": 72,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 16,
+					"LOD1": 0,
+					"LOD2": 0
+				},
+				"visible_branch_material_resources_approximately_in_range": 2,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 17,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 49,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 13
+			},
+			"texture_memory_bytes": 71845489.0,
+			"video_memory_bytes": 82526121.0,
+			"view": "09_ruins_plants_catalogue"
+		}
+	]
+}

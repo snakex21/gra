@@ -1,0 +1,355 @@
+{
+  "checks": 953,
+  "asset_count": 32,
+  "lod_glbs": 96,
+  "assets": [
+    {
+      "id": "eroded_needle",
+      "triangles": [
+        428,
+        160,
+        68
+      ],
+      "proxy_shapes": 5,
+      "glb_bytes": 56360
+    },
+    {
+      "id": "forked_spire",
+      "triangles": [
+        768,
+        320,
+        136
+      ],
+      "proxy_shapes": 8,
+      "glb_bytes": 100748
+    },
+    {
+      "id": "blade_fin",
+      "triangles": [
+        428,
+        160,
+        68
+      ],
+      "proxy_shapes": 5,
+      "glb_bytes": 55996
+    },
+    {
+      "id": "hoodoo_crown",
+      "triangles": [
+        556,
+        240,
+        68
+      ],
+      "proxy_shapes": 6,
+      "glb_bytes": 71168
+    },
+    {
+      "id": "mushroom_outcrop",
+      "triangles": [
+        556,
+        240,
+        68
+      ],
+      "proxy_shapes": 6,
+      "glb_bytes": 70992
+    },
+    {
+      "id": "wind_yardang",
+      "triangles": [
+        428,
+        160,
+        68
+      ],
+      "proxy_shapes": 5,
+      "glb_bytes": 55788
+    },
+    {
+      "id": "undercut_bank",
+      "triangles": [
+        428,
+        160,
+        68
+      ],
+      "proxy_shapes": 5,
+      "glb_bytes": 55640
+    },
+    {
+      "id": "serrated_ridge",
+      "triangles": [
+        428,
+        160,
+        68
+      ],
+      "proxy_shapes": 5,
+      "glb_bytes": 55952
+    },
+    {
+      "id": "tiered_escarpment",
+      "triangles": [
+        2188,
+        1388,
+        172
+      ],
+      "proxy_shapes": 4,
+      "glb_bytes": 310756
+    },
+    {
+      "id": "tabletop_mesa",
+      "triangles": [
+        428,
+        160,
+        68
+      ],
+      "proxy_shapes": 5,
+      "glb_bytes": 55924
+    },
+    {
+      "id": "salt_polygon_plates",
+      "triangles": [
+        216,
+        120,
+        64
+      ],
+      "proxy_shapes": 1,
+      "glb_bytes": 29528
+    },
+    {
+      "id": "salt_pressure_ridge",
+      "triangles": [
+        384,
+        160,
+        68
+      ],
+      "proxy_shapes": 4,
+      "glb_bytes": 50988
+    },
+    {
+      "id": "mineral_blades",
+      "triangles": [
+        288,
+        156,
+        60
+      ],
+      "proxy_shapes": 0,
+      "glb_bytes": 36908
+    },
+    {
+      "id": "crust_shelf",
+      "triangles": [
+        384,
+        160,
+        68
+      ],
+      "proxy_shapes": 4,
+      "glb_bytes": 51144
+    },
+    {
+      "id": "salt_rosette",
+      "triangles": [
+        336,
+        144,
+        60
+      ],
+      "proxy_shapes": 0,
+      "glb_bytes": 37632
+    },
+    {
+      "id": "dry_rill_banks",
+      "triangles": [
+        644,
+        356,
+        136
+      ],
+      "proxy_shapes": 6,
+      "glb_bytes": 93064
+    },
+    {
+      "id": "wind_gate_13m",
+      "triangles": [
+        2288,
+        252,
+        72
+      ],
+      "proxy_shapes": 6,
+      "glb_bytes": 213728
+    },
+    {
+      "id": "sunken_retaining_wall",
+      "triangles": [
+        924,
+        108,
+        60
+      ],
+      "proxy_shapes": 5,
+      "glb_bytes": 87496
+    },
+    {
+      "id": "wind_sieve_tower",
+      "triangles": [
+        2772,
+        276,
+        84
+      ],
+      "proxy_shapes": 7,
+      "glb_bytes": 244924
+    },
+    {
+      "id": "ribbed_salt_pillar",
+      "triangles": [
+        1056,
+        108,
+        60
+      ],
+      "proxy_shapes": 5,
+      "glb_bytes": 94848
+    },
+    {
+      "id": "stepped_sun_plinth",
+      "triangles": [
+        256,
+        60,
+        36
+      ],
+      "proxy_shapes": 3,
+      "glb_bytes": 28992
+    },
+    {
+      "id": "buried_stair_8m",
+      "triangles": [
+        452,
+        84,
+        48
+      ],
+      "proxy_shapes": 1,
+      "glb_bytes": 46232
+    },
+    {
+      "id": "fallen_fractured_lintel",
+      "triangles": [
+        540,
+        72,
+        24
+      ],
+      "proxy_shapes": 2,
+      "glb_bytes": 51028
+    },
+    {
+      "id": "notched_waystone",
+      "triangles": [
+        560,
+        172,
+        68
+      ],
+      "proxy_shapes": 4,
+      "glb_bytes": 65304
+    },
+    {
+      "id": "dry_fan_grass",
+      "triangles": [
+        912,
+        352,
+        80
+      ],
+      "proxy_shapes": 0,
+      "glb_bytes": 91796
+    },
+    {
+      "id": "tumble_cage",
+      "triangles": [
+        1008,
+        384,
+        96
+      ],
+      "proxy_shapes": 0,
+      "glb_bytes": 103976
+    },
+    {
+      "id": "arched_thorn",
+      "triangles": [
+        672,
+        320,
+        48
+      ],
+      "proxy_shapes": 0,
+      "glb_bytes": 72052
+    },
+    {
+      "id": "saltbrush_cushion",
+      "triangles": [
+        992,
+        378,
+        88
+      ],
+      "proxy_shapes": 0,
+      "glb_bytes": 120748
+    },
+    {
+      "id": "spear_fan",
+      "triangles": [
+        624,
+        128,
+        32
+      ],
+      "proxy_shapes": 0,
+      "glb_bytes": 54204
+    },
+    {
+      "id": "dry_seed_reeds",
+      "triangles": [
+        576,
+        224,
+        48
+      ],
+      "proxy_shapes": 0,
+      "glb_bytes": 58968
+    },
+    {
+      "id": "root_snag",
+      "triangles": [
+        480,
+        128,
+        40
+      ],
+      "proxy_shapes": 1,
+      "glb_bytes": 44812
+    },
+    {
+      "id": "dead_flat_acacia",
+      "triangles": [
+        840,
+        368,
+        48
+      ],
+      "proxy_shapes": 1,
+      "glb_bytes": 97156
+    }
+  ],
+  "unique_triangles_by_lod": [
+    23840,
+    7658,
+    2240
+  ],
+  "collision_shape_count": 104,
+  "runtime_glb_bytes": 2664852,
+  "source_blend_bytes": 2136145,
+  "new_textures": 5,
+  "source_texture_bytes": 15660063,
+  "texture_dimensions": {
+    "atlas_1k.png": 1024,
+    "salt_crust_albedo.png": 2048,
+    "salt_crust_normal.png": 2048,
+    "wind_sediment_albedo.png": 1024,
+    "wind_sediment_normal.png": 1024
+  },
+  "shared_original_atlas": "textures/saltwind/atlas_1k.png",
+  "shared_atlas_estimate_rgba8_full_mips_bytes": 5592405,
+  "all_five_maps_estimate_rgba8_full_mips_bytes": 61516459,
+  "scope_base": "2887ed88ed391a19c51e642f6dfc4264ef209772",
+  "scope_fence": "src, scenes, tests, project.godot and original colossus contract unchanged",
+  "notes": [
+    "Exactly one surface per GLB, new shared atlas override, no embedded images; five shared texture maps.",
+    "Collision recipes remain separate from visual LODs and retain openings.",
+    "Triangle totals are unique library geometry, not the rendered-frame workload.",
+    "Atlas memory is an uncompressed theoretical estimate; actual renderer counters are reported separately."
+  ]
+}

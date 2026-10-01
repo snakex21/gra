@@ -1,0 +1,6 @@
+{
+  "snapshot": "23ec961224956a095d5b7be7f0e11deae07ec228",
+  "gameplay_files_compared": 177,
+  "changed_gameplay_files": [],
+  "method": "git archive of remote snapshot plus art-only overlay; compare every existing src/scenes/tests/project.godot byte-for-byte"
+}

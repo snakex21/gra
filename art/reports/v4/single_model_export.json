@@ -1,0 +1,12 @@
+{
+  "asset": "eroded_needle",
+  "three_exported_lods_match_counts_and_bounds": true,
+  "other_93_glbs_unchanged": true,
+  "other_manifest_records_unchanged": true,
+  "final_source_not_modified": true,
+  "changed_temp_export_files": [
+    "eroded_needle_lod2.glb",
+    "eroded_needle_lod0.glb",
+    "eroded_needle_lod1.glb"
+  ]
+}
