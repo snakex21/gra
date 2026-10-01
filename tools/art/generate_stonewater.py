@@ -27,6 +27,28 @@ FACES = [(0,3,2,1),(4,5,6,7),(0,1,5,4),(1,2,6,5),(2,3,7,6),(3,0,4,7)]
 OBS, COLL, LOD = [], [], 0
 assets, manifest = [], []
 
+def uv_project(obj, tile):
+    """Atlas-safe planar UVs with a common metric scale on both face axes.
+
+    Legacy primitives map every face dimension to a full tile independently,
+    stretching the long hydraulic vault/pier faces. This local override keeps
+    their aspect ratio and does not change the earlier kits or shared texture.
+    """
+    uv=obj.data.uv_layers.new(name='UVMap') if not obj.data.uv_layers else obj.data.uv_layers[0]
+    idx=TILES[tile]
+    for poly in obj.data.polygons:
+        axis=max(range(3),key=lambda a:abs(poly.normal[a]))
+        axes=[a for a in range(3) if a!=axis]
+        coords=[obj.data.vertices[obj.data.loops[li].vertex_index].co for li in poly.loop_indices]
+        lo=[min(c[a] for c in coords) for a in axes]
+        hi=[max(c[a] for c in coords) for a in axes]
+        extent=max(hi[0]-lo[0],hi[1]-lo[1],.001)
+        padding=[(1-(h-l)/extent)/2 for l,h in zip(lo,hi)]
+        for li,co in zip(poly.loop_indices,coords):
+            u,v=[pad+(co[a]-l)/extent for a,l,pad in zip(axes,lo,padding)]
+            uv.data[li].uv=((idx%4+.03+u*.94)/4,(idx//4+.03+v*.94)/4)
+
+
 def rounded(v):
     if isinstance(v, (list, tuple)): return [rounded(x) for x in v]
     return round(float(v), 6)
@@ -53,7 +75,8 @@ def prism(name, polygon, front, back, tile='ruin_stone', axis='z', collision=Tru
 def arch(name, radius, thick, spring, depth, count, center=(0,0,0), axis='z', start=0, end=math.pi, collision=True, spandrel=None):
     for j in range(count):
         a=start+(end-start)*j/count; b=start+(end-start)*(j+1)/count
-        gap=.004 if LOD==0 else 0
+        # Structural wedge ends meet exactly: no through-open roof masonry.
+        gap=.004 if LOD==0 and not collision else 0
         aa=a+gap; bb=b-gap
         p=[(radius*math.cos(aa),spring+radius*math.sin(aa)),((radius+thick)*math.cos(aa),spring+(radius+thick)*math.sin(aa)),((radius+thick)*math.cos(bb),spring+(radius+thick)*math.sin(bb)),(radius*math.cos(bb),spring+radius*math.sin(bb))]
         p=[(u+center[0 if axis=='z' else 2],y+center[1]) for u,y in p]
