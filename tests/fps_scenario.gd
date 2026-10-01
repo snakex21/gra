@@ -15,6 +15,9 @@ var scenario := "colossus"
 var horse: Horse
 var boss: Dictionary = {}
 var bot: ValusBot
+var qbot: QuadratusBot
+var bow_world := {}
+var bow_log := []
 
 
 func _ready() -> void:
@@ -38,6 +41,12 @@ func _ready() -> void:
 		return
 	if scenario == "boss":
 		_setup_boss()
+		return
+	if scenario == "quadratus" or scenario == "quadratus_horse":
+		_setup_quadratus()
+		return
+	if scenario == "bow":
+		_setup_bow()
 		return
 	TerrainKit.build_course(self, Vector3(0, 0, -6))
 	colossus = GreyboxHumanoid.new()
@@ -156,8 +165,124 @@ func _boss_tick() -> void:
 	get_tree().quit()
 
 
+## The whole Quadratus fight played by the scripted bot (on foot or from Agro): arrows,
+## the foot reaction, climbing, both weak points, defeat.
+func _setup_quadratus() -> void:
+	for c in get_children():
+		c.queue_free()
+	InputSetup.ensure_defaults()
+	Sfx.enabled = false
+	var arena := Node3D.new()
+	add_child(arena)
+	boss = QuadratusArena.build_encounter(arena)
+	qbot = QuadratusBot.new()
+	qbot.use_horse = scenario == "quadratus_horse"
+	arena.add_child(qbot)
+	qbot.setup(boss.player, boss.quadratus, boss.encounter, boss.horse)
+
+
+func _quadratus_tick() -> void:
+	if qbot.phase != QuadratusBot.Phase.DONE and tick < 60 * 400:
+		return
+	var p: PlayerCharacter = boss.player
+	var q: Quadratus = boss.quadratus
+	var h: Horse = boss.horse
+	var arrows := ArrowSystem.of(p)
+	var li: Dictionary = arrows.last_impact
+	var data := {
+		"frames": Engine.get_process_frames(),
+		"won": 1 if qbot.result.get("won", false) else 0,
+		"tick": tick,
+		"player": [p.global_position.x, p.global_position.y, p.global_position.z],
+		"boss": [q.global_position.x, q.global_position.z, q.loco.yaw, q.loco.body_pitch, q.loco.body_roll],
+		"horse": [h.global_position.x, h.global_position.z],
+		"weak_points": [q.rump.health, q.crown.health],
+		"foot_hits": q.stats.foot_hits,
+		"shots": arrows.shots,
+		"impact": [li.point.x, li.point.y, li.point.z] if not li.is_empty() else [0, 0, 0],
+		"hits": q.stats.hits_on_player,
+		"strikes": qbot.stats.strikes,
+		"steps": q.loco.step_count,
+		"stamina": p.stamina.value,
+		"health": p.health,
+	}
+	var f := FileAccess.open(out_path, FileAccess.WRITE)
+	f.store_string(JSON.stringify(data))
+	f.close()
+	get_tree().quit()
+
+
+## Bow only: three shots (weak, half, full draw) at fixed times with a fixed aim, then a
+## shot from a galloping Agro; every arrow's impact point and flight time is recorded.
+func _setup_bow() -> void:
+	var arena := Node3D.new()
+	add_child(arena)
+	TerrainKit.box(arena, Vector3(0, 3, -60), Vector3(30, 6, 1), StandardMaterial3D.new())
+	player = PlayerCharacter.new()
+	add_child(player)
+	player.global_position = Vector3(0, 0.95, 0)
+	player.set_weapon(PlayerCharacter.Weapon.BOW)
+	player.actions.view_basis = Basis.looking_at(Vector3(0, 0.08, -1).normalized())
+	horse = Horse.new()
+	add_child(horse)
+	horse.teleport(Vector3(30, 0, 40), PI)
+	camera = PlayerCamera.new()
+	camera.player = player
+	add_child(camera)
+	ArrowSystem.of(player).impact.connect(func(info: Dictionary) -> void:
+		var pt: Vector3 = info.point
+		bow_log.append_array([pt.x, pt.y, pt.z, info.flight_time]))
+
+
+func _bow_tick() -> void:
+	var a := player.actions
+	# Shots on foot: hold 0.25 s / 0.5 s / 1.2 s.
+	for sh in [[20, 35], [120, 150], [240, 312]]:
+		if tick == sh[0]:
+			a.attack_held = true
+		if tick == sh[1]:
+			a.attack_held = false
+	match tick:
+		400:
+			player.global_position = Vector3(30, 0.95, 42)
+			player.reset_physics_interpolation()
+			player.set_weapon(PlayerCharacter.Weapon.SWORD)
+		405:
+			a.press_interact()
+		460:
+			a.view_basis = Basis.looking_at(Vector3(0, 0, -1))
+			a.move = Vector2(0, 1)
+			a.press_jump()
+		500:
+			a.press_jump()
+			a.move = Vector2.ZERO
+			player.set_weapon(PlayerCharacter.Weapon.BOW)
+		520:
+			a.view_basis = Basis.looking_at(Vector3(-1, 0.05, -0.4).normalized())
+			a.attack_held = true
+		600:
+			a.attack_held = false
+	if tick == 900:
+		var data := {
+			"frames": Engine.get_process_frames(),
+			"impacts": bow_log,
+			"horse": [horse.global_position.x, horse.global_position.z, horse.controller.yaw],
+			"player": [player.global_position.x, player.global_position.y, player.global_position.z],
+		}
+		var f := FileAccess.open(out_path, FileAccess.WRITE)
+		f.store_string(JSON.stringify(data))
+		f.close()
+		get_tree().quit()
+
+
 func _physics_process(_delta: float) -> void:
 	tick += 1
+	if scenario == "quadratus" or scenario == "quadratus_horse":
+		_quadratus_tick()
+		return
+	if scenario == "bow":
+		_bow_tick()
+		return
 	if scenario == "horse":
 		_horse_tick()
 		return

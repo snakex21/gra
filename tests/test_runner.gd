@@ -19,6 +19,9 @@ var _legacy_results := {}
 ## Pass/fail of every test that ran before the Etap 5 (boss) tests.
 var _pre_boss_results := {}
 var _boss_started := false
+## Results of every test before the Etap 6 ones (Valus is the regression boss).
+var _pre_etap6_results := {}
+var _etap6_started := false
 const BASELINE_PATH := "res://tests/baseline/etap2_baseline.json"
 ## Agro metrics (horse_*) are frozen separately, so the stage 2/3 baseline stays untouched.
 const HORSE_BASELINE_PATH := "res://tests/baseline/etap4_horse_baseline.json"
@@ -136,6 +139,32 @@ func _ready() -> void:
 		test_boss_simulation_independent_of_render_fps,
 		test_boss_cost_stays_within_budget,
 		all_existing_tests_still_pass,
+		# --- ETAP 6: Quadratus, bow ---
+		test_quadratus_four_leg_locomotion_is_stable,
+		test_quadratus_feet_do_not_slide,
+		test_quadratus_handles_uneven_ground,
+		test_quadratus_weight_shifts_between_legs,
+		test_quadratus_foot_target_can_be_hit_with_arrow,
+		test_quadratus_reacts_to_correct_foot_hit,
+		test_quadratus_body_lowers_after_foot_hit,
+		test_quadratus_climb_route_becomes_reachable,
+		test_quadratus_grip_has_no_drift,
+		test_quadratus_weakpoint_moves_with_body,
+		test_quadratus_body_reaction_is_fair,
+		test_quadratus_can_be_defeated,
+		test_quadratus_scripted_driver_can_complete_fight,
+		test_quadratus_simulation_independent_of_render_fps,
+		test_quadratus_cost_stays_within_budget,
+		test_valus_defeat_leaves_a_safe_way_down,
+		test_bow_draw_strength_changes_arrow_velocity,
+		test_bow_trajectory_is_repeatable,
+		test_arrow_hits_expected_target,
+		test_arrow_misses_when_aim_is_wrong,
+		test_bow_is_independent_of_render_fps,
+		test_player_can_aim_from_agro,
+		test_horse_heading_is_not_changed_by_aim,
+		test_arrow_hit_can_trigger_colossus_reaction,
+		all_valus_and_earlier_tests_still_pass,
 	]
 	for t in tests:
 		var name := t.get_method()
@@ -153,6 +182,10 @@ func _ready() -> void:
 			_boss_started = true
 		if not _boss_started:
 			_pre_boss_results[name] = ok
+		if name == "test_quadratus_four_leg_locomotion_is_stable":
+			_etap6_started = true
+		if not _etap6_started:
+			_pre_etap6_results[name] = ok
 		print("%s %s (%d ms)" % ["PASS" if ok else "FAIL", name, Time.get_ticks_msec() - t0])
 		for line in _log:
 			print("    ", line)
@@ -3426,4 +3459,1001 @@ func all_existing_tests_still_pass() -> void:
 		if not _pre_boss_results[n]:
 			failed.append(n)
 	_log.append("%d earlier tests (Milestone 1, Etap 2-4) ran in this run, %d failed %s" % [ran, failed.size(), str(failed) if failed.size() > 0 else ""])
+	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))
+
+
+# --- ETAP 6: Quadratus, bow and arrows ------------------------------------------------------
+
+func _setup_quadratus(seed_value := 11, frozen := false) -> Dictionary:
+	Sfx.enabled = false
+	Fx.enabled = false
+	_world = Node3D.new()
+	_world.name = "World_" + _current
+	add_child(_world)
+	var w := QuadratusArena.build_encounter(_world, false, seed_value)
+	if frozen:
+		(w.quadratus as Quadratus).debug_override = &"frozen"
+	await _ticks(2)
+	return w
+
+
+## Bare Quadratus (manual movement) on flat ground or the test course.
+func _setup_quad_walk(terrain := false) -> Quadratus:
+	Sfx.enabled = false
+	Fx.enabled = false
+	_world = Node3D.new()
+	_world.name = "World_" + _current
+	add_child(_world)
+	var ground := StaticBody3D.new()
+	ground.collision_layer = Layers.WORLD
+	var gs := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(400, 2, 400)
+	gs.shape = box
+	gs.position = Vector3(0, -1, 0)
+	ground.add_child(gs)
+	_world.add_child(ground)
+	if terrain:
+		TerrainKit.build_course(_world, Vector3(0, 0, -6))
+	var q := Quadratus.new()
+	q.debug_override = &"manual"
+	q.effects_enabled = false
+	_world.add_child(q)
+	await _ticks(2)
+	return q
+
+
+## Player behind Quadratus (``dist`` m behind the hind legs, on the side of leg ``leg``).
+func _stand_behind(w: Dictionary, leg := 2, dist := 13.0) -> void:
+	var q: Quadratus = w.quadratus
+	var p: PlayerCharacter = w.player
+	var side := -1.0 if leg == 2 else 1.0
+	var pos := q.global_transform * Vector3(side * 3.2, 0, 5.0 + dist)
+	p.global_position = Vector3(pos.x, q.global_position.y + 0.95, pos.z)
+	p.velocity = Vector3.ZERO
+	p.reset_physics_interpolation()
+	p.set_weapon(PlayerCharacter.Weapon.BOW)
+
+
+## Aims the bow along ``dir`` from the bow itself (what is computed is what is shot).
+func _aim_bow(p: PlayerCharacter, dir: Vector3) -> void:
+	p.actions.view_basis = Basis.looking_at(dir, Vector3.UP if absf(dir.y) < 0.98 else Vector3.FORWARD)
+	p.actions.aim_origin = p.bow.bow_point(p)
+
+
+## Lead direction at an ArrowTarget for a full-draw arrow (the bot's solver).
+func _lead_dir(p: PlayerCharacter, t: ArrowTarget) -> Vector3:
+	var from := p.bow.bow_point(p)
+	var speed := p.bow.speed_for(1.0)
+	var pt := t.world_point()
+	var v := (pt - t.previous_frame() * t.local_point) / DT
+	var flight := from.distance_to(pt) / speed
+	var aim := pt
+	for k in 3:
+		aim = pt + v * flight
+		flight = from.distance_to(aim) / (speed * 0.98)
+	return PlayerBow.launch_direction(from, aim, speed)
+
+
+## Draws to full, waits for an exposed hind sole and shoots it. Returns the impact info
+## of that arrow ({} if no shot within ``seconds``).
+func _shoot_exposed_sole(w: Dictionary, seconds := 30.0) -> Dictionary:
+	var q: Quadratus = w.quadratus
+	var p: PlayerCharacter = w.player
+	var impacts := []
+	var sys := ArrowSystem.of(p)
+	var cb := func(info: Dictionary) -> void: impacts.append(info)
+	sys.impact.connect(cb)
+	p.actions.attack_held = true
+	var shot := false
+	for i in int(seconds * 60.0):
+		await _ticks(1)
+		if not shot:
+			var best: ArrowTarget = null
+			for t in q.arrow_targets:
+				var leg := q.loco.legs[int(t.tag)]
+				if t.enabled and leg.swing_t < 0.55:
+					best = t
+			if best:
+				var d := _lead_dir(p, best)
+				if d != Vector3.ZERO:
+					_aim_bow(p, d)
+					if p.bow.state == PlayerBow.State.AIM:
+						p.actions.attack_held = false
+						shot = true
+			else:
+				_aim_bow(p, (q.global_transform * Vector3(0, 1.5, 5.0) - p.bow.bow_point(p)).normalized())
+		elif not impacts.is_empty():
+			break
+	sys.impact.disconnect(cb)
+	p.actions.attack_held = false
+	return impacts[0] if not impacts.is_empty() else {}
+
+
+func _hip_height(q: Quadratus, i: int) -> float:
+	return q.loco.hip_world(q.loco.legs[i]).y - q.loco.legs[i].plant_pos.y
+
+
+func test_quadratus_four_leg_locomotion_is_stable() -> void:
+	var q := await _setup_quad_walk()
+	var start := q.global_position
+	var order: Array[int] = []
+	var last_steps := q.loco.step_count
+	var max_swing := 0
+	var min_planted := 4
+	var max_tilt := 0.0
+	var h_min := 99.0
+	var h_max := 0.0
+	var steps_after_stop := 0
+	var stop_steps := 0
+	for i in 60 * 36:
+		if i == 30:
+			q.debug_desired_speed = 1.3
+		if i == 60 * 18:
+			q.debug_desired_turn = 0.12
+		if i == 60 * 24:
+			q.debug_desired_speed = 0.0
+			q.debug_desired_turn = 0.0
+		await _ticks(1)
+		if q.loco.step_count != last_steps:
+			last_steps = q.loco.step_count
+			if i < 60 * 18:
+				order.append(q.loco.last_step_leg)
+		var sw := q.loco.swinging_count()
+		max_swing = maxi(max_swing, sw)
+		min_planted = mini(min_planted, 4 - sw)
+		if i > 60 * 2:
+			max_tilt = maxf(max_tilt, maxf(absf(q.loco.body_pitch), absf(q.loco.body_roll)))
+			var h := q.loco.pelvis.y - q.global_position.y
+			h_min = minf(h_min, h)
+			h_max = maxf(h_max, h)
+		if i == 60 * 32:
+			stop_steps = q.loco.step_count
+	steps_after_stop = q.loco.step_count - stop_steps
+	var seq := [2, 0, 3, 1]
+	var in_order := 0
+	for k in range(1, order.size()):
+		if seq[(seq.find(order[k - 1]) + 1) % 4] == order[k]:
+			in_order += 1
+	var ratio := float(in_order) / maxf(1.0, order.size() - 1)
+	var walked := _flatv(q.global_position - start).length()
+	_log.append("36 s walk/turn/stop: walked %.1f m, %d steps, gait order RL-FL-RR-FR %.0f%%, max swinging %d, min planted %d, max tilt %.3f rad, hip height %.2f..%.2f m, reach error %.4f m, steps in the last 4 s still %d" % [walked, q.loco.step_count, ratio * 100.0, max_swing, min_planted, max_tilt, h_min, h_max, q.foot_stats.reach_max, steps_after_stop])
+	_metric("quad_gait_order_ratio", ratio, "higher")
+	_check(walked > 25.0, "did not walk (%.1f m)" % walked)
+	_check(ratio > 0.9, "steps not in the four-beat order (%.0f%%)" % (ratio * 100.0))
+	_check(max_swing <= 2 and min_planted >= 2, "too many legs in the air at once")
+	_check(max_tilt < 0.15, "body tilts on flat ground (%.3f)" % max_tilt)
+	_check(h_max - h_min < 0.5, "body bobs too much (%.2f m)" % (h_max - h_min))
+	_check(q.foot_stats.reach_max < 0.05, "IK out of reach (%.3f m)" % q.foot_stats.reach_max)
+	_check(steps_after_stop == 0, "keeps stepping after it stopped")
+
+
+func _flatv(v: Vector3) -> Vector3:
+	return Vector3(v.x, 0.0, v.z)
+
+
+func test_quadratus_feet_do_not_slide() -> void:
+	var q := await _setup_quad_walk()
+	q.reset_foot_stats()
+	for i in 60 * 30:
+		q.debug_desired_speed = 1.3 if i > 30 and i < 60 * 24 else 0.0
+		q.debug_desired_turn = 0.15 if i > 60 * 10 and i < 60 * 18 else 0.0
+		await _ticks(1)
+	var mean: float = q.foot_stats.slip_sum / maxf(1.0, q.foot_stats.contact_ticks)
+	_log.append("30 s walking + turning: planted-foot slip max %.4f m/s, mean %.5f m/s over %d foot-ticks" % [q.foot_stats.slip_max, mean, q.foot_stats.contact_ticks])
+	_metric("quad_slip_max", q.foot_stats.slip_max, "lower")
+	_check(q.foot_stats.slip_max < 0.02, "planted feet slide (%.4f m/s)" % q.foot_stats.slip_max)
+
+
+func test_quadratus_handles_uneven_ground() -> void:
+	var q := await _setup_quad_walk(true)
+	q.reset_foot_stats()
+	var max_pitch := 0.0
+	var sole_err := 0.0
+	var max_reach := 0.0
+	for i in 60 * 40:
+		q.debug_desired_speed = 1.3 if i > 30 and i < 60 * 34 else 0.0
+		await _ticks(1)
+		max_pitch = maxf(max_pitch, q.loco.body_pitch)
+		if i % 10 == 0:
+			for leg in q.loco.legs:
+				if leg.is_planted():
+					var g := _ground_at(leg.plant_pos)
+					if not g.is_empty():
+						sole_err = maxf(sole_err, absf((g.position as Vector3).y - leg.plant_pos.y))
+			max_reach = maxf(max_reach, q.foot_stats.reach_max)
+	var climbed := q.global_position.y
+	_log.append("course (10 deg ramp, bumps, 0.8 m step down): reached z %.1f, height %.2f m, max body pitch %.3f rad (ramp %.3f), planted sole vs ground max %.3f m, slip max %.4f m/s, reach error %.3f m" % [q.global_position.z, climbed, max_pitch, deg_to_rad(10.0), sole_err, q.foot_stats.slip_max, max_reach])
+	_metric("quad_terrain_sole_err", sole_err, "lower")
+	_check(q.global_position.z < -30.0, "did not get over the course")
+	_check(max_pitch > 0.12, "body does not pitch with the slope (%.3f)" % max_pitch)
+	_check(sole_err < 0.05, "planted feet not on the ground (%.3f m)" % sole_err)
+	_check(max_reach < 0.1, "legs could not reach the ground (%.3f m)" % max_reach)
+	_check(q.foot_stats.slip_max < 0.03, "feet slide on uneven ground")
+
+
+func test_quadratus_weight_shifts_between_legs() -> void:
+	var q := await _setup_quad_walk()
+	var lo := [9.0, 9.0, 9.0, 9.0]
+	var hi := [0.0, 0.0, 0.0, 0.0]
+	var sum_err := 0.0
+	var swing_load := 0.0
+	var lateral := []
+	for i in 60 * 20:
+		q.debug_desired_speed = 1.3 if i > 30 else 0.0
+		await _ticks(1)
+		if i < 60 * 4:
+			continue
+		var sum := 0.0
+		for k in 4:
+			var leg := q.loco.legs[k]
+			lo[k] = minf(lo[k], leg.load)
+			hi[k] = maxf(hi[k], leg.load)
+			sum += leg.load
+			if leg.phase == LegState.Phase.SWING and leg.swing_t > 0.3:
+				swing_load = maxf(swing_load, leg.load)
+		sum_err = maxf(sum_err, absf(sum - 1.0))
+		lateral.append((q.global_transform.affine_inverse() * q.loco.support_center).x)
+	var lat_min: float = lateral.min()
+	var lat_max: float = lateral.max()
+	_log.append("walking 16 s: load per leg min %s max %s, swinging leg load max %.3f, |sum-1| max %.3f, support centre sideways %.2f..%.2f m" % [str(lo.map(func(v: float) -> String: return "%.2f" % v)), str(hi.map(func(v: float) -> String: return "%.2f" % v)), swing_load, sum_err, lat_min, lat_max])
+	for k in 4:
+		_check(lo[k] < 0.05 and hi[k] > 0.3, "leg %d does not take and give up weight (%.2f..%.2f)" % [k, lo[k], hi[k]])
+	_check(swing_load < 0.05, "a swinging leg still carries weight (%.3f)" % swing_load)
+	_check(sum_err < 0.05, "loads do not add up to the body weight (%.3f)" % sum_err)
+	_check(lat_max - lat_min > 0.4, "weight does not move from side to side")
+
+
+func test_quadratus_foot_target_can_be_hit_with_arrow() -> void:
+	var w := await _setup_quadratus()
+	var q: Quadratus = w.quadratus
+	var p: PlayerCharacter = w.player
+	q.debug_override = &"manual"
+	q._set_encounter(Quadratus.Encounter.COMBAT)
+	await _ticks(30)
+	_stand_behind(w, 2)
+	# Standing: hooves planted, the soles are not targets.
+	var planted_enabled := 0
+	for i in 60:
+		await _ticks(1)
+		for t in q.arrow_targets:
+			if t.enabled:
+				planted_enabled += 1
+	q.debug_desired_speed = 0.9
+	var info := await _shoot_exposed_sole(w, 25.0)
+	_log.append("standing: sole targets enabled %d ticks; walking: shot -> %s (leg %s, flight %.2f s, point %s)" % [planted_enabled, info.get("reason", "no shot"), str(info.get("tag", "-")), info.get("flight_time", -1.0), str(info.get("point", Vector3.ZERO))])
+	_check(planted_enabled == 0, "a planted sole counted as a target")
+	_check(info.get("accepted", false), "the arrow did not hit the lifted sole: %s" % str(info.get("reason", "no shot")))
+
+
+func test_quadratus_reacts_to_correct_foot_hit() -> void:
+	var w := await _setup_quadratus()
+	var q: Quadratus = w.quadratus
+	var p: PlayerCharacter = w.player
+	q._set_encounter(Quadratus.Encounter.COMBAT)
+	await _ticks(10)
+	# 1) An arrow into the stone of a planted front hoof: nothing.
+	p.global_position = q.global_transform * Vector3(-12, 0.95, -5)
+	p.reset_physics_interpolation()
+	p.set_weapon(PlayerCharacter.Weapon.BOW)
+	q.debug_override = &"frozen"
+	await _ticks(5)
+	var hoof := (q._seg_by_bone[&"fl_foot"] as BodySegment).target_transform * Vector3(0, -0.3, 0)
+	_aim_bow(p, PlayerBow.launch_direction(p.bow.bow_point(p), hoof, p.bow.speed_for(1.0)))
+	p.actions.attack_held = true
+	await _ticks(60)
+	p.actions.attack_held = false
+	await _ticks(40)
+	var stone: Dictionary = ArrowSystem.of(p).last_impact
+	var buckle_after_stone := q.buckle
+	# 2) The lifted hind sole, from behind (brain running: it turns, stepping).
+	q.debug_override = &""
+	_stand_behind(w, 2)
+	var phases := []
+	q.buckle_changed.connect(func(b: Quadratus.Buckle) -> void: phases.append(Quadratus.Buckle.keys()[b]))
+	var attacks := [0]
+	q.attack_started.connect(func(_a: ColossusAttack) -> void: attacks[0] += 1)
+	var info := await _shoot_exposed_sole(w, 30.0)
+	var leg_i := int(info.get("tag", 2))
+	var intents := {}
+	var min_support := 1.0
+	for i in 60 * 6:
+		await _ticks(1)
+		intents[q.intent.kind] = true
+		min_support = minf(min_support, q.loco.legs[leg_i].support)
+	_log.append("stone hoof hit: %s -> buckle %s; sole hit: %s (leg %d) -> phases %s, intents %s, hit leg support min %.2f, attacks started %d" % [stone.get("reason", "-"), Quadratus.Buckle.keys()[buckle_after_stone], info.get("reason", "no shot"), leg_i, str(phases), str(intents.keys()), min_support, attacks[0]])
+	_check(stone.get("reason", &"") == &"surface" and buckle_after_stone == Quadratus.Buckle.NONE, "a hit on the stone hoof caused a reaction")
+	_check(info.get("accepted", false), "sole not hit")
+	_check(phases.size() >= 2 and phases[0] == "REACT" and phases[1] == "KNEEL", "no react -> kneel sequence: %s" % str(phases))
+	_check(Quadratus.REACT_FOOT in intents or Quadratus.LOWER_BODY in intents, "brain did not switch to the foot-hit intents")
+	_check(min_support < 0.05, "the hit leg did not give way")
+	_check(attacks[0] == 0, "attacked while reacting / kneeling")
+
+
+func test_quadratus_body_lowers_after_foot_hit() -> void:
+	var w := await _setup_quadratus()
+	var q: Quadratus = w.quadratus
+	q.debug_override = &"frozen"
+	q._set_encounter(Quadratus.Encounter.COMBAT)
+	await _ticks(60)
+	var i := 2
+	var corner0 := _hip_height(q, i)
+	var centre0 := q.loco.pelvis.y
+	var body := q._seg_by_bone[&"body"] as BodySegment
+	var thigh := q._seg_by_bone[&"rl_up"] as BodySegment
+	var fur0 := (thigh.target_transform * Vector3(0, -2.7, 0)).y
+	q._on_sole_hit({"tag": i, "point": q.sole_world(i)})
+	var max_step := 0.0
+	var prev := body.target_transform.origin
+	for k in 60 * 5:
+		await _ticks(1)
+		max_step = maxf(max_step, body.target_transform.origin.distance_to(prev))
+		prev = body.target_transform.origin
+	var corner := _hip_height(q, i)
+	var centre := q.loco.pelvis.y
+	var fur := (thigh.target_transform * Vector3(0, -2.7, 0)).y
+	var loads := q.leg_loads()
+	var others := loads[0] + loads[1] + loads[3]
+	var pitch := q.loco.body_pitch
+	var roll := q.loco.body_roll
+	# Rises again after the kneel.
+	for k in int((q.kneel_time + q.rise_time + 2.0) * 60.0):
+		await _ticks(1)
+	var corner_back := _hip_height(q, i)
+	_log.append("hind-left hit: hip there %.2f -> %.2f m, body centre %.2f -> %.2f m, pitch %.3f roll %.3f rad, lowest thigh fur %.2f -> %.2f m, loads %s (others %.2f), body max %.3f m/tick; after the kneel: buckle %s, support %.2f, hip %.2f m" % [corner0, corner, centre0, centre, pitch, roll, fur0, fur, str(loads.map(func(v: float) -> String: return "%.2f" % v)), others, max_step, q.buckle_name(), q.loco.legs[i].support, corner_back])
+	_metric("quad_kneel_corner_drop", corner0 - corner, "info")
+	_check(corner0 - corner > 2.5, "the corner did not come down (%.2f m)" % (corner0 - corner))
+	_check(centre0 - centre > 0.8, "the body did not lower")
+	_check(pitch > 0.05 and roll > 0.1, "the body does not tilt towards the hind-left corner (pitch %.3f roll %.3f)" % [pitch, roll])
+	_check(loads[i] < 0.05 and others > 0.95, "the other legs do not take over the weight")
+	_check(fur < 3.2, "thigh fur still out of reach (%.2f m)" % fur)
+	_check(max_step < 0.06, "the body dropped abruptly (%.3f m/tick)" % max_step)
+	_check(q.buckle == Quadratus.Buckle.NONE and q.loco.legs[i].support > 0.99 and absf(corner_back - corner0) < 0.3, "did not rise again")
+
+
+## Jump-grab from the ground at the hind-left thigh: true if it holds.
+func _try_thigh_grab(w: Dictionary) -> bool:
+	var q: Quadratus = w.quadratus
+	var p: PlayerCharacter = w.player
+	var seg: BodySegment = q._seg_by_bone[&"rl_up"]
+	var entry := seg.target_transform * Vector3(0, -2.4, 0) - q.global_basis.x * 1.6 + q.global_basis.z * 0.8
+	p.global_position = Vector3(entry.x, q.loco.legs[2].plant_pos.y + 0.95, entry.z)
+	p.velocity = Vector3.ZERO
+	p.reset_physics_interpolation()
+	p.set_weapon(PlayerCharacter.Weapon.SWORD)
+	await _ticks(10)
+	for k in 90:
+		var look := seg.target_transform * Vector3(0, -1.6, 0) - p.global_position
+		look.y = 0.0
+		p.actions.view_basis = Basis.looking_at(look.normalized())
+		p.actions.move = Vector2(0, 0.5)
+		p.actions.grab_held = k > 2
+		if k == 8:
+			p.actions.press_jump()
+		await _ticks(1)
+		if p.is_climbing():
+			return true
+	p.actions.move = Vector2.ZERO
+	p.actions.grab_held = false
+	return false
+
+
+func test_quadratus_climb_route_becomes_reachable() -> void:
+	var w := await _setup_quadratus()
+	var q: Quadratus = w.quadratus
+	var p: PlayerCharacter = w.player
+	q.debug_override = &"frozen"
+	q._set_encounter(Quadratus.Encounter.COMBAT)
+	await _ticks(60)
+	var before := await _try_thigh_grab(w)
+	await _ticks(60)
+	q._on_sole_hit({"tag": 2, "point": q.sole_world(2)})
+	await _ticks(90)
+	var after := await _try_thigh_grab(w)
+	# Climb: up the thigh and the haunch onto the back, then crawl to the rump.
+	var reached := false
+	var t := 0.0
+	for k in 60 * 12:
+		var a := p.actions
+		a.grab_held = true
+		if p.is_climbing() and p.grip.world_normal().y > 0.7:
+			a.view_basis = Basis.looking_at(_flatv(q.rump.world_point() - p.global_position).normalized())
+		else:
+			a.view_basis = Basis.looking_at(_flatv(q.get_focus_point() - p.global_position).normalized())
+		a.move = Vector2(0, 1)
+		await _ticks(1)
+		t += DT
+		if p.is_climbing() and p.grip.world_point().distance_to(q.rump.world_point()) < 1.4:
+			reached = true
+			break
+	_log.append("thigh grab before the foot hit: %s; while kneeling: %s; reached the rump weak point by climbing: %s after %.1f s (buckle %s, stamina %.0f)" % [str(before), str(after), str(reached), t, q.buckle_name(), p.stamina.value])
+	_check(not before, "the thigh fur is reachable without bringing it down")
+	_check(after, "could not grab the lowered thigh")
+	_check(reached and q.buckle != Quadratus.Buckle.NONE, "the climb to the rump did not work within the kneel")
+
+
+func test_quadratus_grip_has_no_drift() -> void:
+	var w := await _setup_quadratus()
+	var q: Quadratus = w.quadratus
+	var p: PlayerCharacter = w.player
+	q.debug_override = &"frozen"
+	q._set_encounter(Quadratus.Encounter.COMBAT)
+	await _ticks(30)
+	q._on_sole_hit({"tag": 2, "point": q.sole_world(2)})
+	await _ticks(90)
+	var grabbed := await _try_thigh_grab(w)
+	p.actions.move = Vector2.ZERO
+	p.actions.grab_held = true
+	p.stamina.value = 100.0
+	var local0: Vector3 = p.grip.local_point if grabbed else Vector3.ZERO
+	var max_err := 0.0
+	var max_local := 0.0
+	var moved := 0.0
+	var prev := p.global_position
+	# Kneel, rise, then walk away with the player holding on.
+	for k in int((q.kneel_time + q.rise_time + 6.0) * 60.0):
+		if k == int((q.kneel_time + q.rise_time) * 60.0):
+			q.debug_override = &"manual"
+			q.debug_desired_speed = 1.0
+			q.debug_desired_turn = 0.08
+		p.stamina.value = 100.0
+		await _ticks(1)
+		if not p.is_climbing():
+			break
+		max_err = maxf(max_err, _surface_error(p))
+		max_local = maxf(max_local, p.grip.local_point.distance_to(local0))
+		moved += p.global_position.distance_to(prev)
+		prev = p.global_position
+	_log.append("gripping the hind thigh through kneel, rise and walk: still holding %s, carried %.1f m, anchor vs surface max %.6f m, anchor local drift %.6f m" % [str(p.is_climbing()), moved, max_err, max_local])
+	_check(grabbed and p.is_climbing(), "lost the grip")
+	_check(moved > 3.0, "the player was not carried")
+	_check(max_err < 0.02, "anchor left the surface (%.4f m)" % max_err)
+	_check(max_local < 1e-4, "anchor drifted on the bone (%.6f m)" % max_local)
+
+
+func test_quadratus_weakpoint_moves_with_body() -> void:
+	var q := await _setup_quad_walk()
+	var body := q._seg_by_bone[&"body"] as BodySegment
+	var head := q._seg_by_bone[&"head"] as BodySegment
+	var r0 := q.rump.world_point()
+	var max_err := 0.0
+	var node_err := 0.0
+	q._set_encounter(Quadratus.Encounter.COMBAT)
+	for i in 60 * 14:
+		q.debug_desired_speed = 1.3 if i < 60 * 6 else 0.0
+		q.debug_desired_turn = 0.15 if i < 60 * 6 else 0.0
+		if i == 60 * 7:
+			q._on_sole_hit({"tag": 3, "point": q.sole_world(3)})
+		await _ticks(1)
+		max_err = maxf(max_err, q.rump.world_point().distance_to(body.target_transform * Quadratus.RUMP_LOCAL))
+		max_err = maxf(max_err, q.crown.world_point().distance_to(head.target_transform * Quadratus.CROWN_LOCAL))
+		node_err = maxf(node_err, (body.global_transform * q.rump.position).distance_to(q.rump.global_position))
+	var moved := q.rump.world_point().distance_to(r0)
+	_log.append("walk, turn, kneel: rump weak point moved %.1f m (tilt pitch %.2f roll %.2f), error vs bone %.6f m, visual vs segment %.6f m" % [moved, q.loco.body_pitch, q.loco.body_roll, max_err, node_err])
+	_check(moved > 3.0, "weak point did not move with the body")
+	_check(max_err < 1e-4, "weak point drifts from its bone")
+	_check(node_err < 1e-3, "weak point visual not attached")
+
+
+func test_quadratus_body_reaction_is_fair() -> void:
+	var w := await _setup_quadratus()
+	var q: Quadratus = w.quadratus
+	var p: PlayerCharacter = w.player
+	q._set_encounter(Quadratus.Encounter.COMBAT)
+	await _ticks(30)
+	# A player standing on the back for 60 s (keeps holding on through shakes).
+	var body := q._seg_by_bone[&"body"] as BodySegment
+	var shakes := []         # [start, brace seconds, shake seconds]
+	var cur := {}
+	var kneel_shake := 0
+	var attacks := []
+	q.attack_phase_changed.connect(func(a: ColossusAttack) -> void:
+		if a.phase == ColossusAttack.Phase.ACTIVE:
+			attacks.append([a.kind, a.telegraph_time, a.recovery_time]))
+	var t := 0.0
+	for k in 60 * 60:
+		if p.get_support_body() == null or not q.owns_body(p.get_support_body()):
+			if p.state == PlayerCharacter.State.GROUND or k == 0:
+				p.global_position = body.target_transform * Vector3(0, 3.2, 1.5)
+				p.velocity = Vector3.ZERO
+				p.reset_physics_interpolation()
+		p.stamina.value = 100.0
+		p.actions.grab_held = q._shake > 0.05 or q.intent.kind == Quadratus.SHAKE_BODY
+		if k == 60 * 40:
+			q._on_sole_hit({"tag": 2, "point": q.sole_world(2)})
+		await _ticks(1)
+		t += DT
+		var shaking := q.intent.kind == Quadratus.SHAKE_BODY
+		if shaking and cur.is_empty():
+			cur = {"start": t, "first_motion": -1.0}
+		if shaking and q._shake > 0.05 and cur.first_motion < 0.0:
+			cur.first_motion = t
+		if not shaking and not cur.is_empty():
+			shakes.append([cur.start, (cur.first_motion - cur.start) if cur.first_motion > 0.0 else -1.0, t - cur.start])
+			cur = {}
+		if shaking and q.buckle != Quadratus.Buckle.NONE:
+			kneel_shake += 1
+	var min_brace := 99.0
+	var max_len := 0.0
+	var min_gap := 99.0
+	for i in shakes.size():
+		if shakes[i][1] >= 0.0:
+			min_brace = minf(min_brace, shakes[i][1])
+		max_len = maxf(max_len, shakes[i][2])
+		if i > 0:
+			min_gap = minf(min_gap, shakes[i][0] - (shakes[i - 1][0] + shakes[i - 1][2]))
+	_log.append("player on the back 60 s: %d shakes, brace before motion min %.2f s, longest %.2f s, shortest gap %.2f s, shakes while kneeling %d ticks; ground attacks %s" % [shakes.size(), min_brace, max_len, min_gap, kneel_shake, str(attacks)])
+	_check(shakes.size() >= 2, "it never tried to shake the player off")
+	_check(min_brace >= q.shake_telegraph - 0.05, "shake without a telegraph (%.2f s)" % min_brace)
+	_check(max_len <= q.shake_max_duration + 0.3, "shake too long (%.2f s)" % max_len)
+	_check(min_gap >= q.shake_cooldown * 0.3 - 0.05, "shakes back to back (%.2f s)" % min_gap)
+	_check(kneel_shake == 0, "shook while kneeling (the climb window)")
+	for a in attacks:
+		_check(a[1] >= q.rules.min_telegraph and a[2] >= q.rules.heavy_recovery_min, "attack %s without a fair telegraph / recovery" % a[0])
+
+
+func test_quadratus_can_be_defeated() -> void:
+	var w := await _setup_quadratus(11, true)
+	var q: Quadratus = w.quadratus
+	var p: PlayerCharacter = w.player
+	var e: BossEncounter = w.encounter
+	q._set_encounter(Quadratus.Encounter.COMBAT)
+	await _ticks(60)
+	p.set_weapon(PlayerCharacter.Weapon.SWORD)
+	var strikes := 0
+	for wp in [q.rump, q.crown]:
+		var seg: BodySegment = wp.segment
+		p.actions.grab_held = false
+		await _ticks(5)
+		p._carry_body = null   # standing on the body: do not carry back to the old spot
+		p.global_position = wp.world_point() + seg.target_transform.basis.y.normalized() * 1.0
+		p.velocity = Vector3.ZERO
+		p.reset_physics_interpolation()
+		await _ticks(20)
+		p.actions.grab_held = true
+		await _ticks(10)
+		var n := 0
+		while wp.state != WeakPoint.State.DESTROYED and n < 6:
+			p.stamina.value = 100.0
+			var res := await _sword_strike(p, 1.25)
+			await _ticks(30)
+			n += 1
+			_log.append("  strike on %s: %s %.0f (player %s, %s, %.2f m from it)" % [wp.segment.bone_name, res.get("reason", "?"), res.get("damage", 0.0), p.get_display_state(), _segment_name(p.get_support_body()), p.global_position.distance_to(wp.world_point())])
+		strikes += n
+	var y_grip := p.global_position.y
+	for k in 60 * 8:
+		await _ticks(1)
+	var y_low := p.global_position.y
+	var top := (q._seg_by_bone[&"body"] as BodySegment).target_transform * Vector3(0, 1.9, 4.0)
+	p.actions.grab_held = false
+	var tiers := []
+	p.landed.connect(func(_s: float, tier: int, _d: float) -> void: tiers.append(tier))
+	await _ticks(120)
+	_log.append("%d full strikes: %s, banner '%s'; lying down: player %.1f -> %.1f m, rump top %.1f m; let go -> %s, landing tiers %s, HP %.0f" % [strikes, q.encounter_name(), e.banner, y_grip, y_low, top.y, p.get_display_state(), str(tiers), p.health])
+	_check(q.encounter == Quadratus.Encounter.DEFEATED, "not defeated")
+	_check(e.banner == "COLOSSUS DEFEATED", "no defeat banner")
+	_check(strikes >= 4 and strikes <= 6, "expected 2-3 full strikes per weak point, took %d" % strikes)
+	_check(top.y < 7.0, "it did not lie down (%.1f m)" % top.y)
+	_check(not p.dead and not (FallImpact.Tier.SEVERE in tiers), "getting off the defeated colossus was not safe")
+
+
+func test_quadratus_scripted_driver_can_complete_fight() -> void:
+	for variant in ["foot", "horse"]:
+		var w := await _setup_quadratus()
+		var bot := QuadratusBot.new()
+		bot.use_horse = variant == "horse"
+		_world.add_child(bot)
+		bot.setup(w.player, w.quadratus, w.encounter, w.horse)
+		for i in 60 * 300:
+			await _ticks(1)
+			if bot.phase == QuadratusBot.Phase.DONE:
+				break
+		var r := bot.result
+		_log.append("%s: %s in %.1f s; %s; boss %s" % [variant, "WIN" if r.get("won", false) else "NO WIN", r.get("time", -1.0), str(r.get("stats", {})), str(r.get("boss", {}))])
+		_metric("quad_bot_%s_time" % variant, r.get("time", 999.0), "lower")
+		_check(r.get("won", false), "%s: the scripted driver did not beat Quadratus: %s" % [variant, " | ".join(bot.events.slice(-8))])
+		if variant == "horse":
+			_check(int(r.get("stats", {}).get("shots_from_horse", 0)) > 0, "no arrow was shot from the horse")
+		await _teardown()
+
+
+func test_quadratus_simulation_independent_of_render_fps() -> void:
+	var exe := OS.get_executable_path()
+	var rates := [30, 60, 90, 120, 144, 240]
+	for scenario in ["quadratus", "quadratus_horse"]:
+		var results := {}
+		for fps in rates:
+			var out_path := ProjectSettings.globalize_path("res://tests/output/%s_fps_%d.json" % [scenario, fps])
+			var output := []
+			var code := OS.execute(exe, ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=" + scenario, "--out=" + out_path], output, true)
+			if code != 0 or not FileAccess.file_exists(out_path):
+				_check(false, "%s at %d fps failed (code %d)" % [scenario, fps, code])
+				return
+			results[fps] = JSON.parse_string(FileAccess.get_file_as_string(out_path))
+		var diff := _max_json_diff(results, rates)
+		var ref: Dictionary = results[60]
+		_log.append("%s (bot) at %s fps: won %s at tick %d, arrows %d, max state difference %.8f" % [scenario, str(rates), str(ref.won), int(ref.tick), int(ref.shots), diff])
+		_metric("%s_fps_max_diff" % scenario, diff, "lower")
+		_check(int(ref.won) == 1, "%s reference run did not win" % scenario)
+		_check(diff < 1e-4, "%s depends on the render rate (diff %.6f)" % [scenario, diff])
+
+
+func _max_json_diff(results: Dictionary, rates: Array) -> float:
+	var ref: Dictionary = results[60]
+	var max_diff := 0.0
+	for fps in rates:
+		var r: Dictionary = results[fps]
+		for k in ref:
+			if k == "frames":
+				continue
+			if ref[k] is Array:
+				if (r[k] as Array).size() != (ref[k] as Array).size():
+					return INF
+				for j in (ref[k] as Array).size():
+					max_diff = maxf(max_diff, absf(float(r[k][j]) - float(ref[k][j])))
+			else:
+				max_diff = maxf(max_diff, absf(float(r[k]) - float(ref[k])))
+	return max_diff
+
+
+func test_quadratus_cost_stays_within_budget() -> void:
+	Fx.enabled = true
+	var w := await _setup_quadratus()
+	Fx.enabled = true
+	var q: Quadratus = w.quadratus
+	q.effects_enabled = true
+	var bot := QuadratusBot.new()
+	bot.use_horse = true
+	_world.add_child(bot)
+	bot.setup(w.player, w.quadratus, w.encounter, w.horse)
+	await _ticks(60 * 20)   # riding in, combat, aiming from the saddle
+	Perf.take()
+	var ticks := 60 * 30
+	var physics_ms := 0.0
+	var physics_max := 0.0
+	var arrows_max := 0
+	for i in ticks:
+		await _ticks(1)
+		var pm := Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
+		physics_ms += pm
+		physics_max = maxf(physics_max, pm)
+		arrows_max = maxi(arrows_max, ArrowSystem.of(w.player).arrows.size())
+	var m := Perf.take()
+	var u: Dictionary = m.usec
+	var qq: Dictionary = m.queries
+	var per := func(k: StringName) -> float: return float(u.get(k, 0)) / ticks
+	var qp := func(k: StringName) -> float: return float(qq.get(k, 0)) / ticks
+	var colossus: float = per.call(&"colossus")
+	_log.append("Quadratus fight (bot from Agro, then climbing, 30 s; phases seen up to %s): colossus %.1f us/tick = brain %.1f + combat %.1f + hits %.1f + pose %.1f + quadruped locomotion (incl. balance / weight transfer) %.1f + four-leg IK %.1f; arrows %.1f (max %d alive); player %.1f (bow incl.); Agro %.1f; camera %.1f us/frame; queries/tick: arrow rays %.2f, arrow target tests %.2f, bow aim rays %.3f, climb %.2f, horse %.2f, camera %.2f, colossus ground probes %d total" % [QuadratusBot.Phase.keys()[bot.phase], colossus, per.call(&"brain"), per.call(&"boss_combat"), per.call(&"boss_hits"), per.call(&"boss_pose"), per.call(&"locomotion"), per.call(&"ik"), per.call(&"arrows"), arrows_max, per.call(&"player"), per.call(&"horse"), per.call(&"camera"), qp.call(&"arrow_rays"), qp.call(&"arrow_target_tests"), qp.call(&"bow_aim_rays"), qp.call(&"climb_rays"), qp.call(&"horse_rays"), qp.call(&"camera_queries"), q.loco.step_count])
+	_log.append("whole physics tick (engine monitor, incl. physics server): mean %.3f ms, max %.3f ms" % [physics_ms / ticks, physics_max])
+	_metric("quad_physics_tick_ms", physics_ms / ticks, "lower")
+	_metric("quad_colossus_us", colossus, "lower")
+	_metric("quad_locomotion_us", per.call(&"locomotion"), "lower")
+	_metric("quad_ik_us", per.call(&"ik"), "lower")
+	_metric("quad_arrows_us", per.call(&"arrows"), "lower")
+	_check(colossus < 500.0, "Quadratus logic too expensive: %.0f us/tick" % colossus)
+	_check(per.call(&"arrows") < 100.0, "arrow simulation too expensive")
+	Fx.enabled = false
+
+
+func test_valus_defeat_leaves_a_safe_way_down() -> void:
+	var w := await _setup_valus(7, true)
+	var s: Valus = w.valus
+	var p: PlayerCharacter = w.player
+	_start_combat(s)
+	await _stand_on_head(w)
+	p.actions.grab_held = true
+	await _ticks(5)
+	var y0 := p.global_position.y
+	for k in 3:
+		s.weak_point.try_hit(s.weak_point.world_point(), 1.0, &"sword")
+	var max_err := 0.0
+	for i in 60 * 9:
+		await _ticks(1)
+		if p.is_climbing():
+			max_err = maxf(max_err, _surface_error(p))
+	var held := p.is_climbing()
+	var y1 := p.global_position.y
+	var head := (s._seg_by_bone[&"head"] as BodySegment).target_transform * Valus.WEAK_POINT_LOCAL
+	var tiers := []
+	p.landed.connect(func(_s: float, tier: int, _d: float) -> void: tiers.append(tier))
+	var hp := p.health
+	p.actions.grab_held = false
+	await _ticks(150)
+	_log.append("gripping the head through the defeat: held %s, carried from %.1f m down to %.1f m (head top %.1f m), anchor error %.5f m; let go -> %s, landing tiers %s, HP %.0f -> %.0f" % [str(held), y0, y1, head.y, max_err, p.get_display_state(), str(tiers), hp, p.health])
+	_metric("valus_defeat_head_height", head.y, "lower")
+	_check(held, "lost the grip during the defeat")
+	_check(head.y < 4.0, "the head stays too high to get down (%.1f m)" % head.y)
+	_check(max_err < 0.08, "anchor left the surface")
+	_check(not p.dead and not (FallImpact.Tier.SEVERE in tiers), "getting down was not safe")
+
+
+# --- bow ---------------------------------------------------------------------------------
+
+func _setup_range() -> PlayerCharacter:
+	Sfx.enabled = false
+	Fx.enabled = false
+	_world = Node3D.new()
+	_world.name = "World_" + _current
+	add_child(_world)
+	var ground := StaticBody3D.new()
+	ground.collision_layer = Layers.WORLD
+	var gs := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(600, 2, 600)
+	gs.shape = box
+	gs.position = Vector3(0, -1, 0)
+	ground.add_child(gs)
+	_world.add_child(ground)
+	var p := PlayerCharacter.new()
+	p.name = "Archer"
+	_world.add_child(p)
+	p.global_position = Vector3(0, 0.95, 0)
+	p.set_weapon(PlayerCharacter.Weapon.BOW)
+	await _ticks(10)
+	return p
+
+
+## A post with a round mark (ArrowTarget facing the archer) at ``pos``.
+func _range_target(pos: Vector3, facing: Vector3) -> ArrowTarget:
+	var post := TerrainKit.box(_world, pos, Vector3(1.4, 1.4, 0.3), StandardMaterial3D.new(), Basis.looking_at(-facing))
+	return ArrowTarget.create(post, Vector3(0, 0, 0.16), Vector3(0, 0, 1), 0.5)
+
+
+## Holds the attack for ``hold`` s, releases; returns the arrow.
+func _shoot(p: PlayerCharacter, hold: float) -> Dictionary:
+	p.actions.attack_held = true
+	await _ticks(int(round(hold * 60.0)))
+	p.actions.attack_held = false
+	await _ticks(1)
+	return p.bow.last_shot.get("arrow", {})
+
+
+func _wait_arrow(a: Dictionary, seconds := 6.0) -> void:
+	for i in int(seconds * 60.0):
+		if a.state != &"flying":
+			return
+		await _ticks(1)
+
+
+func test_bow_draw_strength_changes_arrow_velocity() -> void:
+	var p := await _setup_range()
+	p.actions.view_basis = Basis.looking_at(Vector3(0, 0.1, -1).normalized())
+	var rows := []
+	for hold in [0.1, 0.3, 0.6, 1.2]:
+		p.bow.last_shot = {}
+		var a := await _shoot(p, hold)
+		var shot := not p.bow.last_shot.is_empty()
+		var v := (a.vel as Vector3).length() if shot else 0.0
+		var range_m := 0.0
+		if shot:
+			await _wait_arrow(a)
+			range_m = _flatv((a.pos as Vector3) - p.global_position).length()
+		rows.append([hold, p.bow.last_shot.get("draw", 0.0), v, range_m])
+		await _ticks(40)
+	_log.append("hold s / draw / speed m/s / range m: %s" % str(rows.map(func(r: Array) -> String: return "%.1f/%.2f/%.1f/%.0f" % r)))
+	_check(rows[0][2] == 0.0, "a 0.1 s tug shot an arrow")
+	_check(rows[1][2] < rows[2][2] and rows[2][2] < rows[3][2], "speed does not grow with the draw")
+	_check(rows[1][3] < rows[2][3] and rows[2][3] < rows[3][3], "range does not grow with the draw")
+	_check(absf(rows[3][2] - p.bow.max_speed) < 0.6, "full draw is not max speed")
+
+
+func test_bow_trajectory_is_repeatable() -> void:
+	var p := await _setup_range()
+	var paths := []
+	for k in 2:
+		p.global_position = Vector3(0, 0.95, 0)
+		p.velocity = Vector3.ZERO
+		p.reset_physics_interpolation()
+		await _ticks(20)
+		p.actions.view_basis = Basis.looking_at(Vector3(0.2, 0.15, -1).normalized())
+		p.actions.aim_origin = Vector3(0, 2.0, 3.0)
+		var a := await _shoot(p, 1.0)
+		await _wait_arrow(a)
+		paths.append([a.path, a.pos])
+		await _ticks(30)
+	var pa: PackedVector3Array = paths[0][0]
+	var pb: PackedVector3Array = paths[1][0]
+	var diff := 0.0
+	for i in mini(pa.size(), pb.size()):
+		diff = maxf(diff, pa[i].distance_to(pb[i]))
+	# Matches the closed-form ballistic curve too.
+	var shot: Dictionary = p.bow.last_shot
+	var v0: Vector3 = (shot.dir as Vector3) * float(shot.speed)
+	var curve := 0.0
+	for i in pa.size():
+		curve = maxf(curve, pa[i].distance_to(ArrowSystem.predict(pa[0], v0, i * DT)))
+	_log.append("two identical shots: %d / %d path points, max difference %.8f m, landing %s vs %s; deviation from the analytic parabola %.6f m" % [pa.size(), pb.size(), diff, str(paths[0][1]), str(paths[1][1]), curve])
+	_check(pa.size() == pb.size() and diff < 1e-5, "trajectory not repeatable")
+	_check(curve < 1e-3, "trajectory is not the ballistic curve")
+
+
+func test_arrow_hits_expected_target() -> void:
+	var p := await _setup_range()
+	var rows := []
+	for d in [15.0, 30.0, 60.0]:
+		var pos := Vector3(d * 0.3, 1.8, -d)
+		var t := _range_target(pos, _flatv(p.global_position - pos).normalized())
+		await _ticks(2)
+		var hits := []
+		t.hit.connect(func(info: Dictionary) -> void: hits.append(info))
+		var dir := PlayerBow.launch_direction(p.bow.bow_point(p), t.world_point(), p.bow.speed_for(1.0))
+		_aim_bow(p, dir)
+		var a := await _shoot(p, 1.2)
+		await _wait_arrow(a)
+		var err := (a.pos as Vector3).distance_to(t.world_point())
+		var predicted := _flatv(t.world_point() - p.bow.bow_point(p)).length() / (p.bow.speed_for(1.0) * _flatv(dir).length())
+		rows.append([d, hits.size(), err, float(a.get("flight", -1.0)), predicted])
+		t.get_parent().queue_free()
+		await _ticks(20)
+	_log.append("distance / hits / impact error m / flight s / predicted s: %s" % str(rows.map(func(r: Array) -> String: return "%.0f/%d/%.3f/%.3f/%.3f" % r)))
+	for r in rows:
+		_check(r[1] == 1, "missed the target at %.0f m" % r[0])
+		_check(r[2] < 0.5, "impact off the mark at %.0f m" % r[0])
+		_check(absf(r[3] - r[4]) < 2.0 * DT, "flight time off the prediction at %.0f m" % r[0])
+
+
+func test_arrow_misses_when_aim_is_wrong() -> void:
+	var p := await _setup_range()
+	var pos := Vector3(0, 1.8, -30)
+	var t := _range_target(pos, Vector3(0, 0, 1))
+	await _ticks(2)
+	var hits := []
+	t.hit.connect(func(info: Dictionary) -> void: hits.append(info))
+	var dir := PlayerBow.launch_direction(p.bow.bow_point(p), t.world_point(), p.bow.speed_for(1.0))
+	var rows := []
+	# 1.5 degrees off to the side, a gravity-blind straight aim, and a weak draw.
+	for case in [["side", dir.rotated(Vector3.UP, deg_to_rad(1.5)), 1.2], ["no drop", (t.world_point() - p.bow.bow_point(p)).normalized(), 1.2], ["weak draw", dir, 0.35]]:
+		_aim_bow(p, case[1])
+		var a := await _shoot(p, case[2])
+		await _wait_arrow(a)
+		rows.append("%s: %s at %s" % [case[0], "HIT" if hits.size() > 0 else "miss", str((a.pos as Vector3).snapped(Vector3.ONE * 0.01))])
+		_check(hits.is_empty(), "%s still hit the mark" % case[0])
+		hits.clear()
+		await _ticks(30)
+	# From behind the post (wrong side of the mark): no hit even dead centre.
+	p.global_position = Vector3(0, 0.95, -60)
+	p.reset_physics_interpolation()
+	await _ticks(20)
+	var back := PlayerBow.launch_direction(p.bow.bow_point(p), t.world_point(), p.bow.speed_for(1.0))
+	_aim_bow(p, back)
+	var a2 := await _shoot(p, 1.2)
+	await _wait_arrow(a2)
+	rows.append("from behind: %s (%s)" % ["HIT" if hits.size() > 0 else "miss", t.last_reason])
+	_log.append(", ".join(rows))
+	_check(hits.is_empty(), "hit the mark from behind")
+
+
+func test_bow_is_independent_of_render_fps() -> void:
+	var exe := OS.get_executable_path()
+	var rates := [30, 60, 90, 120, 144, 240]
+	var results := {}
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/bow_fps_%d.json" % fps)
+		var output := []
+		var code := OS.execute(exe, ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=bow", "--out=" + out_path], output, true)
+		if code != 0 or not FileAccess.file_exists(out_path):
+			_check(false, "bow scenario at %d fps failed (code %d)" % [fps, code])
+			return
+		results[fps] = JSON.parse_string(FileAccess.get_file_as_string(out_path))
+	var diff := _max_json_diff(results, rates)
+	var ref: Dictionary = results[60]
+	_log.append("3 shots on foot + 1 from a galloping Agro at %s fps: %d impacts, max difference %.8f (impact points and flight times)" % [str(rates), (ref.impacts as Array).size() / 4, diff])
+	_metric("bow_fps_max_diff", diff, "lower")
+	_check((ref.impacts as Array).size() == 16, "expected 4 arrows to land")
+	_check(diff < 1e-4, "arrows depend on the render rate (diff %.6f)" % diff)
+
+
+## Player on Agro at a gallop on open ground.
+func _setup_riding_archer() -> Dictionary:
+	var p := await _setup_range()
+	var h := Horse.new()
+	_world.add_child(h)
+	h.teleport(Vector3(0, 0, 0), 0.0)
+	p.global_position = Vector3(-1.4, 0.95, 0.2)
+	p.reset_physics_interpolation()
+	await _ticks(5)
+	p.actions.press_interact()
+	await _ticks(60)
+	p.actions.view_basis = Basis.IDENTITY
+	p.actions.move = Vector2(0, 1)
+	p.actions.press_jump()
+	await _ticks(40)
+	p.actions.press_jump()
+	await _ticks(100)
+	p.actions.move = Vector2.ZERO
+	return {"player": p, "horse": h}
+
+
+func test_player_can_aim_from_agro() -> void:
+	var r := await _setup_riding_archer()
+	var p: PlayerCharacter = r.player
+	var h: Horse = r.horse
+	var speed := h.controller.speed
+	# A mark out to the right of the ride, ~25 m away.
+	var ahead := h.global_position + h.controller.forward() * (speed * 1.6)
+	var pos := ahead + h.controller.forward().cross(Vector3.UP) * 25.0 + Vector3.UP * 1.5
+	var t := _range_target(pos, -h.controller.forward().cross(Vector3.UP))
+	await _ticks(2)
+	var hits := []
+	t.hit.connect(func(info: Dictionary) -> void: hits.append(info))
+	p.actions.attack_held = true
+	var aimed := false
+	for i in 90:
+		# Lead for the horse's own motion (the arrow inherits it).
+		var from := p.bow.bow_point(p)
+		var v := p.bow.speed_for(maxf(p.bow.draw, 0.2))
+		var dir := PlayerBow.launch_direction(from, t.world_point(), p.bow.speed_for(1.0))
+		var rel := (dir * p.bow.speed_for(1.0) - p.velocity).normalized()
+		_aim_bow(p, rel)
+		await _ticks(1)
+		aimed = aimed or p.bow.is_aiming()
+		if p.bow.state == PlayerBow.State.AIM:
+			break
+	var state := p.bow.state_name()
+	p.actions.attack_held = false
+	await _ticks(2)
+	var a: Dictionary = p.bow.last_shot.get("arrow", {})
+	if not a.is_empty():
+		await _wait_arrow(a)
+	_log.append("riding at %.1f m/s: bow %s while riding (%s), shot %s, arrow %s at %s, mark hits %d" % [speed, state, p.get_display_state(), str(not a.is_empty()), a.get("state", "-"), str((a.get("pos", Vector3.ZERO) as Vector3).snapped(Vector3.ONE * 0.01)), hits.size()])
+	_check(speed > 4.5, "not riding fast")
+	_check(aimed and p.is_riding(), "could not draw the bow on horseback")
+	_check(not a.is_empty(), "no arrow from the saddle")
+	_check(hits.size() == 1, "missed the mark from the galloping horse")
+
+
+func test_horse_heading_is_not_changed_by_aim() -> void:
+	var r := await _setup_riding_archer()
+	var p: PlayerCharacter = r.player
+	var h: Horse = r.horse
+	var yaw0 := h.controller.yaw
+	p.actions.attack_held = true
+	var max_dev := 0.0
+	# Sweep the aim all around (look left, back, right) for 3 s, no stick input.
+	for i in 180:
+		var ang := TAU * i / 180.0
+		_aim_bow(p, Vector3(sin(ang), 0.1, cos(ang)).normalized())
+		await _ticks(1)
+		max_dev = maxf(max_dev, absf(angle_difference(yaw0, h.controller.yaw)))
+	var while_aiming := p.bow.is_aiming()
+	# While aiming the stick steers relative to the horse: right turns right, wherever
+	# the camera looks.
+	p.actions.move = Vector2(0.8, 0.0)
+	_aim_bow(p, -h.controller.forward().cross(Vector3.UP))   # looking to the left
+	var yaw1 := h.controller.yaw
+	await _ticks(60)
+	var turned := angle_difference(yaw1, h.controller.yaw)
+	p.actions.attack_held = false
+	p.actions.move = Vector2.ZERO
+	_log.append("aiming around 360 deg for 3 s: horse heading deviation %.4f rad (still aiming %s); stick right while looking left: horse turned %.3f rad (right = negative yaw)" % [max_dev, str(while_aiming), turned])
+	_check(while_aiming, "lost the draw while riding")
+	_check(max_dev < 0.02, "aiming turned the horse (%.3f rad)" % max_dev)
+	_check(turned < -0.05, "stick did not steer the horse relative to itself while aiming")
+
+
+func test_arrow_hit_can_trigger_colossus_reaction() -> void:
+	var w := await _setup_quadratus()
+	var q: Quadratus = w.quadratus
+	q._set_encounter(Quadratus.Encounter.COMBAT)
+	await _ticks(10)
+	_stand_behind(w, 3, 12.0)
+	var reactions := []
+	q.foot_hit.connect(func(leg: int) -> void: reactions.append(leg))
+	var info := await _shoot_exposed_sole(w, 30.0)
+	await _ticks(30)
+	_log.append("arrow: %s (target leg %s, colossus %s) -> foot_hit %s, buckle %s, intent %s" % [info.get("reason", "no shot"), str(info.get("tag", "-")), str(info.get("colossus", null)), str(reactions), q.buckle_name(), q.intent.kind])
+	_check(info.get("accepted", false) and info.get("colossus", null) == q, "the arrow did not register on Quadratus")
+	_check(reactions.size() == 1 and q.buckle != Quadratus.Buckle.NONE, "no reaction to the arrow")
+
+
+## Everything that ran before the Etap 6 tests (Milestone 1 .. Etap 5 incl. Valus) passed.
+func all_valus_and_earlier_tests_still_pass() -> void:
+	var ran := 0
+	var failed := PackedStringArray()
+	for n in _pre_etap6_results:
+		ran += 1
+		if not _pre_etap6_results[n]:
+			failed.append(n)
+	_log.append("%d earlier tests (Milestone 1, Etap 2-5) ran in this run, %d failed %s" % [ran, failed.size(), str(failed) if failed.size() > 0 else ""])
 	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))
