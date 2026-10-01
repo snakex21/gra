@@ -26,6 +26,8 @@ class PlayerInfo:
 	## arm side that can sweep (+1 left, -1 right, 0 none).
 	var stomp_foot := -1
 	var sweep_side := 0
+	## Attacks this player is in range of right now (colossus-specific kinds).
+	var opportunities: Array[StringName] = []
 
 var time := 0.0
 var self_position := Vector3.ZERO
@@ -42,6 +44,8 @@ var encounter: StringName = &""
 var attack_running := false
 var weak_point_open := true
 var weak_point_progress := 0.0
+## Colossus-specific facts for its own brain (e.g. a buckled leg), plain data.
+var facts := {}
 
 
 func players_on_body() -> Array[PlayerInfo]:
