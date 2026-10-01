@@ -136,10 +136,16 @@ func _draw() -> void:
 			draw_arc(c, 18.0, -PI / 2.0, -PI / 2.0 + TAU * player.bow.draw, 48, Color(1.0, 0.85, 0.4) if player.bow.draw >= 1.0 else Color(0.9, 0.9, 0.9), 3.0, true)
 	# Boss weak points (one bar each).
 	var wps: Array = []
-	if colossus is Valus:
-		wps = [(colossus as Valus).weak_point]
+	if colossus is HumanoidBoss:
+		wps = [(colossus as HumanoidBoss).weak_point]
 	elif colossus is Quadratus:
 		wps = (colossus as Quadratus).weak_points
+	# Gaius: the helmet's cracks as a grey bar under the weak point.
+	if colossus is Gaius:
+		var h := (colossus as Gaius).helmet
+		var hb := Rect2(size.x * 0.5 - 150.0, 30.0, 300.0, 5.0)
+		draw_rect(hb, Color(0, 0, 0, 0.45))
+		draw_rect(Rect2(hb.position, Vector2(hb.size.x * (1.0 - h.progress()), hb.size.y)), Color(0.7, 0.7, 0.68))
 	for i in wps.size():
 		var wp: WeakPoint = wps[i]
 		var w := 300.0 / wps.size() - 6.0

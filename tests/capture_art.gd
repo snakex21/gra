@@ -7,6 +7,8 @@ const VIEWS := [
 	["valus", "art_02_valus_close", Vector3(9, 6, 14), Vector3(0, 10, 0)],
 	["quadratus", "art_03_quadratus_arena", Vector3(-20, 4, 42), Vector3(0, 6, 0)],
 	["quadratus", "art_04_quadratus_close", Vector3(12, 5, 14), Vector3(0, 7, 0)],
+	["gaius", "art_05_gaius_arena", Vector3(16, 5, 44), Vector3(0, 9, 0)],
+	["gaius", "art_06_gaius_sword_stuck", Vector3(18, 7, 30), Vector3(0, 5, 10)],
 ]
 
 var _i := 0
@@ -31,6 +33,21 @@ func _next() -> void:
 	var refs: Dictionary = scene.refs
 	if refs.input:
 		(refs.input as Node).queue_free()
+	if String(v[1]).ends_with("sword_stuck"):
+		# Provoke the slam: the player stands in its band, out of the shockwave after.
+		var g: Gaius = refs.gaius
+		var pl: PlayerCharacter = refs.player
+		g._set_encounter(Gaius.Encounter.COMBAT)
+		pl.global_position = g.global_transform * Vector3(-2.5, 0.95, -15.0)
+		pl.reset_physics_interpolation()
+		for k in 60 * 6:
+			await get_tree().physics_frame
+			if g.sword_stuck():
+				pl.global_position = g.global_transform * Vector3(10.0, 0.95, -10.0)
+				pl.reset_physics_interpolation()
+				for j in 60:
+					await get_tree().physics_frame
+				break
 	(refs.hud as Control).visible = false
 	var cam := Camera3D.new()
 	scene.add_child(cam)

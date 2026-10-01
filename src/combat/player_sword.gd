@@ -90,24 +90,30 @@ func strike_points(p: PlayerCharacter) -> Array[Vector3]:
 func _strike(p: PlayerCharacter) -> void:
 	strikes += 1
 	var best := {"accepted": false, "reason": &"nothing_in_reach", "damage": 0.0, "power": _power}
-	var best_d := INF
 	var pts := strike_points(p)
-	for node in p.get_tree().get_nodes_in_group(&"weak_points"):
-		var wp := node as WeakPoint
+	# Weak points and armour plates share the strike API (world_point, radius, try_hit).
+	# Nearest first; the first one that takes the strike wins (a closed weak point under a
+	# helmet does not swallow the blow meant for the helmet).
+	var targets: Array = p.get_tree().get_nodes_in_group(&"weak_points")
+	targets.append_array(p.get_tree().get_nodes_in_group(&"armor_plates"))
+	var near := []
+	for node in targets:
 		var d := INF
 		var at := pts[0]
 		for q in pts:
-			var dq := q.distance_to(wp.world_point())
+			var dq: float = q.distance_to(node.world_point())
 			if dq < d:
 				d = dq
 				at = q
-		if d > wp.radius * 2.5 or d >= best_d:
-			continue
-		best_d = d
-		var r := wp.try_hit(at, _power, &"sword")
+		if d <= float(node.radius) * 2.5:
+			near.append([d, at, node])
+	near.sort_custom(func(x: Array, y: Array) -> bool: return x[0] < y[0])
+	for c in near:
+		var r: Dictionary = c[2].try_hit(c[1], _power, &"sword")
 		r.power = _power
-		r.weak_point = wp
-		best = r
+		r.weak_point = c[2]
+		if r.accepted or best.reason == &"nothing_in_reach":
+			best = r
 		if r.accepted:
 			break
 	last_result = best

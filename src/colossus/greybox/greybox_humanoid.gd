@@ -594,7 +594,7 @@ func _build_body() -> void:
 	skeleton = Skeleton3D.new()
 	skeleton.name = "Skeleton3D"
 	add_child(skeleton)
-	for b in BONES:
+	for b in _bones():
 		var idx := skeleton.add_bone(b[0])
 		_bone[b[0]] = idx
 		_rest[b[0]] = b[2]
@@ -639,6 +639,11 @@ func _adjust_movement(_it: ColossusIntent, _delta: float) -> void:
 ## Hook for subclasses: extra bone poses after the upper body (attacks, gestures).
 func _pose_overrides(_delta: float) -> void:
 	pass
+
+
+## Bone table (see BONES); subclasses can add bones (a held weapon...).
+func _bones() -> Array:
+	return BONES
 
 
 ## Body parts table (see PARTS); subclasses can return their own.

@@ -14,7 +14,8 @@ const ROUTE := [
 	[&"head", Vector3(0, 1.4, 1.45)], [&"head", Vector3(0, 2.55, 0.4)],
 ]
 
-var valus: Valus
+## Any two-legged boss (Valus, Gaius); the climb route line is Valus' own.
+var valus: HumanoidBoss
 var _mesh := ImmediateMesh.new()
 
 
@@ -41,14 +42,14 @@ func _process(_delta: float) -> void:
 	var winding := a != null and not a.is_done() and a.phase == ColossusAttack.Phase.TELEGRAPH
 	for key in valus.hit_volumes:
 		var h: HitVolume = valus.hit_volumes[key]
-		var related := a != null and not a.is_done() and ((a.kind == Valus.STOMP and String(key).begins_with("foot") and (String(key).ends_with("_l") == (a.limb == 0))) or (a.kind == Valus.ARM_SWEEP and not String(key).begins_with("foot") and (String(key).ends_with("_l") == (a.limb == 0))))
+		var related := a != null and not a.is_done() and ((a.kind == HumanoidBoss.STOMP and String(key).begins_with("foot") and (String(key).ends_with("_l") == (a.limb == 0))) or (a.kind != HumanoidBoss.STOMP and not String(key).begins_with("foot") and (String(key).ends_with("_l") == (a.limb == 0))))
 		var col := Color(0.5, 0.5, 0.5, 0.5)
 		if h.active:
 			col = Color.RED
 		elif related and winding:
 			col = Color.ORANGE
 		_capsule(h.world_a, h.world_b, h.radius, col)
-	if a != null and not a.is_done() and a.kind == Valus.STOMP and a.phase != ColossusAttack.Phase.PREPARE:
+	if a != null and not a.is_done() and a.kind == HumanoidBoss.STOMP and a.phase != ColossusAttack.Phase.PREPARE:
 		_circle(valus._slam_point + Vector3.UP * 0.1, valus.shockwave_radius, Color.ORANGE_RED if winding else Color.RED)
 	for z in valus.get_danger_zones():
 		_circle((z[0] as Vector3) + Vector3.UP * 0.2, z[1], Color(1, 0.6, 0.1))
@@ -67,7 +68,10 @@ func _process(_delta: float) -> void:
 					_box_top(xf, size, Color.GREEN)
 				elif cs is ClimbPatch:
 					_box_top(xf, size, Color(0.75, 0.5, 0.25, 0.7))
-	# Climb route.
+	# Climb route (Valus).
+	if not valus is Valus:
+		_mesh.surface_end()
+		return
 	var prev := Vector3.INF
 	for r in ROUTE:
 		var seg := _seg(r[0])

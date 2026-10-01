@@ -1,6 +1,8 @@
 class_name ValusBot
 extends Node
-## Scripted test driver for the Valus fight. It is not clever: it KNOWS the route and
+## Scripted test driver for the Valus fight (and the base of the other two-legged bosses'
+## drivers, e.g. GaiusBot: they replace the start of the route and keep the rest). It is
+## not clever: it KNOWS the route and
 ## plays it through PlayerActions only (exactly like a human or a future AI companion):
 ##
 ##   enter the arena -> dodge telegraphed attacks -> run to the back of a calf -> grab
@@ -24,7 +26,7 @@ const TIMEOUTS := {
 }
 
 var player: PlayerCharacter
-var valus: Valus
+var valus: HumanoidBoss
 var encounter: BossEncounter
 var phase := Phase.ENTER
 var phase_time := 0.0
@@ -53,7 +55,7 @@ func _ready() -> void:
 	process_physics_priority = -5
 
 
-func setup(p_player: PlayerCharacter, p_valus: Valus, p_encounter: BossEncounter) -> void:
+func setup(p_player: PlayerCharacter, p_valus: HumanoidBoss, p_encounter: BossEncounter) -> void:
 	player = p_player
 	valus = p_valus
 	encounter = p_encounter
@@ -94,7 +96,7 @@ func _physics_process(delta: float) -> void:
 	match phase:
 		Phase.ENTER:
 			a.grab_held = false
-			if valus.encounter == Valus.Encounter.COMBAT or _dist_to(valus.global_position) < 30.0:
+			if valus.encounter == HumanoidBoss.Encounter.COMBAT or _dist_to(valus.global_position) < 30.0:
 				_enter(Phase.APPROACH_LEG)
 			else:
 				_run_to(valus.global_position)
@@ -407,7 +409,7 @@ func _hold_on() -> bool:
 
 func _shaking() -> bool:
 	var k := valus.intent.kind
-	return k == ColossusIntent.SHAKE_PLAYER or k == Valus.RECOVER or valus._stagger > 0.2
+	return k == ColossusIntent.SHAKE_PLAYER or k == HumanoidBoss.RECOVER or valus._stagger > 0.2
 
 
 func _side_of_neck() -> float:
