@@ -25,6 +25,8 @@ var shape: CollisionShape3D
 var meshes: Array[MeshInstance3D] = []
 
 var _crack_mat: StandardMaterial3D
+## Crack patterns, one more set of lines per strike (generated once, no texture files).
+static var _crack_textures: Array[ImageTexture] = []
 
 
 ## Wraps an existing part (``shape`` and its meshes) of ``segment``.
@@ -68,7 +70,11 @@ func try_hit(at: Vector3, power: float, source: StringName) -> Dictionary:
 	last_reason = &"crack"
 	cracked.emit(hits)
 	_show_cracks()
+	var fx_parent: Node = segment.colossus.get_parent() if segment.colossus else segment
+	Sfx.play(segment, &"crack", at)
+	Fx.dust(fx_parent, at, 0.8 if hits < hits_to_break else 2.2)
 	if hits >= hits_to_break:
+		Sfx.play(segment, &"impact", at)
 		_break()
 		return {"accepted": true, "reason": &"armor_broken", "damage": 0.0}
 	return {"accepted": true, "reason": &"armor_cracked", "damage": 0.0}
@@ -100,9 +106,37 @@ func _break() -> void:
 func _show_cracks() -> void:
 	if _crack_mat == null:
 		_crack_mat = StandardMaterial3D.new()
-		_crack_mat.albedo_color = Color(0.1, 0.08, 0.06, 0.0)
+		_crack_mat.albedo_color = Color(0.08, 0.06, 0.05, 1.0)
 		_crack_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		_crack_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_crack_mat.albedo_color.a = 0.25 * hits
+		# Object space: the cracks stay on the plate while the head moves.
+		_crack_mat.uv1_triplanar = true
+		_crack_mat.uv1_world_triplanar = false
+		_crack_mat.uv1_scale = Vector3.ONE * 0.45
+	_crack_mat.albedo_texture = crack_texture(clampi(hits, 1, 3))
 	for m in meshes:
 		m.material_overlay = _crack_mat
+
+
+## Dark jagged crack lines on transparent ground; ``level`` 1..3 adds more of them.
+static func crack_texture(level: int) -> ImageTexture:
+	if _crack_textures.is_empty():
+		var img := Image.create(256, 256, false, Image.FORMAT_RGBA8)
+		img.fill(Color(0, 0, 0, 0))
+		var rng := RandomNumberGenerator.new()
+		rng.seed = 7071
+		for l in 3:
+			for c in 3 + l * 3:
+				var p := Vector2(128, 128) + Vector2(rng.randf_range(-40, 40), rng.randf_range(-40, 40))
+				var dir := Vector2.from_angle(rng.randf() * TAU)
+				for s in 18 + l * 6:
+					dir = dir.rotated(rng.randf_range(-0.6, 0.6))
+					var q := p + dir * rng.randf_range(4.0, 9.0)
+					for k in 8:
+						var x := p.lerp(q, k / 8.0)
+						for o in [Vector2.ZERO, Vector2.RIGHT, Vector2.DOWN]:
+							var px := Vector2i(posmod(int(x.x + o.x), 256), posmod(int(x.y + o.y), 256))
+							img.set_pixelv(px, Color(1, 1, 1, 0.95))
+					p = q
+			_crack_textures.append(ImageTexture.create_from_image(img.duplicate()))
+	return _crack_textures[clampi(level, 1, 3) - 1]

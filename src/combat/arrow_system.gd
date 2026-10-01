@@ -157,6 +157,8 @@ func _fly(a: Dictionary, delta: float, space: PhysicsDirectSpaceState3D, targets
 			a.vel = v0.bounce(n) * bounce_keep + seg.local_point_velocity(seg.target_transform.affine_inverse() * (hit.position as Vector3), delta)
 			(a.path as PackedVector3Array).append(a.pos)
 			(a.node as Node3D).global_transform = _arrow_xf(a.pos, a.vel)
+			Fx.sparks(seg.colossus.get_parent() if seg.colossus else seg, hit.position, n)
+			Sfx.play(seg, &"ricochet", hit.position)
 			_report(a, hit.position, seg, {"accepted": false, "reason": &"bounce", "target": null, "point": hit.position, "arrow": a, "tag": null})
 			return
 		_stick(a, hit.position, v0, seg, hit.collider as Node3D)

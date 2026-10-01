@@ -43,6 +43,12 @@ static func _stream(kind: StringName) -> AudioStreamWAV:
 			s = _make(0.35, func(t: float, n: float) -> float: return (n * 0.6 + sin(t * TAU * 90.0) * 0.4) * exp(-t * 14.0))
 		&"weak_hit":
 			s = _make(0.8, func(t: float, n: float) -> float: return (sin(t * TAU * 520.0) * 0.5 + sin(t * TAU * 780.0) * 0.3 + n * 0.3 * exp(-t * 30.0)) * exp(-t * 5.0))
+		&"ricochet":
+			# Arrow glancing off stone: a short falling ping.
+			s = _make(0.25, func(t: float, n: float) -> float: return (sin(t * TAU * (2400.0 - 4000.0 * t)) * 0.45 + n * 0.25 * exp(-t * 60.0)) * exp(-t * 16.0))
+		&"crack":
+			# Stone armour cracking: a dry snap over a low knock.
+			s = _make(0.5, func(t: float, n: float) -> float: return (n * 0.7 * exp(-t * 35.0) + _low(n, t, 80.0) * 0.5 * exp(-t * 10.0)))
 		&"grip_lost":
 			s = _make(0.3, func(t: float, n: float) -> float: return n * 0.4 * exp(-t * 12.0))
 		&"defeat":

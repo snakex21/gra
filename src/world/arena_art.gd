@@ -16,6 +16,8 @@ const Asset = preload("res://art/scripts/art_asset.gd")
 const ATLAS := preload("res://materials/environment/shared_atlas.tres")
 const FOLIAGE := preload("res://materials/environment/foliage_atlas.tres")
 const TERRAIN := preload("res://materials/environment/terrain.tres")
+## Sentinel v2 kit (rounded, 17 rigid parts, extended-foot variant for our 3.6 m feet).
+const SENTINEL_V2_ATLAS := preload("res://materials/sentinel_v2/atlas.tres")
 const VALUS_SEGMENTS := ["hips", "spine", "chest", "neck", "head", "upper_arm_l", "forearm_l", "hand_l", "upper_arm_r", "forearm_r", "hand_r", "thigh_l", "shin_l", "foot_l", "thigh_r", "shin_r", "foot_r"]
 ## Part kinds, the same order in GreyboxHumanoid.Kind and GreyboxQuadruped.Kind.
 enum Kind { FUR, STONE, ARMOR }
@@ -64,8 +66,10 @@ static func skin_colossus(c: Colossus) -> int:
 	return n
 
 
-## The art pack's Valus: one rigid visual per segment, greybox base parts hidden.
-static func dress_valus(v: Colossus) -> int:
+## The art pack's Valus: one rigid visual per segment (Sentinel v2 kit, or the first
+## Saltward kit with ``v2 = false``), greybox base parts hidden. Valus' own extra parts
+## (mane, fur cap, armour) stay visible: they are the climbing cues.
+static func dress_valus(v: Colossus, v2 := true) -> int:
 	for bone in VALUS_SEGMENTS:
 		if v.get_node_or_null("Seg_" + bone) == null:
 			push_warning("Valus art not attached: no segment " + bone)
@@ -85,17 +89,28 @@ static func dress_valus(v: Colossus) -> int:
 		var art := Node3D.new()
 		art.name = "ArtVisual"
 		seg.add_child(art)
+		var id: String = "sentinel_" + bone
+		if v2 and bone in ["foot_l", "foot_r"] and _extended_feet():
+			id += "_extended"
 		for level in 3:
 			var mesh := MeshInstance3D.new()
 			mesh.name = "LOD%d" % level
-			mesh.mesh = Asset.mesh_for("sentinel_" + bone, level, "colossus")
+			mesh.mesh = Asset.mesh_for(id, level, "sentinel_v2" if v2 else "colossus")
 			mesh.lod_bias = 100.0
-			mesh.material_override = ATLAS
+			mesh.material_override = SENTINEL_V2_ATLAS if v2 else ATLAS
 			mesh.visibility_range_begin = [0.0, 48.0, 100.0][level]
 			mesh.visibility_range_end = [48.0, 100.0, 300.0][level]
 			art.add_child(mesh)
 		attached += 1
 	return attached
+
+
+## Our feet are 3.6 m long at z = -0.85 (the kit's extended variant matches them).
+static func _extended_feet() -> bool:
+	for part in GreyboxHumanoid.PARTS:
+		if part[0] == &"foot_l":
+			return is_equal_approx((part[2] as Vector3).z, 3.6) and is_equal_approx((part[3] as Vector3).z, -0.85)
+	return false
 
 
 static func _key(bone: StringName, size: Variant, pos: Vector3) -> String:

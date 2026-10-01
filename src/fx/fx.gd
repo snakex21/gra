@@ -8,6 +8,7 @@ static var enabled := true
 static var spawned := 0
 static var _dust_mat: StandardMaterial3D
 static var _burst_mat: StandardMaterial3D
+static var _spark_mat: StandardMaterial3D
 
 
 static func dust(parent: Node, at: Vector3, size: float) -> void:
@@ -82,6 +83,40 @@ static func burst(parent: Node, at: Vector3) -> void:
 	m.rings = 3
 	m.material = _burst_mat
 	p.mesh = m
+	p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_spawn(parent, p, at)
+	Perf.end(&"vfx", t0)
+
+
+## Arrow glancing off stone: a few short, bright sparks along the surface.
+static func sparks(parent: Node, at: Vector3, normal: Vector3) -> void:
+	if not enabled or parent == null or not parent.is_inside_tree():
+		return
+	var t0 := Perf.begin()
+	if _spark_mat == null:
+		_spark_mat = StandardMaterial3D.new()
+		_spark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_spark_mat.albedo_color = Color(1.0, 0.8, 0.45)
+		_spark_mat.emission_enabled = true
+		_spark_mat.emission = Color(1.0, 0.6, 0.2)
+		_spark_mat.emission_energy_multiplier = 6.0
+	var p := CPUParticles3D.new()
+	p.one_shot = true
+	p.amount = 9
+	p.lifetime = 0.25
+	p.explosiveness = 1.0
+	p.direction = normal if normal.length() > 0.1 else Vector3.UP
+	p.spread = 70.0
+	p.initial_velocity_min = 4.0
+	p.initial_velocity_max = 9.0
+	p.gravity = Vector3(0, -9.8, 0)
+	p.scale_amount_min = 0.03
+	p.scale_amount_max = 0.06
+	var m := BoxMesh.new()
+	m.size = Vector3(0.6, 0.6, 2.5)
+	m.material = _spark_mat
+	p.mesh = m
+	p.particle_flag_align_y = true
 	p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_spawn(parent, p, at)
 	Perf.end(&"vfx", t0)
