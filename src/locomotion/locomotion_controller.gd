@@ -16,6 +16,8 @@ var max_accel := 0.5        ## m/s^2
 var max_decel := 1.25       ## m/s^2
 var max_jerk := 1.5         ## m/s^3
 var max_turn_accel := 0.25  ## rad/s^2
+## How hard the body pursues the desired speed (1/s) before the limits above.
+var speed_gain := 1.5
 
 # --- gait -----------------------------------------------------------------------------
 var step_length_base := 1.4
@@ -146,7 +148,7 @@ func reset(space: PhysicsDirectSpaceState3D, p_position: Vector3, p_yaw: float) 
 func update_body(delta: float) -> void:
 	time += delta
 	var desired_speed := desired_velocity.length()
-	var desired_accel := clampf((desired_speed - speed) * 1.5, -max_decel, max_accel)
+	var desired_accel := clampf((desired_speed - speed) * speed_gain, -max_decel, max_accel)
 	speed_rate = move_toward(speed_rate, desired_accel, max_jerk * delta)
 	speed = maxf(0.0, speed + speed_rate * delta)
 	yaw_rate = move_toward(yaw_rate, desired_turn_rate, max_turn_accel * delta)

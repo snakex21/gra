@@ -41,6 +41,12 @@ extends Camera3D
 @export var pivot_radius := 0.15
 @export var min_distance := 0.4
 @export var focus_turn_rate := 4.0
+@export_group("Bow")
+## Drawing the bow: the camera comes in over the right shoulder and narrows the view.
+@export var distance_aim := 3.0
+@export var aim_shoulder := 0.75
+@export var aim_fov := 52.0
+@export var base_fov := 70.0
 ## Seconds the colossus must keep blocking the view before the camera moves in.
 @export var occlusion_grace := 0.35
 
@@ -64,6 +70,8 @@ var _initialised := false
 var _sphere := SphereShape3D.new()
 var _params := PhysicsShapeQueryParameters3D.new()
 var _exclude: Array[RID] = []
+## 0..1 blend into the over-the-shoulder aiming view.
+var aim_weight := 0.0
 
 
 func _ready() -> void:
@@ -100,6 +108,11 @@ func _update(delta: float) -> void:
 		lead = player.climb_up * climb_lookahead * (1.0 if moving else 0.5) + player.grip.world_normal() * climb_surface_offset
 	_lookahead = _lookahead.lerp(lead, 1.0 - exp(-3.0 * delta))
 	target_pivot += _lookahead
+	# Drawing the bow: over the right shoulder (the crosshair stays the view's centre).
+	aim_weight = move_toward(aim_weight, 1.0 if player.bow.is_aiming() else 0.0, delta / 0.25)
+	if aim_weight > 0.0:
+		var right := Basis.from_euler(Vector3(0.0, yaw, 0.0)).x
+		target_pivot += (right * aim_shoulder + Vector3.UP * 0.15) * _smooth_w(aim_weight)
 	# The pivot itself must stay in free space (look-ahead can point under an overhang).
 	var space := get_world_3d().direct_space_state
 	# The horse being ridden is part of "us" for the camera; other horses are obstacles.
@@ -153,8 +166,12 @@ func _update(delta: float) -> void:
 			# Aim between the player and the colossus so both stay in frame.
 			var aim := focus_point.lerp(_pivot, focus_player_weight) - global_position
 			pitch = lerpf(pitch, atan2(aim.y, Vector2(aim.x, aim.z).length()), t)
+	if aim_weight > 0.0:
+		want = lerpf(want, distance_aim, _smooth_w(aim_weight))
+		debug_state += " + aim"
+	fov = lerpf(base_fov, aim_fov, _smooth_w(aim_weight))
 	pitch = clampf(pitch, min_pitch, max_pitch)
-	_want_distance = lerpf(_want_distance, want, 1.0 - exp(-1.5 * delta))
+	_want_distance = lerpf(_want_distance, want, 1.0 - exp(-(1.5 + 6.0 * aim_weight) * delta))
 
 	# --- obstacles ------------------------------------------------------------------------
 	# Looking up (at a colossus above) tilts the camera but does not swing the boom
@@ -192,6 +209,10 @@ func _update(delta: float) -> void:
 	if _distance < min_distance:
 		_distance = min_distance if not _inside(space, _pivot + back * min_distance, Layers.SOLID) else _distance
 	global_transform = Transform3D(b, _pivot + back * _distance)
+
+
+static func _smooth_w(t: float) -> float:
+	return t * t * (3.0 - 2.0 * t)
 
 
 ## A point next to the player that is guaranteed to be in free space, used as the start

@@ -40,6 +40,8 @@ const REACT_FOOT := &"react_to_foot_hit"
 const LOWER_BODY := &"lower_body"
 const RECOVER := &"recover"
 const SHAKE_BODY := &"shake_body"
+## A sudden lurch forward and a hard stop (someone standing on its back loses footing).
+const LURCH := &"lurch_step"
 
 ## Bones (rest offsets, unrotated). Forward -Z, left -X. The body bone sits above the hip
 ## centre; the legs hang from the body, so a tilted body tilts every hip with it.
@@ -132,6 +134,9 @@ const ROUTE := [
 @export var head_recovery := 1.5
 @export var head_damage := 40.0
 @export var shake_telegraph := 0.7
+@export var lurch_telegraph := 0.8
+@export var lurch_time := 1.1
+@export var lurch_speed := 4.0
 @export var recover_time := 1.6
 @export_group("Foot hit")
 ## Knee gives (support 1 -> 0) over this long once the hoof is down...
@@ -292,7 +297,7 @@ func move_state() -> StringName:
 		return &"RECOVER"
 	if attack != null and not attack.is_done():
 		return &"ATTACK"
-	if _stagger > 0.05 or _shake > 0.05:
+	if _stagger > 0.05 or _shake > 0.05 or intent.kind == LURCH:
 		return &"STAGGER"
 	if intent.kind == ColossusIntent.REPOSITION:
 		return &"REPOSITION"
@@ -412,6 +417,8 @@ func _choose_intent(obs: ColossusObservation) -> ColossusIntent:
 		return intent
 	if intent.kind == RECOVER and _intent_time < recover_time and buckle == Buckle.NONE:
 		return intent
+	if intent.kind == LURCH and _intent_time < lurch_telegraph + lurch_time:
+		return intent
 	var chosen := brain.decide(obs)
 	if chosen == null or chosen.kind in obs.blocked_intents:
 		chosen = ColossusIntent.make(OBSERVE)
@@ -420,18 +427,20 @@ func _choose_intent(obs: ColossusObservation) -> ColossusIntent:
 
 
 func _shake_kinds() -> Array[StringName]:
-	return [SHAKE_BODY]
+	return [SHAKE_BODY, LURCH]
 
 
 func _rules_block() -> Array[StringName]:
 	var out := rules.blocked(_time)
 	if ColossusIntent.SHAKE_PLAYER in out:
-		out.append(SHAKE_BODY)
+		out.append_array([SHAKE_BODY, LURCH])
+	if intent.kind == LURCH and _intent_time >= lurch_telegraph + lurch_time:
+		out.append(LURCH)  # one lurch per decision; then the shared cooldown starts
 	if rules.reposition_expired(_time):
 		out.append(ColossusIntent.REPOSITION)
 	if buckle != Buckle.NONE:
 		# Down on one knee: no attacks, no walking and no shaking (the climb window).
-		out.append_array([STOMP, HEAD_ATTACK, SHAKE_BODY, APPROACH, TURN, ColossusIntent.REPOSITION])
+		out.append_array([STOMP, HEAD_ATTACK, SHAKE_BODY, LURCH, APPROACH, TURN, ColossusIntent.REPOSITION])
 	else:
 		out.append_array([REACT_FOOT, LOWER_BODY])
 	return out
@@ -495,7 +504,9 @@ func _effective_intent(it: ColossusIntent) -> ColossusIntent:
 
 
 func _adjust_movement(it: ColossusIntent, delta: float) -> void:
-	var bracing := it.kind == SHAKE_BODY and _intent_time < shake_telegraph and encounter == Encounter.COMBAT
+	# ``it`` is the movement intent (a telegraphing shake is IDLE there): read the real one.
+	var k := intent.kind
+	var bracing := encounter == Encounter.COMBAT and ((k == SHAKE_BODY and _intent_time < shake_telegraph) or (k == LURCH and _intent_time < lurch_telegraph))
 	_brace_w = move_toward(_brace_w, 1.0 if bracing else 0.0, delta / 0.3)
 	if bracing:
 		loco.bracing = true
@@ -512,6 +523,23 @@ func _adjust_movement(it: ColossusIntent, delta: float) -> void:
 	if it.kind == APPROACH and is_instance_valid(it.target_player):
 		var d := _flat(it.target_player.global_position - global_position).length()
 		desired_speed *= clampf((d - 11.0) / 6.0, 0.0, 1.0)
+	# Lurch: after the brace a hard surge forward, then a hard stop (body mass limits are
+	# lifted for the moment: this is the one jerky move it makes).
+	var lurching := k == LURCH and encounter == Encounter.COMBAT and buckle == Buckle.NONE and _intent_time >= lurch_telegraph
+	if lurching:
+		desired_speed = lurch_speed if _intent_time < lurch_telegraph + lurch_time * 0.55 else 0.0
+		desired_turn = 0.0
+		loco.max_accel = 10.0
+		loco.max_decel = 12.0
+		loco.max_jerk = 60.0
+		loco.speed_gain = 8.0
+	else:
+		loco.max_accel = 0.5
+		loco.max_decel = 1.25
+		loco.max_jerk = 1.5
+		loco.speed_gain = 1.5
+		if k == LURCH:
+			desired_speed = 0.0
 	var drop := 0.3 * _brace_w
 	if encounter == Encounter.DEFEATED:
 		drop += 1.2 * _defeat_weight()
@@ -890,7 +918,12 @@ func _pose_overrides(delta: float) -> void:
 	_add_rot(&"neck", Vector3(neck_pitch, 0.05 * stag * sin(_stagger_phase * 0.7), 0))
 	_add_rot(&"head", Vector3(head_pitch, 0, 0.04 * stag * sin(_stagger_phase)))
 	# Stagger and reaction: the torso heaves (pitch) and rolls a little.
-	extra_pitch = 0.025 * stag * sin(_stagger_phase * 0.8) + 0.04 * _react_w
+	# Lurch: the front dips into the surge and comes up hard on the stop.
+	var lurch_pitch := 0.0
+	if intent.kind == LURCH and _intent_time >= lurch_telegraph:
+		var lt := clampf((_intent_time - lurch_telegraph) / lurch_time, 0.0, 1.0)
+		lurch_pitch = -0.16 * sin(PI * minf(lt * 2.5, 1.0)) + 0.1 * sin(PI * clampf(lt * 2.5 - 1.0, 0.0, 1.0))
+	extra_pitch = 0.025 * stag * sin(_stagger_phase * 0.8) + 0.04 * _react_w + lurch_pitch
 	extra_roll = 0.03 * stag * sin(_stagger_phase * 0.6)
 	Perf.end(&"boss_pose", t0)
 

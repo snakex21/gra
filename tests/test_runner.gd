@@ -22,6 +22,8 @@ var _boss_started := false
 ## Results of every test before the Etap 6 ones (Valus is the regression boss).
 var _pre_etap6_results := {}
 var _etap6_started := false
+var _pre_etap7_results := {}
+var _etap7_started := false
 const BASELINE_PATH := "res://tests/baseline/etap2_baseline.json"
 ## Agro metrics (horse_*) are frozen separately, so the stage 2/3 baseline stays untouched.
 const HORSE_BASELINE_PATH := "res://tests/baseline/etap4_horse_baseline.json"
@@ -165,6 +167,26 @@ func _ready() -> void:
 		test_horse_heading_is_not_changed_by_aim,
 		test_arrow_hit_can_trigger_colossus_reaction,
 		all_valus_and_earlier_tests_still_pass,
+		# --- ETAP 7: Gaius, art, Quadratus loop, bow polish ---
+		test_gaius_sword_follows_the_arm,
+		test_gaius_slam_has_telegraph_and_stuck_window,
+		test_gaius_slam_point_locks_for_a_late_dodge,
+		test_gaius_blade_is_a_walkable_ramp,
+		test_gaius_climb_route_blade_to_shoulders,
+		test_gaius_grip_on_sword_arm_has_no_drift,
+		test_gaius_helmet_breaks_after_charged_strikes,
+		test_armor_plate_rejects_invalid_hits,
+		test_gaius_can_be_defeated,
+		test_gaius_scripted_driver_can_complete_fight,
+		test_gaius_simulation_independent_of_render_fps,
+		test_gaius_cost_stays_within_budget,
+		test_attacks_respect_cooldowns_all_bosses,
+		test_art_layer_does_not_change_gameplay,
+		test_quadratus_lurch_unsettles_standing_player_fairly,
+		test_quadratus_crown_needs_second_kneel,
+		test_bow_aim_zooms_camera_over_shoulder,
+		test_arrow_glances_off_stone,
+		all_etap6_and_earlier_tests_still_pass,
 	]
 	for t in tests:
 		var name := t.get_method()
@@ -186,6 +208,10 @@ func _ready() -> void:
 			_etap6_started = true
 		if not _etap6_started:
 			_pre_etap6_results[name] = ok
+		if name == "test_gaius_sword_follows_the_arm":
+			_etap7_started = true
+		if not _etap7_started:
+			_pre_etap7_results[name] = ok
 		print("%s %s (%d ms)" % ["PASS" if ok else "FAIL", name, Time.get_ticks_msec() - t0])
 		for line in _log:
 			print("    ", line)
@@ -3968,13 +3994,15 @@ func test_quadratus_body_reaction_is_fair() -> void:
 			q._on_sole_hit({"tag": 2, "point": q.sole_world(2)})
 		await _ticks(1)
 		t += DT
-		var shaking := q.intent.kind == Quadratus.SHAKE_BODY
+		# Body reactions: the torso shake and the lurch step share the rules.
+		var shaking: bool = q.intent.kind in q._shake_kinds()
 		if shaking and cur.is_empty():
-			cur = {"start": t, "first_motion": -1.0}
-		if shaking and q._shake > 0.05 and cur.first_motion < 0.0:
+			cur = {"start": t, "first_motion": -1.0, "kind": q.intent.kind}
+		var moving := q._shake > 0.05 or (q.intent.kind == Quadratus.LURCH and q.loco.speed > 0.3)
+		if shaking and moving and cur.first_motion < 0.0:
 			cur.first_motion = t
 		if not shaking and not cur.is_empty():
-			shakes.append([cur.start, (cur.first_motion - cur.start) if cur.first_motion > 0.0 else -1.0, t - cur.start])
+			shakes.append([cur.start, (cur.first_motion - cur.start) if cur.first_motion > 0.0 else -1.0, t - cur.start, cur.kind])
 			cur = {}
 		if shaking and q.buckle != Quadratus.Buckle.NONE:
 			kneel_shake += 1
@@ -3987,9 +4015,12 @@ func test_quadratus_body_reaction_is_fair() -> void:
 		max_len = maxf(max_len, shakes[i][2])
 		if i > 0:
 			min_gap = minf(min_gap, shakes[i][0] - (shakes[i - 1][0] + shakes[i - 1][2]))
-	_log.append("player on the back 60 s: %d shakes, brace before motion min %.2f s, longest %.2f s, shortest gap %.2f s, shakes while kneeling %d ticks; ground attacks %s" % [shakes.size(), min_brace, max_len, min_gap, kneel_shake, str(attacks)])
+	var kinds := {}
+	for sh in shakes:
+		kinds[sh[3]] = int(kinds.get(sh[3], 0)) + 1
+	_log.append("player on the back 60 s: %d body reactions %s, brace before motion min %.2f s, longest %.2f s, shortest gap %.2f s, shakes while kneeling %d ticks; ground attacks %s" % [shakes.size(), str(kinds), min_brace, max_len, min_gap, kneel_shake, str(attacks)])
 	_check(shakes.size() >= 2, "it never tried to shake the player off")
-	_check(min_brace >= q.shake_telegraph - 0.05, "shake without a telegraph (%.2f s)" % min_brace)
+	_check(min_brace >= minf(q.shake_telegraph, q.lurch_telegraph) - 0.05, "body reaction without a telegraph (%.2f s)" % min_brace)
 	_check(max_len <= q.shake_max_duration + 0.3, "shake too long (%.2f s)" % max_len)
 	_check(min_gap >= q.shake_cooldown * 0.3 - 0.05, "shakes back to back (%.2f s)" % min_gap)
 	_check(kneel_shake == 0, "shook while kneeling (the climb window)")
@@ -4468,4 +4499,622 @@ func all_valus_and_earlier_tests_still_pass() -> void:
 		if not _pre_etap6_results[n]:
 			failed.append(n)
 	_log.append("%d earlier tests (Milestone 1, Etap 2-5) ran in this run, %d failed %s" % [ran, failed.size(), str(failed) if failed.size() > 0 else ""])
+	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))
+
+
+# --- ETAP 7: Gaius, art layer, Quadratus loop and lurch, bow polish -----------------------
+
+func _setup_gaius(seed_value := 13, frozen := false) -> Dictionary:
+	Sfx.enabled = false
+	Fx.enabled = false
+	_world = Node3D.new()
+	_world.name = "World_" + _current
+	add_child(_world)
+	var w := GaiusArena.build_encounter(_world, false, seed_value)
+	if frozen:
+		(w.gaius as Gaius).debug_override = &"frozen"
+	await _ticks(2)
+	return w
+
+
+## Starts a slam at a point in front of Gaius (the player stands there, then steps out).
+func _provoke_slam(w: Dictionary) -> void:
+	var g: Gaius = w.gaius
+	var p: PlayerCharacter = w.player
+	g._set_encounter(Gaius.Encounter.COMBAT)
+	p.global_position = g.global_transform * Vector3(-2.5, 0.95, -15.0)
+	p.velocity = Vector3.ZERO
+	p.reset_physics_interpolation()
+	for i in 60 * 8:
+		await _ticks(1)
+		if g.attack != null and not g.attack.is_done() and g.attack.kind == Gaius.SWORD_SLAM and g.attack.phase == ColossusAttack.Phase.TELEGRAPH and g.attack.phase_t() > 0.7:
+			break
+	# Out of the shockwave, to the side.
+	p.global_position = g.global_transform * Vector3(12.0, 0.95, -12.0)
+	p.velocity = Vector3.ZERO
+	p.reset_physics_interpolation()
+
+
+func test_gaius_sword_follows_the_arm() -> void:
+	var w := await _setup_gaius()
+	var g: Gaius = w.gaius
+	var sword := g._seg_by_bone[&"sword"] as BodySegment
+	var hand := g._seg_by_bone[&"hand_r"] as BodySegment
+	var max_err := 0.0
+	var phases := {}
+	await _provoke_slam(w)
+	var tip_err := 99.0
+	var face := 0.0
+	var slope := 0.0
+	var max_step := 0.0
+	var prev := g.blade_tip()
+	for i in 60 * 12:
+		await _ticks(1)
+		# The sword segment is rigidly held: its origin stays at the grip in the hand.
+		max_err = maxf(max_err, sword.target_transform.origin.distance_to(hand.target_transform * Gaius.SWORD_GRIP))
+		var tip := g.blade_tip()
+		max_step = maxf(max_step, tip.distance_to(prev))
+		prev = tip
+		if g.sword_stuck():
+			phases["stuck"] = true
+			tip_err = minf(tip_err, _flatv(tip - g.slam_point).length() + absf(tip.y - g.slam_point.y))
+			face = sword.target_transform.basis.z.normalized().y
+			var h := hand.target_transform.origin
+			slope = rad_to_deg(asin(clampf((h.y - tip.y) / h.distance_to(tip), -1.0, 1.0)))
+	_log.append("sword grip vs hand max %.6f m; stuck: tip vs slam point %.3f m, flat face up %.2f, blade slope %.1f deg; tip max %.2f m/tick" % [max_err, tip_err, face, slope, max_step])
+	_check(phases.has("stuck"), "the sword never got stuck in the ground")
+	_check(max_err < 1e-4, "the sword is not held by the hand")
+	_check(tip_err < 0.4, "the blade tip is not at the slam point (%.2f m)" % tip_err)
+	_check(face > 0.85, "the blade's flat face does not face up (%.2f)" % face)
+	_check(slope > 12.0 and slope < 40.0, "the stuck blade is no walkable ramp (%.1f deg)" % slope)
+
+
+func test_gaius_slam_has_telegraph_and_stuck_window() -> void:
+	var w := await _setup_gaius()
+	var g: Gaius = w.gaius
+	var rec := {"phases": [], "zones_in_telegraph": 0, "intents_stuck": {}}
+	g.attack_phase_changed.connect(func(a: ColossusAttack) -> void:
+		if a.kind == Gaius.SWORD_SLAM:
+			rec.phases.append([ColossusAttack.Phase.keys()[a.phase], g._time]))
+	await _provoke_slam(w)
+	var t_stuck := 0.0
+	for i in 60 * 14:
+		await _ticks(1)
+		if g.attack != null and g.attack.kind == Gaius.SWORD_SLAM and g.attack.phase == ColossusAttack.Phase.TELEGRAPH and not g.get_danger_zones().is_empty():
+			rec.zones_in_telegraph += 1
+		if g.sword_stuck():
+			t_stuck += DT
+			rec.intents_stuck[g.intent.kind] = true
+	var times := {}
+	for k in range(1, rec.phases.size()):
+		times[rec.phases[k - 1][0]] = float(rec.phases[k][1]) - float(rec.phases[k - 1][1])
+	_log.append("slam phases %s; durations %s; stuck %.1f s, intents while stuck %s, danger zone ticks in the wind-up %d" % [str(rec.phases.map(func(x: Array) -> String: return x[0])), str(times), t_stuck, str(rec.intents_stuck.keys()), rec.zones_in_telegraph])
+	_check(float(times.get("TELEGRAPH", 0.0)) >= 1.4, "slam telegraph too short")
+	_check(t_stuck >= g.stuck_time - 0.1, "the blade does not stay stuck for the climb window (%.1f s)" % t_stuck)
+	_check(not ColossusIntent.SHAKE_PLAYER in rec.intents_stuck, "it shook while the sword was stuck")
+	# Counted from 70 % of the wind-up on (the setup waits for the slam to be sure).
+	_check(rec.zones_in_telegraph > 20, "no danger zone during the wind-up (Agro / AI)")
+
+
+func test_gaius_slam_point_locks_for_a_late_dodge() -> void:
+	var w := await _setup_gaius()
+	var g: Gaius = w.gaius
+	var p: PlayerCharacter = w.player
+	g._set_encounter(Gaius.Encounter.COMBAT)
+	p.global_position = g.global_transform * Vector3(-2.5, 0.95, -15.0)
+	p.reset_physics_interpolation()
+	var locked_at := Vector3.ZERO
+	var moved_after := 0.0
+	var hp0 := p.health
+	for i in 60 * 10:
+		await _ticks(1)
+		var a := g.attack
+		if a != null and not a.is_done() and a.kind == Gaius.SWORD_SLAM and a.phase == ColossusAttack.Phase.TELEGRAPH:
+			if a.phase_t() > 0.55 and locked_at == Vector3.ZERO:
+				locked_at = g.slam_point
+				# Late dodge: sideways, 9 m.
+				p.global_position = g.global_transform * Vector3(7.0, 0.95, -15.0)
+				p.reset_physics_interpolation()
+			if locked_at != Vector3.ZERO:
+				moved_after = maxf(moved_after, g.slam_point.distance_to(locked_at))
+		if g.sword_stuck():
+			break
+	_log.append("slam point after 55%% of the wind-up moved %.3f m; late dodge: HP %.0f -> %.0f" % [moved_after, hp0, p.health])
+	_check(locked_at != Vector3.ZERO, "no slam observed")
+	_check(moved_after < 0.01, "the slam point kept following after it locked")
+	_check(p.health >= hp0, "a late dodge out of the shockwave still got hit")
+
+
+## Puts the player on the stuck blade near its tip.
+func _onto_blade(w: Dictionary) -> void:
+	var g: Gaius = w.gaius
+	var p: PlayerCharacter = w.player
+	var tip := g.blade_tip()
+	var hand := (g._seg_by_bone[&"hand_r"] as BodySegment).target_transform.origin
+	p.global_position = tip.lerp(hand, 0.15) + Vector3.UP * 1.3
+	p.velocity = Vector3.ZERO
+	p.reset_physics_interpolation()
+	p.set_weapon(PlayerCharacter.Weapon.SWORD)
+	await _ticks(20)
+
+
+func test_gaius_blade_is_a_walkable_ramp() -> void:
+	var w := await _setup_gaius()
+	var g: Gaius = w.gaius
+	var p: PlayerCharacter = w.player
+	await _provoke_slam(w)
+	for i in 120:
+		await _ticks(1)
+		if g.sword_stuck():
+			break
+	await _onto_blade(w)
+	var start_y := p.global_position.y
+	var on_blade_ticks := 0
+	var fist := (g._seg_by_bone[&"hand_r"] as BodySegment).target_transform * Vector3(0, -0.9, 0)
+	var closest := 99.0
+	for i in 60 * 5:
+		var to := fist - p.global_position
+		p.actions.view_basis = Basis.looking_at(_flatv(to).normalized())
+		p.actions.move = Vector2(0, 1)
+		await _ticks(1)
+		var s: Object = p.get_support_body()
+		if s is BodySegment and (s as BodySegment).bone_name == &"sword":
+			on_blade_ticks += 1
+		closest = minf(closest, p.global_position.distance_to(fist))
+	p.actions.move = Vector2.ZERO
+	_log.append("walking up the stuck blade: %d ticks standing on it, climbed %.1f m, closest to the fist %.2f m, state %s" % [on_blade_ticks, p.global_position.y - start_y, closest, p.get_display_state()])
+	_check(on_blade_ticks > 60, "could not stand on the blade")
+	_check(p.global_position.y - start_y > 2.0, "could not walk up the blade")
+	_check(closest < 2.6, "did not reach the fist")
+
+
+func test_gaius_climb_route_blade_to_shoulders() -> void:
+	var w := await _setup_gaius()
+	var g: Gaius = w.gaius
+	var p: PlayerCharacter = w.player
+	g.debug_override = &""
+	var bot := GaiusBot.new()
+	_world.add_child(bot)
+	bot.setup(p, g, w.encounter)
+	var reached := -1.0
+	var grabbed := -1.0
+	for i in 60 * 120:
+		await _ticks(1)
+		if grabbed < 0.0 and p.is_climbing() and bot._grip_bone() == &"hand_r":
+			grabbed = i * DT
+		if g.region_of(p) == &"shoulder":
+			reached = i * DT
+			break
+	_log.append("bot: grabbed the fist at %.1f s, standing on the shoulders at %.1f s (slams %d)" % [grabbed, reached, int(g.stats.attacks.get(Gaius.SWORD_SLAM, 0))])
+	_check(grabbed > 0.0, "never got from the blade to the fist")
+	_check(reached > 0.0, "never reached the shoulders over the sword arm")
+
+
+func test_gaius_grip_on_sword_arm_has_no_drift() -> void:
+	var w := await _setup_gaius()
+	var g: Gaius = w.gaius
+	var p: PlayerCharacter = w.player
+	await _provoke_slam(w)
+	for i in 120:
+		await _ticks(1)
+		if g.sword_stuck():
+			break
+	# Grip the forearm fur and hold on through the pull-out and the swing back.
+	var fore := g._seg_by_bone[&"forearm_r"] as BodySegment
+	var c := fore.target_transform * Vector3(0, -2.0, 0)
+	var n := fore.target_transform.basis.z.normalized()
+	p.global_position = c + Vector3.UP * 1.6
+	p.reset_physics_interpolation()
+	p.actions.grab_held = true
+	for i in 40:
+		await _ticks(1)
+		if p.is_climbing():
+			break
+	var held := p.is_climbing()
+	var local0: Vector3 = p.grip.local_point if held else Vector3.ZERO
+	var max_err := 0.0
+	var max_local := 0.0
+	var moved := 0.0
+	var prev := p.global_position
+	for i in 60 * 12:
+		p.stamina.value = 100.0
+		await _ticks(1)
+		if not p.is_climbing():
+			break
+		max_err = maxf(max_err, _surface_error(p))
+		max_local = maxf(max_local, p.grip.local_point.distance_to(local0))
+		moved += p.global_position.distance_to(prev)
+		prev = p.global_position
+	_log.append("gripping the sword arm through the pull-out (12 s): held %s / still %s, carried %.1f m, anchor vs surface %.6f m, local drift %.6f m" % [str(held), str(p.is_climbing()), moved, max_err, max_local])
+	_check(held and p.is_climbing(), "lost the grip on the sword arm")
+	_check(moved > 2.0, "the arm did not carry the player")
+	_check(max_err < 0.02, "anchor left the surface")
+	_check(max_local < 1e-4, "anchor drifted on the bone")
+
+
+func test_gaius_helmet_breaks_after_charged_strikes() -> void:
+	var w := await _setup_gaius(13, true)
+	var g: Gaius = w.gaius
+	var p: PlayerCharacter = w.player
+	g._set_encounter(Gaius.Encounter.COMBAT)
+	await _ticks(90)
+	var head := g._seg_by_bone[&"head"] as BodySegment
+	p.set_weapon(PlayerCharacter.Weapon.SWORD)
+	p.global_position = head.target_transform * Vector3(0, 3.0 + 1.0, 0.1)
+	p.velocity = Vector3.ZERO
+	p.facing = g.global_basis.z
+	p.reset_physics_interpolation()
+	await _ticks(40)
+	var wp_before := g.weak_point.state_name()
+	var weak := await _sword_strike(p, 0.2)
+	await _ticks(40)
+	var results := [weak.get("reason", "-")]
+	var n := 0
+	while not g.helmet.is_broken and n < 6:
+		p.stamina.value = 100.0
+		var r := await _sword_strike(p, 1.25)
+		results.append(r.get("reason", "-"))
+		await _ticks(40)
+		n += 1
+	var shape_off := g.helmet.shape.disabled
+	_log.append("on the helmet: weak point %s; strikes %s; helmet broken %s after %d charged strikes, its collision off %s, weak point now %s" % [wp_before, str(results), str(g.helmet.is_broken), n, str(shape_off), g.weak_point.state_name()])
+	_check(wp_before == "PROTECTED", "the weak point was open under the helmet")
+	_check(results[0] == &"too_weak", "a weak strike cracked the helmet")
+	_check(g.helmet.is_broken and n == g.helmet_hits, "helmet did not break after %d charged strikes" % g.helmet_hits)
+	_check(shape_off, "the broken helmet still collides")
+	_check(g.weak_point.state == WeakPoint.State.OPEN, "the weak point did not open")
+
+
+func test_armor_plate_rejects_invalid_hits() -> void:
+	var w := await _setup_gaius(13, true)
+	var g: Gaius = w.gaius
+	var plate := g.helmet
+	var at := plate.world_point()
+	var rows := []
+	rows.append(plate.try_hit(at, 1.0, &"arrow").reason)
+	rows.append(plate.try_hit(at + Vector3.UP * 3.0, 1.0, &"sword").reason)
+	rows.append(plate.try_hit(at, 0.3, &"sword").reason)
+	rows.append(plate.try_hit(at, 0.9, &"sword").reason)
+	_log.append("arrow / out of range / weak / charged: %s, hits %d" % [str(rows), plate.hits])
+	_check(rows == [&"not_a_sword", &"out_of_range", &"too_weak", &"armor_cracked"], "armour plate rules wrong: %s" % str(rows))
+
+
+func test_gaius_can_be_defeated() -> void:
+	var w := await _setup_gaius(13, true)
+	var g: Gaius = w.gaius
+	var p: PlayerCharacter = w.player
+	var e: BossEncounter = w.encounter
+	g._set_encounter(Gaius.Encounter.COMBAT)
+	await _ticks(90)
+	for k in g.helmet_hits:
+		g.helmet.try_hit(g.helmet.world_point(), 1.0, &"sword")
+	await _ticks(60)
+	var head := g._seg_by_bone[&"head"] as BodySegment
+	p.global_position = head.target_transform * (Gaius.WEAK_POINT_LOCAL + Vector3(0, 1.1, 0.15))
+	p.velocity = Vector3.ZERO
+	p.facing = g.global_basis.z
+	p.reset_physics_interpolation()
+	await _ticks(30)
+	p.actions.grab_held = true
+	await _ticks(5)
+	var n := 0
+	while g.encounter != Gaius.Encounter.DEFEATED and n < 6:
+		p.stamina.value = 100.0
+		await _sword_strike(p, 1.25)
+		await _ticks(30)
+		n += 1
+	for i in 60 * 9:
+		await _ticks(1)
+	var head_y := (head.target_transform * Gaius.WEAK_POINT_LOCAL).y
+	_log.append("helmet broken, %d full strikes: %s, banner '%s', head top after the kneel %.1f m" % [n, g.encounter_name(), e.banner, head_y])
+	_check(g.encounter == Gaius.Encounter.DEFEATED, "not defeated")
+	_check(e.banner == "COLOSSUS DEFEATED", "no defeat banner")
+	_check(n <= 4, "too many strikes (%d)" % n)
+	_check(head_y < 4.5, "the defeated Gaius leaves the head too high (%.1f m)" % head_y)
+
+
+func test_gaius_scripted_driver_can_complete_fight() -> void:
+	var w := await _setup_gaius()
+	var bot := GaiusBot.new()
+	_world.add_child(bot)
+	bot.setup(w.player, w.gaius, w.encounter)
+	for i in 60 * 360:
+		await _ticks(1)
+		if bot.phase == ValusBot.Phase.DONE:
+			break
+	var r := bot.result
+	_log.append("%s in %.1f s; %s; boss %s" % ["WIN" if r.get("won", false) else "NO WIN", r.get("time", -1.0), str(r.get("stats", {})), str(r.get("boss", {}))])
+	_metric("gaius_bot_time", r.get("time", 999.0), "lower")
+	_check(r.get("won", false), "the scripted driver did not beat Gaius: %s" % " | ".join(bot.events.slice(-8)))
+
+
+func test_gaius_simulation_independent_of_render_fps() -> void:
+	var exe := OS.get_executable_path()
+	var rates := [30, 60, 90, 120, 144, 240]
+	var results := {}
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/gaius_fps_%d.json" % fps)
+		var output := []
+		var code := OS.execute(exe, ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=gaius", "--out=" + out_path], output, true)
+		if code != 0 or not FileAccess.file_exists(out_path):
+			_check(false, "gaius scenario at %d fps failed (code %d)" % [fps, code])
+			return
+		results[fps] = JSON.parse_string(FileAccess.get_file_as_string(out_path))
+	var diff := _max_json_diff(results, rates)
+	var ref: Dictionary = results[60]
+	_log.append("Gaius fight (bot) at %s fps: won %s at tick %d, slams %d, max state difference %.8f" % [str(rates), str(ref.won), int(ref.tick), int(ref.slams), diff])
+	_metric("gaius_fps_max_diff", diff, "lower")
+	_check(int(ref.won) == 1, "reference run did not win")
+	_check(diff < 1e-4, "the Gaius fight depends on the render rate (diff %.6f)" % diff)
+
+
+func test_gaius_cost_stays_within_budget() -> void:
+	Fx.enabled = true
+	var w := await _setup_gaius()
+	Fx.enabled = true
+	var g: Gaius = w.gaius
+	var bot := GaiusBot.new()
+	_world.add_child(bot)
+	bot.setup(w.player, g, w.encounter)
+	await _ticks(60 * 10)
+	Perf.take()
+	var ticks := 60 * 25
+	var physics_ms := 0.0
+	for i in ticks:
+		await _ticks(1)
+		physics_ms += Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
+	var m := Perf.take()
+	var u: Dictionary = m.usec
+	var per := func(k: StringName) -> float: return float(u.get(k, 0)) / ticks
+	var colossus: float = per.call(&"colossus")
+	_log.append("Gaius fight (bot, 25 s: slams, blade, arm): colossus %.1f us/tick = brain %.1f + combat %.1f + hits %.1f + pose (sword arm IK incl.) %.1f + locomotion %.1f + IK %.1f; player %.1f (climb %.1f); physics tick %.3f ms" % [colossus, per.call(&"brain"), per.call(&"boss_combat"), per.call(&"boss_hits"), per.call(&"boss_pose"), per.call(&"locomotion"), per.call(&"ik"), per.call(&"player"), per.call(&"climb"), physics_ms / ticks])
+	_metric("gaius_colossus_us", colossus, "lower")
+	_check(colossus < 500.0, "Gaius logic too expensive: %.0f us/tick" % colossus)
+	Fx.enabled = false
+
+
+func test_attacks_respect_cooldowns_all_bosses() -> void:
+	# Regression: an attack that ran to DONE must start its cooldown (FairnessRules).
+	var rows := []
+	for which in ["quadratus", "gaius"]:
+		var w: Dictionary
+		if which == "quadratus":
+			w = await _setup_quadratus()
+		else:
+			w = await _setup_gaius()
+		var c: Colossus = w.quadratus if which == "quadratus" else w.gaius
+		var p: PlayerCharacter = w.player
+		c.call(&"_set_encounter", 3)  # COMBAT
+		var starts := {}
+		# Attacks that really happened (wound up); one given up before its telegraph is not.
+		c.attack_phase_changed.connect(func(a: ColossusAttack) -> void:
+			if a.phase != ColossusAttack.Phase.TELEGRAPH:
+				return
+			if not starts.has(a.kind):
+				starts[a.kind] = []
+			starts[a.kind].append(c._time))
+		for i in 60 * 50:
+			# Keep standing in its attack range (and out of the way after each hit).
+			if i % 120 == 0:
+				var local := Vector3(-2.5, 0.95, -15.0) if which == "gaius" else Vector3(-4.0, 0.95, -11.0)
+				p.global_position = c.global_transform * local
+				p.velocity = Vector3.ZERO
+				p.health = 100.0
+				p.reset_physics_interpolation()
+			await _ticks(1)
+		var rules: FairnessRules = c.get(&"rules")
+		var min_gap := 99.0
+		var worst := ""
+		for kind in starts:
+			var ts: Array = starts[kind]
+			for k in range(1, ts.size()):
+				var gap: float = ts[k] - ts[k - 1]
+				if gap < min_gap:
+					min_gap = gap
+					worst = kind
+		rows.append("%s: starts %s, shortest same-kind gap %.1f s (%s)" % [which, str(starts.keys().map(func(k: StringName) -> String: return "%s x%d" % [k, (starts[k] as Array).size()])), min_gap, worst])
+		for kind in starts:
+			var ts: Array = starts[kind]
+			for k in range(1, ts.size()):
+				_check(float(ts[k]) - float(ts[k - 1]) >= float(rules.cooldowns.get(kind, 0.0)), "%s: %s again after %.1f s (cooldown %.1f)" % [which, kind, float(ts[k]) - float(ts[k - 1]), float(rules.cooldowns.get(kind, 0.0))])
+		_check(starts.size() > 0, "%s never attacked" % which)
+		await _teardown()
+	_log.append("; ".join(rows))
+
+
+func test_art_layer_does_not_change_gameplay() -> void:
+	# 1) The same 8 s of Valus walking with and without art, each in its own process.
+	var exe := OS.get_executable_path()
+	var runs := {}
+	for art in [false, true]:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/art_check_%s.json" % str(art))
+		var args := ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", "60", "--quit-after", "100000", "res://tests/fps_scenario.tscn", "--", "--scenario=art", "--out=" + out_path]
+		if art:
+			args.append("--art")
+		var output := []
+		var code := OS.execute(exe, args, output, true)
+		if code != 0 or not FileAccess.file_exists(out_path):
+			_check(false, "art scenario failed (code %d)" % code)
+			return
+		runs[art] = JSON.parse_string(FileAccess.get_file_as_string(out_path))
+	var diff := _max_json_diff({60: runs[false], 61: runs[true]}, [60, 61])
+	# 2) Collision and climb surfaces of the colossus, and what is drawn.
+	var facts := []
+	for art in [false, true]:
+		Sfx.enabled = false
+		Fx.enabled = false
+		_world = Node3D.new()
+		_world.name = "World_%s_%s" % [_current, str(art)]
+		add_child(_world)
+		var w := ValusArena.build_encounter(_world, false, 7, art)
+		var v: Valus = w.valus
+		await _ticks(5)
+		var shapes := 0
+		var patches := 0
+		var art_nodes := 0
+		var visible_greybox := 0
+		for sg in v.segments:
+			for c in sg.get_children():
+				if c is CollisionShape3D:
+					shapes += 1
+					if c is ClimbPatch:
+						patches += 1
+				elif c.name == "ArtVisual":
+					art_nodes += 1
+				elif c is MeshInstance3D and (c as MeshInstance3D).visible:
+					visible_greybox += 1
+		# New collision from art props stays outside the fight (radius 55 m).
+		var near_new := 0
+		var terrain := false
+		for c in _world.get_children():
+			if c.get_script() == ArenaArt.Asset and (c as Node3D).collidable and _flatv((c as Node3D).global_position).length() < 55.0:
+				near_new += 1
+			if c.name == "Ground":
+				for m in c.get_children():
+					if m is MeshInstance3D and (m as MeshInstance3D).material_override == ArenaArt.TERRAIN:
+						terrain = true
+		facts.append({"shapes": shapes, "patches": patches, "art": art_nodes, "greybox_visible": visible_greybox, "art_collision_in_fight": near_new, "terrain": terrain})
+		await _teardown()
+	_log.append("8 s of walking, art off / on in separate processes: max state difference %.8f; colossus off %s / on %s" % [diff, str(facts[0]), str(facts[1])])
+	_check(diff < 1e-6, "the art layer changed the simulation (%.6f)" % diff)
+	_check(facts[0].shapes == facts[1].shapes and facts[0].patches == facts[1].patches, "the art layer changed collision / climb surfaces")
+	_check(int(facts[1].art) == 17 and bool(facts[1].terrain), "the art was not attached")
+	_check(int(facts[1].greybox_visible) < int(facts[0].greybox_visible), "greybox parts still drawn under the art")
+	_check(int(facts[1].art_collision_in_fight) == 0, "art props with collision inside the fight area")
+
+
+func test_quadratus_lurch_unsettles_standing_player_fairly() -> void:
+	var w := await _setup_quadratus()
+	var q: Quadratus = w.quadratus
+	var p: PlayerCharacter = w.player
+	q._set_encounter(Quadratus.Encounter.COMBAT)
+	await _ticks(30)
+	var body := q._seg_by_bone[&"body"] as BodySegment
+	var lurches := []
+	var cur := {}
+	var falls := 0
+	for i in 60 * 40:
+		if p.state == PlayerCharacter.State.GROUND and not q.owns_body(p.get_support_body()) or i == 0:
+			p.global_position = body.target_transform * Vector3(0, 3.3, 1.5)
+			p.velocity = Vector3.ZERO
+			p.reset_physics_interpolation()
+			if i > 0:
+				falls += 1
+		p.stamina.value = 100.0
+		await _ticks(1)
+		if q.intent.kind == Quadratus.LURCH:
+			if cur.is_empty():
+				cur = {"t0": i * DT, "move": -1.0, "min_bal": 1.0, "peak_speed": 0.0}
+			if q.loco.speed > 0.3 and cur.move < 0.0:
+				cur.move = i * DT
+			cur.min_bal = minf(cur.min_bal, p.balance.value)
+			cur.peak_speed = maxf(cur.peak_speed, q.loco.speed)
+		elif not cur.is_empty():
+			lurches.append(cur)
+			cur = {}
+	var briefs := lurches.map(func(l: Dictionary) -> String: return "brace %.2f s, peak %.1f m/s, balance min %.2f" % [l.move - l.t0 if l.move > 0.0 else -1.0, l.peak_speed, l.min_bal])
+	_log.append("40 s standing on the back: %d lurches [%s], thrown off %d times" % [lurches.size(), "; ".join(briefs), falls])
+	_check(lurches.size() >= 2, "it never lurched against a standing player")
+	for l in lurches:
+		_check(l.move < 0.0 or l.move - l.t0 >= q.lurch_telegraph - 0.05, "lurch without a telegraph")
+		_check(l.min_bal < 0.8, "a lurch did not unsettle the standing player")
+
+
+func test_quadratus_crown_needs_second_kneel() -> void:
+	var w := await _setup_quadratus(11, true)
+	var q: Quadratus = w.quadratus
+	q._set_encounter(Quadratus.Encounter.COMBAT)
+	await _ticks(30)
+	var states := ["start " + q.crown.state_name()]
+	q._on_sole_hit({"tag": 2, "point": q.sole_world(2)})
+	await _ticks(120)
+	states.append("kneel, rump intact " + q.crown.state_name())
+	for k in 3:
+		q.rump.try_hit(q.rump.world_point(), 1.0, &"sword")
+	await _ticks(5)
+	var rising := q.buckle_name()
+	states.append("rump destroyed (%s) %s" % [rising, q.crown.state_name()])
+	for i in 60 * 6:
+		await _ticks(1)
+	states.append("standing again " + q.crown.state_name())
+	q._buckle_cooldown_left = 0.0
+	q._on_sole_hit({"tag": 3, "point": q.sole_world(3)})
+	await _ticks(120)
+	states.append("second kneel " + q.crown.state_name())
+	var t := 0.0
+	while q.buckle != Quadratus.Buckle.RISE and t < 30.0:
+		await _ticks(1)
+		t += DT
+	states.append("it rises after %.1f s: %s" % [t, q.crown.state_name()])
+	_log.append(" -> ".join(states))
+	_check(states[0].ends_with("PROTECTED") and states[1].ends_with("PROTECTED"), "the crown was open before the rump was destroyed")
+	_check(rising == "RISE", "it did not get up when the rump was destroyed")
+	_check(states[3].ends_with("PROTECTED"), "the crown open while it stands")
+	_check(states[4].ends_with("OPEN"), "the crown did not open on the second kneel")
+	# t counts from 2 s after the hit; the kneel starts after the reaction.
+	_check(t + 2.0 - q.react_time >= q.kneel_time_crown - 0.05, "the second kneel was not the long one")
+
+
+func test_bow_aim_zooms_camera_over_shoulder() -> void:
+	var w := await _setup_quadratus()
+	var p: PlayerCharacter = w.player
+	var cam: PlayerCamera = w.camera
+	p.set_weapon(PlayerCharacter.Weapon.BOW)
+	await _ticks(60)
+	var d0 := cam.get_distance()
+	var fov0 := cam.fov
+	p.actions.attack_held = true
+	var d1 := 99.0
+	for i in 60:
+		await _process_frames(1)
+		d1 = minf(d1, cam.get_distance())
+	var fov1 := cam.fov
+	var side := (cam.global_position - p.global_position).dot(cam.global_basis.x)
+	p.actions.attack_held = false
+	await _process_frames(90)
+	_log.append("camera: %.1f m / fov %.0f -> drawing %.1f m / fov %.0f, %.2f m to the right of the archer -> after the shot %.1f m / fov %.0f" % [d0, fov0, d1, fov1, side, cam.get_distance(), cam.fov])
+	_check(d1 < d0 - 1.0 and fov1 < fov0 - 10.0, "no aiming view while drawing")
+	_check(side > 0.3, "the aiming view is not over the right shoulder")
+	_check(absf(cam.fov - fov0) < 1.0, "the view did not return after the shot")
+
+
+func _process_frames(n: int) -> void:
+	for i in n:
+		await get_tree().process_frame
+
+
+func test_arrow_glances_off_stone() -> void:
+	var w := await _setup_quadratus(11, true)
+	var q: Quadratus = w.quadratus
+	var p: PlayerCharacter = w.player
+	await _ticks(30)
+	p.global_position = q.global_transform * Vector3(-12, 0.95, -5)
+	p.reset_physics_interpolation()
+	p.set_weapon(PlayerCharacter.Weapon.BOW)
+	await _ticks(10)
+	var reasons := []
+	var sys := ArrowSystem.of(p)
+	sys.impact.connect(func(info: Dictionary) -> void: reasons.append([info.reason, (info.segment as BodySegment).bone_name if info.segment else &"ground"]))
+	# Stone: the front hoof. Fur: the thigh.
+	for target in [(q._seg_by_bone[&"fl_low"] as BodySegment).target_transform * Vector3(0, -1.8, 0), (q._seg_by_bone[&"body"] as BodySegment).target_transform * Vector3(-3.2, 0.0, -1.0)]:
+		_aim_bow(p, PlayerBow.launch_direction(p.bow.bow_point(p), target, p.bow.speed_for(1.0)))
+		var a := await _shoot(p, 1.2)
+		await _wait_arrow(a)
+		await _ticks(10)
+		reasons.append(["--", a.state, str(a.segment.bone_name) if a.segment else "-"])
+	_log.append("impacts: %s" % str(reasons))
+	_check(reasons[0][0] == &"bounce" and reasons[0][1] == &"fl_low", "the arrow did not glance off the stone shin")
+	var last_fur: Array = reasons[-1]
+	_check(last_fur[1] == &"stuck" and last_fur[2] == "body", "the arrow did not stick in the fur")
+
+
+## Everything that ran before the Etap 7 tests passed.
+func all_etap6_and_earlier_tests_still_pass() -> void:
+	var ran := 0
+	var failed := PackedStringArray()
+	for n in _pre_etap7_results:
+		ran += 1
+		if not _pre_etap7_results[n]:
+			failed.append(n)
+	_log.append("%d earlier tests (Milestone 1, Etap 2-6) ran in this run, %d failed %s" % [ran, failed.size(), str(failed) if failed.size() > 0 else ""])
 	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))

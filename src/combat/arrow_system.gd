@@ -17,6 +17,10 @@ signal impact(info: Dictionary)
 @export var max_flight_time := 8.0
 @export var stuck_life := 12.0
 @export var max_arrows := 48
+## Arrows glance off stone / armour on a colossus (at most this many times), keeping
+## this share of their speed.
+@export var max_bounces := 2
+@export var bounce_keep := 0.3
 
 ## Each arrow: {"id", "pos", "vel", "state" (&"flying"/&"stuck"), "age", "owner",
 ## "segment" (BodySegment or null), "local" (Transform3D in the segment), "node"}.
@@ -145,6 +149,16 @@ func _fly(a: Dictionary, delta: float, space: PhysicsDirectSpaceState3D, targets
 		return
 	if not hit.is_empty():
 		var seg := hit.collider as BodySegment
+		# Stone and armour on a colossus: the arrow glances off (fur and the ground take it).
+		if seg != null and ClimbQuery.patch_from_hit(hit) == null and int(a.get("bounces", 0)) < max_bounces and v0.length() > 8.0:
+			var n: Vector3 = hit.normal
+			a.bounces = int(a.get("bounces", 0)) + 1
+			a.pos = (hit.position as Vector3) + n * 0.05
+			a.vel = v0.bounce(n) * bounce_keep + seg.local_point_velocity(seg.target_transform.affine_inverse() * (hit.position as Vector3), delta)
+			(a.path as PackedVector3Array).append(a.pos)
+			(a.node as Node3D).global_transform = _arrow_xf(a.pos, a.vel)
+			_report(a, hit.position, seg, {"accepted": false, "reason": &"bounce", "target": null, "point": hit.position, "arrow": a, "tag": null})
+			return
 		_stick(a, hit.position, v0, seg, hit.collider as Node3D)
 		_report(a, hit.position, seg, {"accepted": false, "reason": &"surface", "target": null, "point": hit.position, "arrow": a, "tag": null})
 		return

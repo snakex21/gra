@@ -101,6 +101,7 @@ func observe() -> ColossusObservation:
 		info.distance = player.global_position.distance_to(global_position)
 		var support: Object = player.get_support_body() if player.has_method(&"get_support_body") else null
 		info.on_body = owns_body(support) or _time_on_body.has(player.get_instance_id())
+		info.climbing = player.has_method(&"is_climbing") and player.is_climbing()
 		if owns_body(support):
 			info.segment = (support as BodySegment).bone_name
 		info.time_on_body = _time_on_body.get(player.get_instance_id(), 0.0)
