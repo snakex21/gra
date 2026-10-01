@@ -65,7 +65,7 @@ func _physics_process(delta: float) -> void:
 	_update_time_on_body(delta)
 
 	# Hard encounter rules can end an intent immediately, independent of the brain.
-	if intent.kind == ColossusIntent.SHAKE_PLAYER and _intent_time >= shake_max_duration and debug_override != &"shake":
+	if intent.kind in _shake_kinds() and _intent_time >= shake_max_duration and debug_override != &"shake":
 		_shake_cooldown_left = shake_cooldown
 		_think_left = 0.0
 
@@ -167,6 +167,12 @@ func _post_sync(_delta: float) -> void:
 	pass
 
 
+## Intent kinds that count as "shaking the player off" for the shake rules (maximum
+## duration, cooldown). A colossus with its own way of shaking adds its kinds here.
+func _shake_kinds() -> Array[StringName]:
+	return [ColossusIntent.SHAKE_PLAYER]
+
+
 ## Extra encounter-specific rules. Return intents that must not be chosen right now.
 func _rules_block() -> Array[StringName]:
 	return []
@@ -199,13 +205,13 @@ func _choose_intent(obs: ColossusObservation) -> ColossusIntent:
 func _blocked_intents() -> Array[StringName]:
 	var blocked := _rules_block()
 	if _shake_cooldown_left > 0.0:
-		blocked.append(ColossusIntent.SHAKE_PLAYER)
+		blocked.append_array(_shake_kinds())
 	return blocked
 
 
 func _set_intent(next: ColossusIntent) -> void:
 	if next.kind != intent.kind:
-		if intent.kind == ColossusIntent.SHAKE_PLAYER and _shake_cooldown_left <= 0.0:
+		if intent.kind in _shake_kinds() and _shake_cooldown_left <= 0.0:
 			# Any shake that ends (for whatever reason) starts the cooldown.
 			_shake_cooldown_left = shake_cooldown * clampf(_intent_time / shake_max_duration, 0.3, 1.0)
 		_intent_time = 0.0

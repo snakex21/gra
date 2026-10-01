@@ -14,6 +14,11 @@ var phase := Phase.STANCE
 ## Driven by someone else (an attack such as a stomp): the step planner neither advances nor
 ## re-plans it, but counts it as swinging (the other legs keep supporting the body).
 var scripted := false
+## How well the leg carries the body (1 = normal, 0 = buckled). A weakened leg neither
+## steps nor carries its share, and its knee gives: the body sinks at that corner.
+var support := 1.0
+## Highest hip height (world y) this leg allowed this tick (debug / tests).
+var hip_height_allowed := 0.0
 ## Planted sole point / normal / yaw (valid in STANCE; start point of the next swing).
 var plant_pos := Vector3.ZERO
 var plant_normal := Vector3.UP
