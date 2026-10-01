@@ -15,6 +15,8 @@ var cameras: Array[PlayerCamera] = []
 func _ready() -> void:
 	InputSetup.ensure_defaults()
 	_build_ruins()
+	# Uneven test terrain for locomotion (ramp, bumps, step) beside the colossus.
+	TerrainKit.build_course(self, Vector3(26, 0, -4))
 	for i in player_count:
 		_spawn_player(i)
 	if DisplayServer.get_name() != "headless":
@@ -66,6 +68,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			c.snap_behind_player()
 	elif event.is_action_pressed(&"debug_colossus_mode"):
 		colossus.cycle_debug_override()
+	elif event.is_action_pressed(&"debug_locomotion_mode") and colossus is GreyboxHumanoid:
+		(colossus as GreyboxHumanoid).cycle_locomotion_mode()
+	elif event.is_action_pressed(&"debug_draw") and colossus is GreyboxHumanoid:
+		var draw := (colossus as GreyboxHumanoid).debug_draw
+		draw.visible = not draw.visible
 
 
 ## Static ruins: camera obstacles and a climbable wall (vines = ClimbPatch) with a

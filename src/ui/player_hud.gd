@@ -32,7 +32,7 @@ func _ready() -> void:
 		"HOLD RMB / Shift / R1: grip  (release to let go)",
 		"Space / A: jump (while gripping: leap off / along surface)",
 		"Q / MMB / L1: frame the colossus",
-		"Backspace: respawn   F2: colossus mode   F3: debug   F1: help",
+		"Backspace: respawn   F2: colossus mode   F3: debug + step overlay   F4: locomotion A/B   F1: help",
 		"Click to capture the mouse, Esc to release",
 	])
 	add_child(_help)
@@ -108,6 +108,6 @@ func _sample_perf() -> void:
 	var p := Perf.take()
 	var us: Dictionary = p.usec
 	var q: Dictionary = p.queries
-	_perf_text = "logic/tick: colossus %.0f us  player %.0f us  camera %.0f us | queries/tick: climb rays %.1f  grab %.1f  camera %.1f" % [
-		us.get(&"colossus", 0) / float(ticks), us.get(&"player", 0) / float(ticks), us.get(&"camera", 0) / float(ticks),
+	_perf_text = "logic/tick: colossus %.0f us (locomotion %.0f, IK %.0f)  player %.0f us  camera %.0f us | queries/tick: rays %.1f  grab %.1f  camera %.1f" % [
+		us.get(&"colossus", 0) / float(ticks), us.get(&"locomotion", 0) / float(ticks), us.get(&"ik", 0) / float(ticks), us.get(&"player", 0) / float(ticks), us.get(&"camera", 0) / float(ticks),
 		q.get(&"climb_rays", 0) / float(ticks), q.get(&"grab_queries", 0) / float(ticks), q.get(&"camera_queries", 0) / float(ticks)]

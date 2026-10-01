@@ -19,6 +19,7 @@ static func ensure_defaults() -> void:
 	_action(&"respawn", [_key(KEY_BACKSPACE), _button(JOY_BUTTON_BACK)])
 	_action(&"debug_colossus_mode", [_key(KEY_F2)])
 	_action(&"debug_draw", [_key(KEY_F3)])
+	_action(&"debug_locomotion_mode", [_key(KEY_F4)])
 	_action(&"toggle_help", [_key(KEY_F1)])
 
 

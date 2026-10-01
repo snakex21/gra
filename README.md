@@ -5,16 +5,19 @@ elementy ograniczone w oryginale sprzętem PS2, czasem produkcji albo wycięte z
 Silnik: **Godot 4.4+** (GDScript, a Zig dopiero tam, gdzie profiler pokaże realną potrzebę).
 Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych assetów oryginału.
 
-## Stan: Etap 2 — kontakt gracza z poruszającym się kolosem
+## Stan: Etap 3 — naturalny ruch kolosa (foot planting, IK, balans)
 
 - Milestone 1 (wspinanie po poruszającym się kolosie): [docs/MILESTONE_1.md](docs/MILESTONE_1.md)
 - Etap 2 (równowaga na kolosie, upadki, kamera, przejścia): [docs/ETAP_2.md](docs/ETAP_2.md)
+- Etap 3 (locomotion, planer kroków, IK, miednica, A/B z animacją, niezależność od FPS): [docs/ETAP_3.md](docs/ETAP_3.md)
 - Architektura: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md)
 
 Co działa w sandboxie (`scenes/sandbox.tscn`):
 
 - greyboxowy humanoid ~17 m ze szkieletem (`Skeleton3D`) i colliderami przypiętymi do kości,
-  ciągłym ruchem (chód, skręt, oddech, śledzenie gracza głową) i próbami zrzucania (wstrząs);
+  z locomotion opartym na krokach: stopy stoją w miejscu (bez ślizgania), dwukościowe IK nóg,
+  teren testowy (rampa, nierówności, stopień), przenoszenie ciężaru, masa przy starcie, hamowaniu
+  i skręcie oraz próby zrzucania gracza (wstrząs);
 - futro (brązowe) można chwytać, kamień i pancerz (szare) blokują wspinanie, a po płaskim kamieniu
   (barki) można chodzić i regenerować staminę;
 - chwyt, stamina, wspinanie z przechodzeniem między segmentami ciała, obchodzenie kończyn dookoła,
@@ -43,12 +46,14 @@ godot --path . # albo otwórz project.godot w edytorze Godot 4.4+
 | Kadruj kolosa | Q / środkowy przycisk | L1 |
 | Respawn | Backspace | Back |
 | Tryb kolosa: AI / zamrożony / chód / obrót / wstrząs | F2 | — |
-| Debug / pomoc | F3 / F1 | — |
+| Nogi A/B: proceduralne + IK / animacja + IK / stary FK | F4 | — |
+| Debug + nakładka kroków / pomoc | F3 / F1 | — |
 
 ## Testy
 
 ```bash
-tools/run_tests.sh                 # 31 testów rozgrywki, headless, ~4 s
+tools/run_tests.sh                 # 46 testów + A/B + porównanie z zamrożonym wzorcem, headless, ~25 s
+tools/run_tests.sh --save-baseline # zamraża nowy wzorzec regresji (tylko świadomie)
 tools/run_tests.sh --only=climb    # wybrane testy
 tools/capture_screenshots.sh       # prawdziwa scena + autopilot -> tests/output/*.png
 ```
@@ -68,7 +73,9 @@ src/input/      PlayerActions (abstrakcyjne akcje), FlatInputSource, domyślne b
 src/player/     PlayerCharacter (lokomocja + wspinanie + stanie na kolosie), Stamina, Balance, FallImpact, PlayerVisual
 src/climb/      ClimbPatch (chwytalny kształt), SurfaceAnchor (punkt na ruchomym ciele), ClimbQuery
 src/colossus/   Colossus (baza), BodySegment (collider na kości), brain/ (Brain, Intent, Observation, UtilityBrain)
-src/colossus/greybox/  GreyboxHumanoid — rig i kontroler sterowane danymi
+src/colossus/greybox/  GreyboxHumanoid — rig sterowany danymi, mapowanie locomotion na kości (IK)
+src/locomotion/ LocomotionController (masa, planer kroków, miednica), LegState, TwoBoneIK, debug draw
+src/world/      TerrainKit — teren testowy
 src/camera/     PlayerCamera
 src/ui/         PlayerHud
 scenes/         sandbox

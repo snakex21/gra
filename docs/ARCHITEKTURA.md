@@ -1,4 +1,4 @@
-# Architektura (stan po Etapie 2)
+# Architektura (stan po Etapie 3)
 
 Dokument opisuje decyzje, które mają przetrwać dalszy rozwój. Kod jest komentowany po angielsku
 (open source), a dokumentacja projektowa jest po polsku.
@@ -97,6 +97,19 @@ Colossus.observe() -> ColossusObservation
   graczem, który się trzyma, a stojącego przechyla w jego stronę. Brain o tym nie wie.
 - Nowy kolos to podklasa `Colossus`, która dostarcza rig (`_build_body`), kontroler i własne
   reguły. `GreyboxHumanoid` definiuje rig tabelami `BONES`/`PARTS`.
+
+## 2b. Locomotion (Etap 3)
+
+```
+Intent -> desired movement -> LocomotionController (masa, planer kroków, miednica)
+       -> rig: IK nóg + górna część ciała -> Skeleton3D -> BodySegment
+```
+Szczegóły i pomiary: [ETAP_3.md](ETAP_3.md). Zasady:
+- Brain nigdy nie steruje nogami.
+- Kontroler nie zna kości, więc kolejny kolos dostarcza tylko mapowanie na swój szkielet.
+- Każdy człon pozy musi być gładki (C²), inaczej daleki od stawu bark dostaje szarpnięcia.
+- Symulacja działa tylko w stałym kroku. Render, kamera i wejście nie wpływają na stan gry.
+  Pilnuje tego test uruchamiany przy 30/60/144/240 FPS.
 
 ## 3. Gracze i wejście
 

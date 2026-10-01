@@ -166,6 +166,17 @@ func set_locomotion_mode(mode: LocomotionMode) -> void:
 	reset_foot_stats()
 
 
+## Moves the colossus (feet re-planted on the ground there). Tools / test scenes only.
+func teleport(pos: Vector3, yaw: float) -> void:
+	loco.reset(get_world_3d().direct_space_state, pos, yaw)
+	global_transform = Transform3D(loco.body_basis(), loco.position)
+	_sync_segments()
+	_sync_segments()
+	reset_foot_stats()
+	for s in segments:
+		s.reset_physics_interpolation()
+
+
 func cycle_locomotion_mode() -> void:
 	set_locomotion_mode(((locomotion_mode + 1) % 3) as LocomotionMode)
 
@@ -178,6 +189,8 @@ func sole_world(i: int) -> Vector3:
 
 func reset_foot_stats() -> void:
 	foot_stats = {"slip_max": 0.0, "slip_sum": 0.0, "contact_ticks": 0, "reach_max": 0.0, "ticks": 0}
+	# The next tick starts a new measurement (no slip across a teleport or a mode switch).
+	_contact_prev = [false, false]
 
 
 func _setup_locomotion() -> void:

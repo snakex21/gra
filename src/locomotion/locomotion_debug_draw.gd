@@ -26,6 +26,8 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if not visible or colossus == null:
 		return
+	# Vertices are in world space: keep this node at the origin whatever its parent does.
+	global_transform = Transform3D.IDENTITY
 	var loco := colossus.loco
 	_mesh.clear_surfaces()
 	_mesh.surface_begin(Mesh.PRIMITIVE_LINES)
