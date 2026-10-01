@@ -11,6 +11,9 @@ var foot_nominal := Vector3.ZERO
 var hip_local := Vector3.ZERO
 
 var phase := Phase.STANCE
+## Driven by someone else (an attack such as a stomp): the step planner neither advances nor
+## re-plans it, but counts it as swinging (the other legs keep supporting the body).
+var scripted := false
 ## Planted sole point / normal / yaw (valid in STANCE; start point of the next swing).
 var plant_pos := Vector3.ZERO
 var plant_normal := Vector3.UP

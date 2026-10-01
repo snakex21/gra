@@ -70,8 +70,10 @@ func _physics_process(delta: float) -> void:
 	_think_left -= delta
 	if _think_left <= 0.0:
 		_think_left = think_interval
+		var tb := Perf.begin()
 		_last_observation = observe()
 		_set_intent(_choose_intent(_last_observation))
+		Perf.end(&"brain", tb)
 
 	_execute_intent(intent, delta)
 	_pose_bones(delta)

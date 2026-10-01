@@ -151,6 +151,9 @@ func update_steps(delta: float, space: PhysicsDirectSpaceState3D) -> void:
 		var leg := legs[i]
 		if leg.phase != LegState.Phase.SWING:
 			continue
+		if leg.scripted:
+			swinging += 1
+			continue
 		leg.swing_t = minf(1.0, leg.swing_t + delta / leg.swing_duration)
 		if not leg.replanned and leg.swing_t >= 0.5:
 			# One mid-swing re-plan if the body changed its mind (speed / turn).

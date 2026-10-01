@@ -17,6 +17,8 @@ static func ensure_defaults() -> void:
 	_action(&"grab", [_mouse(MOUSE_BUTTON_RIGHT), _key(KEY_SHIFT), _button(JOY_BUTTON_RIGHT_SHOULDER), _axis(JOY_AXIS_TRIGGER_RIGHT, 1.0)])
 	_action(&"focus", [_key(KEY_Q), _mouse(MOUSE_BUTTON_MIDDLE), _button(JOY_BUTTON_LEFT_SHOULDER)])
 	_action(&"interact", [_key(KEY_E), _button(JOY_BUTTON_Y)])
+	_action(&"attack", [_mouse(MOUSE_BUTTON_LEFT), _key(KEY_F), _button(JOY_BUTTON_X)])
+	_action(&"encounter_reset", [_key(KEY_F5)])
 	_action(&"call_horse", [_key(KEY_C), _button(JOY_BUTTON_DPAD_DOWN)])
 	_action(&"ride_steer_mode", [_key(KEY_F6), _button(JOY_BUTTON_DPAD_UP)])
 	_action(&"respawn", [_key(KEY_BACKSPACE), _button(JOY_BUTTON_BACK)])

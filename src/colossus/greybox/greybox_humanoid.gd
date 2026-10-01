@@ -98,6 +98,8 @@ var debug_desired_turn := 0.0
 var desired_speed := 0.0
 var desired_turn := 0.0
 var debug_draw: LocomotionDebugDraw
+## Extra pelvis drop (m) requested by a subclass (crouch for an attack, kneeling).
+var extra_pelvis_drop := 0.0
 
 # Upper body / shake state.
 var _shake := 0.0
@@ -248,6 +250,7 @@ func _execute_intent(it: ColossusIntent, delta: float) -> void:
 	if debug_override == &"manual":
 		desired_speed = debug_desired_speed
 		desired_turn = debug_desired_turn
+	_adjust_movement(it, delta)
 
 	_shake = move_toward(_shake, _target_shake, delta / shake_ramp)
 	# Shake style depends on HOW the target is attached: a climber gripping fur gets
@@ -285,7 +288,7 @@ func _pose_bones(delta: float) -> void:
 	_update_pose_drivers(delta)
 	match locomotion_mode:
 		LocomotionMode.PROCEDURAL:
-			loco.pelvis_drop = 0.55 * sh
+			loco.pelvis_drop = 0.55 * sh + extra_pelvis_drop
 			loco.bracing = _target_shake > 0.0
 			loco.update_steps(delta, space)
 			_pose_hips_procedural()
@@ -297,6 +300,7 @@ func _pose_bones(delta: float) -> void:
 		LocomotionMode.LEGACY_FK:
 			_pose_legacy_hips_and_legs(delta, sh)
 	_pose_upper_body(delta, sh)
+	_pose_overrides(delta)
 	Perf.end(&"locomotion", t0 + _ik_usec)
 	Perf.end(&"ik", Time.get_ticks_usec() - _ik_usec)
 
@@ -619,22 +623,43 @@ func _build_body() -> void:
 			add_child(seg)
 			segments.append(seg)
 			seg_by_bone[bone] = seg
-		_add_part(seg, part[1], part[2], part[3], materials[part[1]])
+		var col := _add_part(seg, part[1], part[2], part[3], materials[part[1]])
+		# Optional 5th column: a surface tag for gameplay / debug (e.g. &"rest").
+		if part.size() > 4:
+			col.set_meta(&"surface", part[4])
 	_setup_locomotion()
+
+
+## Hook for subclasses: change desired_speed / desired_turn / _target_shake after the
+## intent was mapped to movement (e.g. stand still while an attack winds up).
+func _adjust_movement(_it: ColossusIntent, _delta: float) -> void:
+	pass
+
+
+## Hook for subclasses: extra bone poses after the upper body (attacks, gestures).
+func _pose_overrides(_delta: float) -> void:
+	pass
+
+
+## Body parts table (see PARTS); subclasses can return their own.
+func _parts() -> Array:
+	return PARTS
 
 
 func _all_parts() -> Array:
 	var out := []
-	for p in PARTS:
+	for p in _parts():
 		out.append(p)
 		var bone := String(p[0])
 		if bone.ends_with("_l"):
 			var center: Vector3 = p[3]
-			out.append([StringName(bone.trim_suffix("_l") + "_r"), p[1], p[2], Vector3(-center.x, center.y, center.z)])
+			var mirrored := [StringName(bone.trim_suffix("_l") + "_r"), p[1], p[2], Vector3(-center.x, center.y, center.z)]
+			mirrored.append_array(p.slice(4))
+			out.append(mirrored)
 	return out
 
 
-func _add_part(seg: BodySegment, kind: Kind, size: Variant, center: Vector3, material: Material) -> void:
+func _add_part(seg: BodySegment, kind: Kind, size: Variant, center: Vector3, material: Material) -> CollisionShape3D:
 	var col: CollisionShape3D = ClimbPatch.new() if kind == Kind.FUR else CollisionShape3D.new()
 	var mesh := MeshInstance3D.new()
 	if size is Vector3:
@@ -660,3 +685,4 @@ func _add_part(seg: BodySegment, kind: Kind, size: Variant, center: Vector3, mat
 	mesh.material_override = material
 	seg.add_child(col)
 	seg.add_child(mesh)
+	return col

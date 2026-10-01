@@ -27,6 +27,7 @@ func _process(delta: float) -> void:
 	actions.look_delta += Vector2(stick.x, stick.y * (-1.0 if invert_y else 1.0)) * stick_look_speed * delta
 	actions.grab_held = Input.is_action_pressed(&"grab")
 	actions.focus_held = Input.is_action_pressed(&"focus")
+	actions.attack_held = Input.is_action_pressed(&"attack")
 	if Input.is_action_just_pressed(&"jump"):
 		actions.press_jump()
 	if Input.is_action_just_pressed(&"interact"):
