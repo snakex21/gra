@@ -16,6 +16,9 @@ var _log := PackedStringArray()
 var _metrics := {}
 ## Pass/fail of every pre-Etap-4 test that ran (checked by existing_colossus_tests_still_pass).
 var _legacy_results := {}
+## Pass/fail of every test that ran before the Etap 5 (boss) tests.
+var _pre_boss_results := {}
+var _boss_started := false
 const BASELINE_PATH := "res://tests/baseline/etap2_baseline.json"
 ## Agro metrics (horse_*) are frozen separately, so the stage 2/3 baseline stays untouched.
 const HORSE_BASELINE_PATH := "res://tests/baseline/etap4_horse_baseline.json"
@@ -107,6 +110,32 @@ func _ready() -> void:
 		test_horse_follows_player,
 		test_horse_cost_stays_within_budget,
 		existing_colossus_tests_still_pass,
+		# --- ETAP 5: Sentinel ---
+		test_boss_enters_combat_when_player_enters_arena,
+		test_boss_attack_has_telegraph,
+		test_boss_attack_active_window_is_correct,
+		test_boss_attack_has_recovery,
+		test_boss_attack_can_damage_player,
+		test_boss_cannot_spam_heavy_attack,
+		test_boss_cannot_spam_shake,
+		test_climb_route_is_reachable,
+		test_weakpoint_moves_with_bone,
+		test_weakpoint_rejects_invalid_hits,
+		test_weakpoint_accepts_valid_sword_hit,
+		test_weakpoint_damage_advances_progress,
+		test_rest_surface_restores_stamina,
+		test_boss_reacts_to_player_on_body,
+		test_player_can_fall_and_reenter_climb_route,
+		test_agro_avoids_colossus_legs,
+		test_agro_reacts_to_stomp_danger,
+		test_player_death_resets_encounter,
+		test_boss_can_be_defeated,
+		test_boss_stops_attacking_after_defeat,
+		test_grip_survives_defeat_sequence,
+		test_scripted_driver_can_complete_boss,
+		test_boss_simulation_independent_of_render_fps,
+		test_boss_cost_stays_within_budget,
+		all_existing_tests_still_pass,
 	]
 	for t in tests:
 		var name := t.get_method()
@@ -118,8 +147,12 @@ func _ready() -> void:
 		await t.call()
 		await _teardown()
 		var ok := _failures.size() == fails_before
-		if not name.contains("horse") and not name.contains("mount") and name != "existing_colossus_tests_still_pass":
+		if not name.contains("horse") and not name.contains("mount") and name != "existing_colossus_tests_still_pass" and not _boss_started:
 			_legacy_results[name] = ok
+		if name == "test_boss_enters_combat_when_player_enters_arena":
+			_boss_started = true
+		if not _boss_started:
+			_pre_boss_results[name] = ok
 		print("%s %s (%d ms)" % ["PASS" if ok else "FAIL", name, Time.get_ticks_msec() - t0])
 		for line in _log:
 			print("    ", line)
@@ -2475,4 +2508,914 @@ func existing_colossus_tests_still_pass() -> void:
 		if not _legacy_results[n]:
 			failed.append(n)
 	_log.append("%d earlier tests ran in this run, %d failed %s" % [ran, failed.size(), str(failed) if failed.size() > 0 else ""])
+	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))
+
+
+# --- ETAP 5: Sentinel (first complete boss) ---------------------------------------------
+
+## A brain that always proposes the same intent (to prove the fairness rules hold anyway).
+class SpamBrain:
+	extends ColossusBrain
+	var kind: StringName
+	var strength := 1.0
+
+	func _init(p_kind: StringName) -> void:
+		kind = p_kind
+
+	func decide(obs: ColossusObservation) -> ColossusIntent:
+		var i := ColossusIntent.make(kind, strength)
+		var best: ColossusObservation.PlayerInfo = null
+		for p in obs.players:
+			if best == null or p.distance < best.distance:
+				best = p
+		if best:
+			i.target_player = best.player
+			i.target_position = best.position
+		i.score = 1.0
+		return i
+
+
+func _setup_sentinel(seed_value := 7, frozen := false) -> Dictionary:
+	Sfx.enabled = false
+	Fx.enabled = false
+	_world = Node3D.new()
+	_world.name = "World_" + _current
+	add_child(_world)
+	var w := SentinelArena.build_encounter(_world, false, seed_value)
+	if frozen:
+		(w.sentinel as Sentinel).debug_override = &"frozen"
+	await _ticks(2)
+	return w
+
+
+## Puts the player on the ground next to foot ``i`` (outside it).
+func _stand_by_foot(w: Dictionary, i: int, off := Vector3(2.6, 0, 1.0)) -> void:
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	var foot := s.loco.legs[i].plant_pos
+	var side := s.global_basis.x * (1.0 if i == 0 else -1.0)
+	p.global_position = foot + side * off.x + s.global_basis.z * off.z + Vector3.UP * 0.95
+	p.velocity = Vector3.ZERO
+	p.reset_physics_interpolation()
+
+
+func _start_combat(s: Sentinel) -> void:
+	s._set_encounter(Sentinel.Encounter.COMBAT)
+
+
+## Drops the player onto the head top above the weak point (frozen boss).
+func _stand_on_head(w: Dictionary) -> void:
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	# Let the pose settle first (no head bowed from the dormant pose).
+	await _ticks(90)
+	var head := s._seg_by_bone[&"head"] as BodySegment
+	p.global_position = head.target_transform * (Sentinel.WEAK_POINT_LOCAL + Vector3(0, 1.1, 0.15))
+	p.velocity = Vector3.ZERO
+	p.facing = s.global_basis.z
+	p.actions.view_basis = Basis.looking_at(s.global_basis.z)
+	p.reset_physics_interpolation()
+	await _ticks(20)
+
+
+## Holds the attack action for ``charge`` seconds and releases it; returns the strike result.
+func _sword_strike(p: PlayerCharacter, charge: float) -> Dictionary:
+	p.sword.last_result = {}
+	p.actions.attack_held = true
+	await _ticks(int(round(charge * 60.0)) + 1)
+	p.actions.attack_held = false
+	for i in 20:
+		await _ticks(1)
+		if not p.sword.last_result.is_empty():
+			break
+	return p.sword.last_result
+
+
+func test_boss_enters_combat_when_player_enters_arena() -> void:
+	var w := await _setup_sentinel()
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	var states := []
+	var attacks_before_combat := [0]
+	s.encounter_changed.connect(func(e: Sentinel.Encounter) -> void: states.append([Sentinel.Encounter.keys()[e], _tick_now()]))
+	s.attack_started.connect(func(_a: ColossusAttack) -> void:
+		if s.encounter != Sentinel.Encounter.COMBAT:
+			attacks_before_combat[0] += 1)
+	await _ticks(180)
+	var dormant_far: bool = s.encounter == Sentinel.Encounter.DORMANT
+	# Walk into the arena (as a player would: through PlayerActions).
+	p.actions.view_basis = Basis.looking_at(Vector3.FORWARD)
+	var entered := -1
+	for i in 60 * 12:
+		p.actions.move = Vector2(0, 1)
+		await _ticks(1)
+		if entered < 0 and _flat_dist(p.global_position, s.global_position) < s.notice_radius:
+			entered = _tick_now()
+		if s.encounter == Sentinel.Encounter.COMBAT:
+			break
+	p.actions.move = Vector2.ZERO
+	var combat_at := _tick_now()
+	var lag := (combat_at - entered) / 60.0
+	_log.append("dormant while far: %s; entered at 42 m, states %s, combat %.2f s after entering (notice %.1f + engage %.1f)" % [str(dormant_far), str(states), lag, s.notice_time, s.engage_time])
+	_check(dormant_far, "not dormant at the entrance")
+	_check(s.encounter == Sentinel.Encounter.COMBAT, "never reached COMBAT")
+	_check(states.size() >= 3 and states[0][0] == "NOTICE" and states[1][0] == "ENGAGED" and states[2][0] == "COMBAT", "wrong sequence %s" % str(states))
+	_check(lag < s.notice_time + s.engage_time + 0.3, "too slow to engage (%.2f s)" % lag)
+	_check(attacks_before_combat[0] == 0, "attacked before COMBAT")
+
+
+func _tick_now() -> int:
+	return Engine.get_physics_frames()
+
+
+static func _flat_dist(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
+## Records every attack's phase changes and the ticks with active hit volumes.
+func _record_attacks(s: Sentinel) -> Dictionary:
+	var rec := {"phases": [], "active_ticks": [], "hits": []}
+	s.attack_phase_changed.connect(func(a: ColossusAttack) -> void: rec.phases.append([a.kind, a.phase_name(), _tick_now(), a.telegraph_time, a.active_time, a.recovery_time]))
+	s.player_hit.connect(func(_p: Node3D, k: StringName, d: float) -> void: rec.hits.append([k, _tick_now(), d]))
+	return rec
+
+
+## Plays: the player stands by a foot (stomp) and later in front (sweep), invulnerable.
+func _provoke_attacks(w: Dictionary, seconds: float, rec: Dictionary) -> void:
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	_start_combat(s)
+	for i in int(seconds * 60.0):
+		if i % 600 < 300:
+			if i % 20 == 0:
+				_stand_by_foot(w, 0)
+		elif i % 20 == 0:
+			p.global_position = s.global_transform * Vector3(-1.5, 0.95, -5.5)
+			p.velocity = Vector3.ZERO
+		p.health = 100.0
+		p.dead = false
+		await _ticks(1)
+		for v in s.hit_volumes.values():
+			if (v as HitVolume).active:
+				rec.active_ticks.append(_tick_now())
+				break
+
+
+func test_boss_attack_has_telegraph() -> void:
+	var w := await _setup_sentinel()
+	var s: Sentinel = w.sentinel
+	var rec := _record_attacks(s)
+	await _provoke_attacks(w, 25.0, rec)
+	var telegraphs := []
+	var start := {}
+	for ph in rec.phases:
+		if ph[1] == "TELEGRAPH":
+			start[ph[0]] = ph[2]
+		elif ph[1] == "ACTIVE" and start.has(ph[0]):
+			telegraphs.append([ph[0], (ph[2] - start[ph[0]]) / 60.0])
+	var kinds := {}
+	var min_t := 99.0
+	for t in telegraphs:
+		kinds[t[0]] = true
+		min_t = minf(min_t, t[1])
+	# The rules clamp any attack definition to the minimum telegraph.
+	var a := ColossusAttack.make(&"test", 0.05, 0.2, 0.1, true)
+	s.rules.clamp_attack(a)
+	_log.append("telegraphs (kind, seconds): %s; rules clamp 0.05 s -> %.2f s, recovery 0.1 -> %.2f s" % [str(telegraphs), a.telegraph_time, a.recovery_time])
+	_metric("boss_min_telegraph", min_t, "higher")
+	_check(kinds.has(Sentinel.STOMP) and kinds.has(Sentinel.ARM_SWEEP), "did not see both attacks: %s" % str(kinds.keys()))
+	_check(min_t >= s.rules.min_telegraph - 1e-3, "telegraph shorter than the rule (%.2f s)" % min_t)
+	_check(a.telegraph_time >= s.rules.min_telegraph and a.recovery_time >= s.rules.heavy_recovery_min, "rules did not clamp the attack")
+
+
+func test_boss_attack_active_window_is_correct() -> void:
+	var w := await _setup_sentinel()
+	var s: Sentinel = w.sentinel
+	var rec := _record_attacks(s)
+	await _provoke_attacks(w, 25.0, rec)
+	var windows := []
+	var open_at := -1
+	var kind := &""
+	for ph in rec.phases:
+		if ph[1] == "ACTIVE":
+			open_at = ph[2]
+			kind = ph[0]
+		elif ph[1] == "RECOVERY" and open_at >= 0:
+			windows.append([kind, open_at, ph[2], ph[4]])
+			open_at = -1
+	var outside := 0
+	for t in rec.active_ticks:
+		var inside := false
+		for win in windows:
+			# Hit volumes are tested after the colossus' own tick of the phase change.
+			if t >= int(win[1]) and t <= int(win[2]) + 1:
+				inside = true
+		if not inside:
+			outside += 1
+	var hits_outside := 0
+	for h in rec.hits:
+		var inside := false
+		for win in windows:
+			if int(h[1]) >= int(win[1]) and int(h[1]) <= int(win[2]) + 1:
+				inside = true
+		if not inside:
+			hits_outside += 1
+	var lengths := []
+	var wrong_len := 0
+	for win in windows:
+		var secs: float = (win[2] - win[1]) / 60.0
+		lengths.append("%s %.2f/%.2f" % [win[0], secs, win[3]])
+		if absf(secs - float(win[3])) > 1.5 / 60.0:
+			wrong_len += 1
+	_log.append("active windows: %s; hit-volume ticks %d (outside a window: %d); hits %d (outside: %d)" % [", ".join(PackedStringArray(lengths)), rec.active_ticks.size(), outside, rec.hits.size(), hits_outside])
+	_check(windows.size() >= 2, "too few attacks")
+	_check(rec.active_ticks.size() > 0, "hit volumes never active")
+	_check(outside == 0, "hit volumes active outside ACTIVE (%d ticks)" % outside)
+	_check(hits_outside == 0, "damage outside ACTIVE")
+	_check(wrong_len == 0, "active window length differs from the definition")
+
+
+func test_boss_attack_has_recovery() -> void:
+	var w := await _setup_sentinel()
+	var s: Sentinel = w.sentinel
+	var rec := _record_attacks(s)
+	await _provoke_attacks(w, 30.0, rec)
+	var recov := []
+	var r_at := -1
+	var gaps := []
+	var last_done := -1
+	for ph in rec.phases:
+		if ph[1] == "RECOVERY":
+			r_at = ph[2]
+		elif ph[1] == "DONE" and r_at >= 0:
+			recov.append((ph[2] - r_at) / 60.0)
+			r_at = -1
+			last_done = ph[2]
+		elif ph[1] == "TELEGRAPH" and last_done >= 0:
+			gaps.append((ph[2] - last_done) / 60.0)
+	var min_r := 99.0
+	for r in recov:
+		min_r = minf(min_r, r)
+	var min_gap := 99.0
+	for g in gaps:
+		min_gap = minf(min_gap, g)
+	_log.append("recoveries %s s (min %.2f, rule %.2f); gaps before the next wind-up %s s (rule %.1f)" % [str(recov), min_r, s.rules.heavy_recovery_min, str(gaps), s.rules.attack_gap])
+	_check(recov.size() >= 2, "too few attacks")
+	_check(min_r >= s.rules.heavy_recovery_min - 1e-3, "recovery shorter than the rule")
+	_check(gaps.is_empty() or min_gap >= s.rules.attack_gap - 0.02, "next attack came too soon (%.2f s)" % min_gap)
+
+
+func test_boss_attack_can_damage_player() -> void:
+	var w := await _setup_sentinel()
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	var rec := _record_attacks(s)
+	_start_combat(s)
+	_stand_by_foot(w, 0)
+	var hp_before := p.health
+	var fallen := false
+	for i in 60 * 6:
+		await _ticks(1)
+		fallen = fallen or p.balance.state == Balance.State.FALLEN
+		if not rec.hits.is_empty():
+			break
+	var stomp_hp := p.health
+	await _ticks(60 * 4)
+	# Sweep: stand in front of the boss.
+	p.respawn()
+	p.global_position = s.global_transform * Vector3(-1.5, 0.95, -5.5)
+	p.reset_physics_interpolation()
+	var sweep_hit := false
+	for i in 60 * 14:
+		await _ticks(1)
+		for h in rec.hits:
+			if h[0] == Sentinel.ARM_SWEEP:
+				sweep_hit = true
+		if sweep_hit:
+			break
+	_log.append("hits %s; HP after the stomp %.0f (from %.0f), knocked down %s; sweep hit %s" % [str(rec.hits), stomp_hp, hp_before, str(fallen), str(sweep_hit)])
+	_check(stomp_hp < hp_before, "stomp did no damage")
+	_check(fallen, "stomp did not knock the player down")
+	_check(sweep_hit, "sweep never hit a player standing in front")
+
+
+func test_boss_cannot_spam_heavy_attack() -> void:
+	var w := await _setup_sentinel()
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	s.brain = SpamBrain.new(Sentinel.STOMP)   # a brain that wants nothing but stomps
+	var starts := []
+	s.attack_started.connect(func(_a: ColossusAttack) -> void: starts.append(_tick_now()))
+	_start_combat(s)
+	for i in 60 * 60:
+		if i % 15 == 0:
+			_stand_by_foot(w, 0)
+		p.health = 100.0
+		p.balance.reset()
+		await _ticks(1)
+	var min_gap := 999.0
+	for i in range(1, starts.size()):
+		min_gap = minf(min_gap, (starts[i] - starts[i - 1]) / 60.0)
+	var max_in_20 := 0
+	for i in starts.size():
+		var n := 0
+		for j in range(i, starts.size()):
+			if starts[j] - starts[i] < 20 * 60:
+				n += 1
+		max_in_20 = maxi(max_in_20, n)
+	_log.append("stomp-only brain, player always at the foot, 60 s: %d stomps, min gap %.1f s, max %d within 20 s; rule interventions %d" % [starts.size(), min_gap, max_in_20, s.rules.interventions])
+	_metric("boss_spam_stomps_per_minute", starts.size(), "lower")
+	_check(starts.size() >= 2, "no stomps at all")
+	_check(min_gap >= s.rules.cooldowns[Sentinel.STOMP], "stomps closer than the cooldown (%.1f s)" % min_gap)
+	_check(max_in_20 <= s.rules.max_repeat, "more than %d stomps in a row (%d)" % [s.rules.max_repeat, max_in_20])
+
+
+func test_boss_cannot_spam_shake() -> void:
+	var w := await _setup_sentinel()
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	s.brain = SpamBrain.new(ColossusIntent.SHAKE_PLAYER)   # wants to shake all the time
+	_start_combat(s)
+	await _grab_sentinel(w, &"thigh_l", -2.0)
+	_check(p.is_climbing(), "no grip on the thigh")
+	var spans := []
+	var start := -1
+	var shaking_ticks := 0
+	for i in 60 * 40:
+		p.stamina.value = 100.0   # keep him on so the rule (not exhaustion) ends the shakes
+		await _ticks(1)
+		var sh := s.intent.kind == ColossusIntent.SHAKE_PLAYER
+		if sh:
+			shaking_ticks += 1
+		if sh and start < 0:
+			start = _tick_now()
+		elif not sh and start >= 0:
+			spans.append([start, _tick_now()])
+			start = -1
+	var max_len := 0.0
+	var min_gap := 999.0
+	for i in spans.size():
+		max_len = maxf(max_len, (spans[i][1] - spans[i][0]) / 60.0)
+		if i > 0:
+			min_gap = minf(min_gap, (spans[i][0] - spans[i - 1][1]) / 60.0)
+	var share := shaking_ticks / (60.0 * 40.0)
+	_log.append("shake-only brain, 40 s on the thigh: %d shakes, longest %.2f s (rule %.1f incl. %.1f s brace), shortest pause %.2f s (rule %.1f), shaking %.0f%% of the time" % [spans.size(), max_len, s.shake_max_duration, s.shake_telegraph, min_gap, s.shake_cooldown, share * 100.0])
+	_metric("boss_spam_shake_share", share, "lower")
+	_check(spans.size() >= 3, "too few shakes")
+	_check(max_len <= s.shake_max_duration + 0.05, "a shake lasted %.2f s" % max_len)
+	_check(min_gap >= s.shake_cooldown - 0.05, "shake chained after %.2f s" % min_gap)
+	_check(share < 0.45, "shaking %.0f%% of the time" % (share * 100.0))
+
+
+## Grabs a Sentinel segment from behind (like _grab_behind, for the Sentinel world).
+func _grab_sentinel(w: Dictionary, bone: StringName, along: float, dist := 1.25) -> void:
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	var seg := s._seg_by_bone[bone] as BodySegment
+	for attempt in 4:
+		p.global_position = seg.global_transform * Vector3(0, along, dist)
+		p.velocity = Vector3.ZERO
+		p.facing = -s.global_basis.z
+		p.actions.view_basis = Basis.looking_at(-s.global_basis.z)
+		p.actions.grab_held = true
+		p.reset_physics_interpolation()
+		await _ticks(3)
+		if p.is_climbing():
+			return
+		await _wait_planted(s, 0)
+
+
+func test_climb_route_is_reachable() -> void:
+	var w := await _setup_sentinel(7, true)
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	var bot := SentinelBot.new()
+	_world.add_child(bot)
+	bot.setup(p, s, w.encounter)
+	var regions: Array[StringName] = []
+	var reached := false
+	for i in 60 * 90:
+		await _ticks(1)
+		var r := s.region_of(p)
+		if r != &"" and (regions.is_empty() or regions[-1] != r):
+			regions.append(r)
+		if bot.phase == SentinelBot.Phase.STRIKE and p.is_climbing() and p.grip.world_point().distance_to(s.weak_point.world_point()) < s.weak_point.radius:
+			reached = true
+			break
+	var t := bot.time
+	_log.append("frozen Sentinel, route %s; weak point in reach after %.1f s, stamina %.0f" % [" -> ".join(PackedStringArray(regions)), t, p.stamina.value])
+	_metric("boss_route_time", t, "lower")
+	_check(reached, "did not get the weak point within reach")
+	for r in [&"calf", &"thigh", &"shoulder", &"head"]:
+		_check(r in regions, "route missed %s" % r)
+	_check(&"pelvis" in regions or &"back" in regions, "route missed the hips / back")
+
+
+func test_weakpoint_moves_with_bone() -> void:
+	var w := await _setup_sentinel()
+	var s: Sentinel = w.sentinel
+	s.debug_override = &"manual"
+	s.debug_desired_speed = 1.4
+	s.debug_desired_turn = 0.2
+	var wp := s.weak_point
+	var head := s._seg_by_bone[&"head"] as BodySegment
+	var start := wp.world_point()
+	var max_err := 0.0
+	var node_err := 0.0
+	for i in 60 * 8:
+		await _ticks(1)
+		max_err = maxf(max_err, wp.world_point().distance_to(head.target_transform * Sentinel.WEAK_POINT_LOCAL))
+		# The visual node is a child of the segment: it follows the same bone.
+		node_err = maxf(node_err, (head.global_transform * wp.position).distance_to(wp.global_position))
+	var moved := wp.world_point().distance_to(start)
+	_log.append("boss walked and turned 8 s: weak point moved %.1f m, error vs head bone %.6f m, visual node vs its segment %.6f m" % [moved, max_err, node_err])
+	_check(moved > 3.0, "weak point did not move with the boss")
+	_check(max_err < 1e-4, "weak point drifts from the bone")
+	_check(node_err < 1e-3, "weak point visual not attached to the segment")
+
+
+func test_weakpoint_rejects_invalid_hits() -> void:
+	var w := await _setup_sentinel(7, true)
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	var wp := s.weak_point
+	var at := wp.world_point()
+	var r1 := wp.try_hit(at, 1.0, &"stomp")
+	var r2 := wp.try_hit(at + Vector3(0, 0, 3.0), 1.0, &"sword")
+	wp.set_protected(true)
+	var r3 := wp.try_hit(at, 1.0, &"sword")
+	wp.set_protected(false)
+	# A real swing from the ground, far below.
+	_start_combat(s)
+	p.global_position = s.global_transform * Vector3(0, 0.95, 8.0)
+	p.reset_physics_interpolation()
+	await _ticks(10)
+	var r4 := await _sword_strike(p, 1.2)
+	var hp := wp.health
+	_log.append("stomp on it: %s; 3 m off: %s; protected: %s; sword from the ground: %s; health %.0f" % [r1.reason, r2.reason, r3.reason, r4.get("reason", "?"), hp])
+	_check(not r1.accepted and r1.reason == &"not_a_sword", "accepted a non-sword hit")
+	_check(not r2.accepted and r2.reason == &"out_of_range", "accepted a hit out of range")
+	_check(not r3.accepted and r3.reason == &"protected", "accepted a hit while protected")
+	_check(not r4.get("accepted", false), "a swing from the ground counted")
+	_check(hp == wp.max_health, "health changed by invalid hits (%.0f)" % hp)
+
+
+func test_weakpoint_accepts_valid_sword_hit() -> void:
+	var w := await _setup_sentinel(7, true)
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	_start_combat(s)
+	await _stand_on_head(w)
+	# Crouch and hold on to the fur on the head (grab while standing on it).
+	p.actions.grab_held = true
+	await _ticks(5)
+	var gripping := p.is_climbing()
+	var r := await _sword_strike(p, 1.25)
+	_log.append("standing on the head: %s, grip on fur under the feet %s; full charge strike: %s, damage %.0f, weak point %.0f/%.0f" % [s.region_of(p), str(gripping), r.get("reason", "?"), r.get("damage", 0.0), s.weak_point.health, s.weak_point.max_health])
+	_check(gripping, "could not grip the fur on the head")
+	_check(r.get("accepted", false), "valid strike rejected (%s)" % r.get("reason", "none"))
+	_check(absf(float(r.get("damage", 0.0)) - s.weak_point.damage_max) < 0.01, "full charge did not do full damage")
+
+
+func test_weakpoint_damage_advances_progress() -> void:
+	var w := await _setup_sentinel(7, true)
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	_start_combat(s)
+	await _stand_on_head(w)
+	p.actions.grab_held = true
+	await _ticks(5)
+	var progress := [s.weak_point.progress()]
+	var jab := await _sword_strike(p, 0.0)
+	progress.append(s.weak_point.progress())
+	await _ticks(40)
+	for i in 3:
+		p.stamina.value = 100.0
+		await _sword_strike(p, 1.25)
+		progress.append(snappedf(s.weak_point.progress(), 0.001))
+		await _ticks(40)
+	_log.append("progress after jab (%.0f dmg) and full strikes: %s; state %s, encounter %s" % [jab.get("damage", 0.0), str(progress), s.weak_point.state_name(), s.encounter_name()])
+	_check(progress[1] > progress[0], "a jab did not count")
+	_check(progress[2] > progress[1] and progress[3] > progress[2], "strikes did not advance progress")
+	_check(s.weak_point.state == WeakPoint.State.DESTROYED and progress[-1] >= 1.0, "weak point not destroyed")
+	_check(s.encounter == Sentinel.Encounter.DEFEATED, "boss not defeated by its weak point")
+
+
+func test_rest_surface_restores_stamina() -> void:
+	var w := await _setup_sentinel(7, true)
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	var chest := s._seg_by_bone[&"chest"] as BodySegment
+	p.global_position = chest.target_transform * Vector3(1.5, 2.8 + 1.0, 0.6)
+	p.reset_physics_interpolation()
+	await _ticks(20)
+	var support: Object = p.get_support_body()
+	var tag := &""
+	var hit := ClimbQuery.ray(p.get_world_3d().direct_space_state, p.global_position, p.global_position + Vector3.DOWN * 2.0, [p.get_rid()])
+	if not hit.is_empty():
+		var owner_id: int = (hit.collider as CollisionObject3D).shape_find_owner(int(hit.get("shape", 0)))
+		var shape_node := (hit.collider as CollisionObject3D).shape_owner_get_owner(owner_id)
+		if shape_node and shape_node.has_meta(&"surface"):
+			tag = shape_node.get_meta(&"surface")
+	p.stamina.value = 15.0
+	p.stamina.drain(0.01)
+	var t := 0
+	while p.stamina.value < 90.0 and t < 600:
+		await _ticks(1)
+		t += 1
+	_log.append("standing on %s (%s, surface tag '%s'), no grip: stamina 15 -> 90 in %.1f s; region %s" % [_segment_name(support), p.get_display_state(), tag, t / 60.0, s.region_of(p)])
+	_check(s.owns_body(support) and s.region_of(p) == &"shoulder", "not standing on the shoulders")
+	_check(tag == &"rest", "surface not tagged as a rest surface")
+	_check(t < 240, "stamina did not come back while resting (%.1f s)" % (t / 60.0))
+	_check(not p.is_climbing(), "had to hold on to rest")
+
+
+func _segment_name(o: Object) -> String:
+	return String((o as BodySegment).bone_name) if o is BodySegment else str(o)
+
+
+func test_boss_reacts_to_player_on_body() -> void:
+	var w := await _setup_sentinel()
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	_start_combat(s)
+	var seen := {}
+	var cases := [[&"shin_l", -1.8, &"calf", 1.25], [&"spine", 1.0, &"back", 1.7]]
+	for c in cases:
+		p.respawn()
+		await _ticks(5)
+		await _grab_sentinel(w, c[0], c[1], c[3])
+		var kinds := {}
+		for i in 60 * 12:
+			p.stamina.value = 100.0
+			await _ticks(1)
+			if p.is_climbing():
+				kinds[s.intent.kind] = true
+		seen[c[2]] = kinds.keys()
+	# On the head: shake / protect.
+	p.respawn()
+	await _ticks(5)
+	s.debug_override = &"frozen"
+	await _stand_on_head(w)
+	p.actions.grab_held = true
+	await _ticks(5)
+	s.debug_override = &""
+	var head_kinds := {}
+	var protected := false
+	for i in 60 * 12:
+		p.stamina.value = 100.0
+		await _ticks(1)
+		head_kinds[s.intent.kind] = true
+		protected = protected or s.weak_point.state == WeakPoint.State.PROTECTED
+	seen[&"head"] = head_kinds.keys()
+	_log.append("intents while the player was on: %s; weak point closed while on the head: %s" % [str(seen), str(protected)])
+	_check(ColossusIntent.REPOSITION in seen[&"calf"], "no leg movement while on the calf")
+	_check(ColossusIntent.SHAKE_PLAYER in seen[&"back"], "no shake while on the back")
+	_check(ColossusIntent.SHAKE_PLAYER in seen[&"head"] or Sentinel.PROTECT in seen[&"head"], "no reaction to the player on the head")
+	_check(protected, "weak point never protected with the player on it")
+
+
+func test_player_can_fall_and_reenter_climb_route() -> void:
+	var w := await _setup_sentinel(7, true)
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	var bot := SentinelBot.new()
+	_world.add_child(bot)
+	bot.setup(p, s, w.encounter)
+	var dropped := false
+	var regrabbed := false
+	var max_h := 0.0
+	for i in 60 * 120:
+		await _ticks(1)
+		if not dropped and bot.phase == SentinelBot.Phase.CLIMB_BODY and p.global_position.y - s.global_position.y > 6.0:
+			p.stamina.value = 0.0   # exhausted: the grip goes
+			p.stamina.drain(1.0)
+			dropped = true
+		if dropped and bot.stats.falls > 0 and bot.stats.grabs >= 2 and p.is_climbing():
+			max_h = maxf(max_h, p.global_position.y - s.global_position.y)
+			regrabbed = true
+			if max_h > 8.0:
+				break
+	_log.append("dropped from the thigh/hips (exhausted): falls %d, grabs %d, climbing again %s up to %.1f m; events: %s" % [bot.stats.falls, bot.stats.grabs, str(regrabbed), max_h, " | ".join(bot.events.slice(-6))])
+	_check(dropped, "never got high enough to drop")
+	_check(bot.stats.falls >= 1, "fall not detected")
+	_check(regrabbed and max_h > 8.0, "could not get back onto the route")
+
+
+func test_agro_avoids_colossus_legs() -> void:
+	var w := await _setup_sentinel()
+	var s: Sentinel = w.sentinel
+	var h: Horse = w.horse
+	s.debug_override = &"walk"
+	_start_combat(s)
+	var d := ScriptedHorseDriver.new()
+	_world.add_child(d)
+	h.set_rider(d)
+	var hits := 0
+	var min_d := 99.0
+	# Ride straight at the Sentinel and through where it stands, several passes.
+	for pass_i in 3:
+		var from := s.global_position + Vector3(0, 0, 32.0).rotated(Vector3.UP, pass_i * 2.0)
+		h.teleport(Vector3(from.x, 0, from.z), atan2(-(s.global_position.x - from.x), -(s.global_position.z - from.z)))
+		d.direction = PlayerCharacter._flat_dir(s.global_position - from, Vector3.FORWARD)
+		d.hold_speed = 6.0
+		for i in 60 * 10:
+			await _ticks(1)
+			for k in h.get_slide_collision_count():
+				if h.get_slide_collision(k).get_collider() is BodySegment:
+					hits += 1
+			for leg in s.loco.legs:
+				min_d = minf(min_d, _flat_dist(h.global_position, leg.foot_pos))
+	_log.append("3 passes at 6 m/s straight at the walking Sentinel: %d body contacts, closest to a foot %.1f m" % [hits, min_d])
+	_check(hits == 0, "rode into the colossus (%d ticks)" % hits)
+	_check(min_d > 1.0, "went under a foot (%.1f m)" % min_d)
+
+
+func test_agro_reacts_to_stomp_danger() -> void:
+	var w := await _setup_sentinel()
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	var h: Horse = w.horse
+	_start_combat(s)
+	s.brain = SpamBrain.new(Sentinel.STOMP)
+	_stand_by_foot(w, 0)
+	var foot := s.loco.legs[0].plant_pos
+	# Close to the foot (inside the danger zone, which is the shockwave plus a margin).
+	h.teleport(foot + s.global_basis.x * 6.5 + s.global_basis.z * 1.5, 0.0)
+	var responses := {}
+	var impact := [false, -1.0]
+	var at_start := [-1.0]
+	s.attack_started.connect(func(_a: ColossusAttack) -> void:
+		if at_start[0] < 0.0:
+			at_start[0] = _flat_dist(h.global_position, _stomp_point_of(s)))
+	s.attack_phase_changed.connect(func(a: ColossusAttack) -> void:
+		if a.kind == Sentinel.STOMP and a.phase == ColossusAttack.Phase.RECOVERY and not impact[0]:
+			impact[0] = true
+			impact[1] = _flat_dist(h.global_position, s._slam_point))
+	for i in 60 * 6:
+		p.health = 100.0
+		await _ticks(1)
+		responses[h.controller.danger_response] = true
+		if impact[0]:
+			break
+	var at_impact: float = impact[1]
+	# Ridden: a rider steering straight into a winding-up stomp is refused.
+	await _ticks(60 * 8)
+	var d := ScriptedHorseDriver.new()
+	_world.add_child(d)
+	h.set_rider(d)
+	h.teleport(s.global_position + s.global_basis.x * 22.0, 0.0)
+	var refused := false
+	var min_d := 99.0
+	var started := false
+	for i in 60 * 14:
+		p.health = 100.0
+		if i % 20 == 0:
+			_stand_by_foot(w, 0)
+		var zones := s.get_danger_zones()
+		if not zones.is_empty():
+			var c: Vector3 = zones[0][0]
+			if not started:
+				# The rider points Agro straight at the coming stomp from just outside it.
+				started = true
+				var out := PlayerCharacter._flat_dir(h.global_position - c, s.global_basis.x)
+				var from := c + out * (float(zones[0][1]) + h.controller.danger_margin + 3.0)
+				h.teleport(Vector3(from.x, 0, from.z), atan2(out.x, out.z))
+			d.direction = PlayerCharacter._flat_dir(c - h.global_position, Vector3.FORWARD)
+			d.hold_speed = 6.0
+			min_d = minf(min_d, _flat_dist(h.global_position, c) - float(zones[0][1]))
+		elif started:
+			break
+		await _ticks(1)
+		refused = refused or h.controller.danger_response == "refuse"
+	_log.append("riderless Agro beside a stomp: responses %s, %.1f m from the stomp when it was decided -> %.1f m at impact (shockwave %.0f m); ridden into a wind-up: refused %s, closest to the zone edge %.1f m" % [str(responses.keys()), at_start[0], at_impact, s.shockwave_radius, str(refused), min_d])
+	_check(responses.has("flee"), "did not flee the stomp")
+	_check(at_impact > at_start[0] + 1.0, "did not get away from the stomp (%.1f -> %.1f m)" % [at_start[0], at_impact])
+	_check(at_impact > 3.0, "under the foot at impact (%.1f m)" % at_impact)
+	_check(refused and min_d > -1.0, "rider could steer into the stomp (%.1f m)" % min_d)
+
+
+func _stomp_point_of(s: Sentinel) -> Vector3:
+	var z := s.get_danger_zones()
+	return z[0][0] if not z.is_empty() else s.loco.legs[0].plant_pos
+
+
+func test_player_death_resets_encounter() -> void:
+	var w := await _setup_sentinel()
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	var h: Horse = w.horse
+	var e: SentinelEncounter = w.encounter
+	_start_combat(s)
+	s.weak_point.try_hit(s.weak_point.world_point(), 1.0, &"sword")
+	h.teleport(Vector3(20, 0, 10), 1.0)
+	p.global_position = Vector3(5, 0.95, 5)
+	p.stamina.value = 30.0
+	await _ticks(10)
+	p.apply_hit(500.0, Vector3.ZERO, 0.0, &"test")
+	var dead := p.dead
+	var banner := ""
+	for i in int(e.death_pause * 60.0) - 10:
+		await _ticks(1)
+		if e.banner != "":
+			banner = e.banner
+	var still_dead := p.dead
+	await _ticks(30)
+	var hpos := _flat_dist(h.global_position, SentinelArena.HORSE_START)
+	_log.append("dead %s, banner '%s', still dead before the pause ends %s; after reset: resets %d, player HP %.0f stamina %.0f at %.1f m from spawn, boss %s, weak point %.0f/%.0f, horse %.1f m from its start" % [str(dead), banner, str(still_dead), e.resets, p.health, p.stamina.value, p.global_position.distance_to(SentinelArena.PLAYER_START), s.encounter_name(), s.weak_point.health, s.weak_point.max_health, hpos])
+	_check(dead and banner == "YOU DIED" and still_dead, "no death pause")
+	_check(e.resets == 1, "encounter not reset")
+	_check(not p.dead and p.health == p.fall.max_health and p.stamina.value == p.stamina.max_value, "player not restored")
+	_check(p.global_position.distance_to(SentinelArena.PLAYER_START) < 1.5, "player not back at the spawn")
+	_check(s.encounter == Sentinel.Encounter.DORMANT and s.weak_point.health == s.weak_point.max_health, "boss not reset")
+	_check(hpos < 0.5, "Agro not back at its start")
+
+
+func test_boss_can_be_defeated() -> void:
+	var w := await _setup_sentinel(7, true)
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	var e: SentinelEncounter = w.encounter
+	_start_combat(s)
+	await _stand_on_head(w)
+	p.actions.grab_held = true
+	await _ticks(5)
+	var n := 0
+	while s.encounter != Sentinel.Encounter.DEFEATED and n < 6:
+		p.stamina.value = 100.0
+		await _sword_strike(p, 1.25)
+		await _ticks(30)
+		n += 1
+	await _ticks(5)
+	_log.append("%d full strikes: encounter %s, banner '%s', weak point %s" % [n, s.encounter_name(), e.banner, s.weak_point.state_name()])
+	_check(s.encounter == Sentinel.Encounter.DEFEATED, "not defeated")
+	_check(e.banner == "COLOSSUS DEFEATED", "no defeat banner")
+	_check(n == 3, "expected 3 full strikes, took %d" % n)
+
+
+func test_boss_stops_attacking_after_defeat() -> void:
+	var w := await _setup_sentinel()
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	var rec := _record_attacks(s)
+	_start_combat(s)
+	_stand_by_foot(w, 0)
+	# Defeat it in the middle of a stomp wind-up.
+	for i in 60 * 6:
+		await _ticks(1)
+		if s.attack != null and s.attack.phase == ColossusAttack.Phase.TELEGRAPH:
+			break
+	var mid_attack := s.attack != null and not s.attack.is_done()
+	for k in 3:
+		s.weak_point.try_hit(s.weak_point.world_point(), 1.0, &"sword")
+	var starts := [0]
+	s.attack_started.connect(func(_a: ColossusAttack) -> void: starts[0] += 1)
+	var hits_before: int = rec.hits.size()
+	var hp := p.health
+	var aggressive := {}
+	for i in 60 * 20:
+		if i % 30 == 0:
+			_stand_by_foot(w, 0)
+		await _ticks(1)
+		aggressive[s.intent.kind] = true
+		for v in s.hit_volumes.values():
+			_check(not (v as HitVolume).active, "hit volume active after defeat")
+	var still := s.loco.speed
+	_log.append("defeated mid wind-up (%s): new attacks %d, hits after %d, HP %.0f -> %.0f, intents %s, speed %.2f, pelvis drop %.1f m" % [str(mid_attack), starts[0], rec.hits.size() - hits_before, hp, p.health, str(aggressive.keys()), still, s.extra_pelvis_drop])
+	_check(mid_attack, "test did not catch an attack in progress")
+	_check(starts[0] == 0, "attacked after defeat")
+	_check(rec.hits.size() == hits_before and p.health >= hp, "damaged the player after defeat")
+	_check(aggressive.keys() == [ColossusIntent.IDLE], "non-idle intents after defeat: %s" % str(aggressive.keys()))
+	_check(s.extra_pelvis_drop > 2.0, "no kneeling sequence")
+
+
+func test_grip_survives_defeat_sequence() -> void:
+	var w := await _setup_sentinel(7, true)
+	var s: Sentinel = w.sentinel
+	var p: PlayerCharacter = w.player
+	_start_combat(s)
+	await _stand_on_head(w)
+	p.actions.grab_held = true
+	await _ticks(5)
+	s.weak_point.try_hit(s.weak_point.world_point(), 1.0, &"sword")
+	s.weak_point.try_hit(s.weak_point.world_point(), 1.0, &"sword")
+	var r := await _sword_strike(p, 1.25)
+	var defeated := s.encounter == Sentinel.Encounter.DEFEATED
+	var max_err := 0.0
+	var max_step := 0.0
+	var prev := p.global_position
+	var y0 := p.global_position.y
+	for i in 60 * 9:
+		await _ticks(1)
+		if not p.is_climbing():
+			break
+		max_err = maxf(max_err, _surface_error(p))
+		var stepd := p.global_position.distance_to(prev)
+		if stepd > 0.1 and OS.get_environment("TRACE") != "":
+			_log.append("  jump %.3f at %d: %s -> %s, grip %s n %s up %s, boss %s pelvis %.2f" % [stepd, i, str(prev), str(p.global_position), _segment_name(p.grip.body), str(p.grip.world_normal()), str(p.climb_up), s.encounter_name(), s.extra_pelvis_drop])
+		max_step = maxf(max_step, stepd)
+		prev = p.global_position
+	var lowered := y0 - p.global_position.y
+	# After the kneel the body is still: let go and step off safely.
+	var settled := s.loco.speed < 0.01
+	p.actions.grab_held = false
+	await _ticks(120)
+	_log.append("final strike %s, defeated %s; through 9 s of kneeling: still gripping %s, carried down %.1f m, max step %.3f m/tick, anchor error %.6f m; body settled %s; after letting go: %s, HP %.0f" % [r.get("reason", "?"), str(defeated), str(p.is_climbing() or p.state != PlayerCharacter.State.AIR), lowered, max_step, max_err, str(settled), p.get_display_state(), p.health])
+	_check(defeated, "not defeated by the final strike")
+	_check(lowered > 1.5, "the kneel did not carry the player down")
+	_check(max_step < 0.1, "player jumped during the defeat sequence")
+	_check(max_err < 0.08, "anchor left the surface during the defeat sequence (%.3f m)" % max_err)
+	_check(not p.dead, "player died after the defeat")
+
+
+func test_scripted_driver_can_complete_boss() -> void:
+	var w := await _setup_sentinel()
+	var bot := SentinelBot.new()
+	_world.add_child(bot)
+	bot.setup(w.player, w.sentinel, w.encounter)
+	var cam: PlayerCamera = w.camera
+	var cam_inside := 0
+	for i in 60 * 300:
+		await _ticks(1)
+		if cam._inside(cam.get_world_3d().direct_space_state, cam.global_position, Layers.COLOSSUS, 0.05):
+			cam_inside += 1
+		if bot.phase == SentinelBot.Phase.DONE:
+			break
+	var r := bot.result
+	_log.append("bot result: %s in %.1f s; %s; boss %s; camera inside the colossus %d frames" % ["WIN" if r.get("won", false) else "NO WIN", r.get("time", -1.0), str(r.get("stats", {})), str(r.get("boss", {})), cam_inside])
+	_metric("boss_scripted_win_time", r.get("time", 999.0), "lower")
+	_check(r.get("won", false), "the scripted driver did not beat the Sentinel: %s" % " | ".join(bot.events.slice(-8)))
+	_check(cam_inside == 0, "camera inside the colossus (%d frames)" % cam_inside)
+
+
+func test_boss_simulation_independent_of_render_fps() -> void:
+	var exe := OS.get_executable_path()
+	var results := {}
+	var rates := [30, 60, 90, 120, 144, 240]
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/boss_fps_%d.json" % fps)
+		var output := []
+		var code := OS.execute(exe, ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=boss", "--out=" + out_path], output, true)
+		if code != 0 or not FileAccess.file_exists(out_path):
+			_check(false, "boss scenario at %d fps failed (code %d)" % [fps, code])
+			return
+		results[fps] = JSON.parse_string(FileAccess.get_file_as_string(out_path))
+	var ref: Dictionary = results[60]
+	var max_diff := 0.0
+	var frames := []
+	for fps in rates:
+		var r: Dictionary = results[fps]
+		frames.append(int(r.frames))
+		for k in ref:
+			if k == "frames":
+				continue
+			if ref[k] is Array:
+				for j in (ref[k] as Array).size():
+					max_diff = maxf(max_diff, absf(float(r[k][j]) - float(ref[k][j])))
+			else:
+				max_diff = maxf(max_diff, absf(float(r[k]) - float(ref[k])))
+	_log.append("whole fight (bot) at render %s fps: won %s at tick %d, frames %s, max state difference %.8f" % [str(rates), str(ref.won), int(ref.tick), str(frames), max_diff])
+	_metric("boss_fps_max_diff", max_diff, "lower")
+	_check(int(ref.won) == 1, "the reference run did not win")
+	_check(max_diff < 1e-4, "boss fight depends on the render rate (diff %.6f)" % max_diff)
+
+
+func test_boss_cost_stays_within_budget() -> void:
+	Fx.enabled = true
+	var w := await _setup_sentinel()
+	Fx.enabled = true
+	var bot := SentinelBot.new()
+	_world.add_child(bot)
+	bot.setup(w.player, w.sentinel, w.encounter)
+	await _ticks(60 * 12)   # approaching and dodging in combat
+	Perf.take()
+	var fx0 := Fx.spawned
+	var ticks := 60 * 25
+	await _ticks(ticks)
+	var m := Perf.take()
+	var u: Dictionary = m.usec
+	var q: Dictionary = m.queries
+	var per := func(k: StringName) -> float: return float(u.get(k, 0)) / ticks
+	var qp := func(k: StringName) -> float: return float(q.get(k, 0)) / ticks
+	var colossus: float = per.call(&"colossus")
+	var total := 0.0
+	for k in [&"colossus", &"player", &"horse", &"encounter"]:
+		total += per.call(k)
+	_log.append("Sentinel fight (bot climbing, 25 s): colossus %.1f us/tick = brain %.1f + combat %.1f + hits %.1f + attack pose %.1f + locomotion %.1f + IK %.1f; player %.1f; Agro %.1f; camera %.1f us/frame; vfx %.1f (%d effects); queries/tick: climb %.2f, horse %.2f, camera %.2f, boss hit tests %.2f, sword %.3f" % [colossus, per.call(&"brain"), per.call(&"boss_combat"), per.call(&"boss_hits"), per.call(&"boss_pose"), per.call(&"locomotion"), per.call(&"ik"), per.call(&"player"), per.call(&"horse"), per.call(&"camera"), per.call(&"vfx"), Fx.spawned - fx0, qp.call(&"climb_rays"), qp.call(&"horse_rays"), qp.call(&"camera_queries"), qp.call(&"boss_hit_tests"), qp.call(&"sword_checks")])
+	_metric("boss_colossus_us", colossus, "lower")
+	_metric("boss_brain_us", per.call(&"brain"), "lower")
+	_metric("boss_hits_us", per.call(&"boss_hits"), "lower")
+	_check(colossus < 500.0, "Sentinel logic too expensive: %.0f us/tick" % colossus)
+	Fx.enabled = false
+
+
+## Everything that ran before the Etap 5 tests in this process passed.
+func all_existing_tests_still_pass() -> void:
+	var ran := 0
+	var failed := PackedStringArray()
+	for n in _pre_boss_results:
+		ran += 1
+		if not _pre_boss_results[n]:
+			failed.append(n)
+	_log.append("%d earlier tests (Milestone 1, Etap 2-4) ran in this run, %d failed %s" % [ran, failed.size(), str(failed) if failed.size() > 0 else ""])
 	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))

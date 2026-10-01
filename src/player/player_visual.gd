@@ -64,7 +64,13 @@ func update_visual(player: PlayerCharacter, delta: float) -> void:
 	var accel := Vector3.ZERO
 	var climbing := player.state == PlayerCharacter.State.CLIMB
 	if climbing:
-		target = _look_basis(-player.grip.world_normal(), player.climb_up)
+		var n := player.grip.world_normal()
+		target = _look_basis(-n, player.climb_up)
+		# Gripping fur on a flat top: crouched upright over the hands, not lying flat.
+		var w := smoothstep(0.82, 0.95, n.y)
+		if w > 0.0:
+			var upright := _look_basis(PlayerCharacter._flat_dir(player.climb_up, player.facing), Vector3.UP)
+			target = Basis(target.get_rotation_quaternion().slerp(upright.get_rotation_quaternion(), w))
 		accel = player.surface_accel
 	else:
 		target = _look_basis(player.facing, Vector3.UP)

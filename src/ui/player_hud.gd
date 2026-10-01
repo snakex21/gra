@@ -58,7 +58,8 @@ func _process(delta: float) -> void:
 		show_debug = not show_debug
 	if Input.is_action_just_pressed(&"toggle_help"):
 		show_help = not show_help
-	_help.visible = show_help
+	# The help never covers the debug text: it only shows below it.
+	_help.visible = show_help and (not show_debug or _label.position.y + _label.size.y < size.y - _help.size.y - 16.0)
 	_banner.text = encounter.banner if encounter else ""
 	_banner.size = Vector2(size.x, 60)
 	_banner.position = Vector2(0, size.y * 0.3)

@@ -13,6 +13,8 @@ var out_path := ""
 ## "colossus" (default) or "horse".
 var scenario := "colossus"
 var horse: Horse
+var boss: Dictionary = {}
+var bot: SentinelBot
 
 
 func _ready() -> void:
@@ -33,6 +35,9 @@ func _ready() -> void:
 	add_child(ground)
 	if scenario == "horse":
 		_setup_horse()
+		return
+	if scenario == "boss":
+		_setup_boss()
 		return
 	TerrainKit.build_course(self, Vector3(0, 0, -6))
 	colossus = GreyboxHumanoid.new()
@@ -108,10 +113,56 @@ func _horse_tick() -> void:
 		get_tree().quit()
 
 
+## The whole Sentinel fight played by the scripted bot (attacks, shakes, weak point,
+## defeat) with the camera running every rendered frame.
+func _setup_boss() -> void:
+	# The ground node created above is not needed: the arena has its own.
+	for c in get_children():
+		c.queue_free()
+	InputSetup.ensure_defaults()
+	Sfx.enabled = false
+	var arena := Node3D.new()
+	add_child(arena)
+	boss = SentinelArena.build_encounter(arena)
+	bot = SentinelBot.new()
+	arena.add_child(bot)
+	bot.setup(boss.player, boss.sentinel, boss.encounter)
+
+
+func _boss_tick() -> void:
+	if bot.phase != SentinelBot.Phase.DONE and tick < 60 * 400:
+		return
+	var p: PlayerCharacter = boss.player
+	var s: Sentinel = boss.sentinel
+	var h: Horse = boss.horse
+	var data := {
+		"frames": Engine.get_process_frames(),
+		"won": 1 if bot.result.get("won", false) else 0,
+		"tick": tick,
+		"player": [p.global_position.x, p.global_position.y, p.global_position.z],
+		"boss": [s.global_position.x, s.global_position.z, s.loco.yaw],
+		"horse": [h.global_position.x, h.global_position.z],
+		"weak_point": s.weak_point.health,
+		"attacks": s.stats.attacks.get(Sentinel.STOMP, 0) * 100 + s.stats.attacks.get(Sentinel.ARM_SWEEP, 0),
+		"hits": s.stats.hits_on_player,
+		"strikes": bot.stats.strikes,
+		"steps": s.loco.step_count,
+		"stamina": p.stamina.value,
+		"health": p.health,
+	}
+	var f := FileAccess.open(out_path, FileAccess.WRITE)
+	f.store_string(JSON.stringify(data))
+	f.close()
+	get_tree().quit()
+
+
 func _physics_process(_delta: float) -> void:
 	tick += 1
 	if scenario == "horse":
 		_horse_tick()
+		return
+	if scenario == "boss":
+		_boss_tick()
 		return
 	match tick:
 		10:
