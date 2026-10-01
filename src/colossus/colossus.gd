@@ -20,6 +20,8 @@ signal intent_changed(intent: ColossusIntent)
 @export var shake_max_duration := 3.0
 ## ...and is followed by at least this long without shaking.
 @export var shake_cooldown := 5.0
+## A player who loses contact for less than this still counts as being on the body.
+@export var on_body_grace := 0.5
 
 var skeleton: Skeleton3D
 var segments: Array[BodySegment] = []
@@ -36,6 +38,7 @@ var _think_left := 0.0
 var _intent_time := 0.0
 var _shake_cooldown_left := 0.0
 var _time_on_body := {}  # player instance id -> seconds
+var _off_body_time := {}  # player instance id -> seconds since last contact
 var _last_observation: ColossusObservation
 
 
@@ -73,6 +76,7 @@ func _physics_process(delta: float) -> void:
 	_execute_intent(intent, delta)
 	_pose_bones(delta)
 	_sync_segments()
+	_post_sync(delta)
 	Perf.end(&"colossus", t0)
 
 
@@ -92,8 +96,8 @@ func observe() -> ColossusObservation:
 		info.position = player.global_position
 		info.distance = player.global_position.distance_to(global_position)
 		var support: Object = player.get_support_body() if player.has_method(&"get_support_body") else null
-		info.on_body = owns_body(support)
-		if info.on_body:
+		info.on_body = owns_body(support) or _time_on_body.has(player.get_instance_id())
+		if owns_body(support):
 			info.segment = (support as BodySegment).bone_name
 		info.time_on_body = _time_on_body.get(player.get_instance_id(), 0.0)
 		info.height_ratio = clampf((player.global_position.y - global_position.y) / body_height, 0.0, 1.0)
@@ -142,6 +146,11 @@ func _execute_intent(_intent: ColossusIntent, _delta: float) -> void:
 
 ## Write bone poses for this tick.
 func _pose_bones(_delta: float) -> void:
+	pass
+
+
+## Called after the segments followed the bones (measurements, debug).
+func _post_sync(_delta: float) -> void:
 	pass
 
 
@@ -199,8 +208,13 @@ func _update_time_on_body(delta: float) -> void:
 		var support: Object = p.get_support_body() if p.has_method(&"get_support_body") else null
 		if owns_body(support):
 			_time_on_body[id] = _time_on_body.get(id, 0.0) + delta
-		else:
-			_time_on_body.erase(id)
+			_off_body_time[id] = 0.0
+		elif _time_on_body.has(id):
+			# Brief contact loss (a hop, a slide, a missed floor tick) does not reset it.
+			_off_body_time[id] = _off_body_time.get(id, 0.0) + delta
+			if _off_body_time[id] > on_body_grace:
+				_time_on_body.erase(id)
+				_off_body_time.erase(id)
 
 
 func _sync_segments() -> void:

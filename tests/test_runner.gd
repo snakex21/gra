@@ -112,6 +112,8 @@ func test_grab_and_hold_on_walking_leg() -> void:
 	var w := await _setup(&"walk")
 	var p: PlayerCharacter = w.player
 	await _ticks(30)
+	# Grab while the foot is planted; then hold on through the following steps (swings).
+	await _wait_planted(w.colossus, 0)
 	await _grab_behind(w, &"shin_l", -1.8)
 	_check(p.is_climbing(), "player did not grab the shin")
 	if not p.is_climbing():
@@ -635,6 +637,8 @@ func test_brain_shake_throws_idle_standing_player() -> void:
 		await _ticks(1)
 		if first_shake < 0 and c.intent.kind == ColossusIntent.SHAKE_PLAYER:
 			first_shake = i
+		if OS.get_environment("TRACE") != "" and i % 60 == 0:
+			_log.append("t=%d y=%.1f (y0 %.1f) st=%s sup=%s intent=%s" % [i / 60, p.global_position.y, y0, p.get_display_state(), (p.get_support_body() as Node).name if p.get_support_body() else "-", c.intent.kind])
 		if p.get_support_body() != chest and p.global_position.y < y0 - 3.0:
 			off_at = i
 			break
@@ -1002,13 +1006,25 @@ func _segment(c: Colossus, bone: StringName) -> BodySegment:
 	return null
 
 
+## Waits until leg i of a GreyboxHumanoid is in stance (procedural mode), max 4 s.
+func _wait_planted(c: Colossus, i: int) -> void:
+	var g := c as GreyboxHumanoid
+	if g == null or g.locomotion_mode != GreyboxHumanoid.LocomotionMode.PROCEDURAL:
+		return
+	for k in 240:
+		if g.loco.legs[i].is_planted() and g.loco.legs[1 - i].is_planted():
+			return
+		await _ticks(1)
+
+
 ## Puts the player right behind a limb segment (colossus back side) and holds grip.
 func _grab_behind(w: Dictionary, bone: StringName, along: float) -> void:
 	var c: Colossus = w.colossus
 	var p: PlayerCharacter = w.player
 	var seg := _segment(c, bone)
 	var back := c.global_basis.z
-	var target := seg.global_transform * Vector3(0, along, 0) + back * 1.45
+	# Behind the limb in the segment's own frame (limbs are not vertical any more: knees bend).
+	var target := seg.global_transform * Vector3(0, along, 1.25)
 	p.global_position = target
 	p.velocity = Vector3.ZERO
 	p.facing = -back

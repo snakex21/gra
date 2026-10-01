@@ -392,13 +392,23 @@ func _update_support() -> void:
 	for i in get_slide_collision_count():
 		var c := get_slide_collision(i)
 		if c.get_normal().dot(Vector3.UP) > 0.6:
-			_support = c.get_collider()
-			_support_normal = c.get_normal()
-			if _support is BodySegment:
-				_support_local = (_support as Node3D).global_transform.affine_inverse() * c.get_position()
-			if _support != previous:
-				_support_ticks = 0
+			_set_support(c.get_collider(), c.get_normal(), c.get_position(), previous)
 			return
+	# Floor snapping can keep us on the floor without reporting a collision: confirm the
+	# support with one short ray instead of losing it for a tick.
+	var feet := global_position + Vector3.DOWN * (_shape.height * 0.5 - 0.1)
+	var hit := ClimbQuery.ray(get_world_3d().direct_space_state, feet, feet + Vector3.DOWN * (floor_snap_length + 0.2), _exclude)
+	if not hit.is_empty() and (hit.normal as Vector3).dot(Vector3.UP) > 0.6:
+		_set_support(hit.collider, hit.normal, hit.position, previous)
+
+
+func _set_support(collider: Object, nrm: Vector3, point: Vector3, previous: Object) -> void:
+	_support = collider
+	_support_normal = nrm
+	if _support is BodySegment:
+		_support_local = (_support as Node3D).global_transform.affine_inverse() * point
+	if _support != previous:
+		_support_ticks = 0
 
 
 func _try_grab(rescue := false) -> void:
@@ -467,7 +477,7 @@ func _climb(delta: float) -> void:
 		var move_dir := _climb_direction(actions.move, n)
 		var push := n * 0.8 + Vector3.UP * 0.6
 		if move_dir != Vector3.ZERO:
-			push = move_dir + n * 0.25
+			push = move_dir + n * 0.1
 		stamina.drain(jump_cost)
 		_release(&"jump", push.normalized() * climb_jump_speed)
 		return
@@ -555,7 +565,23 @@ func _try_mantle() -> bool:
 		return false
 	var stand := (hit.position as Vector3) + Vector3.UP * (_shape.height * 0.5 + 0.05)
 	if _overlaps(stand):
-		return false
+		# Something stands right there (a neck, a head): look for room along the edge.
+		var along := n.cross(Vector3.UP)
+		along.y = 0.0
+		along = along.normalized() if along.length() > 0.01 else Vector3.RIGHT
+		var found := false
+		for off in [0.4, -0.4, 0.8, -0.8]:
+			var c: Vector3 = stand + along * off
+			var h2 := ClimbQuery.ray(space, Vector3(c.x, stand.y + 1.5, c.z), Vector3(c.x, stand.y - 1.5, c.z), _exclude)
+			if h2.is_empty() or h2.normal.dot(Vector3.UP) < 0.7:
+				continue
+			c = (h2.position as Vector3) + Vector3.UP * (_shape.height * 0.5 + 0.05)
+			if not _overlaps(c):
+				stand = c
+				found = true
+				break
+		if not found:
+			return false
 	var carried := surface_velocity
 	grip = null
 	_climb_slipping = false
