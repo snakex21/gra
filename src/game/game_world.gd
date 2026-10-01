@@ -126,6 +126,9 @@ func _play(_delta: float) -> void:
 		var next := state.next_colossus()
 		var gates: Dictionary = refs.gates
 		p.beam.target = (gates[next].trigger as Vector3) if next != &"" else Vector3.INF
+		if p.beam.locked and refs.has("hud"):
+			# The hint has done its job once the beam gathered.
+			(refs.hud as PlayerHud).message = ""
 		if next != &"" and Valley.passed_gate(gates[next], p.global_position):
 			_go(next, p.is_riding())
 		return

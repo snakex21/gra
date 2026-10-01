@@ -88,8 +88,8 @@ func _ready() -> void:
 	_beam_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	_flare = MeshInstance3D.new()
 	var flare_mesh := SphereMesh.new()
-	flare_mesh.radius = 0.25
-	flare_mesh.height = 0.5
+	flare_mesh.radius = 0.12
+	flare_mesh.height = 0.24
 	_flare.mesh = flare_mesh
 	_flare.material_override = _beam_mat
 	_flare.top_level = true
@@ -185,7 +185,7 @@ func _update_beam(player: PlayerCharacter) -> void:
 	if not shine:
 		return
 	var from := SwordBeam.tip(player)
-	_flare.global_transform = Transform3D(Basis.from_scale(Vector3.ONE * (0.6 + 1.4 * b.focus)), from)
+	_flare.global_transform = Transform3D(Basis.from_scale(Vector3.ONE * (0.5 + 1.0 * b.focus)), from)
 	_beam_mat.albedo_color.a = 0.25 + 0.6 * b.focus
 	if _beam.visible:
 		var length := 6.0 + 120.0 * b.focus * b.focus
