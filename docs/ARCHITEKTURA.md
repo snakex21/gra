@@ -1,4 +1,4 @@
-# Architektura (stan po Etapie 6)
+# Architektura (stan po Etapie 7)
 
 Dokument opisuje decyzje, które mają przetrwać dalszy rozwój. Kod jest komentowany po angielsku
 (open source), a dokumentacja projektowa jest po polsku.
@@ -172,6 +172,26 @@ Szczegóły: [ETAP_6.md](ETAP_6.md). Zasady:
 - Celowanie pochodzi z `PlayerActions.view_basis` / `aim_origin`, więc VR może podać pozę
   kontrolera. Na koniu podczas celowania drążek steruje względem konia: celowanie nigdy
   nie skręca Agro.
+
+## 2f. Wspólna baza humanoidów, pancerz, assety (Etap 7)
+
+```
+HumanoidBoss (encounter, stomp, trafienia, weak point, pokonanie, debug; hooki)
+  ├─ Valus  (_attack_kinds: stomp, arm_sweep, protect)
+  └─ Gaius  (_attack_kinds: stomp, sword_slam; kość `sword`, ArmorPlate na hełmie)
+ArenaArt.dress_arena / skin_colossus / dress_valus  -> tylko węzły wizualne
+```
+Szczegóły: [ETAP_7.md](ETAP_7.md). Zasady:
+- Podklasa bossa zmienia tylko hooki (`_make_brain`, `_make_attack`, `_attack_tick`,
+  `_holds_still`, `_extra_rules`…). Cykl ataku, zamknięcie ataku i zgłoszenie do
+  `FairnessRules` są w bazie i zamykają się dokładnie raz (meta `closed`).
+- Broń kolosa to kość z własnym segmentem. Wbity miecz to zwykła powierzchnia kolizji
+  i wspinania, a „okno” to atak w fazie RECOVERY, który trzyma pozę.
+- `ArmorPlate` i `WeakPoint` mają to samo API trafienia; `PlayerSword` wybiera najbliższy
+  cel, który przyjmie cios. Weak point pod pancerzem jest zamknięty, dopóki pancerz stoi.
+- Warstwa assetów nie dotyka kolizji ani logiki: ukrywa siatki greyboxu i dokłada własne.
+  Testy budują areny bez niej, a jeden test dowodzi w osobnych procesach, że stan
+  symulacji z nią i bez niej jest identyczny.
 
 ## 3. Gracze i wejście
 

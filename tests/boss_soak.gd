@@ -1,5 +1,5 @@
 extends Node
-## Long regression run for a boss fight (Valus or Quadratus): N complete encounters, each
+## Long regression run for a boss fight (Valus, Quadratus or Gaius): N complete encounters, each
 ## with another brain seed and a slightly different start, played by the scripted bot.
 ## Nothing is retried: every run ends as WIN, or as a DEADLOCK (no result within the time
 ## limit). Quadratus runs alternate on foot / from Agro and vary the shooting distance.
@@ -49,7 +49,12 @@ func _ready() -> void:
 func _run(i: int) -> Dictionary:
 	var world := Node3D.new()
 	add_child(world)
-	var w := ValusArena.build_encounter(world, false, 1000 + i * 7)
+	var w: Dictionary
+	if boss == "gaius":
+		w = GaiusArena.build_encounter(world, false, 3000 + i * 11)
+		w.valus = w.gaius
+	else:
+		w = ValusArena.build_encounter(world, false, 1000 + i * 7)
 	var p: PlayerCharacter = w.player
 	# A slightly different start each run (still the arena entrance).
 	var rng := RandomNumberGenerator.new()
@@ -57,9 +62,9 @@ func _run(i: int) -> Dictionary:
 	p.global_position += Vector3(rng.randf_range(-6.0, 6.0), 0.0, rng.randf_range(-3.0, 3.0))
 	p.spawn_transform = p.global_transform
 	p.reset_physics_interpolation()
-	var s: Valus = w.valus
+	var s: HumanoidBoss = w.valus
 	var e: BossEncounter = w.encounter
-	var bot := ValusBot.new()
+	var bot: ValusBot = GaiusBot.new() if boss == "gaius" else ValusBot.new()
 	bot.verbose = OS.get_environment("BOT_VERBOSE") != ""
 	world.add_child(bot)
 	bot.setup(p, s, e)
@@ -74,7 +79,8 @@ func _run(i: int) -> Dictionary:
 	var was_climbing := false
 	e.encounter_reset.connect(func(_n: int) -> void:
 		# Right after a reset everything must be as at the start.
-		if s.encounter != Valus.Encounter.DORMANT or s.weak_point.health != s.weak_point.max_health or p.dead or p.health < p.fall.max_health or s.attack != null and not s.attack.is_done():
+		var armour_ok := not (s is Gaius) or ((s as Gaius).helmet.hits == 0 and not (s as Gaius).helmet.is_broken and s.weak_point.state == WeakPoint.State.PROTECTED)
+		if not armour_ok or s.encounter != HumanoidBoss.Encounter.DORMANT or s.weak_point.health != s.weak_point.max_health or p.dead or p.health < p.fall.max_health or s.attack != null and not s.attack.is_done():
 			bad_resets += 1)
 	var t := 0
 	var dt := 1.0 / 60.0
@@ -84,11 +90,11 @@ func _run(i: int) -> Dictionary:
 		if p.is_climbing() and was_climbing and p.global_position.distance_to(prev) > 0.5:
 			glitches += 1
 			if OS.get_environment("TRACE") != "":
-				print("  glitch t%.2f %.2f m grip %s n %s prev_bone %s phase %s" % [t * dt, p.global_position.distance_to(prev), bot._grip_bone(), str(p.grip.world_normal().snapped(Vector3.ONE * 0.01)), _prev_bone, ValusBot.Phase.keys()[bot.phase]])
+				print("  glitch t%.2f %.2f m grip %s n %s prev_bone %s phase %s | boss %s attack %s shake %.2f stagger %.2f anchor speed %.2f m/tick" % [t * dt, p.global_position.distance_to(prev), bot._grip_bone(), str(p.grip.world_normal().snapped(Vector3.ONE * 0.01)), _prev_bone, ValusBot.Phase.keys()[bot.phase], s.intent.kind, s.attack.describe() if s.attack and not s.attack.is_done() else "-", s._shake, s._stagger, p.grip.point_velocity(dt).length() * dt])
 		_prev_bone = bot._grip_bone()
 		was_climbing = p.is_climbing()
 		prev = p.global_position
-		if s.encounter == Valus.Encounter.COMBAT:
+		if s.encounter == HumanoidBoss.Encounter.COMBAT:
 			var kind := s.intent.kind
 			var attacking := s.attack != null and not s.attack.is_done()
 			if kind == last_kind and kind != ColossusIntent.IDLE and not attacking:
@@ -105,7 +111,7 @@ func _run(i: int) -> Dictionary:
 			since_strike = 0.0
 	var r := bot.result
 	var out := {
-		"run": i, "seed": 1000 + i * 7,
+		"run": i, "seed": (3000 + i * 11) if boss == "gaius" else (1000 + i * 7),
 		"outcome": "WIN" if r.get("won", false) else "DEADLOCK",
 		"time": float(r.get("time", t * dt)),
 		"deaths": int(bot.stats.deaths), "death_causes": bot.stats.death_causes.duplicate(), "falls": int(bot.stats.falls), "stalls": bot.stats.stalls.duplicate(),
@@ -191,7 +197,7 @@ func _run_quadratus(i: int) -> Dictionary:
 			since_strike += dt
 			if since_strike > 150.0:
 				unreachable = true
-			if q.buckle != Quadratus.Buckle.NONE and q.buckle_t > q.kneel_time + q.rise_time + 5.0:
+			if q.buckle != Quadratus.Buckle.NONE and q.buckle_t > maxf(q.kneel_time, q.kneel_time_crown) + q.rise_time + 5.0:
 				long_buckle += 1
 		if bot.stats.weak_hits != last_hits:
 			last_hits = bot.stats.weak_hits

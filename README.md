@@ -5,7 +5,7 @@ elementy ograniczone w oryginale sprzętem PS2, czasem produkcji albo wycięte z
 Silnik: **Godot 4.4+** (GDScript, a Zig dopiero tam, gdzie profiler pokaże realną potrzebę).
 Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych assetów oryginału.
 
-## Stan: Etap 6 — drugi boss (Quadratus), łuk i strzały
+## Stan: Etap 7 — trzeci boss (Gaius), assety w arenach, pętla Quadratusa
 
 - Milestone 1 (wspinanie po poruszającym się kolosie): [docs/MILESTONE_1.md](docs/MILESTONE_1.md)
 - Etap 2 (równowaga na kolosie, upadki, kamera, przejścia): [docs/ETAP_2.md](docs/ETAP_2.md)
@@ -13,10 +13,12 @@ Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych
 - Etap 4 (Agro: chody, promień skrętu, kopyta bez poślizgu, wsiadanie, omijanie, AI, kamera): [docs/ETAP_4.md](docs/ETAP_4.md)
 - Etap 5 (Valus: encounter, ataki z telegrafem, weak point, miecz, fairness, reset, bot, 50 walk): [docs/ETAP_5.md](docs/ETAP_5.md)
 - Etap 6 (Quadratus: czworonóg, łuk i strzały, trafienie w kopyto, klęknięcie, dwa weak pointy, łuk z Agro, bezpieczne zejście z Valusa): [docs/ETAP_6.md](docs/ETAP_6.md)
+- Etap 7 (Gaius: miecz jako droga, hełm do rozbicia; assety Saltward; pętla i zryw Quadratusa; widok łuku zza ramienia, odbicia strzał; soaki 3×100): [docs/ETAP_7.md](docs/ETAP_7.md)
 - Architektura: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md)
 
-Walki z bossami: `scenes/valus_arena.tscn` (Valus) i `scenes/quadratus_arena.tscn` (Quadratus);
-w obu jest Agro, F5 resetuje walkę, Tab przełącza miecz / łuk.
+Walki z bossami: `scenes/valus_arena.tscn` (Valus), `scenes/quadratus_arena.tscn` (Quadratus)
+i `scenes/gaius_arena.tscn` (Gaius); we wszystkich jest Agro, F5 resetuje walkę, Tab przełącza miecz / łuk.
+Areny mają warstwę assetów (paczka Saltward, CC0); `NO_ART=1` pokazuje czysty greybox.
 
 Co działa w sandboxie (`scenes/sandbox.tscn`):
 
@@ -71,7 +73,7 @@ godot --path . # albo otwórz project.godot w edytorze Godot 4.4+
 ## Testy
 
 ```bash
-tools/run_tests.sh                 # 118 testów + A/B + porównanie z zamrożonymi wzorcami, headless, ~12 min
+tools/run_tests.sh                 # 137 testów + A/B + porównanie z zamrożonymi wzorcami, headless, ~12 min
 tools/run_tests.sh --save-baseline # zamraża nowy wzorzec regresji Etapu 2/3 (tylko świadomie)
 tools/run_tests.sh --save-horse-baseline  # zamraża wzorzec metryk Agro (tylko świadomie)
 tools/run_tests.sh --only=horse    # wybrane testy
@@ -81,6 +83,9 @@ tools/capture_screenshots.sh boss  # walka z Valusem grana przez bota -> tests/o
 tools/capture_screenshots.sh quadratus  # walka z Quadratusem (bot z Agro) -> tests/output/quadratus_*.png
 tools/run_boss_soak.sh 50                # długi test: 50 pełnych walk z Valusem (różne seedy)
 tools/run_boss_soak.sh 50 1 quadratus    # 50 walk z Quadratusem (na zmianę pieszo / z Agro)
+tools/run_boss_soak.sh 50 1 gaius        # 50 walk z Gaiusem
+tools/capture_screenshots.sh gaius  # walka z Gaiusem grana przez bota -> tests/output/gaius_*.png
+tools/capture_screenshots.sh art    # statyczne widoki aren z assetami -> tests/output/art_*.png
 ```
 
 Testy sterują graczem wyłącznie przez `PlayerActions`, tak jak robi to człowiek albo AI kompan.
@@ -104,13 +109,16 @@ src/locomotion/ LocomotionController (masa, planer kroków, miednica), LegState,
 src/horse/      Horse, HorseController, QuadrupedGait, HorseInputIntent, ScriptedHorseDriver, debug draw
 src/colossus/valus/  Valus (pierwszy boss), ValusBrain
 src/colossus/quadratus/  Quadratus (drugi boss, czworonóg), QuadratusBrain
+src/colossus/gaius/  Gaius (trzeci boss, miecz), GaiusBrain; wspólna baza HumanoidBoss w greybox/
 src/combat/     ColossusAttack, HitVolume, WeakPoint, FairnessRules, LimbStomp, PlayerSword, PlayerBow,
-                ArrowSystem, ArrowTarget, BossEncounter, ValusBot, QuadratusBot, debug draw
+                ArrowSystem, ArrowTarget, ArmorPlate, BossEncounter, ValusBot, QuadratusBot, GaiusBot, debug draw
 src/fx/         Sfx (syntezowane dźwięki zastępcze), Fx (lekki kurz / błysk)
-src/world/      TerrainKit, AgroArena, ValusArena, QuadratusArena — teren testowy
+src/world/      TerrainKit, AgroArena, ValusArena, QuadratusArena, GaiusArena — teren testowy;
+                ArenaArt — warstwa wizualna z assetów (bez wpływu na gameplay)
 src/camera/     PlayerCamera
 src/ui/         PlayerHud
-scenes/         sandbox, agro_test, valus_arena, quadratus_arena
+scenes/         sandbox, agro_test, valus_arena, quadratus_arena, gaius_arena
+models/ textures/ materials/ environment/  assety Saltward (CC0) z gałęzi assets
 tests/          testy headless + wizualny smoke test
 docs/           dokumentacja projektu
 ```

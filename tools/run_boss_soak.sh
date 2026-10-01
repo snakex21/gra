@@ -2,7 +2,7 @@
 # Long regression run of a boss fight: N full encounters played by the scripted bot
 # (different brain seeds and starts; Quadratus alternates on foot / from Agro).
 # Summary on stdout, details in tests/output/boss_soak.json / quadratus_soak.json.
-#   tools/run_boss_soak.sh [runs] [first] [valus|quadratus]
+#   tools/run_boss_soak.sh [runs] [first] [valus|quadratus|gaius]
 set -euo pipefail
 cd "$(dirname "$0")/.."
 GODOT="${GODOT:-godot}"
