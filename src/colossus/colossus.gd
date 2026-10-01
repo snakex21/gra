@@ -124,6 +124,17 @@ func get_focus_point() -> Vector3:
 	return global_position + Vector3.UP * body_height * 0.6
 
 
+## The weak point the sword's beam shows (the next one to strike), or null.
+func beam_weak_point() -> WeakPoint:
+	return null
+
+
+## Where the sword's beam leads on this colossus: its weak point, else the body.
+func beam_target() -> Vector3:
+	var w := beam_weak_point()
+	return w.world_point() if w else get_focus_point()
+
+
 ## Boss colossi: back to the start of the fight (dormant, weak points restored).
 func reset_encounter(_xf := Transform3D.IDENTITY, _use_xf := false) -> void:
 	pass

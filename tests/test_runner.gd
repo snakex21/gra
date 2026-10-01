@@ -5326,7 +5326,16 @@ func test_open_gate_leads_to_next_colossus() -> void:
 	p = g.player()
 	_check(arrived and g.colossus() is Valus, "riding through the gate did not lead to Valus (region %s)" % g.region_kind)
 	_check(p.is_riding() and p.riding.horse == g.refs.horse, "arrived on foot although we rode through the gate")
-	_check(p.beam.target.distance_to(g.colossus().get_focus_point()) < 0.01, "in the arena the beam does not lead to the colossus")
+	_check(p.beam.target.distance_to(g.colossus().beam_target()) < 0.01 and g.colossus().beam_weak_point() != null, "in the arena the beam does not lead to the weak point")
+	# Raise the sword towards the weak point: it lights up.
+	p.actions.move = Vector2.ZERO
+	var wp := g.colossus().beam_weak_point()
+	for i in 90:
+		var to := wp.world_point() - p.global_position
+		p.actions.view_basis = Basis.looking_at(Vector3(to.x, 0, to.z).normalized())
+		p.actions.beam_held = true
+		await _ticks(1)
+	_check(p.beam.locked and wp.revealed > 0.5, "the beam did not reveal the weak point (focus %.2f, revealed %.2f)" % [p.beam.focus, wp.revealed])
 	_log.append("through the gate after %d transitions, riding %s" % [g.transitions, str(p.is_riding())])
 
 

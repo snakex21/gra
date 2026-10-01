@@ -29,6 +29,8 @@ var health := 100.0
 var state := State.OPEN
 ## Seconds since the last accepted hit (feedback, colossus reaction).
 var since_hit := 999.0
+## 0..1: the sword's beam rests on it (it glows brighter; decays by itself).
+var revealed := 0.0
 var last_reason: StringName = &""
 var hits_accepted := 0
 var hits_rejected := 0
@@ -85,6 +87,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	since_hit += delta
+	revealed = maxf(0.0, revealed - delta * 1.5)
 	_update_visual()
 
 
@@ -155,9 +158,9 @@ func _update_visual() -> void:
 	match state:
 		State.OPEN:
 			_mat.emission = Color(0.4, 0.8, 1.0).lerp(Color(1.0, 0.95, 0.8), flash)
-			_mat.emission_energy_multiplier = 1.5 + 1.0 * pulse + 6.0 * flash
+			_mat.emission_energy_multiplier = 1.5 + 1.0 * pulse + 6.0 * flash + 5.0 * revealed
 		State.PROTECTED:
-			_mat.emission_energy_multiplier = 0.2
+			_mat.emission_energy_multiplier = 0.2 + 2.0 * revealed
 		State.DESTROYED:
 			_mat.emission = Color(0.2, 0.2, 0.25)
 			_mat.emission_energy_multiplier = 0.1

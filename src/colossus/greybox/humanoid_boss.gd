@@ -673,6 +673,10 @@ func _on_weak_point_struck(damage: float, _left: float) -> void:
 	stats.last_hit_damage = damage
 
 
+func beam_weak_point() -> WeakPoint:
+	return weak_point if weak_point and weak_point.state != WeakPoint.State.DESTROYED else null
+
+
 func _on_weak_point_destroyed() -> void:
 	_set_encounter(Encounter.DEFEATED)
 

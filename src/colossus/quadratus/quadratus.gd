@@ -355,6 +355,14 @@ func sole_exposed(i: int) -> bool:
 	return sole_world(i).y - _ground_under(sole_world(i)).y > sole_min_lift
 
 
+## The next weak point to strike (the rump, then the crown).
+func beam_weak_point() -> WeakPoint:
+	for w in weak_points:
+		if w.state != WeakPoint.State.DESTROYED:
+			return w
+	return null
+
+
 func weak_points_left() -> int:
 	var n := 0
 	for wp in weak_points:

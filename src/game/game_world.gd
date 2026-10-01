@@ -132,7 +132,11 @@ func _play(_delta: float) -> void:
 	# Arena.
 	var c := colossus()
 	var e: BossEncounter = refs.encounter
-	p.beam.target = c.get_focus_point() if not c.is_defeated() else Vector3.INF
+	p.beam.target = c.beam_target() if not c.is_defeated() else Vector3.INF
+	var wp := c.beam_weak_point()
+	if wp and p.beam.focus > 0.3:
+		# The beam rests on the weak point: it lights up (the oldest guide in the game).
+		wp.revealed = maxf(wp.revealed, p.beam.focus)
 	if e.resets != _resets_seen:
 		state.deaths += e.resets - _resets_seen
 		_resets_seen = e.resets
