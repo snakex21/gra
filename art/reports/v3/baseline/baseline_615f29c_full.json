@@ -1,0 +1,31 @@
+{
+  "queued_utc": "2026-10-01T18:57:09.790897+00:00",
+  "commit": "615f29c43867510758d12389702a6d713433087d",
+  "command": "bash tools/run_tests.sh",
+  "engine": "4.6.3.stable.official.7d41c59c4",
+  "note": "Queued behind previous control full suite to avoid concurrent Godot CPU runs. Exact remote gameplay tree includes upstream first-tranche art; gameplay tests build scenes with art disabled.",
+  "environment": {
+    "HOME": "/tmp/stonewater-baseline-home",
+    "XDG_CACHE_HOME": "/tmp/stonewater-baseline-cache",
+    "XDG_DATA_HOME": "/tmp/stonewater-baseline-data",
+    "XDG_CONFIG_HOME": "/tmp/stonewater-baseline-config",
+    "XDG_STATE_HOME": "/tmp/stonewater-baseline-state"
+  },
+  "started_utc": "2026-10-01T19:01:49.816461+00:00",
+  "exit_code": 1,
+  "finished_utc": "2026-10-01T19:09:22.886041+00:00",
+  "wall_seconds": 453.069392546,
+  "passed": 116,
+  "failed": 4,
+  "failure_summary": [
+    "test_performance_budget: regression vs Milestone 1 benchmark (~0.25 ms): 0.677 ms",
+    "existing_colossus_tests_still_pass: earlier tests failed: [\"test_performance_budget\"]",
+    "all_existing_tests_still_pass: earlier tests failed: [\"test_performance_budget\", \"existing_colossus_tests_still_pass\"]",
+    "all_valus_and_earlier_tests_still_pass: earlier tests failed: [\"test_performance_budget\", \"existing_colossus_tests_still_pass\", \"all_existing_tests_still_pass\"]"
+  ],
+  "test_performance_budget_climb_ms": 0.677,
+  "threshold_ms": 0.6,
+  "script_errors": 0,
+  "metric_warning_count": 10,
+  "interpretation": "Known direct timing threshold also fails on exact latest unmodified gameplay. 3 aggregate failures depend on that. All other direct tests pass. Parent V3 asset generation/render may overlap, so timings do not identify any art-caused regression."
+}

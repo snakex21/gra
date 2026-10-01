@@ -1,0 +1,21 @@
+ERROR Draco mesh compression is not available because library could not be found at /usr/bin/4.3/python/lib/python3.13/site-packages/libextern_draco.so
+21:15:45 | INFO: Starting glTF 2.0 export
+21:15:45 | INFO: Extracting primitive: Cube.002
+21:15:45 | INFO: Primitives created: 1
+21:15:45 | INFO: Finished glTF 2.0 export in 0.005845785140991211 s
+
+21:15:45 | INFO: Starting glTF 2.0 export
+21:15:45 | INFO: Extracting primitive: Cube.003
+21:15:45 | INFO: Primitives created: 1
+21:15:45 | INFO: Finished glTF 2.0 export in 0.00543212890625 s
+
+21:15:45 | INFO: Starting glTF 2.0 export
+21:15:45 | INFO: Extracting primitive: Cube.004
+21:15:45 | INFO: Primitives created: 1
+21:15:45 | INFO: Finished glTF 2.0 export in 0.008722782135009766 s
+
+STONEWATER_EDITED_EXPORT_OK parapet_end [320, 60, 48]
+Blender 4.3.2
+Read blend: "/workspace/scratch/cdc79842cc4e/gra-art-v3/art/source/stonewater.blend"
+
+Blender quit

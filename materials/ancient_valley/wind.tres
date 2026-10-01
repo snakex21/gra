@@ -1,0 +1,8 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=3]
+[ext_resource type="Shader" path="res://materials/ancient_valley/wind.gdshader" id="1"]
+[ext_resource type="Texture2D" path="res://textures/ancient_valley/atlas_1k.png" id="2"]
+[resource]
+shader = ExtResource("1")
+shader_parameter/atlas = ExtResource("2")
+shader_parameter/wind_direction = Vector2(0.8,0.35)
+shader_parameter/wind_strength = 0.35

@@ -1,0 +1,7 @@
+{
+  "base": "a838b5b6cc76ab5b3be42615bf2b6cd4f581f8ec",
+  "command": "bash tools/run_tests.sh",
+  "passed": 32,
+  "failures": 0,
+  "note": "Existing gameplay tests on the uploaded assets branch. No src/scenes/tests/project.godot modifications."
+}

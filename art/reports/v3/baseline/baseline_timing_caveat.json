@@ -1,0 +1,6 @@
+{
+  "recorded_utc": "2026-10-01T18:59:05.297113+00:00",
+  "known_concurrent_work": "Parent reports V3 Blender asset generation and/or rendering likely during the queued latest gameplay suite. Exact overlap is not measured. Separate gameplay suites and art runtime suites are serialized in this worker.",
+  "interpretation": "These are contextual headless CPU/logical regression measurements on shared non-reference cloud hardware. Do not claim target-platform FPS, GPU performance, an art speedup, or a reliable art CPU regression from timing differences. Functional test outcomes and unchanged gameplay content hashes are stronger evidence.",
+  "threshold_policy": "No test thresholds or frozen gameplay baselines edited. Baseline failures retained and reported."
+}

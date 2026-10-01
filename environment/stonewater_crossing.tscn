@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://art/scripts/stonewater_environment.gd" id="1"]
+
+[node name="StonewaterCrossing_ArtOnly" type="Node3D"]
+script = ExtResource("1")
+include_collision = true
+include_catalogue = false

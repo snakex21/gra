@@ -1,0 +1,10 @@
+{
+  "source": "art/source/sentinel_v2.blend",
+  "reopened_in": "Blender 4.3.2",
+  "editable_pretriangulation_meshes": 1509,
+  "quad_faces": 4526,
+  "joint_reference_empties": 17,
+  "packed_atlas_images": 1,
+  "extended_foot_objects": 8,
+  "result": "passed"
+}

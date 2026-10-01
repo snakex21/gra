@@ -1,0 +1,81 @@
+{
+  "gameplay_commit": "a3ef45af8a3e13b3561245a1449ae3ab9431d665",
+  "test_environment": "same cloud execution environment; headless Godot 4.6.3; non-reference shared hardware",
+  "overlay": "art-only directories copied into a detached worktree; no merge; src/scenes/tests/project.godot unchanged",
+  "adapter_checks": 430,
+  "selected_foot_contract": {
+    "size": [
+      1.7,
+      0.7,
+      3.6
+    ],
+    "center": [
+      0,
+      -0.05,
+      -0.85
+    ]
+  },
+  "full_suite": {
+    "passed": 116,
+    "failed": 4,
+    "direct_failures": [
+      "test_performance_budget"
+    ],
+    "dependent_aggregate_failures": [
+      "existing_colossus_tests_still_pass",
+      "all_existing_tests_still_pass",
+      "all_valus_and_earlier_tests_still_pass"
+    ],
+    "timing_ms": 0.681,
+    "threshold_ms": 0.6
+  },
+  "interleaved_timing_control": [
+    {
+      "pair": 1,
+      "order": [
+        "control",
+        "overlay"
+      ],
+      "control": {
+        "m1_frame_ms": 0.745,
+        "result": "fail"
+      },
+      "overlay": {
+        "m1_frame_ms": 0.704,
+        "result": "fail"
+      }
+    },
+    {
+      "pair": 2,
+      "order": [
+        "overlay",
+        "control"
+      ],
+      "control": {
+        "m1_frame_ms": 0.772,
+        "result": "fail"
+      },
+      "overlay": {
+        "m1_frame_ms": 0.707,
+        "result": "fail"
+      }
+    },
+    {
+      "pair": 3,
+      "order": [
+        "control",
+        "overlay"
+      ],
+      "control": {
+        "m1_frame_ms": 0.732,
+        "result": "fail"
+      },
+      "overlay": {
+        "m1_frame_ms": 0.782,
+        "result": "fail"
+      }
+    }
+  ],
+  "conclusion": "The timing threshold fails on both clean gameplay and art-overlay worktrees. Ranges overlap; this does not establish an art-caused regression or a speedup. Hardware performance acceptance remains open. No test threshold was changed.",
+  "functional_scope": "All other direct tests passed. Adapter tests verified both baseline and newer foot contracts separately; latest full suite is not claimed green."
+}

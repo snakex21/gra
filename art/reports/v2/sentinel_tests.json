@@ -1,0 +1,15 @@
+{
+  "engine": "Godot 4.6.3",
+  "checks_passed": 430,
+  "test_scene": "art/tests/test_sentinel_v2.tscn",
+  "verified": [
+    "17 visual attachments",
+    "original skeleton identity and 17 bones",
+    "collision shape resources/transforms/disabled flags unchanged",
+    "segment-local identity transforms",
+    "visuals follow animated joints over 30 physics frames",
+    "removal restores original greybox visibility",
+    "foot variant selected from existing PARTS dimensions and center"
+  ],
+  "result": "passed"
+}

@@ -1,0 +1,6 @@
+{
+	"checks": 618,
+	"engine": "4.6.3-stable (official)",
+	"failures": [],
+	"scope": "Only Stonewater imported geometry, shared materials, LOD settings and independent static collision; no gameplay assertions"
+}
