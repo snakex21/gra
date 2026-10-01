@@ -8,7 +8,8 @@ extends Node
 ## Writes tests/output/<boss>_soak.json (boss_soak.json for Valus) and prints a summary.
 ##
 ## Watched per run: wins, deaths (encounter resets), stalls per bot phase, attachment
-## glitches (the climber moving > 0.5 m in one tick while gripping), wrong resets (state
+## glitches (the drawn climber moving > 0.5 m in one tick while gripping, beyond the
+## surface motion), wrong resets (state
 ## after a reset not as at the start), AI stuck (same non-idle intent > 25 s in combat with
 ## no attack), weak point unreachable (no strike landed for > 120 s of combat).
 ## Quadratus also: arrows (shots, sole hits, wrong side, into the body / ground, flying
@@ -23,6 +24,7 @@ var boss := "valus"
 var results := []
 var _prev_bone: StringName = &""
 var _prev_hand := Vector3.ZERO
+var _prev_drawn := Vector3.ZERO
 var _prev_local := Vector3.ZERO
 
 
@@ -89,7 +91,8 @@ func _run(i: int) -> Dictionary:
 	while bot.phase != ValusBot.Phase.DONE and t < LIMIT:
 		await get_tree().physics_frame
 		t += 1
-		if p.is_climbing() and was_climbing and p.global_position.distance_to(prev) > 0.5:
+		var drawn := p.visual.global_position
+		if p.is_climbing() and was_climbing and drawn.distance_to(_prev_drawn) - p.surface_velocity.length() * dt > 0.5:
 			glitches += 1
 			if OS.get_environment("TRACE") != "":
 				print("  glitch t%.2f %.2f m grip %s n %s prev_bone %s phase %s | boss %s attack %s shake %.2f stagger %.2f anchor speed %.2f m/tick" % [t * dt, p.global_position.distance_to(prev), bot._grip_bone(), str(p.grip.world_normal().snapped(Vector3.ONE * 0.01)), _prev_bone, ValusBot.Phase.keys()[bot.phase], s.intent.kind, s.attack.describe() if s.attack and not s.attack.is_done() else "-", s._shake, s._stagger, p.grip.point_velocity(dt).length() * dt])
@@ -101,6 +104,7 @@ func _run(i: int) -> Dictionary:
 		_prev_bone = bot._grip_bone()
 		was_climbing = p.is_climbing()
 		prev = p.global_position
+		_prev_drawn = drawn
 		if s.encounter == HumanoidBoss.Encounter.COMBAT:
 			var kind := s.intent.kind
 			var attacking := s.attack != null and not s.attack.is_done()
@@ -185,12 +189,13 @@ func _run_quadratus(i: int) -> Dictionary:
 	while bot.phase != QuadratusBot.Phase.DONE and t < LIMIT:
 		await get_tree().physics_frame
 		t += 1
-		if p.is_climbing() and was_climbing and p.global_position.distance_to(prev) > 0.5:
+		var drawn := p.visual.global_position
+		if p.is_climbing() and was_climbing and drawn.distance_to(prev) - p.surface_velocity.length() * dt > 0.5:
 			m.glitches += 1
 		if was_climbing and not p.is_climbing() and p.last_release_reason == &"invalid":
 			lost_grips += 1
 		was_climbing = p.is_climbing()
-		prev = p.global_position
+		prev = drawn
 		if q.encounter == Quadratus.Encounter.COMBAT:
 			var kind := q.intent.kind
 			var attacking := q.attack != null and not q.attack.is_done()

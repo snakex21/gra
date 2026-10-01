@@ -10,6 +10,11 @@ var _arms: Array[Node3D] = []
 var _arm_raise := 0.0
 var _lean := Vector3.ZERO
 var _down := 0.0
+## Visual only: a step of the gameplay body while climbing (the hands wrapping round an
+## edge move the body ~0.5 m in one tick) is taken out here and eased back, so the drawn
+## body never pops. Gameplay positions are untouched (they stay frame-independent).
+var _wrap := Vector3.ZERO
+var _last_body := Vector3.INF
 var _blade: MeshInstance3D
 var _flare: MeshInstance3D
 var _beam: MeshInstance3D
@@ -150,12 +155,21 @@ func update_visual(player: PlayerCharacter, delta: float) -> void:
 		_arms[1].rotation.x = PI * 0.95 * raise
 	_update_beam(player)
 
+	var body := player.global_position
+	if climbing and _last_body != Vector3.INF:
+		# Unexpected part of this tick's body motion (beyond riding the surface).
+		var step := body - _last_body - player.surface_velocity * delta
+		if step.length() > 0.12:
+			_wrap -= step
+	_last_body = body
+	_wrap = _wrap.lerp(Vector3.ZERO, 1.0 - exp(-12.0 * delta)) if climbing else Vector3.ZERO
+
 	var b := Basis(_rot)
 	if _lean.length() > 0.001:
 		# Tilt around the horizontal axis perpendicular to the lean direction.
 		var axis := Vector3.UP.cross(_lean.normalized())
 		b = Basis(axis, _lean.length()) * b
-	var pos := _offset
+	var pos := _offset + _wrap
 	if _down > 0.001:
 		b = Basis(b.x, -PI * 0.5 * _down) * b
 		pos += Vector3.DOWN * 0.6 * _down

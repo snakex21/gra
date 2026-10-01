@@ -31,6 +31,9 @@ func _ready() -> void:
 		elif arg.begins_with("--scenario="):
 			scenario = arg.trim_prefix("--scenario=")
 	process_physics_priority = 100  # after the colossus and the player
+	if OS.has_environment("NO_FX"):
+		Fx.enabled = false
+
 	var ground := StaticBody3D.new()
 	ground.collision_layer = Layers.WORLD
 	var gs := CollisionShape3D.new()
@@ -194,7 +197,35 @@ func _setup_quadratus() -> void:
 	qbot.setup(boss.player, boss.quadratus, boss.encounter, boss.horse)
 
 
+var _trace: FileAccess
+
+
 func _quadratus_tick() -> void:
+	if OS.has_environment("TRACE_TICKS"):
+		if _trace == null:
+			_trace = FileAccess.open(OS.get_environment("TRACE_TICKS"), FileAccess.WRITE)
+		var tp: PlayerCharacter = boss.player
+		var tq: Quadratus = boss.quadratus
+		var th: Horse = boss.horse
+		# Diagnostics for an FPS divergence: TRACE_TICKS=<file> writes the state every tick,
+		# TRACE_BITS=1 bit-exact hashes (player, every segment: target / node / server).
+		if OS.has_environment("TRACE_BITS"):
+			var parts := {"player": var_to_bytes(tp.global_transform).hex_encode().sha256_text(), "pvel": var_to_bytes(tp.velocity).hex_encode().sha256_text()}
+			var tgt := PackedByteArray()
+			var nod := PackedByteArray()
+			var srv := PackedByteArray()
+			for sg in tq.segments:
+				tgt.append_array(var_to_bytes(sg.target_transform))
+				nod.append_array(var_to_bytes(sg.global_transform))
+				srv.append_array(var_to_bytes(PhysicsServer3D.body_get_state(sg.get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM)))
+			parts.tgt = tgt.hex_encode().sha256_text().left(10)
+			parts.nod = nod.hex_encode().sha256_text().left(10)
+			parts.srv = srv.hex_encode().sha256_text().left(10)
+			parts.root = var_to_bytes(tq.global_transform).hex_encode().sha256_text().left(10)
+			parts.skel = var_to_bytes(tq.skeleton.get_bone_global_pose(1)).hex_encode().sha256_text().left(10)
+			_trace.store_line("%d %s" % [tick, str(parts)])
+			return
+		_trace.store_line("%d %s %s st %.6f %s %s phase %s riding %s bal %d %.6f" % [tick, str(tp.global_position), str(tq.global_position), tp.stamina.value, str(th.global_position), str(tp.velocity), QuadratusBot.Phase.keys()[qbot.phase], str(tp.is_riding()), tp.balance.state, tp.balance.value])
 	if qbot.phase != QuadratusBot.Phase.DONE and tick < 60 * 400:
 		return
 	var p: PlayerCharacter = boss.player
