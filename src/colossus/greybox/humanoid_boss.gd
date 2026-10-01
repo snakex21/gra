@@ -410,7 +410,8 @@ func _effective_intent(it: ColossusIntent) -> ColossusIntent:
 
 func _adjust_movement(it: ColossusIntent, delta: float) -> void:
 	# Bracing before a shake, crouching for an attack, kneeling when defeated.
-	var bracing := it.kind == ColossusIntent.SHAKE_PLAYER and _intent_time < shake_telegraph and encounter == Encounter.COMBAT
+	# ``it`` is the movement intent (a telegraphing shake is IDLE there): read the real one.
+	var bracing := intent.kind == ColossusIntent.SHAKE_PLAYER and _intent_time < shake_telegraph and encounter == Encounter.COMBAT
 	_brace_w = move_toward(_brace_w, 1.0 if bracing else 0.0, delta / 0.3)
 	if bracing:
 		loco.bracing = true

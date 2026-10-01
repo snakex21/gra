@@ -3968,13 +3968,15 @@ func test_quadratus_body_reaction_is_fair() -> void:
 			q._on_sole_hit({"tag": 2, "point": q.sole_world(2)})
 		await _ticks(1)
 		t += DT
-		var shaking := q.intent.kind == Quadratus.SHAKE_BODY
+		# Body reactions: the torso shake and the lurch step share the rules.
+		var shaking: bool = q.intent.kind in q._shake_kinds()
 		if shaking and cur.is_empty():
-			cur = {"start": t, "first_motion": -1.0}
-		if shaking and q._shake > 0.05 and cur.first_motion < 0.0:
+			cur = {"start": t, "first_motion": -1.0, "kind": q.intent.kind}
+		var moving := q._shake > 0.05 or (q.intent.kind == Quadratus.LURCH and q.loco.speed > 0.3)
+		if shaking and moving and cur.first_motion < 0.0:
 			cur.first_motion = t
 		if not shaking and not cur.is_empty():
-			shakes.append([cur.start, (cur.first_motion - cur.start) if cur.first_motion > 0.0 else -1.0, t - cur.start])
+			shakes.append([cur.start, (cur.first_motion - cur.start) if cur.first_motion > 0.0 else -1.0, t - cur.start, cur.kind])
 			cur = {}
 		if shaking and q.buckle != Quadratus.Buckle.NONE:
 			kneel_shake += 1
@@ -3987,9 +3989,12 @@ func test_quadratus_body_reaction_is_fair() -> void:
 		max_len = maxf(max_len, shakes[i][2])
 		if i > 0:
 			min_gap = minf(min_gap, shakes[i][0] - (shakes[i - 1][0] + shakes[i - 1][2]))
-	_log.append("player on the back 60 s: %d shakes, brace before motion min %.2f s, longest %.2f s, shortest gap %.2f s, shakes while kneeling %d ticks; ground attacks %s" % [shakes.size(), min_brace, max_len, min_gap, kneel_shake, str(attacks)])
+	var kinds := {}
+	for sh in shakes:
+		kinds[sh[3]] = int(kinds.get(sh[3], 0)) + 1
+	_log.append("player on the back 60 s: %d body reactions %s, brace before motion min %.2f s, longest %.2f s, shortest gap %.2f s, shakes while kneeling %d ticks; ground attacks %s" % [shakes.size(), str(kinds), min_brace, max_len, min_gap, kneel_shake, str(attacks)])
 	_check(shakes.size() >= 2, "it never tried to shake the player off")
-	_check(min_brace >= q.shake_telegraph - 0.05, "shake without a telegraph (%.2f s)" % min_brace)
+	_check(min_brace >= minf(q.shake_telegraph, q.lurch_telegraph) - 0.05, "body reaction without a telegraph (%.2f s)" % min_brace)
 	_check(max_len <= q.shake_max_duration + 0.3, "shake too long (%.2f s)" % max_len)
 	_check(min_gap >= q.shake_cooldown * 0.3 - 0.05, "shakes back to back (%.2f s)" % min_gap)
 	_check(kneel_shake == 0, "shook while kneeling (the climb window)")

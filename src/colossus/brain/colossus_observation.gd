@@ -24,6 +24,8 @@ class PlayerInfo:
 	var riding := false
 	## Attack opportunities seen by the colossus: foot index that can stomp (-1 none),
 	## arm side that can sweep (+1 left, -1 right, 0 none).
+	## Gripping (climbing) rather than standing on its support.
+	var climbing := false
 	var stomp_foot := -1
 	var sweep_side := 0
 	## Attacks this player is in range of right now (colossus-specific kinds).

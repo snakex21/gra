@@ -667,7 +667,7 @@ func _want_weapon(w: PlayerCharacter.Weapon) -> void:
 
 func _hold_on() -> bool:
 	var k := quadratus.intent.kind
-	return k == Quadratus.SHAKE_BODY or k == Quadratus.RECOVER or quadratus._stagger > 0.2 or quadratus._shake > 0.1 or player.shake_level > 0.35
+	return k in quadratus._shake_kinds() or k == Quadratus.RECOVER or quadratus._stagger > 0.2 or quadratus._shake > 0.1 or player.shake_level > 0.35
 
 
 func _evade() -> bool:

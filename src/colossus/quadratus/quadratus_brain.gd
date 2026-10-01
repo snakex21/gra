@@ -7,7 +7,8 @@ extends ColossusBrain
 ##   player on foot : stomp (by a front hoof), head_attack (in front, along the head's
 ##                    swing), turn (beside / behind it: a slow walking turn, which lifts
 ##                    the hind hooves), approach (far), reposition (now and then), observe
-##   player on body : shake_body (stronger and sooner on the neck / head), observe
+##   player on body : shake_body (stronger and sooner on the neck / head), lurch_step
+##                    (someone standing on the back), observe
 ##
 ## Cooldowns, telegraphs and anti-spam are not here: FairnessRules and the colossus'
 ## own rules filter whatever this proposes. Deterministic for a given seed.
@@ -84,6 +85,10 @@ func _body_options(p: ColossusObservation.PlayerInfo, options: Array[ColossusInt
 			options.append(_shake(p, 0.5, 0.15 + 0.4 * clampf((t - 2.0) / 5.0, 0.0, 1.0)))
 		&"rump", &"back":
 			options.append(_shake(p, 0.55, 0.15 + 0.5 * clampf((t - 2.5) / 6.0, 0.0, 1.0)))
+			if not p.climbing:
+				# Someone standing on the back: a lurch throws a standing player better
+				# than a roll.
+				options.append(_make(Quadratus.LURCH, p, 0.2 + 0.5 * clampf((t - 2.0) / 5.0, 0.0, 1.0)))
 		&"neck", &"head":
 			options.append(_shake(p, 0.65, 0.45 + 0.35 * clampf(t / 6.0, 0.0, 1.0)))
 		_:
