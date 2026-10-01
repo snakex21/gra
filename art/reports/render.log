@@ -1,0 +1,21 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+WARNING: Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.
+     at: set_use_vsync (platform/linuxbsd/x11/gl_manager_x11.cpp:364)
+OpenGL API 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 19.1.7, 256 bits)
+
+ART_ADAPTER_OK: 17 rigid visuals attached; physics and skeleton unchanged
+ART_CAPTURE {"draw_calls":304.0,"rendered_objects":493.0,"rendered_primitives":65654.0,"view":"01_basin_day"}
+ART_CAPTURE {"draw_calls":304.0,"rendered_objects":487.0,"rendered_primitives":65642.0,"view":"02_basin_sunset"}
+ART_CAPTURE {"draw_calls":304.0,"rendered_objects":496.0,"rendered_primitives":65660.0,"view":"03_basin_night"}
+ART_CAPTURE {"draw_calls":257.0,"rendered_objects":455.0,"rendered_primitives":81457.0,"view":"04_sentinel_front"}
+ART_CAPTURE {"draw_calls":253.0,"rendered_objects":442.0,"rendered_primitives":77518.0,"view":"05_ruin_modules"}
+ART_CAPTURE {"draw_calls":178.0,"rendered_objects":391.0,"rendered_primitives":63019.0,"view":"06_ground_vegetation"}
+ART_CAPTURE_OK
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+WARNING: Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.
+     at: set_use_vsync (platform/linuxbsd/x11/gl_manager_x11.cpp:364)
+OpenGL API 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 19.1.7, 256 bits)
+
+ART_SANDBOX_OK: original sandbox instantiated, visual replacement only inside arena
+ART_ADAPTER_OK: 17 rigid visuals attached; physics and skeleton unchanged
+ART_WRAPPER_CAPTURE_OK

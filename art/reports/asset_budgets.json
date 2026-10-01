@@ -1,0 +1,443 @@
+{
+  "asset_count": 36,
+  "assets": [
+    {
+      "id": "rock_01",
+      "triangles": [
+        320,
+        152,
+        56
+      ],
+      "collision_triangles": 48
+    },
+    {
+      "id": "rock_02",
+      "triangles": [
+        320,
+        152,
+        56
+      ],
+      "collision_triangles": 48
+    },
+    {
+      "id": "rock_03",
+      "triangles": [
+        320,
+        152,
+        56
+      ],
+      "collision_triangles": 48
+    },
+    {
+      "id": "rock_04",
+      "triangles": [
+        320,
+        152,
+        56
+      ],
+      "collision_triangles": 48
+    },
+    {
+      "id": "rock_05",
+      "triangles": [
+        320,
+        152,
+        56
+      ],
+      "collision_triangles": 48
+    },
+    {
+      "id": "cliff_buttress",
+      "triangles": [
+        430,
+        206,
+        76
+      ],
+      "collision_triangles": 48
+    },
+    {
+      "id": "ruin_column",
+      "triangles": [
+        400,
+        192,
+        72
+      ],
+      "collision_triangles": 48
+    },
+    {
+      "id": "ruin_wall",
+      "triangles": [
+        704,
+        336,
+        126
+      ],
+      "collision_triangles": 48
+    },
+    {
+      "id": "ruin_arch",
+      "triangles": [
+        420,
+        200,
+        73
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "ruin_stairs",
+      "triangles": [
+        352,
+        168,
+        62
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "ruin_rubble",
+      "triangles": [
+        572,
+        274,
+        102
+      ],
+      "collision_triangles": 48
+    },
+    {
+      "id": "road_slab",
+      "triangles": [
+        44,
+        20,
+        6
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "grass_tuft",
+      "triangles": [
+        33,
+        15,
+        5
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "grass_dry",
+      "triangles": [
+        27,
+        12,
+        4
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "grass_low",
+      "triangles": [
+        21,
+        10,
+        3
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "shrub_salt",
+      "triangles": [
+        297,
+        141,
+        44
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "plant_spear",
+      "triangles": [
+        297,
+        141,
+        44
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "tree_windward",
+      "triangles": [
+        420,
+        193,
+        64
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "tree_juniper",
+      "triangles": [
+        420,
+        193,
+        64
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_hips",
+      "triangles": [
+        356,
+        170,
+        64
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_spine",
+      "triangles": [
+        404,
+        193,
+        72
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_chest",
+      "triangles": [
+        956,
+        451,
+        165
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_neck",
+      "triangles": [
+        230,
+        110,
+        41
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_head",
+      "triangles": [
+        556,
+        264,
+        93
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_upper_arm_l",
+      "triangles": [
+        482,
+        231,
+        86
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_forearm_l",
+      "triangles": [
+        550,
+        262,
+        97
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_hand_l",
+      "triangles": [
+        68,
+        30,
+        10
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_thigh_l",
+      "triangles": [
+        440,
+        211,
+        79
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_shin_l",
+      "triangles": [
+        466,
+        221,
+        81
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_foot_l",
+      "triangles": [
+        68,
+        30,
+        10
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_upper_arm_r",
+      "triangles": [
+        482,
+        231,
+        86
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_forearm_r",
+      "triangles": [
+        550,
+        262,
+        97
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_hand_r",
+      "triangles": [
+        68,
+        30,
+        10
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_thigh_r",
+      "triangles": [
+        440,
+        211,
+        79
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_shin_r",
+      "triangles": [
+        466,
+        221,
+        81
+      ],
+      "collision_triangles": null
+    },
+    {
+      "id": "sentinel_foot_r",
+      "triangles": [
+        68,
+        30,
+        10
+      ],
+      "collision_triangles": null
+    }
+  ],
+  "textures": [
+    {
+      "file": "textures/environment/grass_albedo.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 345450
+    },
+    {
+      "file": "textures/environment/grass_normal.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 545182
+    },
+    {
+      "file": "textures/environment/path_albedo.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 330650
+    },
+    {
+      "file": "textures/environment/path_normal.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 462048
+    },
+    {
+      "file": "textures/environment/rock_albedo.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 272809
+    },
+    {
+      "file": "textures/environment/rock_normal.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 473023
+    },
+    {
+      "file": "textures/environment/ruin_stone_albedo.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 352589
+    },
+    {
+      "file": "textures/environment/ruin_stone_normal.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 473556
+    },
+    {
+      "file": "textures/environment/saltward_atlas_albedo.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 1355668
+    },
+    {
+      "file": "textures/environment/sand_albedo.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 358536
+    },
+    {
+      "file": "textures/environment/sand_normal.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 461962
+    },
+    {
+      "file": "textures/environment/soil_albedo.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 311957
+    },
+    {
+      "file": "textures/environment/soil_normal.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 461971
+    }
+  ],
+  "unique_base_triangles": 12687,
+  "texture_rgba8_mip_estimate_bytes": 22369621,
+  "runtime_glb_bytes": 2010584,
+  "notes": [
+    "Texture estimate assumes all files simultaneously resident as uncompressed RGBA8 plus mipmaps; renderer counters are recorded separately.",
+    "Collision counts exclude built-in box/cylinder/heightfield proxies and the untouched gameplay segment shapes.",
+    "All GLBs use one surface and reference the shared Godot atlas material at runtime."
+  ]
+}

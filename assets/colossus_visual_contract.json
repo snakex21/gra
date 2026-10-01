@@ -1,0 +1,494 @@
+{
+  "baseline_commit": "b6155855fa4153ab5610ec02e591b9d622e1fbf3",
+  "source": "src/colossus/greybox/greybox_humanoid.gd",
+  "source_sha256": "dca4aa79847401b9e94e6248ec79f6d92d548bc36a62c4462833d7785ef0c76b",
+  "unit": "metre",
+  "up": "+Y",
+  "forward": "-Z",
+  "left": "+X",
+  "body_height": 17,
+  "rest_joints": [
+    {
+      "bone": "hips",
+      "parent": "",
+      "offset": [
+        0,
+        8,
+        0
+      ]
+    },
+    {
+      "bone": "spine",
+      "parent": "hips",
+      "offset": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "bone": "chest",
+      "parent": "spine",
+      "offset": [
+        0,
+        2.2,
+        0
+      ]
+    },
+    {
+      "bone": "neck",
+      "parent": "chest",
+      "offset": [
+        0,
+        2.8,
+        0
+      ]
+    },
+    {
+      "bone": "head",
+      "parent": "neck",
+      "offset": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "bone": "upper_arm_l",
+      "parent": "chest",
+      "offset": [
+        2.9,
+        2.3,
+        0
+      ]
+    },
+    {
+      "bone": "forearm_l",
+      "parent": "upper_arm_l",
+      "offset": [
+        0,
+        -4.2,
+        0
+      ]
+    },
+    {
+      "bone": "hand_l",
+      "parent": "forearm_l",
+      "offset": [
+        0,
+        -4.2,
+        0
+      ]
+    },
+    {
+      "bone": "upper_arm_r",
+      "parent": "chest",
+      "offset": [
+        -2.9,
+        2.3,
+        0
+      ]
+    },
+    {
+      "bone": "forearm_r",
+      "parent": "upper_arm_r",
+      "offset": [
+        0,
+        -4.2,
+        0
+      ]
+    },
+    {
+      "bone": "hand_r",
+      "parent": "forearm_r",
+      "offset": [
+        0,
+        -4.2,
+        0
+      ]
+    },
+    {
+      "bone": "thigh_l",
+      "parent": "hips",
+      "offset": [
+        1.3,
+        -0.4,
+        0
+      ]
+    },
+    {
+      "bone": "shin_l",
+      "parent": "thigh_l",
+      "offset": [
+        0,
+        -3.8,
+        0
+      ]
+    },
+    {
+      "bone": "foot_l",
+      "parent": "shin_l",
+      "offset": [
+        0,
+        -3.4,
+        0
+      ]
+    },
+    {
+      "bone": "thigh_r",
+      "parent": "hips",
+      "offset": [
+        -1.3,
+        -0.4,
+        0
+      ]
+    },
+    {
+      "bone": "shin_r",
+      "parent": "thigh_r",
+      "offset": [
+        0,
+        -3.8,
+        0
+      ]
+    },
+    {
+      "bone": "foot_r",
+      "parent": "shin_r",
+      "offset": [
+        0,
+        -3.4,
+        0
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "bone": "hips",
+      "kind": "fur",
+      "size": [
+        4.2,
+        1.6,
+        2.6
+      ],
+      "center": [
+        0,
+        0.2,
+        0
+      ]
+    },
+    {
+      "bone": "spine",
+      "kind": "fur",
+      "size": [
+        3.4,
+        2.4,
+        2.4
+      ],
+      "center": [
+        0,
+        1.1,
+        0
+      ]
+    },
+    {
+      "bone": "chest",
+      "kind": "stone",
+      "size": [
+        5,
+        2.8,
+        3
+      ],
+      "center": [
+        0,
+        1.4,
+        0
+      ]
+    },
+    {
+      "bone": "chest",
+      "kind": "fur",
+      "size": [
+        4.4,
+        2.9,
+        0.5
+      ],
+      "center": [
+        0,
+        1.2,
+        1.6
+      ]
+    },
+    {
+      "bone": "neck",
+      "kind": "fur",
+      "size": [
+        0.8,
+        2.2
+      ],
+      "center": [
+        0,
+        0.6,
+        0.1
+      ]
+    },
+    {
+      "bone": "head",
+      "kind": "stone",
+      "size": [
+        2,
+        2.2,
+        2.2
+      ],
+      "center": [
+        0,
+        1.1,
+        0
+      ]
+    },
+    {
+      "bone": "head",
+      "kind": "fur",
+      "size": [
+        1.9,
+        0.4,
+        2
+      ],
+      "center": [
+        0,
+        2.3,
+        0.1
+      ]
+    },
+    {
+      "bone": "head",
+      "kind": "fur",
+      "size": [
+        1.8,
+        1.8,
+        0.4
+      ],
+      "center": [
+        0,
+        1.1,
+        1.2
+      ]
+    },
+    {
+      "bone": "upper_arm_l",
+      "kind": "fur",
+      "size": [
+        0.8,
+        4.6
+      ],
+      "center": [
+        0,
+        -2,
+        0
+      ]
+    },
+    {
+      "bone": "forearm_l",
+      "kind": "fur",
+      "size": [
+        0.7,
+        4.4
+      ],
+      "center": [
+        0,
+        -2,
+        0
+      ]
+    },
+    {
+      "bone": "forearm_l",
+      "kind": "armor",
+      "size": [
+        0.5,
+        2.6,
+        1.3
+      ],
+      "center": [
+        0.75,
+        -2,
+        0
+      ]
+    },
+    {
+      "bone": "hand_l",
+      "kind": "stone",
+      "size": [
+        1.3,
+        1.8,
+        1.1
+      ],
+      "center": [
+        0,
+        -0.9,
+        0
+      ]
+    },
+    {
+      "bone": "thigh_l",
+      "kind": "fur",
+      "size": [
+        1,
+        4.4
+      ],
+      "center": [
+        0,
+        -1.9,
+        0
+      ]
+    },
+    {
+      "bone": "shin_l",
+      "kind": "fur",
+      "size": [
+        0.85,
+        4
+      ],
+      "center": [
+        0,
+        -1.7,
+        0
+      ]
+    },
+    {
+      "bone": "shin_l",
+      "kind": "armor",
+      "size": [
+        1.3,
+        2.8,
+        0.45
+      ],
+      "center": [
+        0,
+        -1.7,
+        -0.85
+      ]
+    },
+    {
+      "bone": "foot_l",
+      "kind": "stone",
+      "size": [
+        1.7,
+        0.7,
+        2.8
+      ],
+      "center": [
+        0,
+        -0.05,
+        -0.45
+      ]
+    },
+    {
+      "bone": "upper_arm_r",
+      "kind": "fur",
+      "size": [
+        0.8,
+        4.6
+      ],
+      "center": [
+        0,
+        -2,
+        0
+      ]
+    },
+    {
+      "bone": "forearm_r",
+      "kind": "fur",
+      "size": [
+        0.7,
+        4.4
+      ],
+      "center": [
+        0,
+        -2,
+        0
+      ]
+    },
+    {
+      "bone": "forearm_r",
+      "kind": "armor",
+      "size": [
+        0.5,
+        2.6,
+        1.3
+      ],
+      "center": [
+        -0.75,
+        -2,
+        0
+      ]
+    },
+    {
+      "bone": "hand_r",
+      "kind": "stone",
+      "size": [
+        1.3,
+        1.8,
+        1.1
+      ],
+      "center": [
+        0,
+        -0.9,
+        0
+      ]
+    },
+    {
+      "bone": "thigh_r",
+      "kind": "fur",
+      "size": [
+        1,
+        4.4
+      ],
+      "center": [
+        0,
+        -1.9,
+        0
+      ]
+    },
+    {
+      "bone": "shin_r",
+      "kind": "fur",
+      "size": [
+        0.85,
+        4
+      ],
+      "center": [
+        0,
+        -1.7,
+        0
+      ]
+    },
+    {
+      "bone": "shin_r",
+      "kind": "armor",
+      "size": [
+        1.3,
+        2.8,
+        0.45
+      ],
+      "center": [
+        0,
+        -1.7,
+        -0.85
+      ]
+    },
+    {
+      "bone": "foot_r",
+      "kind": "stone",
+      "size": [
+        1.7,
+        0.7,
+        2.8
+      ],
+      "center": [
+        0,
+        -0.05,
+        -0.45
+      ]
+    }
+  ]
+}

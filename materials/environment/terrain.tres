@@ -1,0 +1,16 @@
+[gd_resource type="ShaderMaterial" load_steps=7 format=3]
+[ext_resource type="Shader" path="res://materials/environment/terrain.gdshader" id="1"]
+[ext_resource type="Texture2D" path="res://textures/environment/grass_albedo.png" id="2"]
+[ext_resource type="Texture2D" path="res://textures/environment/rock_albedo.png" id="3"]
+[ext_resource type="Texture2D" path="res://textures/environment/sand_albedo.png" id="4"]
+[ext_resource type="Texture2D" path="res://textures/environment/path_albedo.png" id="5"]
+[ext_resource type="Texture2D" path="res://textures/environment/soil_albedo.png" id="6"]
+[resource]
+resource_name = "Saltward / shared terrain blend"
+shader = ExtResource("1")
+shader_parameter/grass = ExtResource("2")
+shader_parameter/soil = ExtResource("6")
+shader_parameter/rock = ExtResource("3")
+shader_parameter/sand = ExtResource("4")
+shader_parameter/path = ExtResource("5")
+shader_parameter/tile_metres = 5.0

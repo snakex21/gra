@@ -1,0 +1,51 @@
+{
+	"adapter": "llvmpipe (LLVM 19.1.7, 256 bits)",
+	"asset_instances": 133,
+	"buffer_memory_bytes": 9151420.0,
+	"engine": "4.6.3-stable (official)",
+	"note": "Rendered work counters on the actual test renderer. No target-hardware FPS claim. Screenshot capture stalls are excluded from any timing claim.",
+	"renderer": "gl_compatibility",
+	"resolution": "(1280.0, 720.0)",
+	"segment_visuals": 17,
+	"texture_memory_bytes": 50742893.0,
+	"vegetation_instances": 1713,
+	"vendor": "Mesa",
+	"views": [
+		{
+			"draw_calls": 304.0,
+			"rendered_objects": 493.0,
+			"rendered_primitives": 65654.0,
+			"view": "01_basin_day"
+		},
+		{
+			"draw_calls": 304.0,
+			"rendered_objects": 487.0,
+			"rendered_primitives": 65642.0,
+			"view": "02_basin_sunset"
+		},
+		{
+			"draw_calls": 304.0,
+			"rendered_objects": 496.0,
+			"rendered_primitives": 65660.0,
+			"view": "03_basin_night"
+		},
+		{
+			"draw_calls": 257.0,
+			"rendered_objects": 455.0,
+			"rendered_primitives": 81457.0,
+			"view": "04_sentinel_front"
+		},
+		{
+			"draw_calls": 253.0,
+			"rendered_objects": 442.0,
+			"rendered_primitives": 77518.0,
+			"view": "05_ruin_modules"
+		},
+		{
+			"draw_calls": 178.0,
+			"rendered_objects": 391.0,
+			"rendered_primitives": 63019.0,
+			"view": "06_ground_vegetation"
+		}
+	]
+}
