@@ -33,68 +33,91 @@ func _ready() -> void:
 
 
 func _run() -> void:
+	var hud: PlayerHud = null
+	for n in sandbox.find_children("*", "PlayerHud", true, false):
+		hud = n
+	_hud = hud
 	colossus.debug_override = &"frozen"
 	await _wait(30)
-	await _shot("01_arena")
 
-	# Walk up behind the left leg.
+	# 1) Approach on foot: "near colossus" framing.
 	var seg := _segment(&"shin_l")
 	var back := colossus.global_basis.z
-	player.global_position = seg.global_transform * Vector3(0, -2.2, 0) + back * 4.0
+	player.global_position = seg.global_transform * Vector3(0, -2.2, 0) + back * 9.0
 	player.facing = -back
 	player.reset_physics_interpolation()
 	cam.snap_behind_player()
-	cam.pitch = -0.15
-	await _drive(Vector2(0, 1), 40)
-	player.actions.grab_held = true
-	await _drive(Vector2(0, 0.0), 20)
-	await _shot("02_grip_leg")
+	cam.pitch = -0.05
+	await _drive(Vector2(0, 0.5), 60)
+	await _shot("01_approach_scale")
 
+	# 2) Grab the leg and climb a walking colossus (camera leads along the route).
+	await _drive(Vector2(0, 1), 50)
+	player.actions.grab_held = true
 	colossus.debug_override = &"walk"
-	await _drive(Vector2(0, 1), 150)
-	await _shot("03_climbing_thigh_walking")
-	await _drive(Vector2(0, 1), 150)
-	await _shot("04_hips_spine")
-	cam.pitch = 0.25
-	await _drive(Vector2(0, 1), 90)
-	await _shot("05_under_ledge_or_back")
+	await _drive(Vector2(0, 1), 200)
+	await _shot("02_climb_lookahead")
+
+	# 3) Pull up onto the shoulders, stand on the walking colossus.
 	var mantled := [false]
 	player.mantled.connect(func() -> void: mantled[0] = true)
-	for i in 200:
+	for i in 400:
 		if mantled[0]:
 			break
 		await _drive(Vector2(0, 1), 1)
 	player.actions.grab_held = false
-	await _drive(Vector2.ZERO, 30)
-	await _shot("06_after_mantle")
-	# Look around from the shoulders while the colossus walks.
-	player.actions.look_delta = Vector2(PI * 0.6, 0.25)
-	await _drive(Vector2.ZERO, 30)
-	await _shot("07_on_shoulders_view")
-
-	# Turn towards the neck, grab it and get shaken.
-	player.actions.look_delta = Vector2(-PI * 0.6, -0.1)
-	await _drive(Vector2.ZERO, 10)
-	var neck := _segment(&"neck").global_position
-	var to_neck := PlayerCharacter._flat_dir(neck - player.global_position, Vector3.FORWARD)
-	cam.yaw = atan2(-to_neck.x, -to_neck.z)
-	for i in 90:
-		player.actions.grab_held = true
-		if player.is_climbing():
+	await _drive(Vector2.ZERO, 20)
+	# Step out to the middle of the shoulder.
+	var chest := _segment(&"chest")
+	var to_side := (chest.global_transform * Vector3(1.9, 2.8, 0.0)) - player.global_position
+	to_side.y = 0.0
+	player.actions.view_basis = Basis.looking_at(to_side.normalized())
+	for i in 30:
+		if (chest.global_transform.affine_inverse() * player.global_position).x > 1.8:
 			break
-		await _drive(Vector2(0, 0.6), 1)
-	await _drive(Vector2(0, 1), 40)
+		player.actions.move = Vector2(0, 0.6)
+		player.actions.view_basis = Basis.looking_at(to_side.normalized())
+		await get_tree().physics_frame
+	player.actions.move = Vector2.ZERO
+	cam.yaw = colossus.rotation.y + PI * 0.5
+	cam.pitch = -0.35
+	await _drive(Vector2.ZERO, 90)
+	await _shot("03_standing_on_walking_colossus")
+
+	# 4) Shake: balance drains continuously.
 	colossus.debug_override = &"shake"
-	await _drive(Vector2.ZERO, 50)
-	await _shot("08_shaken")
-	await _drive(Vector2.ZERO, 60)
-	await _shot("09_shaken_later")
-	player.actions.focus_held = true
+	colossus._think_left = 0.0
+	for i in 200:
+		await _drive(Vector2.ZERO, 1)
+		if player.balance.state >= Balance.State.UNSTABLE and not _taken.has("04"):
+			await _drive(Vector2.ZERO, 10)
+			await _shot("04_unstable")
+		if player.balance.state >= Balance.State.STUMBLE:
+			break
+	await _shot("05_slipping")
+	# 5) Save yourself: grab.
+	player.actions.grab_held = true
+	await _drive(Vector2.ZERO, 40)
+	await _shot("06_rescue_grab")
+	# 6) Let go while it shakes: thrown off, hard landing.
 	player.actions.grab_held = false
+	for i in 240:
+		await _drive(Vector2.ZERO, 1)
+		if player.state == PlayerCharacter.State.GROUND and player.last_impact_tier != FallImpact.Tier.NONE and not player.is_on_colossus():
+			break
+	await _drive(Vector2.ZERO, 15)
+	await _shot("07_landed_after_throw")
+	# 7) Back on the ground: frame the colossus (focus).
 	colossus.debug_override = &""
-	await _drive(Vector2.ZERO, 70)
-	await _shot("10_fall_focus")
+	await _drive(Vector2.ZERO, 120)
+	player.actions.focus_held = true
+	await _drive(Vector2.ZERO, 90)
+	await _shot("08_focus_colossus")
 	player.actions.focus_held = false
+
+
+var _hud: PlayerHud
+var _taken := {}
 
 
 func _drive(move: Vector2, ticks: int) -> void:
@@ -115,7 +138,10 @@ func _shot(name: String) -> void:
 	var path := "res://tests/output/%s.png" % name
 	img.save_png(ProjectSettings.globalize_path(path))
 	_shots += 1
-	print("shot %s  state=%s grip=%s y=%.1f stamina=%.0f shake=%.2f intent=%s" % [name, PlayerCharacter.State.keys()[player.state], player.grip.body.name if player.grip else "-", player.global_position.y, player.stamina.value, player.shake_level, colossus.intent.kind])
+	_taken[name.substr(0, 2)] = true
+	if _hud:
+		print("---- %s HUD ----\n%s" % [name, _hud._label.text])
+	print("shot %s  state=%s balance=%.2f y=%.1f stamina=%.0f health=%.0f intent=%s camera=%s %.1f m" % [name, player.get_display_state(), player.balance.value, player.global_position.y, player.stamina.value, player.health, colossus.intent.kind, cam.debug_state, cam.get_distance()])
 
 
 func _segment(bone: StringName) -> BodySegment:

@@ -59,13 +59,21 @@ const COLORS := {
 
 @export var walk_speed := 1.4       ## m/s
 @export var walk_accel := 0.5       ## m/s^2, huge bodies speed up slowly
+@export var walk_jerk := 1.5        ## m/s^3, how fast the acceleration itself may change
 @export var turn_rate := 0.3        ## rad/s at walking speed
+@export var turn_accel := 0.25      ## rad/s^2, how quickly the turn rate can change
 @export var stride := 4.6           ## m per step
 @export var shake_frequency := 1.4  ## Hz
 @export var shake_ramp := 0.6       ## seconds to reach full shake
+## Torso roll (rad) towards the shaken player's side while they grip / while they stand.
+@export var shake_lean := 0.15
+@export var shake_lean_standing := 0.45
+@export var shake_lean_rate := 0.9  ## rad/s
 
 # Continuous controller state.
 var _speed := 0.0
+var _yaw_rate := 0.0
+var _speed_rate := 0.0
 var _target_speed := 0.0
 var _goal := Vector3.ZERO
 var _has_goal := false
@@ -73,6 +81,9 @@ var _gait_phase := 0.0
 var _shake := 0.0
 var _target_shake := 0.0
 var _shake_phase := 0.0
+var _shake_lean := 0.0
+var _rattle := 1.0
+var _shake_target: Node3D
 var _breath_phase := 0.0
 var _look := Vector2.ZERO           # yaw, pitch (radians, colossus space)
 var _look_target: Node3D
@@ -180,23 +191,45 @@ func _execute_intent(it: ColossusIntent, delta: float) -> void:
 				_target_speed = walk_speed * clampf((d - 14.0) / 10.0, 0.0, 1.0)
 		ColossusIntent.SHAKE_PLAYER:
 			_target_shake = clampf(it.strength, 0.0, 1.0)
+			_shake_target = it.target_player if it.target_player else _player_on_body()
 	if _look_target == null:
 		_look_target = _nearest_player()
 
-	# Big bodies change state slowly and continuously.
-	var accel := walk_accel * (2.5 if _target_speed < _speed else 1.0)
-	_speed = move_toward(_speed, _target_speed * (1.0 - _shake), accel * delta)
-	_shake = move_toward(_shake, _target_shake, delta / shake_ramp)
-
+	# Steering: desired turn rate towards the goal; sharp turns lower the target speed.
+	var desired_yaw_rate := 0.0
 	if _has_goal:
 		var to_goal := _flat(_goal - global_position)
 		if to_goal.length() > 0.5:
-			var fwd := -global_basis.z
-			var angle := fwd.signed_angle_to(to_goal.normalized(), Vector3.UP)
-			var max_turn := turn_rate * (0.35 + 0.65 * clampf(_speed / walk_speed, 0.0, 1.0)) * delta
-			rotate_y(clampf(angle, -max_turn, max_turn))
-			# Slow down for sharp turns instead of walking in circles.
-			_speed = minf(_speed, walk_speed * clampf(1.2 - absf(angle), 0.25, 1.0) + 0.001)
+			var angle := (-global_basis.z).signed_angle_to(to_goal.normalized(), Vector3.UP)
+			var max_rate := turn_rate * (0.35 + 0.65 * clampf(_speed / walk_speed, 0.0, 1.0))
+			desired_yaw_rate = clampf(angle * 1.5, -max_rate, max_rate)
+			_target_speed *= clampf(1.2 - absf(angle), 0.25, 1.0)
+
+	# Big bodies change state slowly and continuously: speed, turn rate and shake are all
+	# rate-limited, so the colossus never jerks between decisions.
+	# Speed follows its target through a jerk-limited acceleration, so switching between
+	# speeding up and slowing down never happens within one tick.
+	var speed_error := _target_speed * (1.0 - _shake) - _speed
+	var desired_accel := clampf(speed_error * 1.5, -walk_accel * 2.5, walk_accel)
+	_speed_rate = move_toward(_speed_rate, desired_accel, walk_jerk * delta)
+	_speed = maxf(0.0, _speed + _speed_rate * delta)
+	_shake = move_toward(_shake, _target_shake, delta / shake_ramp)
+	# Tip the torso so the side the target stands on goes down: that is what actually
+	# throws an ungripped player off (a symmetric shake alone just rattles them).
+	# Style depends on HOW the target is attached: a climber gripping fur gets rattled
+	# (costs stamina); a player standing on the body gets tipped off (balance).
+	var lean_target := 0.0
+	var rattle_target := 1.0
+	if _target_shake > 0.0 and is_instance_valid(_shake_target):
+		var standing: bool = _shake_target.has_method(&"is_climbing") and not _shake_target.is_climbing()
+		var side := (global_transform.affine_inverse() * _shake_target.global_position).x
+		var lean := shake_lean_standing if standing else shake_lean
+		lean_target = -signf(side) * lean * clampf(absf(side) / 1.0, 0.0, 1.0)
+		rattle_target = 0.7 if standing else 1.0
+	_shake_lean = move_toward(_shake_lean, lean_target * _shake, delta * shake_lean_rate)
+	_rattle = move_toward(_rattle, rattle_target, delta)
+	_yaw_rate = move_toward(_yaw_rate, desired_yaw_rate, turn_accel * delta)
+	rotate_y(_yaw_rate * delta)
 	global_position += -global_basis.z * _speed * delta
 
 	_gait_phase = fmod(_gait_phase + _speed / stride * PI * delta, TAU)
@@ -209,7 +242,7 @@ func _pose_bones(delta: float) -> void:
 	var s := sin(_gait_phase)
 	var c := cos(_gait_phase)
 	var breath := sin(_breath_phase)
-	var sh := _shake
+	var sh := _shake * _rattle
 	var sp := _shake_phase
 
 	# Legs: swing + knee lift on the forward swing; feet stay roughly level.
@@ -237,8 +270,8 @@ func _pose_bones(delta: float) -> void:
 	_rot(&"hips", Vector3(0, s * 0.05 * w, s * 0.035 * w))
 
 	# Torso: breathing, counter-rotation while walking, violent twist while shaking.
-	_rot(&"spine", Vector3(breath * 0.015 + 0.1 * sh, -s * 0.04 * w + sin(sp * 0.5 + 1.0) * 0.07 * sh, sin(sp) * 0.09 * sh))
-	_rot(&"chest", Vector3(breath * 0.02, sin(sp * 0.5) * 0.05 * sh, sin(sp + 0.7) * 0.11 * sh))
+	_rot(&"spine", Vector3(breath * 0.015 + 0.1 * sh, -s * 0.04 * w + sin(sp * 0.5 + 1.0) * 0.07 * sh, sin(sp) * 0.09 * sh + _shake_lean * 0.5))
+	_rot(&"chest", Vector3(breath * 0.02, sin(sp * 0.5) * 0.05 * sh, sin(sp + 0.7) * 0.11 * sh + _shake_lean * 0.5))
 
 	# Arms: counter-swing, flail when shaking.
 	var arm := -s * 0.22 * w
@@ -275,6 +308,13 @@ func _rot(bone: StringName, euler: Vector3) -> void:
 
 func _flat(v: Vector3) -> Vector3:
 	return Vector3(v.x, 0.0, v.z)
+
+
+func _player_on_body() -> Node3D:
+	for p in get_tree().get_nodes_in_group(&"players"):
+		if p.has_method(&"get_support_body") and owns_body(p.get_support_body()):
+			return p
+	return null
 
 
 func _nearest_player() -> Node3D:

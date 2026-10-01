@@ -1,4 +1,4 @@
-# Architektura (stan po Milestone 1)
+# Architektura (stan po Etapie 2)
 
 Dokument opisuje decyzje, które mają przetrwać dalszy rozwój. Kod jest komentowany po angielsku
 (open source), a dokumentacja projektowa jest po polsku.
@@ -55,6 +55,20 @@ Konsekwencje w kodzie:
 - prędkości punktów liczymy z `BodySegment.target_transform/previous_target`;
 - dzięki `sync_to_physics` gracz stojący na barkach jest poprawnie niesiony (platform velocity).
 
+## 1b. Stanie na kolosie (Etap 2)
+
+- **Niesienie:** ta sama zasada co przy chwycie. Po każdym `move_and_slide` zapisujemy pozycję
+  gracza w przestrzeni lokalnej segmentu pod stopami, a na początku następnego ticka
+  odtwarzamy ją z aktualnej transformacji segmentu. Platforma Godota jest wyłączona
+  (`platform_floor_layers = 0`). Przy zejściu z ciała gracz dostaje prędkość punktu
+  materialnego, na którym stał.
+- **Równowaga (`Balance`):** jedna wartość 0..1 zmieniana w sposób ciągły przez „zakłócenie”
+  (m/s²). Stan wyznacza kontrolę i tarcie. Bez ragdolla i bez losowości.
+- **Poślizg:** prędkość własna gracza i poślizg są rozdzielone (`velocity = own + slide`).
+  Poślizg wynika z tarcia Coulomba w układzie powierzchni.
+- **Upadki (`FallImpact`):** progi prędkości uderzenia względem powierzchni.
+- Wszystkie trzy klasy to czyste dane (`RefCounted`), łatwe do testowania i replikacji.
+
 ## 2. Kolos: CO (mózg) oddzielone od JAK (kontroler)
 
 ```
@@ -75,8 +89,12 @@ Colossus.observe() -> ColossusObservation
 - **Reguły są poza AI.** Przykład z M1: wstrząs trwa maksymalnie `shake_max_duration`, a po nim
   następuje `shake_cooldown`. Żaden mózg nie może tego obejść (sprawdza to test). Tu trafią
   gwarancje w rodzaju „słaby punkt jest regularnie wystawiany”.
-- Kontroler zmienia parametry ciągle i powoli (przyspieszenie, rampa wstrząsu, wygładzone
-  spojrzenie), więc kolos nie przeskakuje między stanami.
+- Kontroler zmienia parametry ciągle i powoli, więc kolos nie przeskakuje między stanami.
+  Prędkość ma ograniczony zryw (jerk), kurs ograniczone przyspieszenie kątowe, wstrząs rampę,
+  a spojrzenie jest wygładzone. Decyzje mózgu co 0,25 s nie mogą przez to powodować szarpnięć
+  (pilnuje tego sonda `probe_balance_disturbance` i test chodu).
+- Ta sama intencja może mieć różne wykonanie zależnie od sytuacji. `shake_player` trzęsie
+  graczem, który się trzyma, a stojącego przechyla w jego stronę. Brain o tym nie wie.
 - Nowy kolos to podklasa `Colossus`, która dostarcza rig (`_build_body`), kontroler i własne
   reguły. `GreyboxHumanoid` definiuje rig tabelami `BONES`/`PARTS`.
 
@@ -95,15 +113,26 @@ Colossus.observe() -> ColossusObservation
 ## 4. Kamera
 
 Zasada: kamera nie walczy z graczem.
-- yaw/pitch należą do gracza, bez automatycznego centrowania;
-- przeszkody świata przyciągają kamerę szybko, a oddalanie jest wolne;
-- kończyny kolosa przyciągają kamerę tylko wtedy, gdy znalazłaby się *wewnątrz* nich, więc
-  przelatujące ramię nie powoduje pompowania dystansu;
-- przy wstrząsie pivot jest wygładzany (sztywność zależna od `shake_level`), żeby obraz nie drgał;
-- asysta tylko na żądanie: przytrzymanie „focus” kadruje kolosa.
+- yaw/pitch należą do gracza; kamera sama się nie obraca (wyjątek: trzymany fokus);
+- asysta przesuwa tylko pivot i dystans:
+  - dystans zależy od sytuacji (ziemia / blisko kolosa / na kolosie / wspinanie / fokus);
+  - przy wspinaniu pivot wyprzedza gracza wzdłuż trasy;
+- gwarancja „nigdy w kolosie”:
+  - pivot wyznaczany jest castem z punktu pewnie wolnego (ręce odsunięte od powierzchni,
+    potem ciało);
+  - boom castowany jest z tego pivota, bo Godot ignoruje kolizje na starcie castu;
+  - pozycja końcowa jest twardo sprawdzana;
+- świat przybliża kamerę szybko, a zasłonięcie przez kolosa miękko i dopiero po 0,35 s;
+- kąt boomu jest ograniczony osobno od kąta patrzenia, więc patrzenie w górę nie wbija
+  kamery w ziemię; fokus celuje między graczem a kolosem.
 
 ## 5. Wydajność
 
-Pomiar w teście `test_performance_budget`: kolos + wspinający się gracz + fizyka to ok. 0,25 ms
-na klatkę (headless). Wspinanie kosztuje kilka raycastów na tick. Budżet jest więc bardzo
-daleko od problemu i na razie nie ma potrzeby przenosić czegokolwiek do Zig.
+- `Perf` (`src/core/perf.gd`) mierzy czas logiki (kolos/gracz/kamera) i liczbę zapytań
+  fizyki per kategoria. Dane pokazuje HUD (F3), a `test_performance_budget` używa ich jako
+  benchmarku regresji (4 scenariusze, próg wycieku obiektów).
+- Stan po Etapie 2: 0,23–0,32 ms na klatkę headless. Wspinanie to 3 raycasty na tick,
+  chwyt w powietrzu 2 zapytania sferą, kamera ok. 7 zapytań.
+- Zapytania korzystają ze współdzielonych obiektów parametrów, a `find_grip` liczy najbliższy
+  punkt analitycznie.
+- Nie ma potrzeby przenosić czegokolwiek do Ziga.

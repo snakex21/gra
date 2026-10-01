@@ -13,6 +13,9 @@ extends CharacterBody3D
 signal grabbed(anchor: SurfaceAnchor)
 signal grip_released(reason: StringName)
 signal mantled
+## Emitted on every landing; ``tier`` is FallImpact.Tier.
+signal landed(impact_speed: float, tier: int, damage: float)
+signal died
 
 enum State { GROUND, AIR, CLIMB }
 
@@ -32,6 +35,8 @@ enum State { GROUND, AIR, CLIMB }
 @export var grab_radius := 0.8
 @export var regrab_delay := 0.3
 @export var climb_jump_speed := 6.5
+## In the air, the wider "rescue" grab search only runs while falling faster than this.
+@export var rescue_fall_speed := 3.0
 
 @export_group("Stamina")
 @export var drain_hang := 3.0       ## per second, just holding on
@@ -41,6 +46,14 @@ enum State { GROUND, AIR, CLIMB }
 @export var regen_rate := 35.0      ## per second standing on solid ground (or a colossus' back)
 @export var slip_below := 0.25      ## stamina ratio under which the grip starts sliding
 @export var slip_speed_max := 0.45  ## m/s at zero stamina
+
+@export_group("Standing on moving surfaces")
+@export var slide_max_speed := 9.0
+
+@export_group("Health")
+@export var health_regen := 4.0          ## per second
+@export var health_regen_delay := 4.0    ## seconds after damage
+@export var respawn_delay := 3.0
 
 @export_group("Shake response")
 ## Surface acceleration (m/s^2) where the climber starts to feel the shake...
@@ -64,6 +77,16 @@ var shake_level := 0.0
 ## Horizontal facing on the ground.
 var facing := Vector3.FORWARD
 var spawn_transform := Transform3D.IDENTITY
+var balance := Balance.new()
+var fall := FallImpact.new()
+var health := 100.0
+## World angular velocity of the supporting / gripped segment (rad/s).
+var surface_angular_velocity := Vector3.ZERO
+## Impact speed and tier of the last landing (debug/tests).
+var last_impact_speed := 0.0
+var last_impact_tier := FallImpact.Tier.NONE
+## Body is out of play (health 0) and waiting to respawn.
+var dead := false
 var visual: PlayerVisual
 ## Stats for debugging / tests.
 var last_release_reason: StringName = &""
@@ -77,6 +100,16 @@ var _last_normal := Vector3.UP
 var _moving := false
 var _exclude: Array[RID] = []
 var _shape: CapsuleShape3D
+var _support_local := Vector3.ZERO
+var _support_normal := Vector3.UP
+var _support_ticks := 0
+var _slide_velocity := Vector3.ZERO
+var _carry_body: BodySegment
+var _carry_local := Vector3.ZERO
+var _carry_basis := Basis.IDENTITY
+var _climb_slipping := false
+var _since_damage := 999.0
+var _dead_time := 0.0
 
 
 func _ready() -> void:
@@ -85,6 +118,9 @@ func _ready() -> void:
 	collision_mask = Layers.SOLID
 	floor_max_angle = deg_to_rad(46.0)
 	floor_snap_length = 0.3
+	# Standing on colossi is handled by our own segment-local carry (_apply_carry).
+	platform_floor_layers = 0
+	platform_on_leave = CharacterBody3D.PLATFORM_ON_LEAVE_DO_NOTHING
 	_shape = CapsuleShape3D.new()
 	_shape.radius = 0.35
 	_shape.height = 1.8
@@ -99,9 +135,11 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	var t0 := Perf.begin()
 	_regrab_timer -= delta
 	if not actions.grab_held:
 		_grab_needs_release = false
+	_update_health(delta)
 	if state == State.CLIMB:
 		_climb(delta)
 	else:
@@ -109,6 +147,7 @@ func _physics_process(delta: float) -> void:
 	visual.update_visual(self, delta)
 	if global_position.y < -60.0:
 		respawn()
+	Perf.end(&"player", t0)
 
 
 ## Collision object the player is gripping or standing on (null in the air).
@@ -122,12 +161,44 @@ func is_climbing() -> bool:
 	return state == State.CLIMB
 
 
+## Player-facing state name: GROUND / STAND / AIR / GRIP / CLIMB / SLIP / FALLEN / DEAD,
+## plus "(unstable)" while balance is shaky.
+func get_display_state() -> String:
+	if dead:
+		return "DEAD"
+	match state:
+		State.CLIMB:
+			if _climb_slipping:
+				return "SLIP"
+			return "CLIMB" if _moving else "GRIP"
+		State.AIR:
+			return "AIR"
+	match balance.state:
+		Balance.State.FALLEN:
+			return "FALLEN"
+		Balance.State.STUMBLE:
+			return "SLIP"
+	var s := "STAND" if is_on_colossus() else "GROUND"
+	if balance.state == Balance.State.UNSTABLE:
+		s += " (unstable)"
+	return s
+
+
+func is_on_colossus() -> bool:
+	return get_support_body() is BodySegment
+
+
 func respawn() -> void:
 	grip = null
 	state = State.AIR
+	dead = false
 	velocity = Vector3.ZERO
+	_slide_velocity = Vector3.ZERO
+	_carry_body = null
 	global_transform = spawn_transform
 	stamina.refill()
+	balance.reset()
+	health = fall.max_health
 	reset_physics_interpolation()
 
 
@@ -140,28 +211,181 @@ func _locomotion(delta: float) -> void:
 	var wish := right * actions.move.x + fwd * actions.move.y
 	if wish.length() > 1.0:
 		wish = wish.normalized()
+	if dead:
+		wish = Vector3.ZERO
 	var on_floor := is_on_floor()
-	var hv := Vector3(velocity.x, 0.0, velocity.z).move_toward(wish * run_speed, (ground_accel if on_floor else air_accel) * delta)
+	# Ride the body exactly (same idea as the grip anchor), before anything else moves us.
+	_apply_carry(on_floor)
+
+	# Feel the support: acceleration / rotation of the surface under the feet -> balance.
+	if on_floor:
+		_sense_support(delta)
+		var rel_speed := (Vector3(velocity.x, 0.0, velocity.z) - _slide_velocity).length()
+		balance.update(surface_accel, surface_angular_velocity, _support_normal, gravity, rel_speed / run_speed, delta)
+	else:
+		_support_ticks = 0
+		surface_angular_velocity = Vector3.ZERO
+		balance.recover(delta)
+
+	# Own movement (scaled by balance) and involuntary sliding are tracked separately:
+	# ``velocity`` (relative to the platform while on the floor) = own + slide.
+	var hv := Vector3(velocity.x, 0.0, velocity.z)
+	if on_floor:
+		var own := (hv - _slide_velocity).move_toward(wish * run_speed * balance.control(), ground_accel * delta)
+		_update_slide(delta)
+		hv = own + _slide_velocity
+	else:
+		_slide_velocity = Vector3.ZERO
+		# Air control only steers; without input the momentum (e.g. inherited from the
+		# colossus) is kept.
+		if wish.length() > 0.1:
+			hv = hv.move_toward(wish * run_speed, air_accel * delta)
 	velocity.x = hv.x
 	velocity.z = hv.z
 	velocity.y -= gravity * delta
-	if actions.consume_jump() and on_floor:
+	if actions.consume_jump() and on_floor and balance.control() > 0.5:
 		velocity.y = jump_speed
+
+	var was_airborne := not on_floor
+	var pre_velocity := velocity
+	var carried_velocity := _prev_surface_velocity if on_floor and _support is BodySegment else Vector3.ZERO
 	move_and_slide()
-	if wish.length() > 0.1:
+	if wish.length() > 0.1 and balance.control() > 0.0:
 		facing = facing.lerp(wish.normalized(), 1.0 - exp(-12.0 * delta)).normalized()
 	_update_support()
-	surface_velocity = get_platform_velocity() if is_on_floor() else Vector3.ZERO
+	_record_carry()
+	surface_velocity = _support_point_velocity(delta) if is_on_floor() else Vector3.ZERO
 	state = State.GROUND if is_on_floor() else State.AIR
+	if not was_airborne and state == State.AIR:
+		# Leaving the body (walked/slid off, jumped, thrown): keep its velocity.
+		velocity += carried_velocity
+	if was_airborne and state == State.GROUND:
+		var impact := -(pre_velocity - surface_velocity).dot(get_floor_normal())
+		_on_landed(impact)
 	if state == State.GROUND:
 		stamina.regen(regen_rate, delta)
 	else:
 		stamina.tick_idle(delta)
-	if actions.grab_held and not _grab_needs_release and _regrab_timer <= 0.0 and stamina.can_grip():
-		_try_grab()
+
+	# Grab: normal grab, or a rescue grab while losing balance / falling (even if the
+	# button has been held since a mantle).
+	var falling := state == State.AIR and velocity.y < -rescue_fall_speed
+	var rescue := falling or balance.state >= Balance.State.STUMBLE
+	if actions.grab_held and (not _grab_needs_release or rescue) and _regrab_timer <= 0.0 and stamina.can_grip() and not dead:
+		_try_grab(rescue)
+
+
+## Moves the player with the supporting segment using a local anchor, so standing on a
+## moving / rotating colossus has no drift. Godot's own platform carry is disabled
+## (see _ready) because it is inexact for rotating kinematic bodies.
+func _apply_carry(on_floor: bool) -> void:
+	if not on_floor or not is_instance_valid(_carry_body):
+		_carry_body = null
+		return
+	var xf := _carry_body.global_transform
+	global_position = xf * _carry_local
+	var rot := xf.basis * _carry_basis.inverse()
+	facing = _flat_dir(rot * facing, facing)
+
+
+func _record_carry() -> void:
+	if _support is BodySegment:
+		_carry_body = _support
+		_carry_local = _carry_body.global_transform.affine_inverse() * global_position
+		_carry_basis = _carry_body.global_basis
+	else:
+		_carry_body = null
+
+
+func _support_point_velocity(delta: float) -> Vector3:
+	if _support is BodySegment:
+		return (_support as BodySegment).local_point_velocity(_support_local, delta)
+	return Vector3.ZERO
+
+
+## Measures the material point under the feet (velocity, filtered acceleration, rotation).
+func _sense_support(delta: float) -> void:
+	var seg := _support as BodySegment
+	if seg == null:
+		surface_accel = surface_accel.lerp(Vector3.ZERO, 1.0 - exp(-20.0 * delta))
+		surface_angular_velocity = Vector3.ZERO
+		_support_ticks = 0
+		return
+	var v := seg.local_point_velocity(_support_local, delta)
+	if _support_ticks > 0:
+		var a := (v - _prev_surface_velocity) / delta
+		surface_accel = surface_accel.lerp(a, 1.0 - exp(-20.0 * delta))
+	else:
+		surface_accel = Vector3.ZERO
+	_prev_surface_velocity = v
+	surface_angular_velocity = seg.angular_velocity(delta)
+	_support_ticks += 1
+
+
+## Inertia relative to the surface, with Coulomb friction: the body only slides when
+## (downhill gravity - surface acceleration) exceeds friction * normal load. A surface
+## accelerating downwards unloads the feet; shaking on a slope therefore "walks" the
+## body downhill, deterministically. Friction depends on the balance state.
+func _update_slide(delta: float) -> void:
+	var n := _support_normal
+	var g := Vector3.DOWN * gravity
+	var a_n := surface_accel.dot(n)
+	var force := (g - n * g.dot(n)) - (surface_accel - n * a_n)
+	force.y = 0.0
+	var limit := balance.friction() * maxf(0.0, gravity * n.y + a_n)
+	var speed := _slide_velocity.length()
+	if speed < 0.05:
+		if force.length() <= limit:
+			_slide_velocity = Vector3.ZERO
+			return
+		_slide_velocity += force.normalized() * (force.length() - limit) * delta
+	else:
+		var dir := _slide_velocity / speed
+		var next := _slide_velocity + (force - dir * limit) * delta
+		# Kinetic friction stops the slide, it never reverses it.
+		if next.dot(dir) < 0.0 and force.length() <= limit:
+			next = Vector3.ZERO
+		_slide_velocity = next
+	_slide_velocity = _slide_velocity.limit_length(slide_max_speed)
+
+
+func _on_landed(impact_speed: float) -> void:
+	last_impact_speed = maxf(impact_speed, 0.0)
+	last_impact_tier = fall.tier(last_impact_speed)
+	var dmg := fall.damage(last_impact_speed)
+	match last_impact_tier:
+		FallImpact.Tier.HARD:
+			balance.hit(0.6)
+		FallImpact.Tier.SEVERE:
+			balance.knock_down(1.6)
+	if dmg > 0.0:
+		_take_damage(dmg)
+	landed.emit(last_impact_speed, last_impact_tier, dmg)
+
+
+func _take_damage(amount: float) -> void:
+	health = maxf(0.0, health - amount)
+	_since_damage = 0.0
+	if health <= 0.0 and not dead:
+		dead = true
+		_dead_time = 0.0
+		balance.knock_down(respawn_delay)
+		died.emit()
+
+
+func _update_health(delta: float) -> void:
+	_since_damage += delta
+	if dead:
+		_dead_time += delta
+		if _dead_time >= respawn_delay:
+			respawn()
+		return
+	if _since_damage > health_regen_delay:
+		health = minf(fall.max_health, health + health_regen * delta)
 
 
 func _update_support() -> void:
+	var previous := _support
 	_support = null
 	if not is_on_floor():
 		return
@@ -169,13 +393,22 @@ func _update_support() -> void:
 		var c := get_slide_collision(i)
 		if c.get_normal().dot(Vector3.UP) > 0.6:
 			_support = c.get_collider()
+			_support_normal = c.get_normal()
+			if _support is BodySegment:
+				_support_local = (_support as Node3D).global_transform.affine_inverse() * c.get_position()
+			if _support != previous:
+				_support_ticks = 0
 			return
 
 
-func _try_grab() -> void:
+func _try_grab(rescue := false) -> void:
+	var space := get_world_3d().direct_space_state
 	# Search around the hands (above the head), so catching a surface mid-leap keeps the height.
-	var hands := global_position + Vector3.UP * 0.7
-	var anchor := ClimbQuery.find_grip(get_world_3d().direct_space_state, hands, grab_radius, facing, _exclude)
+	# Same height as where the hands end up when hanging, so a caught leap keeps its height.
+	var anchor := ClimbQuery.find_grip(space, global_position + Vector3.UP * hand_reach, grab_radius, facing, _exclude)
+	# Rescue: anything within reach of the whole body (edge under the feet, limb passing by).
+	if anchor == null and rescue:
+		anchor = ClimbQuery.find_grip(space, global_position + Vector3.DOWN * 0.3, grab_radius + 0.35, facing, _exclude)
 	if anchor:
 		_attach(anchor)
 
@@ -195,6 +428,9 @@ func _attach(anchor: SurfaceAnchor) -> void:
 	surface_accel = Vector3.ZERO
 	shake_level = 0.0
 	velocity = Vector3.ZERO
+	_slide_velocity = Vector3.ZERO
+	# Holding on steadies you: balance is restored while gripping.
+	balance.reset()
 	_place_on_grip()
 	reset_physics_interpolation()
 	grabbed.emit(anchor)
@@ -219,6 +455,7 @@ func _climb(delta: float) -> void:
 	surface_velocity = v
 	_grip_ticks += 1
 	shake_level = smoothstep(shake_accel_min, shake_accel_max, surface_accel.length())
+	surface_angular_velocity = (grip.body as BodySegment).angular_velocity(delta) if grip.body is BodySegment else Vector3.ZERO
 
 	var n := grip.world_normal()
 	_update_climb_up(n)
@@ -246,6 +483,7 @@ func _climb(delta: float) -> void:
 
 	# 4) Slip when tired or on slippery patches.
 	var slip := grip.slip_speed() + slip_speed_max * clampf(1.0 - stamina.ratio() / slip_below, 0.0, 1.0)
+	_climb_slipping = slip > 0.0
 	if slip > 0.0:
 		n = grip.world_normal()
 		var down := Vector3.DOWN - n * n.dot(Vector3.DOWN)
@@ -320,12 +558,14 @@ func _try_mantle() -> bool:
 		return false
 	var carried := surface_velocity
 	grip = null
+	_climb_slipping = false
 	state = State.AIR
 	shake_level = 0.0
 	global_position = stand
 	velocity = carried
 	facing = _flat_dir(-n, facing)
 	_grab_needs_release = true
+	_regrab_timer = regrab_delay
 	stamina.tick_idle(0.0)
 	reset_physics_interpolation()
 	mantled.emit()
@@ -343,6 +583,7 @@ func _release(reason: StringName, impulse := Vector3.ZERO) -> void:
 	if grip and grip.is_valid():
 		n = grip.world_normal()
 	grip = null
+	_climb_slipping = false
 	state = State.AIR
 	shake_level = 0.0
 	velocity = surface_velocity + impulse

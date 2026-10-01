@@ -45,10 +45,12 @@ func _spawn_player(index: int) -> void:
 	input.view = cam
 	add_child(input)
 
+	p.died.connect(func() -> void: print("%s died" % p.name))
 	var layer := CanvasLayer.new()
 	var hud := PlayerHud.new()
 	hud.player = p
 	hud.colossus = colossus
+	hud.camera = cam
 	layer.add_child(hud)
 	add_child(layer)
 

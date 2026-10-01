@@ -41,3 +41,19 @@ func local_point_velocity(local_point: Vector3, delta: float) -> Vector3:
 	if delta <= 0.0:
 		return Vector3.ZERO
 	return (target_transform * local_point - previous_target * local_point) / delta
+
+
+## World-space angular velocity (rad/s) of this segment over the last tick.
+## Uses asin of the quaternion's vector part: acos(w) loses small per-tick rotations
+## to float32 rounding.
+func angular_velocity(delta: float) -> Vector3:
+	if delta <= 0.0:
+		return Vector3.ZERO
+	var q := (target_transform.basis * previous_target.basis.inverse()).get_rotation_quaternion()
+	if q.w < 0.0:
+		q = -q
+	var v := Vector3(q.x, q.y, q.z)
+	var s := v.length()
+	if s < 1e-9:
+		return Vector3.ZERO
+	return v / s * (2.0 * asin(minf(s, 1.0))) / delta

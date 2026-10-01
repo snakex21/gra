@@ -5,10 +5,11 @@ elementy ograniczone w oryginale sprzętem PS2, czasem produkcji albo wycięte z
 Silnik: **Godot 4.4+** (GDScript, a Zig dopiero tam, gdzie profiler pokaże realną potrzebę).
 Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych assetów oryginału.
 
-## Stan: Milestone 1 — wspinanie po poruszającym się kolosie
+## Stan: Etap 2 — kontakt gracza z poruszającym się kolosem
 
-Pierwszy krytyczny system projektu. Szczegóły, wyniki testów i znane ograniczenia:
-[docs/MILESTONE_1.md](docs/MILESTONE_1.md). Architektura: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md).
+- Milestone 1 (wspinanie po poruszającym się kolosie): [docs/MILESTONE_1.md](docs/MILESTONE_1.md)
+- Etap 2 (równowaga na kolosie, upadki, kamera, przejścia): [docs/ETAP_2.md](docs/ETAP_2.md)
+- Architektura: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md)
 
 Co działa w sandboxie (`scenes/sandbox.tscn`):
 
@@ -19,8 +20,11 @@ Co działa w sandboxie (`scenes/sandbox.tscn`):
 - chwyt, stamina, wspinanie z przechodzeniem między segmentami ciała, obchodzenie kończyn dookoła,
   podchodzenie pod nawisy, wciąganie się na krawędź, poślizg przy niskiej staminie, skok ze ściany,
   łapanie się w locie, utrata chwytu (puszczenie lub wyczerpanie) z dziedziczeniem prędkości ciała;
-- kamera trzeciej osoby, która nie walczy z graczem: kolizje ze światem, tłumienie wstrząsów,
-  opcjonalne kadrowanie kolosa;
+- stanie i chodzenie po idącym kolosie (kotwica lokalna względem kości), ciągła równowaga
+  STABLE → UNSTABLE → STUMBLE → FALLEN, poślizg z tarciem Coulomba, ratunek chwytem;
+- upadki z progami (bezpieczny / twarde lądowanie / ciężki / śmiertelny) i proste zdrowie;
+- kamera trzeciej osoby, która nie walczy z graczem: dystans zależny od sytuacji, wyprzedzanie
+  trasy przy wspinaniu, nigdy nie wchodzi w ciało kolosa, kadrowanie gracza i kolosa;
 - architektura `ColossusBrain → Intent → controller`, reguły fairness niezależne od AI, `players[]`,
   abstrakcyjne `PlayerActions` (flat/VR/AI/testy).
 
@@ -38,28 +42,30 @@ godot --path . # albo otwórz project.godot w edytorze Godot 4.4+
 | Skok (na ścianie: odbicie / skok wzdłuż powierzchni) | Spacja | A |
 | Kadruj kolosa | Q / środkowy przycisk | L1 |
 | Respawn | Backspace | Back |
-| Tryb kolosa: AI / zamrożony / chód / wstrząs | F2 | — |
+| Tryb kolosa: AI / zamrożony / chód / obrót / wstrząs | F2 | — |
 | Debug / pomoc | F3 / F1 | — |
 
 ## Testy
 
 ```bash
-tools/run_tests.sh                 # 14 testów rozgrywki, headless, ~2 s
+tools/run_tests.sh                 # 31 testów rozgrywki, headless, ~4 s
 tools/run_tests.sh --only=climb    # wybrane testy
 tools/capture_screenshots.sh       # prawdziwa scena + autopilot -> tests/output/*.png
 ```
 
 Testy sterują graczem wyłącznie przez `PlayerActions`, tak jak robi to człowiek albo AI kompan.
 Sprawdzają zachowanie, a nie szczegóły implementacji: czy chwyt na idącej nodze nie dryfuje,
-czy da się wejść z łydki na barki idącego kolosa, czy wyczerpanie zrzuca gracza, czy mózg
-kolosa próbuje zrzucić gracza i czy reguły ograniczają długość wstrząsu.
+czy da się wejść z łydki na barki idącego kolosa, czy wstrząs destabilizuje stojącego gracza
+i czy można się uratować chwytem, czy upadki mają konsekwencje, czy kamera nigdy nie wchodzi
+w ciało kolosa. Test wydajności mierzy koszt logiki na tick i liczbę zapytań fizyki
+(benchmark regresji).
 
 ## Struktura
 
 ```
-src/core/       warstwy fizyki
+src/core/       warstwy fizyki, liczniki wydajności (Perf)
 src/input/      PlayerActions (abstrakcyjne akcje), FlatInputSource, domyślne bindy
-src/player/     PlayerCharacter (lokomocja + wspinanie), Stamina, PlayerVisual
+src/player/     PlayerCharacter (lokomocja + wspinanie + stanie na kolosie), Stamina, Balance, FallImpact, PlayerVisual
 src/climb/      ClimbPatch (chwytalny kształt), SurfaceAnchor (punkt na ruchomym ciele), ClimbQuery
 src/colossus/   Colossus (baza), BodySegment (collider na kości), brain/ (Brain, Intent, Observation, UtilityBrain)
 src/colossus/greybox/  GreyboxHumanoid — rig i kontroler sterowane danymi

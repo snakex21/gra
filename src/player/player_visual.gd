@@ -8,6 +8,8 @@ var _offset := Vector3.ZERO
 var _offset_vel := Vector3.ZERO
 var _arms: Array[Node3D] = []
 var _arm_raise := 0.0
+var _lean := Vector3.ZERO
+var _down := 0.0
 
 
 func _ready() -> void:
@@ -78,12 +80,30 @@ func update_visual(player: PlayerCharacter, delta: float) -> void:
 	if not climbing:
 		_offset = _offset.lerp(Vector3.ZERO, 1.0 - exp(-8.0 * delta))
 
+	# Balance: lean against the surface acceleration when unsteady, lie down when knocked over.
+	var standing := player.state == PlayerCharacter.State.GROUND
+	var wobble := (1.0 - player.balance.value) if standing else 0.0
+	var a_flat := Vector3(player.surface_accel.x, 0.0, player.surface_accel.z)
+	var target_lean := (-a_flat.limit_length(20.0) / 20.0) * 0.6 * wobble
+	_lean = _lean.lerp(target_lean, 1.0 - exp(-10.0 * delta))
+	var fallen := standing and player.balance.state == Balance.State.FALLEN
+	_down = lerpf(_down, 1.0 if (fallen or player.dead) else 0.0, 1.0 - exp(-8.0 * delta))
+
 	# Arms up while gripping.
 	_arm_raise = lerpf(_arm_raise, 1.0 if climbing else 0.0, 1.0 - exp(-12.0 * delta))
 	for arm in _arms:
 		arm.rotation.x = PI * 0.95 * _arm_raise
 
-	transform = Transform3D(Basis(_rot), _offset)
+	var b := Basis(_rot)
+	if _lean.length() > 0.001:
+		# Tilt around the horizontal axis perpendicular to the lean direction.
+		var axis := Vector3.UP.cross(_lean.normalized())
+		b = Basis(axis, _lean.length()) * b
+	var pos := _offset
+	if _down > 0.001:
+		b = Basis(b.x, -PI * 0.5 * _down) * b
+		pos += Vector3.DOWN * 0.6 * _down
+	transform = Transform3D(b, pos)
 
 
 static func _look_basis(forward: Vector3, up: Vector3) -> Basis:

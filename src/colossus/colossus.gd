@@ -26,8 +26,10 @@ var segments: Array[BodySegment] = []
 var brain: ColossusBrain
 var intent: ColossusIntent = ColossusIntent.make(ColossusIntent.IDLE)
 var arena_center := Vector3.ZERO
-## Debug override of the brain: &"" (brain), &"frozen", &"walk", &"shake".
+## Debug override of the brain: &"" (brain), &"frozen", &"walk", &"turn", &"shake".
 var debug_override: StringName = &""
+## Shake strength used by the &"shake" debug override (0..1).
+var debug_shake_strength := 1.0
 
 var _time := 0.0
 var _think_left := 0.0
@@ -51,6 +53,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	var t0 := Perf.begin()
 	_time += delta
 	_intent_time += delta
 	_shake_cooldown_left = maxf(0.0, _shake_cooldown_left - delta)
@@ -70,6 +73,7 @@ func _physics_process(delta: float) -> void:
 	_execute_intent(intent, delta)
 	_pose_bones(delta)
 	_sync_segments()
+	Perf.end(&"colossus", t0)
 
 
 func observe() -> ColossusObservation:
@@ -119,7 +123,7 @@ func debug_text() -> String:
 
 
 func cycle_debug_override() -> void:
-	var modes: Array[StringName] = [&"", &"frozen", &"walk", &"shake"]
+	var modes: Array[StringName] = [&"", &"frozen", &"walk", &"turn", &"shake"]
 	debug_override = modes[(modes.find(debug_override) + 1) % modes.size()]
 	_think_left = 0.0
 
@@ -156,8 +160,13 @@ func _choose_intent(obs: ColossusObservation) -> ColossusIntent:
 			var w := ColossusIntent.make(ColossusIntent.REPOSITION)
 			w.target_position = arena_center + (global_position - arena_center).rotated(Vector3.UP, 0.6).normalized() * arena_radius * 0.5
 			return w
+		&"turn":
+			# Turn on the spot: goal behind the colossus, never reached.
+			var t := ColossusIntent.make(ColossusIntent.REPOSITION)
+			t.target_position = global_position + global_basis.z * 20.0 + global_basis.x * 2.0
+			return t
 		&"shake":
-			return ColossusIntent.make(ColossusIntent.SHAKE_PLAYER)
+			return ColossusIntent.make(ColossusIntent.SHAKE_PLAYER, debug_shake_strength)
 	var chosen := brain.decide(obs)
 	if chosen == null or chosen.kind in obs.blocked_intents:
 		return ColossusIntent.make(ColossusIntent.IDLE)
