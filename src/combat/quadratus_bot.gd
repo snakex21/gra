@@ -34,7 +34,7 @@ var phase := Phase.ENTER
 var phase_time := 0.0
 var time := 0.0
 var stats := {"falls": 0, "grabs": 0, "strikes": 0, "weak_hits": 0, "rejected": 0, "evades": 0, "stalls": [], "deaths": 0, "death_causes": [], "detours": 0, "max_height": 0.0,
-	"shots": 0, "arrow_hits": 0, "arrow_wrong_side": 0, "arrow_disabled": 0, "arrow_surface": 0, "arrow_lost": 0, "buckles_used": 0, "buckles_missed": 0, "shots_from_horse": 0, "mounts": 0, "dismounts": 0}
+	"shots": 0, "arrow_hits": 0, "arrow_wrong_side": 0, "arrow_disabled": 0, "arrow_surface": 0, "arrow_bounces": 0, "arrow_lost": 0, "buckles_used": 0, "buckles_missed": 0, "shots_from_horse": 0, "mounts": 0, "dismounts": 0}
 var events := PackedStringArray()
 var verbose := false
 var result := {}
@@ -281,6 +281,8 @@ func _on_arrow_impact(info: Dictionary) -> void:
 			stats.arrow_wrong_side += 1
 		&"disabled":
 			stats.arrow_disabled += 1
+		&"bounce":
+			stats.arrow_bounces += 1
 		_:
 			stats.arrow_surface += 1
 

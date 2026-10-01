@@ -163,12 +163,7 @@ func _on_struck(r: Dictionary) -> void:
 	super(r)
 
 
-func _enter(p: Phase) -> void:
-	if p == Phase.APPROACH_LEG and phase != Phase.APPROACH_LEG:
-		stats_gaius.slams_provoked = int(gaius.stats.attacks.get(Gaius.SWORD_SLAM, 0))
-	super(p)
-
-
 func _finish(won: bool, why: String) -> void:
+	stats_gaius.slams_provoked = int(gaius.stats.attacks.get(Gaius.SWORD_SLAM, 0))
 	stats.merge(stats_gaius, true)
 	super(won, why)

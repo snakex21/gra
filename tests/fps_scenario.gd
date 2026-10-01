@@ -16,6 +16,7 @@ var horse: Horse
 var boss: Dictionary = {}
 var bot: ValusBot
 var qbot: QuadratusBot
+var gbot: GaiusBot
 var bow_world := {}
 var bow_log := []
 
@@ -47,6 +48,12 @@ func _ready() -> void:
 		return
 	if scenario == "bow":
 		_setup_bow()
+		return
+	if scenario == "gaius":
+		_setup_gaius()
+		return
+	if scenario == "art":
+		_setup_art()
 		return
 	TerrainKit.build_course(self, Vector3(0, 0, -6))
 	colossus = GreyboxHumanoid.new()
@@ -275,8 +282,85 @@ func _bow_tick() -> void:
 		get_tree().quit()
 
 
+## The whole Gaius fight played by the scripted bot (slams, the blade, the arm, the
+## helmet, the weak point).
+func _setup_gaius() -> void:
+	for c in get_children():
+		c.queue_free()
+	InputSetup.ensure_defaults()
+	Sfx.enabled = false
+	var arena := Node3D.new()
+	add_child(arena)
+	boss = GaiusArena.build_encounter(arena)
+	gbot = GaiusBot.new()
+	arena.add_child(gbot)
+	gbot.setup(boss.player, boss.gaius, boss.encounter)
+
+
+func _gaius_tick() -> void:
+	if gbot.phase != ValusBot.Phase.DONE and tick < 60 * 400:
+		return
+	var p: PlayerCharacter = boss.player
+	var g: Gaius = boss.gaius
+	var data := {
+		"frames": Engine.get_process_frames(),
+		"won": 1 if gbot.result.get("won", false) else 0,
+		"tick": tick,
+		"player": [p.global_position.x, p.global_position.y, p.global_position.z],
+		"boss": [g.global_position.x, g.global_position.z, g.loco.yaw],
+		"slam": [g.slam_point.x, g.slam_point.z],
+		"weak_point": g.weak_point.health,
+		"helmet": g.helmet.hits,
+		"slams": g.stats.attacks.get(Gaius.SWORD_SLAM, 0),
+		"hits": g.stats.hits_on_player,
+		"strikes": gbot.stats.strikes,
+		"steps": g.loco.step_count,
+		"stamina": p.stamina.value,
+		"health": p.health,
+	}
+	var f := FileAccess.open(out_path, FileAccess.WRITE)
+	f.store_string(JSON.stringify(data))
+	f.close()
+	get_tree().quit()
+
+
+## Valus walking and turning in its arena, with or without the art layer (--art).
+func _setup_art() -> void:
+	for c in get_children():
+		c.queue_free()
+	InputSetup.ensure_defaults()
+	Sfx.enabled = false
+	var arena := Node3D.new()
+	add_child(arena)
+	boss = ValusArena.build_encounter(arena, false, 7, "--art" in OS.get_cmdline_user_args())
+	var v: Valus = boss.valus
+	v.debug_override = &"manual"
+	v.debug_desired_speed = 1.2
+	v.debug_desired_turn = 0.1
+
+
+func _art_tick() -> void:
+	if tick < 60 * 8:
+		return
+	var v: Valus = boss.valus
+	var feet := []
+	for leg in v.loco.legs:
+		feet.append_array([leg.plant_pos.x, leg.plant_pos.z])
+	var data := {"frames": Engine.get_process_frames(), "pos": [v.global_position.x, v.global_position.y, v.global_position.z], "yaw": v.loco.yaw, "feet": feet, "steps": v.loco.step_count}
+	var f := FileAccess.open(out_path, FileAccess.WRITE)
+	f.store_string(JSON.stringify(data))
+	f.close()
+	get_tree().quit()
+
+
 func _physics_process(_delta: float) -> void:
 	tick += 1
+	if scenario == "art":
+		_art_tick()
+		return
+	if scenario == "gaius":
+		_gaius_tick()
+		return
 	if scenario == "quadratus" or scenario == "quadratus_horse":
 		_quadratus_tick()
 		return
