@@ -205,3 +205,10 @@ Nowy komplementarny zestaw akweduktu, przeprawy i sklepionej cysterny:
 `art/tests/stonewater.tscn`. Nie wymaga adaptera kolosa ani żadnego skryptu
 rozgrywki. Reużywa atlasu Ancient Valley; nowe moduły mają własne LODy i jawne
 receptury prostych kolizji w `assets/stonewater_manifest.json`.
+
+## Część 4 — Saltwind Expanse
+
+32 nowe moduły solnej pustyni, kanionu, suchych roślin i zasypanych ruin.
+[Inwentarz, edycja, koszt i ograniczenia](SALTWIND_KIT.md).
+Oddzielny przegląd: `art/tests/saltwind.tscn`; renderer nie ładuje gameplayu
+ani adaptera kolosa. Jawne proxy, 96 GLB, pięć nowych współdzielonych map.

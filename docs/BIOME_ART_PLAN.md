@@ -60,3 +60,12 @@ Review controls: 1/2/3 lighting, V view, H overlay. Captures are actual viewport
 ## Remaining quality work
 
 This is a coherent procedural art expansion, not a claim of final production sculpt quality. Hero-specific erosion, less repetitive distant cliff silhouettes, authored foliage silhouettes, seam-focused module reviews, and hardware profiling remain worthwhile. A dedicated Sentinel v2 visual/source pass is maintained separately. Integration with gameplay should be performed by the gameplay owner after reviewing the visual adapter contract.
+
+## Part 4 — salt-desert signature gap addressed
+
+Saltwind Expanse delivers 32 original additions for the salt-desert row:
+salt plates/crust/rills, eroded needles/yardangs/undercut banks, distinct distant
+escarpment/mesa silhouettes, buried ruins and eight dry-vegetation types.
+See [SALTWIND_KIT.md](SALTWIND_KIT.md). This is a separate 480m art study with
+stitched distant ground, not a claim that the other seven roadmap biomes or a
+finished gameplay world have been completed. Existing kits remain unchanged.

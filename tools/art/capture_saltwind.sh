@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Run only once the asset exporter has completed. Import and capture are serial.
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+GODOT="${GODOT:-godot}"
+export XDG_DATA_HOME="${SALTWIND_XDG_DATA_HOME:-/tmp/gra-saltwind-data}"
+export XDG_CONFIG_HOME="${SALTWIND_XDG_CONFIG_HOME:-/tmp/gra-saltwind-config}"
+export XDG_CACHE_HOME="${SALTWIND_XDG_CACHE_HOME:-/tmp/gra-saltwind-cache}"
+mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
+mkdir -p art/reports/v4 art/screenshots/v4
+if [[ "${SKIP_IMPORT:-0}" != "1" ]]; then
+  "$GODOT" --headless --editor --path . --import 2>&1 | tee art/reports/v4/import.log
+fi
+"$GODOT" --headless --path . --script art/scripts/saltwind_review.gd --check-only \
+  2>&1 | tee art/reports/v4/review_compile.log
+if [[ -z "${DISPLAY:-}" && -z "${WAYLAND_DISPLAY:-}" ]]; then
+  echo 'A rendering display is required; --headless cannot produce viewport screenshots.' >&2
+  exit 2
+fi
+export SALTWIND_CAPTURE_STARTED_NS="$(date +%s%N)"
+"$GODOT" --path . --rendering-method gl_compatibility --audio-driver Dummy \
+  --resolution 1280x720 res://art/tests/saltwind.tscn -- --capture-saltwind \
+  2>&1 | tee art/reports/v4/capture.log
+python3 - <<'PY'
+from pathlib import Path
+import json
+import os
+started = int(os.environ["SALTWIND_CAPTURE_STARTED_NS"])
+report_path = Path("art/reports/v4/render_costs.json")
+assert report_path.stat().st_mtime_ns >= started, "Stale render report"
+assert "SALTWIND_CAPTURE_OK views=9" in Path("art/reports/v4/capture.log").read_text()
+report = json.loads(Path('art/reports/v4/render_costs.json').read_text())
+assert len(report['views']) == 9
+for view in report['views']:
+    p = Path('art/screenshots/v4') / (view['view'] + '.png')
+    assert p.is_file() and p.stat().st_size > 10240, p
+    assert p.stat().st_mtime_ns >= started, ("Stale screenshot", p)
+    assert view['draw_calls'] > 0 and view['primitives'] > 0, view
+print('SALTWIND_CAPTURE_VALIDATED', len(report['views']), 'actual viewport PNGs')
+PY
