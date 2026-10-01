@@ -152,7 +152,15 @@ Pełny przebieg `tools/run_tests.sh`: **153/153 PASS** (139 wcześniejszych + 14
 
 ### Soak
 
-__SOAK__
+- **Cała gra** (`tools/run_game_soak.sh 20`): **20/20 gier ukończonych**, 0 śmierci,
+  0 zatrzymań bota.
+  - Czas od świątyni do końca: min 333,6 / mediana 337,8 / max 598,3 s.
+  - W tym dolina ~102 s, z czego jazda ~74 s.
+  - Każda droga znaleziona promieniem, ~10 namierzeń na grę.
+- **Gaius po zmianie pomiaru na rysowane ciało** (100 walk): **100/100**, 0 widocznych
+  skoków ciała (wcześniej ~1 na walkę), 3 śmierci, mediana 54,7 s.
+- Valus i Quadratus: soaki z zamknięcia Etapu 7 (100/100 każdy, patrz ETAP_7.md).
+  Rozgrywka walk w Etapie 8 się nie zmieniła; walki w soaku całej gry są wygrane w 100%.
 
 ### Wydajność
 
@@ -160,6 +168,8 @@ __SOAK__
   spokojnej maszynie, 2,1 ms pod obciążeniem soakami.
 - **Promień miecza**: 4 µs/tick i 1 promień co 6 ticków, tylko gdy miecz jest uniesiony.
 - **Przejście między regionami**: 0,6 s wygaszenia, a w tym czasie budowa regionu.
+- **Testy**: przebiegi przy różnych FPS idą teraz równolegle w osobnych procesach. Pełny
+  zestaw skrócił się z ~13 do ~8 min (Quadratus 275 → 101 s, Gaius 75 → 31 s).
 
 ## Ograniczenia
 
