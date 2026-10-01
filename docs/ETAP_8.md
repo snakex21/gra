@@ -129,7 +129,37 @@ Pierwsza wersja wygładzała skok w samej rozgrywce. Pełny przebieg testów wyk
 
 ## Wyniki
 
-__RESULTS__
+### Testy
+
+Pełny przebieg `tools/run_tests.sh`: **153/153 PASS** (139 wcześniejszych + 14 nowych).
+
+| Test | Wynik |
+|---|---|
+| `game_state_save_load_roundtrip` | zapis/odczyt identyczny; plik z luką nie omija kolosa; uszkodzony / brak pliku = nowa gra |
+| `sword_beam_gathers_towards_target` | na wprost: skupienie 1,00 (linia); 30° obok 0,33; 90° obok 0,00; pod dachem gaśnie, w słońcu wraca; z łukiem nie działa; chód z uniesionym mieczem 1,9 m/s |
+| `sword_beam_works_from_agro` | z siodła promień się zbiera, rozglądanie nie skręca Agro (< 0,02 rad) |
+| `valley_ground_world_edge_and_closed_gates` | dolina w 0,48 s (bez trawy); gracz stoi w świątyni; krawędź świata zatrzymuje na −171,6 m; zamknięta brama zatrzymuje 0,95 m przed mgłą |
+| `open_gate_leads_to_next_colossus` | przejazd przez bramę → arena Valusa, nadal w siodle; promień prowadzi do weak pointu i go rozświetla |
+| `leaving_arena_returns_to_its_gate` | wyjście z areny → dolina przy bramie Valusa, postęp bez zmian |
+| `defeat_returns_to_temple_and_saves` | wygrana 47,5 s → świątynia, zapis `{"defeated":["valus"]}`, otwarta tylko brama Quadratusa, promień do niej prowadzi |
+| `no_mounting_while_knocked_down` | leżąc: nie wsiada; po wstaniu: wsiada; powalony w siodle wstaje, łuk działa |
+| `game_bot_finds_way_with_beam` | świątynia → brama Valusa 33,2 s (jazda 21,1 s), 3 namierzenia promieniem, 0 objazdów |
+| `valley_simulation_independent_of_render_fps` | świątynia → brama (promień, Agro, przejście do areny) przy 30/60/144/240 FPS: różnica 0,00000000 |
+| `valley_cost_stays_within_budget` | gracz 47 µs/tick (promień 4), Agro 398 µs (sondy 197), kamera 100 µs; cały tick 2,1 ms (zegar ścienny) |
+| `gaius_head_phase_is_fair_and_smooth` | wygrana; 0 shake'ów w ciągu 3,3 s po trafieniu; rysowane ciało max 0,19 m/tick (kapsuła 0,54) |
+| `sentinel_v2_dresses_valus` | 17 segmentów, 51 siatek LOD, przedłużone stopy, 5 wskazówek chwytu widocznych |
+| `all_etap7_and_earlier_tests_still_pass` | 139 wcześniejszych, 0 porażek |
+
+### Soak
+
+__SOAK__
+
+### Wydajność
+
+- **Dolina**: budowa 0,48 s bez trawy; cały tick z graczem i Agro ok. 0,5 ms na
+  spokojnej maszynie, 2,1 ms pod obciążeniem soakami.
+- **Promień miecza**: 4 µs/tick i 1 promień co 6 ticków, tylko gdy miecz jest uniesiony.
+- **Przejście między regionami**: 0,6 s wygaszenia, a w tym czasie budowa regionu.
 
 ## Ograniczenia
 

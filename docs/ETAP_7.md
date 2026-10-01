@@ -133,7 +133,7 @@ Znalezione przez soaki (zakleszczenia, poprawione przed końcowym soakiem):
 
 ### Testy
 
-Pełny przebieg `tools/run_tests.sh` (razem z testami Etapu 8): __FULLRUN__. Nowe testy Etapu 7:
+Pełny przebieg `tools/run_tests.sh` (razem z testami Etapu 8): **153/153 PASS** (120 do Etapu 6, 19 Etapu 7, 14 Etapu 8). Nowe testy Etapu 7:
 
 | Test | Wynik |
 |---|---|
