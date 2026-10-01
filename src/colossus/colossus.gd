@@ -22,6 +22,9 @@ signal defeated
 @export var shake_max_duration := 3.0
 ## ...and is followed by at least this long without shaking.
 @export var shake_cooldown := 5.0
+## Fairness rule: after the flinch of a weak point hit (itself a violent shake) the climber
+## gets this long, after the flinch, to stand up and catch breath before the next shake.
+@export var shake_after_flinch := 2.0
 ## A player who loses contact for less than this still counts as being on the body.
 @export var on_body_grace := 0.5
 
@@ -208,6 +211,11 @@ func _blocked_intents() -> Array[StringName]:
 	if _shake_cooldown_left > 0.0:
 		blocked.append_array(_shake_kinds())
 	return blocked
+
+
+## A weak point hit made the colossus flinch for ``flinch_time``: no shake right after it.
+func _flinched(flinch_time: float) -> void:
+	_shake_cooldown_left = maxf(_shake_cooldown_left, flinch_time + shake_after_flinch)
 
 
 func _set_intent(next: ColossusIntent) -> void:

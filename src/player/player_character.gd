@@ -160,6 +160,8 @@ func _physics_process(delta: float) -> void:
 	if state == State.RIDE:
 		if actions.consume_interact():
 			riding.try_dismount()
+		# In the saddle the rider gets back to his feet (a knock-down never lasts on the horse).
+		balance.recover(delta)
 		riding.update(delta)
 	elif state == State.CLIMB:
 		var tc := Perf.begin()
@@ -167,7 +169,7 @@ func _physics_process(delta: float) -> void:
 		Perf.end(&"climb", tc)
 	else:
 		_locomotion(delta)
-		if actions.consume_interact() and riding.try_mount():
+		if actions.consume_interact() and balance.state != Balance.State.FALLEN and riding.try_mount():
 			state = State.RIDE
 	if actions.consume_call():
 		_call_horse()

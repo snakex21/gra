@@ -313,6 +313,8 @@ func _ride() -> void:
 		a.attack_held = false
 		_enter(Phase.DISMOUNT)
 		return
+	if verbose and int(phase_time * 60.0) % 300 == 0:
+		_log("  ride: boss %s speed %.1f dist %.1f horse %.1f m/s bow %s" % [quadratus.intent.kind, quadratus.loco.speed, _flat(quadratus.global_position - player.global_position).length(), horse.controller.speed, player.bow.state])
 	# Ride a wide circle behind it; shoot from the saddle when a sole shows.
 	var behind := quadratus.global_transform * Vector3(_side * 6.0, 0, 5.0 + shoot_distance + 6.0)
 	var to := _flat(behind - player.global_position)
@@ -346,10 +348,16 @@ func _dismount() -> void:
 	a.attack_held = false
 	if not player.is_riding():
 		stats.dismounts += 1
-		_enter(Phase.TO_LEG)
+		_enter(Phase.TO_LEG if _kneeling() else Phase.POSITION)
 		return
 	if not _kneeling():
-		_enter(Phase.RIDE)
+		if use_horse:
+			_enter(Phase.RIDE)
+		else:
+			# Given up on the horse (a stall): get off where we are and go on foot.
+			a.grab_held = true
+			if horse.controller.speed < 1.5 and int(phase_time * 60.0) % 20 == 0:
+				a.press_interact()
 		return
 	var leg_spot := _thigh_entry()
 	var to := _flat(leg_spot - player.global_position)

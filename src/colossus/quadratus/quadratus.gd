@@ -882,6 +882,7 @@ func _on_weak_point_struck(damage: float, _left: float, wp: WeakPoint) -> void:
 	_stagger_t = 0.0
 	if encounter == Encounter.COMBAT and buckle == Buckle.NONE and weak_points_left() > 0:
 		_set_intent(ColossusIntent.make(RECOVER))
+		_flinched(recover_time)
 	stats.last_hit_damage = damage
 
 

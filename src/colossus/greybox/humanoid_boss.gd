@@ -669,6 +669,7 @@ func _on_weak_point_struck(damage: float, _left: float) -> void:
 	if encounter == Encounter.COMBAT and weak_point.state != WeakPoint.State.DESTROYED:
 		var r := ColossusIntent.make(RECOVER)
 		_set_intent(r)
+		_flinched(recover_time)
 	stats.last_hit_damage = damage
 
 
