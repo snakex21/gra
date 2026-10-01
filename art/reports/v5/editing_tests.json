@@ -1,0 +1,10 @@
+{
+  "regeneration_without_explicit_flag_refused": true,
+  "source_sha256_unchanged": "875e224fbe631dc05456412ed5f154a9a31eb05903b5609201f15d032f902c53",
+  "edit_test_asset": "boardwalk_8m",
+  "vertex_edit_metres": 0.071,
+  "only_selected_asset_lods_exported": 3,
+  "edited_lod0_differs_from_generated": true,
+  "source_and_collision_recipes_remain_editable": true,
+  "notes": "Independent temporary root, not a destructive test on the user source. Collision recipes are edited separately in the manifest."
+}

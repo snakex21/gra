@@ -1,0 +1,564 @@
+{
+	"adapter": "llvmpipe (LLVM 19.1.7, 256 bits)",
+	"configured_lod_ranges_metres": {
+		"catalogue_lod0_inspection": [
+			900,
+			1100,
+			1500
+		],
+		"mirewood": [
+			55,
+			145,
+			800
+		],
+		"vegetation_cells": [
+			38,
+			78,
+			140
+		]
+	},
+	"configured_shadows": {
+		"configured_shadow_atlas_size": 4096,
+		"directional_mode": "2 parallel splits",
+		"directional_shadow_lights": 1,
+		"local_shadow_lights": 0,
+		"max_distance_metres": 130.0
+	},
+	"display_server": "X11",
+	"distant_terrain_triangles": 10368,
+	"engine": "4.6.3-stable (official)",
+	"expensive_features": {
+		"animated_light_nodes": 0,
+		"sdfgi": false,
+		"ssao": false,
+		"ssil": false,
+		"volumetric_fog": false,
+		"water_reflection_passes": 0,
+		"water_refraction_passes": 0
+	},
+	"measurement_notes": [
+		"Actual rendered frame counters from Godot Performance, after 18 settling frames and frame_post_draw; not source triangle totals.",
+		"Draw calls, primitives and objects may include shadow passes and UI. Scene inventories describe configured nodes/materials separately.",
+		"Memory counters are renderer-reported allocations including render targets, sky, fonts, textures, and buffers. They are not source PNG sizes, resident per-asset VRAM, or peak device memory.",
+		"Software renderer results are workload evidence only, not target GPU FPS benchmarks. PNG readback time is excluded from any performance claim.",
+		"All shots use fixed art-only cameras, one shadow light and static presets. Gameplay scenes/scripts are not loaded."
+	],
+	"mirewood_catalogue_asset_instances": 31,
+	"mirewood_landscape_asset_instances": 69,
+	"near_terrain_triangles": 18432,
+	"new_unique_asset_ids": [
+		"root_island",
+		"crescent_island",
+		"root_bank_16m",
+		"root_bank_corner",
+		"woven_root_bridge",
+		"buttress_root",
+		"hollow_elder_trunk",
+		"hollow_fallen_log",
+		"crown_stump",
+		"fen_elder_tree",
+		"fallen_root_tree",
+		"cypress_knees",
+		"boardwalk_8m",
+		"boardwalk_broken",
+		"boardwalk_railed",
+		"boardwalk_turn",
+		"mooring_landing",
+		"old_mooring_piles",
+		"rootbound_gate",
+		"buried_moss_passage",
+		"drowned_shrine",
+		"moss_retaining_wall",
+		"drowned_stairs",
+		"rootwell_ring",
+		"fen_waystone",
+		"broad_sedge",
+		"cattail_rush",
+		"marsh_fern",
+		"lily_pad_raft",
+		"peat_hummock",
+		"hanging_moss"
+	],
+	"renderer": "gl_compatibility",
+	"vegetation_instances": 992,
+	"vendor": "Mesa",
+	"viewport_pixels": [
+		1280.0,
+		720.0
+	],
+	"views": [
+		{
+			"buffer_memory_bytes": 14571056.0,
+			"camera_position": [
+				34.0,
+				10.0,
+				89.0
+			],
+			"draw_calls": 165.0,
+			"preset": "CLEAR DAY",
+			"primitives": 118861.0,
+			"rendered_objects": 415.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 100,
+					"LOD1": 100,
+					"LOD2": 100
+				},
+				"loaded_material_keys": [
+					"res://materials/mirewood/terrain.tres",
+					"res://materials/mirewood/water.tres",
+					"res://materials/mirewood/atlas.tres",
+					"#-9223371931544185936"
+				],
+				"loaded_material_resources": 4,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 312,
+				"loaded_shadow_enabled_mesh_nodes": 283,
+				"multimesh_instances": 2976,
+				"multimesh_nodes": 144,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 4,
+					"LOD1": 40,
+					"LOD2": 25
+				},
+				"visible_branch_material_resources_approximately_in_range": 3,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 80,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 218,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 68
+			},
+			"texture_memory_bytes": 55068273.0,
+			"video_memory_bytes": 69639329.0,
+			"view": "01_quiet_fen_day"
+		},
+		{
+			"buffer_memory_bytes": 14571056.0,
+			"camera_position": [
+				34.0,
+				10.0,
+				89.0
+			],
+			"draw_calls": 162.0,
+			"preset": "LATE SUN",
+			"primitives": 117651.0,
+			"rendered_objects": 409.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 100,
+					"LOD1": 100,
+					"LOD2": 100
+				},
+				"loaded_material_keys": [
+					"res://materials/mirewood/terrain.tres",
+					"res://materials/mirewood/water.tres",
+					"res://materials/mirewood/atlas.tres",
+					"#-9223371931544185936"
+				],
+				"loaded_material_resources": 4,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 312,
+				"loaded_shadow_enabled_mesh_nodes": 283,
+				"multimesh_instances": 2976,
+				"multimesh_nodes": 144,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 4,
+					"LOD1": 40,
+					"LOD2": 25
+				},
+				"visible_branch_material_resources_approximately_in_range": 3,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 80,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 218,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 68
+			},
+			"texture_memory_bytes": 55068273.0,
+			"video_memory_bytes": 69639329.0,
+			"view": "02_quiet_fen_sunset"
+		},
+		{
+			"buffer_memory_bytes": 14571056.0,
+			"camera_position": [
+				34.0,
+				10.0,
+				89.0
+			],
+			"draw_calls": 167.0,
+			"preset": "BLUE HOUR",
+			"primitives": 121685.0,
+			"rendered_objects": 417.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 100,
+					"LOD1": 100,
+					"LOD2": 100
+				},
+				"loaded_material_keys": [
+					"res://materials/mirewood/terrain.tres",
+					"res://materials/mirewood/water.tres",
+					"res://materials/mirewood/atlas.tres",
+					"#-9223371931544185936"
+				],
+				"loaded_material_resources": 4,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 312,
+				"loaded_shadow_enabled_mesh_nodes": 283,
+				"multimesh_instances": 2976,
+				"multimesh_nodes": 144,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 4,
+					"LOD1": 40,
+					"LOD2": 25
+				},
+				"visible_branch_material_resources_approximately_in_range": 3,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 80,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 218,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 68
+			},
+			"texture_memory_bytes": 55068273.0,
+			"video_memory_bytes": 69639329.0,
+			"view": "03_quiet_fen_blue_hour"
+		},
+		{
+			"buffer_memory_bytes": 14571056.0,
+			"camera_position": [
+				-18.0,
+				7.0,
+				-27.0
+			],
+			"draw_calls": 91.0,
+			"preset": "CLEAR DAY",
+			"primitives": 152178.0,
+			"rendered_objects": 356.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 100,
+					"LOD1": 100,
+					"LOD2": 100
+				},
+				"loaded_material_keys": [
+					"res://materials/mirewood/terrain.tres",
+					"res://materials/mirewood/water.tres",
+					"res://materials/mirewood/atlas.tres",
+					"#-9223371931544185936"
+				],
+				"loaded_material_resources": 4,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 312,
+				"loaded_shadow_enabled_mesh_nodes": 283,
+				"multimesh_instances": 2976,
+				"multimesh_nodes": 144,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 31,
+					"LOD1": 37,
+					"LOD2": 1
+				},
+				"visible_branch_material_resources_approximately_in_range": 3,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 80,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 218,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 68
+			},
+			"texture_memory_bytes": 55068273.0,
+			"video_memory_bytes": 69639329.0,
+			"view": "04_rootbound_gate"
+		},
+		{
+			"buffer_memory_bytes": 14571056.0,
+			"camera_position": [
+				14.0,
+				4.0,
+				21.0
+			],
+			"draw_calls": 107.0,
+			"preset": "CLEAR DAY",
+			"primitives": 148383.0,
+			"rendered_objects": 360.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 100,
+					"LOD1": 100,
+					"LOD2": 100
+				},
+				"loaded_material_keys": [
+					"res://materials/mirewood/terrain.tres",
+					"res://materials/mirewood/water.tres",
+					"res://materials/mirewood/atlas.tres",
+					"#-9223371931544185936"
+				],
+				"loaded_material_resources": 4,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 312,
+				"loaded_shadow_enabled_mesh_nodes": 283,
+				"multimesh_instances": 2976,
+				"multimesh_nodes": 144,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 27,
+					"LOD1": 40,
+					"LOD2": 2
+				},
+				"visible_branch_material_resources_approximately_in_range": 3,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 80,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 218,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 68
+			},
+			"texture_memory_bytes": 55068273.0,
+			"video_memory_bytes": 69639329.0,
+			"view": "05_hollow_log"
+		},
+		{
+			"buffer_memory_bytes": 14571056.0,
+			"camera_position": [
+				7.0,
+				3.0,
+				17.0
+			],
+			"draw_calls": 126.0,
+			"preset": "CLEAR DAY",
+			"primitives": 149692.0,
+			"rendered_objects": 394.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 100,
+					"LOD1": 100,
+					"LOD2": 100
+				},
+				"loaded_material_keys": [
+					"res://materials/mirewood/terrain.tres",
+					"res://materials/mirewood/water.tres",
+					"res://materials/mirewood/atlas.tres",
+					"#-9223371931544185936"
+				],
+				"loaded_material_resources": 4,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 312,
+				"loaded_shadow_enabled_mesh_nodes": 283,
+				"multimesh_instances": 2976,
+				"multimesh_nodes": 144,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 27,
+					"LOD1": 41,
+					"LOD2": 1
+				},
+				"visible_branch_material_resources_approximately_in_range": 3,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 80,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 218,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 68
+			},
+			"texture_memory_bytes": 55068273.0,
+			"video_memory_bytes": 69639329.0,
+			"view": "06_broken_boardwalk"
+		},
+		{
+			"buffer_memory_bytes": 14571056.0,
+			"camera_position": [
+				67.0,
+				24.0,
+				91.0
+			],
+			"draw_calls": 157.0,
+			"preset": "CLEAR DAY",
+			"primitives": 102878.0,
+			"rendered_objects": 431.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 100,
+					"LOD1": 100,
+					"LOD2": 100
+				},
+				"loaded_material_keys": [
+					"res://materials/mirewood/terrain.tres",
+					"res://materials/mirewood/water.tres",
+					"res://materials/mirewood/atlas.tres",
+					"#-9223371931544185936"
+				],
+				"loaded_material_resources": 4,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 312,
+				"loaded_shadow_enabled_mesh_nodes": 283,
+				"multimesh_instances": 2976,
+				"multimesh_nodes": 144,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 2,
+					"LOD1": 34,
+					"LOD2": 33
+				},
+				"visible_branch_material_resources_approximately_in_range": 3,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 80,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 218,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 68
+			},
+			"texture_memory_bytes": 55068273.0,
+			"video_memory_bytes": 69639329.0,
+			"view": "07_elder_silhouettes"
+		},
+		{
+			"buffer_memory_bytes": 14571056.0,
+			"camera_position": [
+				0.0,
+				120.0,
+				720.0
+			],
+			"draw_calls": 43.0,
+			"preset": "CLEAR DAY",
+			"primitives": 48414.0,
+			"rendered_objects": 607.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 100,
+					"LOD1": 100,
+					"LOD2": 100
+				},
+				"loaded_material_keys": [
+					"res://materials/mirewood/terrain.tres",
+					"res://materials/mirewood/water.tres",
+					"res://materials/mirewood/atlas.tres",
+					"#-9223371931544185936"
+				],
+				"loaded_material_resources": 4,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 312,
+				"loaded_shadow_enabled_mesh_nodes": 283,
+				"multimesh_instances": 2976,
+				"multimesh_nodes": 144,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 8,
+					"LOD1": 0,
+					"LOD2": 0
+				},
+				"visible_branch_material_resources_approximately_in_range": 2,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 9,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 25,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 9
+			},
+			"texture_memory_bytes": 55330417.0,
+			"video_memory_bytes": 69901473.0,
+			"view": "08_shore_roots_catalogue"
+		},
+		{
+			"buffer_memory_bytes": 14571056.0,
+			"camera_position": [
+				0.0,
+				120.0,
+				720.0
+			],
+			"draw_calls": 42.0,
+			"preset": "CLEAR DAY",
+			"primitives": 37830.0,
+			"rendered_objects": 600.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 100,
+					"LOD1": 100,
+					"LOD2": 100
+				},
+				"loaded_material_keys": [
+					"res://materials/mirewood/terrain.tres",
+					"res://materials/mirewood/water.tres",
+					"res://materials/mirewood/atlas.tres",
+					"#-9223371931544185936"
+				],
+				"loaded_material_resources": 4,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 312,
+				"loaded_shadow_enabled_mesh_nodes": 283,
+				"multimesh_instances": 2976,
+				"multimesh_nodes": 144,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 8,
+					"LOD1": 0,
+					"LOD2": 0
+				},
+				"visible_branch_material_resources_approximately_in_range": 2,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 9,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 25,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 9
+			},
+			"texture_memory_bytes": 55330417.0,
+			"video_memory_bytes": 69901473.0,
+			"view": "09_trees_walkways_catalogue"
+		},
+		{
+			"buffer_memory_bytes": 14571056.0,
+			"camera_position": [
+				0.0,
+				120.0,
+				720.0
+			],
+			"draw_calls": 43.0,
+			"preset": "CLEAR DAY",
+			"primitives": 39466.0,
+			"rendered_objects": 637.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 100,
+					"LOD1": 100,
+					"LOD2": 100
+				},
+				"loaded_material_keys": [
+					"res://materials/mirewood/terrain.tres",
+					"res://materials/mirewood/water.tres",
+					"res://materials/mirewood/atlas.tres",
+					"#-9223371931544185936"
+				],
+				"loaded_material_resources": 4,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 312,
+				"loaded_shadow_enabled_mesh_nodes": 283,
+				"multimesh_instances": 2976,
+				"multimesh_nodes": 144,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 8,
+					"LOD1": 0,
+					"LOD2": 0
+				},
+				"visible_branch_material_resources_approximately_in_range": 2,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 9,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 25,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 9
+			},
+			"texture_memory_bytes": 55330417.0,
+			"video_memory_bytes": 69901473.0,
+			"view": "10_landings_ruins_catalogue"
+		},
+		{
+			"buffer_memory_bytes": 14571056.0,
+			"camera_position": [
+				0.0,
+				120.0,
+				720.0
+			],
+			"draw_calls": 33.0,
+			"preset": "CLEAR DAY",
+			"primitives": 15255.0,
+			"rendered_objects": 512.0,
+			"scene_inventory": {
+				"inventory_caveat": "Structural counts are not render submissions. Approximate LOD inventory uses node-origin camera distance and does not test the frustum or shadow-caster volume; actual submission counters are above.",
+				"loaded_authored_lod_mesh_nodes": {
+					"LOD0": 100,
+					"LOD1": 100,
+					"LOD2": 100
+				},
+				"loaded_material_keys": [
+					"res://materials/mirewood/terrain.tres",
+					"res://materials/mirewood/water.tres",
+					"res://materials/mirewood/atlas.tres",
+					"#-9223371931544185936"
+				],
+				"loaded_material_resources": 4,
+				"loaded_mesh_nodes_including_all_lods_and_hidden_catalogue": 312,
+				"loaded_shadow_enabled_mesh_nodes": 283,
+				"multimesh_instances": 2976,
+				"multimesh_nodes": 144,
+				"visible_branch_authored_lods_approximately_in_range": {
+					"LOD0": 7,
+					"LOD1": 0,
+					"LOD2": 0
+				},
+				"visible_branch_material_resources_approximately_in_range": 2,
+				"visible_branch_mesh_nodes_approximately_in_lod_range": 8,
+				"visible_branch_mesh_nodes_before_range_and_frustum_culling": 22,
+				"visible_branch_shadow_enabled_mesh_nodes_approximately_in_range": 3
+			},
+			"texture_memory_bytes": 55330417.0,
+			"video_memory_bytes": 69901473.0,
+			"view": "11_moss_understory_catalogue"
+		}
+	]
+}

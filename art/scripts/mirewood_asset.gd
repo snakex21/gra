@@ -2,7 +2,7 @@
 extends Node3D
 ## Independent, art-only renderer and opt-in static collision from authored recipes.
 ## Never modifies gameplay collisions, actors, controllers, or climbing patches.
-@export var model_id := "eroded_needle"
+@export var model_id := "root_island"
 @export var collidable := false
 @export var lod_distances := Vector3(55.0, 140.0, 520.0)
 @export var cast_shadows := true

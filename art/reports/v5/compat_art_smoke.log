@@ -1,0 +1,3 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+MIREWOOD_RUNTIME_TESTS {"checks":1219,"engine":"4.6.3-stable (official)","exact_heightfield_boundary_ray_misses":24,"failures":[],"ray_caveat":"Exact grid/triangle boundary point rays may miss in this Godot build; paired offset rays and finite sphere contacts are asserted. Not a claim that point-ray edge behavior passes.","scope":"Only Mirewood imported geometry, shared materials, LOD settings and independent static collision; no gameplay assertions"}

@@ -212,3 +212,10 @@ receptury prostych kolizji w `assets/stonewater_manifest.json`.
 [Inwentarz, edycja, koszt i ograniczenia](SALTWIND_KIT.md).
 Oddzielny przegląd: `art/tests/saltwind.tscn`; renderer nie ładuje gameplayu
 ani adaptera kolosa. Jawne proxy, 96 GLB, pięć nowych współdzielonych map.
+
+## Część 5 — Mirewood Fen
+
+31 modułów bagiennych, korzenne wyspy, puste pnie, pomosty i omszałe ruiny:
+[Mirewood — inwentarz, kolizje, edycja i ograniczenia](MIREWOOD_KIT.md).
+Samodzielny przegląd: `art/tests/mirewood.tscn`; 93 jawne LOD GLB,
+pięć map 1024 px i osobne receptury kolizji. Bez zależności od gameplayu.

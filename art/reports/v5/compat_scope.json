@@ -1,0 +1,7 @@
+{
+  "gameplay_snapshot": "23ec961224956a095d5b7be7f0e11deae07ec228",
+  "tracked_gameplay_files_compared": 177,
+  "changed": [],
+  "full_import_initial_attempt": "killed exit137 during inherited texture reimport; log preserved, not a PASS",
+  "recovery": "Reused verified import cache for byte-identical art exports. Run independent art smoke test only; no full-game performance benchmark."
+}

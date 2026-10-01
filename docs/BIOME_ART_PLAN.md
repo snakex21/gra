@@ -69,3 +69,11 @@ escarpment/mesa silhouettes, buried ruins and eight dry-vegetation types.
 See [SALTWIND_KIT.md](SALTWIND_KIT.md). This is a separate 480m art study with
 stitched distant ground, not a claim that the other seven roadmap biomes or a
 finished gameplay world have been completed. Existing kits remain unchanged.
+
+## Part 5 — wetland/overgrown-ruin signature gap addressed
+
+Mirewood Fen adds 31 original assets: rooted and crescent islands, shoreline
+turns, curved root structures, actual hollow trunks, timber walkways including
+an open break, drowned masonry and opaque wetland understory. This advances
+the wetland and hollow-trunk gaps; it does not declare the moss-forest biome
+or all roadmap worlds finished. See [MIREWOOD_KIT.md](MIREWOOD_KIT.md).

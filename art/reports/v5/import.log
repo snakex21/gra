@@ -1,0 +1,179 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1m_update_scan_actions[22m | Started Scanning actions... (98 steps)[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | boardwalk_8m_lod0.glb[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | boardwalk_8m_lod1.glb[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | boardwalk_8m_lod2.glb[39m[0m
+[   3% ] [90m[1m_update_scan_actions[22m | boardwalk_broken_lod0.glb[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | boardwalk_broken_lod1.glb[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | boardwalk_broken_lod2.glb[39m[0m
+[   6% ] [90m[1m_update_scan_actions[22m | boardwalk_railed_lod0.glb[39m[0m
+[   7% ] [90m[1m_update_scan_actions[22m | boardwalk_railed_lod1.glb[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | boardwalk_railed_lod2.glb[39m[0m
+[   9% ] [90m[1m_update_scan_actions[22m | boardwalk_turn_lod0.glb[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | boardwalk_turn_lod1.glb[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | boardwalk_turn_lod2.glb[39m[0m
+[  12% ] [90m[1m_update_scan_actions[22m | broad_sedge_lod0.glb[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | broad_sedge_lod1.glb[39m[0m
+[  14% ] [90m[1m_update_scan_actions[22m | broad_sedge_lod2.glb[39m[0m
+[  15% ] [90m[1m_update_scan_actions[22m | buried_moss_passage_lod0.glb[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | buried_moss_passage_lod1.glb[39m[0m
+[  17% ] [90m[1m_update_scan_actions[22m | buried_moss_passage_lod2.glb[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | buttress_root_lod0.glb[39m[0m
+[  19% ] [90m[1m_update_scan_actions[22m | buttress_root_lod1.glb[39m[0m
+[  20% ] [90m[1m_update_scan_actions[22m | buttress_root_lod2.glb[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | cattail_rush_lod0.glb[39m[0m
+[  22% ] [90m[1m_update_scan_actions[22m | cattail_rush_lod1.glb[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | cattail_rush_lod2.glb[39m[0m
+[  24% ] [90m[1m_update_scan_actions[22m | crescent_island_lod0.glb[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | crescent_island_lod1.glb[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | crescent_island_lod2.glb[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | crown_stump_lod0.glb[39m[0m
+[  28% ] [90m[1m_update_scan_actions[22m | crown_stump_lod1.glb[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | crown_stump_lod2.glb[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | cypress_knees_lod0.glb[39m[0m
+[  31% ] [90m[1m_update_scan_actions[22m | cypress_knees_lod1.glb[39m[0m
+[  32% ] [90m[1m_update_scan_actions[22m | cypress_knees_lod2.glb[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | drowned_shrine_lod0.glb[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | drowned_shrine_lod1.glb[39m[0m
+[  35% ] [90m[1m_update_scan_actions[22m | drowned_shrine_lod2.glb[39m[0m
+[  36% ] [90m[1m_update_scan_actions[22m | drowned_stairs_lod0.glb[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | drowned_stairs_lod1.glb[39m[0m
+[  38% ] [90m[1m_update_scan_actions[22m | drowned_stairs_lod2.glb[39m[0m
+[  39% ] [90m[1m_update_scan_actions[22m | fallen_root_tree_lod0.glb[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | fallen_root_tree_lod1.glb[39m[0m
+[  41% ] [90m[1m_update_scan_actions[22m | fallen_root_tree_lod2.glb[39m[0m
+[  42% ] [90m[1m_update_scan_actions[22m | fen_elder_tree_lod0.glb[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | fen_elder_tree_lod1.glb[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | fen_elder_tree_lod2.glb[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | fen_waystone_lod0.glb[39m[0m
+[  46% ] [90m[1m_update_scan_actions[22m | fen_waystone_lod1.glb[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | fen_waystone_lod2.glb[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | hanging_moss_lod0.glb[39m[0m
+[  49% ] [90m[1m_update_scan_actions[22m | hanging_moss_lod1.glb[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | hanging_moss_lod2.glb[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | hollow_elder_trunk_lod0.glb[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | hollow_elder_trunk_lod1.glb[39m[0m
+[  53% ] [90m[1m_update_scan_actions[22m | hollow_elder_trunk_lod2.glb[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | hollow_fallen_log_lod0.glb[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | hollow_fallen_log_lod1.glb[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | hollow_fallen_log_lod2.glb[39m[0m
+[  57% ] [90m[1m_update_scan_actions[22m | lily_pad_raft_lod0.glb[39m[0m
+[  58% ] [90m[1m_update_scan_actions[22m | lily_pad_raft_lod1.glb[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | lily_pad_raft_lod2.glb[39m[0m
+[  60% ] [90m[1m_update_scan_actions[22m | marsh_fern_lod0.glb[39m[0m
+[  61% ] [90m[1m_update_scan_actions[22m | marsh_fern_lod1.glb[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | marsh_fern_lod2.glb[39m[0m
+[  63% ] [90m[1m_update_scan_actions[22m | mooring_landing_lod0.glb[39m[0m
+[  64% ] [90m[1m_update_scan_actions[22m | mooring_landing_lod1.glb[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | mooring_landing_lod2.glb[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | moss_retaining_wall_lod0.glb[39m[0m
+[  67% ] [90m[1m_update_scan_actions[22m | moss_retaining_wall_lod1.glb[39m[0m
+[  68% ] [90m[1m_update_scan_actions[22m | moss_retaining_wall_lod2.glb[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | old_mooring_piles_lod0.glb[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | old_mooring_piles_lod1.glb[39m[0m
+[  71% ] [90m[1m_update_scan_actions[22m | old_mooring_piles_lod2.glb[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | peat_hummock_lod0.glb[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | peat_hummock_lod1.glb[39m[0m
+[  74% ] [90m[1m_update_scan_actions[22m | peat_hummock_lod2.glb[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | rootbound_gate_lod0.glb[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | rootbound_gate_lod1.glb[39m[0m
+[  77% ] [90m[1m_update_scan_actions[22m | rootbound_gate_lod2.glb[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | rootwell_ring_lod0.glb[39m[0m
+[  79% ] [90m[1m_update_scan_actions[22m | rootwell_ring_lod1.glb[39m[0m
+[  80% ] [90m[1m_update_scan_actions[22m | rootwell_ring_lod2.glb[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | root_bank_16m_lod0.glb[39m[0m
+[  82% ] [90m[1m_update_scan_actions[22m | root_bank_16m_lod1.glb[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | root_bank_16m_lod2.glb[39m[0m
+[  84% ] [90m[1m_update_scan_actions[22m | root_bank_corner_lod0.glb[39m[0m
+[  85% ] [90m[1m_update_scan_actions[22m | root_bank_corner_lod1.glb[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | root_bank_corner_lod2.glb[39m[0m
+[  87% ] [90m[1m_update_scan_actions[22m | root_island_lod0.glb[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | root_island_lod1.glb[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | root_island_lod2.glb[39m[0m
+[  90% ] [90m[1m_update_scan_actions[22m | woven_root_bridge_lod0.glb[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | woven_root_bridge_lod1.glb[39m[0m
+[  92% ] [90m[1m_update_scan_actions[22m | woven_root_bridge_lod2.glb[39m[0m
+[  93% ] [90m[1m_update_scan_actions[22m | atlas_1k.png[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | moss_albedo.png[39m[0m
+[  95% ] [90m[1m_update_scan_actions[22m | moss_normal.png[39m[0m
+[  96% ] [90m[1m_update_scan_actions[22m | peat_albedo.png[39m[0m
+[  97% ] [90m[1m_update_scan_actions[22m | peat_normal.png[39m[0m
+[92m[ DONE ][39m [1m_update_scan_actions[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (6 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  14% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  28% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  42% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  57% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  71% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing pre-reimport operations...[39m[0m
+[   0% ] [90m[1mpreload_reimporting_scene[22m | Started Preparing scenes for reload (1 steps)[39m[0m
+[   0% ] [90m[1mpreload_reimporting_scene[22m | Analyzing scene [empty][39m[0m
+[  50% ] [90m[1mpreload_reimporting_scene[22m | Preparation done.[39m[0m
+[92m[ DONE ][39m [1mpreload_reimporting_scene[22m
+[0m
+[   0% ] [90m[1mreimport[22m | hanging_moss_lod0.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  14% ] [90m[1mreimport[22m | hanging_moss_lod1.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  28% ] [90m[1mreimport[22m | hanging_moss_lod2.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  42% ] [90m[1mreimport[22m | marsh_fern_lod0.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  57% ] [90m[1mreimport[22m | marsh_fern_lod1.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  71% ] [90m[1mreimport[22m | marsh_fern_lod2.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  85% ] [90m[1mreimport[22m | Finalizing Asset Import...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (6 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing post-reimport operations...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
