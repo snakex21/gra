@@ -14,12 +14,12 @@ extends Node
 
 signal finished(result: Dictionary)
 
-enum Phase { ENTER, MOUNT, RIDE, POSITION, SHOOT, DISMOUNT, TO_LEG, GRAB_LEG, CLIMB, ON_BACK, CLIMB_HEAD, STRIKE, FALLEN, DEAD, DONE }
+enum Phase { ENTER, MOUNT, RIDE, POSITION, SHOOT, DISMOUNT, TO_LEG, GRAB_LEG, CLIMB, ON_BACK, CLIMB_HEAD, STRIKE, DESCEND, FALLEN, DEAD, DONE }
 
 const TIMEOUTS := {
 	Phase.ENTER: 40.0, Phase.MOUNT: 10.0, Phase.RIDE: 60.0, Phase.POSITION: 40.0, Phase.SHOOT: 40.0,
 	Phase.DISMOUNT: 6.0, Phase.TO_LEG: 20.0, Phase.GRAB_LEG: 6.0, Phase.CLIMB: 30.0,
-	Phase.ON_BACK: 40.0, Phase.CLIMB_HEAD: 25.0, Phase.STRIKE: 40.0, Phase.FALLEN: 20.0, Phase.DEAD: 30.0,
+	Phase.ON_BACK: 40.0, Phase.CLIMB_HEAD: 25.0, Phase.STRIKE: 40.0, Phase.DESCEND: 30.0, Phase.FALLEN: 20.0, Phase.DEAD: 30.0,
 }
 
 var player: PlayerCharacter
@@ -98,7 +98,7 @@ func _physics_process(delta: float) -> void:
 		_stall()
 		return
 	var on_body := quadratus.owns_body(player.get_support_body())
-	if phase in [Phase.CLIMB, Phase.ON_BACK, Phase.CLIMB_HEAD, Phase.STRIKE] and not on_body and not player.is_climbing() and player.state == PlayerCharacter.State.GROUND:
+	if phase in [Phase.CLIMB, Phase.ON_BACK, Phase.CLIMB_HEAD, Phase.STRIKE, Phase.DESCEND] and not on_body and not player.is_climbing() and player.state == PlayerCharacter.State.GROUND:
 		stats.falls += 1
 		_log("fell off (%s)" % player.last_release_reason)
 		_enter(Phase.FALLEN)
@@ -134,6 +134,8 @@ func _physics_process(delta: float) -> void:
 			_climb_head()
 		Phase.STRIKE:
 			_strike()
+		Phase.DESCEND:
+			_descend()
 		Phase.FALLEN:
 			a.grab_held = false
 			a.attack_held = false
@@ -446,39 +448,34 @@ func _target_wp() -> WeakPoint:
 func _on_back() -> void:
 	var a := player.actions
 	_want_weapon(PlayerCharacter.Weapon.SWORD)
+	if _crown_closed():
+		_enter(Phase.DESCEND)
+		return
 	if player.is_climbing():
 		var bone := _grip_bone()
 		if _grip_near_wp():
 			_enter(Phase.STRIKE)
 			return
-		if bone in [&"neck", &"head"] and _target_wp() == quadratus.crown:
+		if bone in [&"head", &"neck"] and _target_wp() == quadratus.crown:
 			_enter(Phase.CLIMB_HEAD)
 			return
 		a.grab_held = true
-		if player.grip.world_normal().y < 0.6:
+		if player.grip.world_normal().y < 0.6 and bone == &"body":
 			# Hanging on a side (thrown off the top, a rescue grip): climb up again.
 			a.move = Vector2.ZERO if _hold_on() else Vector2(0, 1)
 			_look(quadratus.get_focus_point() - player.global_position)
 			return
-		# On the fur of the back: crawl (gripping) to the weak point; to the crown along the
-		# fur beside the stone saddle, then stand up on the front of the back.
+		# On the fur: to the rump weak point crawl (gripping); to the crown stand up on the
+		# middle of the back and walk (crawling all of it does not fit in a kneel).
 		if not _hold_on():
-			var goal := _target_wp().world_point()
 			if _target_wp() == quadratus.crown and bone == &"body":
-				var body_xf := (player.grip.body as BodySegment).target_transform
-				var local := body_xf.affine_inverse() * player.grip.world_point()
-				var side := signf(local.x) if absf(local.x) > 0.3 else 1.0
-				if local.z > 1.2:
-					goal = body_xf * Vector3(side * 2.5, 2.2, 0.6)
-				elif local.z > -3.5:
-					goal = body_xf * Vector3(side * 0.8, 2.2, -4.2)
-				else:
-					# Level back: stand up and walk the neck (kneeling it is tilted: wait).
-					a.move = Vector2.ZERO
-					var level := absf(quadratus.loco.body_roll) < 0.12 and absf(quadratus.loco.body_pitch) < 0.12
-					a.grab_held = not level
+				var local := (player.grip.body as BodySegment).target_transform.affine_inverse() * player.grip.world_point()
+				if absf(local.x) < 1.8:
+					a.grab_held = false
 					return
-			_look(goal - player.grip.world_point())
+				_look((player.grip.body as BodySegment).target_transform * Vector3(0, 2.0, local.z) - player.grip.world_point())
+			else:
+				_look(_target_wp().world_point() - player.grip.world_point())
 			a.move = Vector2(0, 1)
 		return
 	var wp := _target_wp()
@@ -489,21 +486,24 @@ func _on_back() -> void:
 		_grab_release += 1
 		a.grab_held = _grab_release % 10 > 2
 		return
-	a.grab_held = false
-	if wp == quadratus.crown and quadratus.region_of(player) in [&"back", &"neck", &"rump"]:
-		# Walk to the front of the neck, then reach for the head's fur.
-		var neck: BodySegment = quadratus._seg_by_bone[&"neck"]
-		var front := neck.target_transform * Vector3(0, 1.6, -2.4)
-		if _flat(front - player.global_position).length() > 0.8:
-			_run_to(front, 0.6)
-		else:
-			_look(wp.world_point() - player.global_position)
-			a.move = Vector2(0, 0.4)
+	if wp == quadratus.crown:
+		# Along the middle of the back, over the saddle, to the neck, then reach for the
+		# fur on the back of the head.
+		var body := quadratus._seg_by_bone[&"body"] as BodySegment
+		var local := body.target_transform.affine_inverse() * player.global_position
+		var goal := body.target_transform * Vector3(0, 2.5, -5.4)
+		if local.z > 1.0:
+			goal = body.target_transform * Vector3(0, 2.5, -1.0)
+		if quadratus.region_of(player) == &"neck" or local.z < -5.0:
+			_look(quadratus.crown.world_point() - player.global_position)
+			a.move = Vector2(0, 0.5)
 			_grab_release += 1
 			a.grab_held = _grab_release % 24 > 4
-			if _grab_release % 48 == 10:
-				a.press_jump()
+			return
+		a.grab_held = false
+		_run_to(goal, 0.8)
 		return
+	a.grab_held = false
 	var d := _flat(target - player.global_position)
 	if d.length() > 0.7:
 		_run_to(target, 0.6)
@@ -515,9 +515,47 @@ func _on_back() -> void:
 		a.grab_held = _grab_release % 10 > 2
 
 
+## Rump done, crown shut and it is standing: off the back, down a hind leg, bow again.
+func _crown_closed() -> bool:
+	return quadratus.rump.state == WeakPoint.State.DESTROYED and quadratus.crown.state == WeakPoint.State.PROTECTED and quadratus.buckle == Quadratus.Buckle.NONE
+
+
+func _descend() -> void:
+	var a := player.actions
+	if not _crown_closed() and quadratus.buckle != Quadratus.Buckle.NONE:
+		_reroute()
+		return
+	var body := quadratus._seg_by_bone[&"body"] as BodySegment
+	var side := 1.0 if (body.target_transform.affine_inverse() * player.global_position).x >= 0.0 else -1.0
+	if not player.is_climbing():
+		# Walk / crouch-grip to the edge over a hind haunch, then hang on over the side.
+		var edge := body.target_transform * Vector3(side * 3.3, 1.9, 4.8)
+		_look(edge - player.global_position)
+		a.move = Vector2(0, 0.6)
+		a.grab_held = _hold_on() or _flat(edge - player.global_position).length() < 1.2
+		return
+	a.grab_held = true
+	if _hold_on():
+		return
+	var bone := _grip_bone()
+	if bone in [&"neck", &"head"]:
+		# On the front: drop onto the back and walk to the rump from there.
+		a.grab_held = false
+		return
+	# Down the haunch and the thigh; at the stone knee let go (a short drop).
+	if player.global_position.y - quadratus.global_position.y < 6.5:
+		a.grab_held = false
+		return
+	_look(quadratus.get_focus_point() - player.global_position)
+	a.move = Vector2(0, -1)
+
+
 func _climb_head() -> void:
 	var a := player.actions
 	a.grab_held = true
+	if _crown_closed():
+		_enter(Phase.DESCEND)
+		return
 	_look(quadratus.crown.world_point() - player.global_position)
 	if not player.is_climbing():
 		if player.state != PlayerCharacter.State.AIR and quadratus.region_of(player) != &"":
@@ -552,6 +590,10 @@ func _strike() -> void:
 		return
 	var sw := player.sword
 	var wp := _target_wp()
+	if _crown_closed():
+		a.attack_held = false
+		_enter(Phase.DESCEND)
+		return
 	if wp.state == WeakPoint.State.DESTROYED:
 		a.attack_held = false
 		_reroute()
@@ -559,7 +601,8 @@ func _strike() -> void:
 	var hand := player.grip.world_point()
 	var to := wp.world_point() - hand
 	to -= player.grip.world_normal() * to.dot(player.grip.world_normal())
-	if to.length() > 0.6 and sw.state == PlayerSword.State.READY and not _hold_on():
+	var in_reach := player.grip.world_point().distance_to(wp.world_point()) < 0.9 * wp.radius
+	if to.length() > 0.6 and sw.state == PlayerSword.State.READY and not _hold_on() and not (in_reach and phase_time > 2.0):
 		_look(to)
 		a.move = Vector2(0, 0.7)
 		a.attack_held = false
@@ -597,7 +640,7 @@ func _reroute() -> void:
 			_enter(Phase.CLIMB)
 		return
 	if quadratus.region_of(player) in [&"rump", &"back", &"neck", &"head"]:
-		_enter(Phase.ON_BACK)
+		_enter(Phase.DESCEND if _crown_closed() else Phase.ON_BACK)
 		return
 	if phase != Phase.FALLEN:
 		stats.falls += 1

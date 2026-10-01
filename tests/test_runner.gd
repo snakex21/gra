@@ -4006,7 +4006,13 @@ func test_quadratus_can_be_defeated() -> void:
 	await _ticks(60)
 	p.set_weapon(PlayerCharacter.Weapon.SWORD)
 	var strikes := 0
+	var crown_closed_standing := false
 	for wp in [q.rump, q.crown]:
+		if wp == q.crown:
+			# The crown is shut while it stands; it opens only when it kneels again.
+			crown_closed_standing = q.crown.state == WeakPoint.State.PROTECTED
+			q._on_sole_hit({"tag": 2, "point": q.sole_world(2)})
+			await _ticks(150)
 		var seg: BodySegment = wp.segment
 		p.actions.grab_held = false
 		await _ticks(5)
@@ -4035,6 +4041,7 @@ func test_quadratus_can_be_defeated() -> void:
 	p.landed.connect(func(_s: float, tier: int, _d: float) -> void: tiers.append(tier))
 	await _ticks(120)
 	_log.append("%d full strikes: %s, banner '%s'; lying down: player %.1f -> %.1f m, rump top %.1f m; let go -> %s, landing tiers %s, HP %.0f" % [strikes, q.encounter_name(), e.banner, y_grip, y_low, top.y, p.get_display_state(), str(tiers), p.health])
+	_check(crown_closed_standing, "the crown was open while it stood (the loop must repeat)")
 	_check(q.encounter == Quadratus.Encounter.DEFEATED, "not defeated")
 	_check(e.banner == "COLOSSUS DEFEATED", "no defeat banner")
 	_check(strikes >= 4 and strikes <= 6, "expected 2-3 full strikes per weak point, took %d" % strikes)

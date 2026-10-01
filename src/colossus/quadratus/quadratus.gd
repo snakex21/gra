@@ -67,17 +67,19 @@ const LEGS := [[&"fl_up", &"fl_low", &"fl_foot"], [&"fr_up", &"fr_low", &"fr_foo
 ## while the legs stand), stone shins and hooves, a fur neck and a fur cap on the head.
 const PARTS := [
 	[&"body", Kind.FUR, Vector3(6.4, 4.4, 7.0), Vector3(0, 0, -3.0)],
-	[&"body", Kind.FUR, Vector3(6.0, 4.0, 6.4), Vector3(0, -0.1, 3.4)],
-	[&"body", Kind.STONE, Vector3(3.6, 0.5, 3.4), Vector3(0, 2.45, -1.0), &"rest"],
+	[&"body", Kind.FUR, Vector3(6.0, 4.3, 6.4), Vector3(0, 0.05, 3.4)],
+	[&"body", Kind.STONE, Vector3(3.6, 0.4, 3.4), Vector3(0, 2.05, -1.0), &"rest"],
 	# Haunches: fur flush with the outside of the thighs, from the hip up to the back (the
 	# way from a lowered thigh onto the rump, no overhang under the belly).
-	[&"body", Kind.FUR, Vector3(0.9, 4.0, 3.4), Vector3(-3.4, -0.1, 4.8)],
-	[&"body", Kind.FUR, Vector3(0.9, 4.0, 3.4), Vector3(3.4, -0.1, 4.8)],
+	[&"body", Kind.FUR, Vector3(0.9, 4.3, 3.4), Vector3(-3.4, 0.05, 4.8)],
+	[&"body", Kind.FUR, Vector3(0.9, 4.3, 3.4), Vector3(3.4, 0.05, 4.8)],
 	[&"body", Kind.ARMOR, Vector3(0.5, 3.4, 4.8), Vector3(-3.42, -0.2, -3.8)],
 	[&"body", Kind.ARMOR, Vector3(0.5, 3.4, 4.8), Vector3(3.42, -0.2, -3.8)],
 	[&"neck", Kind.FUR, Vector3(2.6, 2.6, 3.6), Vector3(0, 0.3, -1.2)],
 	[&"head", Kind.STONE, Vector3(2.6, 2.2, 3.0), Vector3(0, 0.2, -0.9)],
 	[&"head", Kind.FUR, Vector3(2.7, 0.5, 2.6), Vector3(0, 1.5, -0.6)],
+	# Fur on the back of the head: from the neck up onto the crown.
+	[&"head", Kind.FUR, Vector3(2.7, 2.4, 0.6), Vector3(0, 0.55, 0.6)],
 	[&"fl_up", Kind.FUR, Vector2(1.05, 3.0), Vector3(0, -1.1, 0)],
 	[&"fr_up", Kind.FUR, Vector2(1.05, 3.0), Vector3(0, -1.1, 0)],
 	[&"rl_up", Kind.FUR, Vector2(1.15, 3.2), Vector3(0, -1.2, 0)],
@@ -97,7 +99,7 @@ const PARTS := [
 	[&"rr_foot", Kind.STONE, Vector3(1.9, 0.6, 2.2), Vector3(0, -0.3, -0.2)],
 ]
 ## Weak points: on the rump (body bone space) and the crown (head bone space).
-const RUMP_LOCAL := Vector3(0, 1.92, 5.0)
+const RUMP_LOCAL := Vector3(0, 2.22, 5.0)
 const CROWN_LOCAL := Vector3(0, 1.77, -0.5)
 ## Glowing sole of each hind hoof (foot bone space; the sole faces down).
 const SOLE_LOCAL := Vector3(0, -0.62, -0.2)
@@ -106,8 +108,8 @@ const TARGET_LEGS := [2, 3]
 ## The intended climb route (debug overlay): [bone, bone-space point].
 const ROUTE := [
 	[&"rl_up", Vector3(-1.15, -2.4, 0)], [&"rl_up", Vector3(-1.15, -0.6, 0)],
-	[&"body", Vector3(-3.85, -1.0, 4.8)], [&"body", Vector3(-3.85, 1.6, 4.8)],
-	[&"body", Vector3(-2.6, 1.9, 4.8)], [&"body", Vector3(0, 1.92, 5.0)],
+	[&"body", Vector3(-3.85, -1.0, 4.8)], [&"body", Vector3(-3.85, 1.9, 4.8)],
+	[&"body", Vector3(-2.6, 2.2, 4.8)], [&"body", Vector3(0, 2.22, 5.0)],
 	[&"body", Vector3(0, 2.7, -1.0)], [&"body", Vector3(0, 2.2, -5.8)],
 	[&"neck", Vector3(0, 1.6, -1.2)], [&"head", Vector3(0, 1.75, -0.5)],
 ]
@@ -138,6 +140,8 @@ const ROUTE := [
 @export var react_time := 1.4
 ## ...then it rests on three legs (the climb window)...
 @export var kneel_time := 11.0
+## Kneels after the rump is destroyed (the crown is open only then) last longer.
+@export var kneel_time_crown := 20.0
 ## ...and pushes itself up again.
 @export var rise_time := 2.6
 ## No new foot hit counts until this long after rising.
@@ -208,6 +212,7 @@ func _ready() -> void:
 	rump = WeakPoint.create(_seg_by_bone[&"body"], RUMP_LOCAL, weak_point_health)
 	crown = WeakPoint.create(_seg_by_bone[&"head"], CROWN_LOCAL, weak_point_health)
 	weak_points = [rump, crown]
+	crown.set_protected(true)
 	for wp in weak_points:
 		wp.struck.connect(_on_weak_point_struck.bind(wp))
 		wp.destroyed.connect(_on_weak_point_destroyed)
@@ -237,6 +242,7 @@ func reset_encounter(xf := Transform3D.IDENTITY, use_xf := false) -> void:
 	rules.reset()
 	for wp in weak_points:
 		wp.reset()
+	crown.set_protected(true)
 	intent = ColossusIntent.make(ColossusIntent.IDLE)
 	_intent_time = 0.0
 	_shake_cooldown_left = 0.0
@@ -452,6 +458,7 @@ func _execute_intent(it: ColossusIntent, delta: float) -> void:
 	_update_buckle(delta)
 	_update_attack(it, delta)
 	_update_targets()
+	_update_crown()
 	rules.on_reposition(it.kind == ColossusIntent.REPOSITION and encounter == Encounter.COMBAT, _time)
 	var effective := _effective_intent(it)
 	Perf.end(&"boss_combat", tc)
@@ -573,6 +580,14 @@ func _set_encounter(e: Encounter) -> void:
 
 # --- foot hit / buckle --------------------------------------------------------------
 
+## The crown is closed (a stone lid) except while it kneels after the rump is gone: the
+## head can only be reached on a second (or later) kneel, so the loop repeats.
+func _update_crown() -> void:
+	var open := rump.state == WeakPoint.State.DESTROYED and (buckle == Buckle.REACT or buckle == Buckle.KNEEL)
+	if crown.state != WeakPoint.State.DESTROYED and open != (crown.state == WeakPoint.State.OPEN):
+		crown.set_protected(not open)
+
+
 func _update_targets() -> void:
 	var live := encounter != Encounter.DEFEATED and encounter != Encounter.DORMANT and buckle == Buckle.NONE and _buckle_cooldown_left <= 0.0
 	for t in arrow_targets:
@@ -623,7 +638,7 @@ func _update_buckle(delta: float) -> void:
 				leg.support = move_toward(leg.support, 0.0, delta / buckle_time)
 			if buckle == Buckle.REACT and buckle_t >= react_time:
 				_set_buckle(Buckle.KNEEL)
-			elif buckle == Buckle.KNEEL and buckle_t >= kneel_time:
+			elif buckle == Buckle.KNEEL and buckle_t >= (kneel_time_crown if rump.state == WeakPoint.State.DESTROYED else kneel_time):
 				_set_buckle(Buckle.RISE)
 		Buckle.RISE:
 			leg.support = move_toward(leg.support, 1.0, delta / rise_time)
@@ -845,6 +860,10 @@ func _on_weak_point_struck(damage: float, _left: float, wp: WeakPoint) -> void:
 func _on_weak_point_destroyed() -> void:
 	if weak_points_left() == 0:
 		_set_encounter(Encounter.DEFEATED)
+	elif buckle == Buckle.REACT or buckle == Buckle.KNEEL:
+		# The rump is gone: in pain it pushes itself up at once (the crown stays closed
+		# until it is brought down again).
+		_set_buckle(Buckle.RISE)
 
 
 func _defeat_weight() -> float:
