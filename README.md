@@ -5,16 +5,16 @@ elementy ograniczone w oryginale sprzętem PS2, czasem produkcji albo wycięte z
 Silnik: **Godot 4.4+** (GDScript, a Zig dopiero tam, gdzie profiler pokaże realną potrzebę).
 Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych assetów oryginału.
 
-## Stan: Etap 5 — pierwszy kompletny boss (Sentinel)
+## Stan: Etap 5 — pierwszy kompletny boss (Valus)
 
 - Milestone 1 (wspinanie po poruszającym się kolosie): [docs/MILESTONE_1.md](docs/MILESTONE_1.md)
 - Etap 2 (równowaga na kolosie, upadki, kamera, przejścia): [docs/ETAP_2.md](docs/ETAP_2.md)
 - Etap 3 (locomotion, planer kroków, IK, miednica, A/B z animacją, niezależność od FPS): [docs/ETAP_3.md](docs/ETAP_3.md)
 - Etap 4 (Agro: chody, promień skrętu, kopyta bez poślizgu, wsiadanie, omijanie, AI, kamera): [docs/ETAP_4.md](docs/ETAP_4.md)
-- Etap 5 (Sentinel: encounter, ataki z telegrafem, weak point, miecz, fairness, reset, bot, 50 walk): [docs/ETAP_5.md](docs/ETAP_5.md)
+- Etap 5 (Valus: encounter, ataki z telegrafem, weak point, miecz, fairness, reset, bot, 50 walk): [docs/ETAP_5.md](docs/ETAP_5.md)
 - Architektura: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md)
 
-Pełna walka z bossem: `scenes/sentinel_arena.tscn` (Sentinel, arena, Agro; F5 resetuje walkę).
+Pełna walka z bossem: `scenes/valus_arena.tscn` (Valus, arena, Agro; F5 resetuje walkę).
 
 Co działa w sandboxie (`scenes/sandbox.tscn`):
 
@@ -73,7 +73,7 @@ tools/run_tests.sh --save-horse-baseline  # zamraża wzorzec metryk Agro (tylko 
 tools/run_tests.sh --only=horse    # wybrane testy
 tools/capture_screenshots.sh       # prawdziwa scena + autopilot -> tests/output/*.png
 tools/capture_screenshots.sh agro  # scena Agro + skryptowany jeździec -> tests/output/agro_*.png
-tools/capture_screenshots.sh boss  # walka z Sentinelem grana przez bota -> tests/output/boss_*.png
+tools/capture_screenshots.sh boss  # walka z Valusem grana przez bota -> tests/output/boss_*.png
 tools/run_boss_soak.sh 50          # długi test: 50 pełnych walk bota (różne seedy), ~12 min
 ```
 
@@ -96,13 +96,13 @@ src/colossus/   Colossus (baza), BodySegment (collider na kości), brain/ (Brain
 src/colossus/greybox/  GreyboxHumanoid — rig sterowany danymi, mapowanie locomotion na kości (IK)
 src/locomotion/ LocomotionController (masa, planer kroków, miednica), LegState, TwoBoneIK, StepMath, debug draw
 src/horse/      Horse, HorseController, QuadrupedGait, HorseInputIntent, ScriptedHorseDriver, debug draw
-src/colossus/sentinel/  Sentinel (pierwszy boss), SentinelBrain
-src/combat/     ColossusAttack, HitVolume, WeakPoint, FairnessRules, PlayerSword, SentinelEncounter, SentinelBot, debug draw
+src/colossus/valus/  Valus (pierwszy boss), ValusBrain
+src/combat/     ColossusAttack, HitVolume, WeakPoint, FairnessRules, PlayerSword, BossEncounter, ValusBot, debug draw
 src/fx/         Sfx (syntezowane dźwięki zastępcze), Fx (lekki kurz / błysk)
-src/world/      TerrainKit, AgroArena, SentinelArena — teren testowy
+src/world/      TerrainKit, AgroArena, ValusArena — teren testowy
 src/camera/     PlayerCamera
 src/ui/         PlayerHud
-scenes/         sandbox, agro_test, sentinel_arena
+scenes/         sandbox, agro_test, valus_arena
 tests/          testy headless + wizualny smoke test
 docs/           dokumentacja projektu
 ```

@@ -1,5 +1,5 @@
 extends Node
-## Long regression run for the Sentinel fight: N complete encounters, each with another
+## Long regression run for the Valus fight: N complete encounters, each with another
 ## brain seed and a slightly different start, played by the scripted bot. Nothing is
 ## retried: every run ends as WIN, or as a DEADLOCK (no result within the time limit).
 ##
@@ -39,7 +39,7 @@ func _ready() -> void:
 func _run(i: int) -> Dictionary:
 	var world := Node3D.new()
 	add_child(world)
-	var w := SentinelArena.build_encounter(world, false, 1000 + i * 7)
+	var w := ValusArena.build_encounter(world, false, 1000 + i * 7)
 	var p: PlayerCharacter = w.player
 	# A slightly different start each run (still the arena entrance).
 	var rng := RandomNumberGenerator.new()
@@ -47,9 +47,9 @@ func _run(i: int) -> Dictionary:
 	p.global_position += Vector3(rng.randf_range(-6.0, 6.0), 0.0, rng.randf_range(-3.0, 3.0))
 	p.spawn_transform = p.global_transform
 	p.reset_physics_interpolation()
-	var s: Sentinel = w.sentinel
-	var e: SentinelEncounter = w.encounter
-	var bot := SentinelBot.new()
+	var s: Valus = w.valus
+	var e: BossEncounter = w.encounter
+	var bot := ValusBot.new()
 	bot.verbose = OS.get_environment("BOT_VERBOSE") != ""
 	world.add_child(bot)
 	bot.setup(p, s, e)
@@ -64,21 +64,21 @@ func _run(i: int) -> Dictionary:
 	var was_climbing := false
 	e.encounter_reset.connect(func(_n: int) -> void:
 		# Right after a reset everything must be as at the start.
-		if s.encounter != Sentinel.Encounter.DORMANT or s.weak_point.health != s.weak_point.max_health or p.dead or p.health < p.fall.max_health or s.attack != null and not s.attack.is_done():
+		if s.encounter != Valus.Encounter.DORMANT or s.weak_point.health != s.weak_point.max_health or p.dead or p.health < p.fall.max_health or s.attack != null and not s.attack.is_done():
 			bad_resets += 1)
 	var t := 0
 	var dt := 1.0 / 60.0
-	while bot.phase != SentinelBot.Phase.DONE and t < LIMIT:
+	while bot.phase != ValusBot.Phase.DONE and t < LIMIT:
 		await get_tree().physics_frame
 		t += 1
 		if p.is_climbing() and was_climbing and p.global_position.distance_to(prev) > 0.5:
 			glitches += 1
 			if OS.get_environment("TRACE") != "":
-				print("  glitch t%.2f %.2f m grip %s n %s prev_bone %s phase %s" % [t * dt, p.global_position.distance_to(prev), bot._grip_bone(), str(p.grip.world_normal().snapped(Vector3.ONE * 0.01)), _prev_bone, SentinelBot.Phase.keys()[bot.phase]])
+				print("  glitch t%.2f %.2f m grip %s n %s prev_bone %s phase %s" % [t * dt, p.global_position.distance_to(prev), bot._grip_bone(), str(p.grip.world_normal().snapped(Vector3.ONE * 0.01)), _prev_bone, ValusBot.Phase.keys()[bot.phase]])
 		_prev_bone = bot._grip_bone()
 		was_climbing = p.is_climbing()
 		prev = p.global_position
-		if s.encounter == Sentinel.Encounter.COMBAT:
+		if s.encounter == Valus.Encounter.COMBAT:
 			var kind := s.intent.kind
 			var attacking := s.attack != null and not s.attack.is_done()
 			if kind == last_kind and kind != ColossusIntent.IDLE and not attacking:

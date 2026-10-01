@@ -10,6 +10,8 @@ extends Node3D
 ## _pose_bones) and its encounter rules (_rules_block). The brain is swappable.
 
 signal intent_changed(intent: ColossusIntent)
+## Boss colossi: emitted once when the fight is won.
+signal defeated
 
 ## Seconds between brain decisions.
 @export var think_interval := 0.25
@@ -116,6 +118,15 @@ func owns_body(obj: Object) -> bool:
 ## Point the camera frames when the player asks to focus on the colossus.
 func get_focus_point() -> Vector3:
 	return global_position + Vector3.UP * body_height * 0.6
+
+
+## Boss colossi: back to the start of the fight (dormant, weak points restored).
+func reset_encounter(_xf := Transform3D.IDENTITY, _use_xf := false) -> void:
+	pass
+
+
+func is_defeated() -> bool:
+	return false
 
 
 func debug_text() -> String:

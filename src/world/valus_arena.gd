@@ -1,13 +1,13 @@
-class_name SentinelArena
+class_name ValusArena
 ## Greybox arena for the first boss: a wide open basin with a few gentle height changes,
-## scattered ruins and rocks at the edge (never a maze), the Sentinel in the middle, the
+## scattered ruins and rocks at the edge (never a maze), the Valus in the middle, the
 ## player and Agro at the entrance ~80 m away. Gameplay works on these placeholders; art
 ## assets can replace the boxes later without changing the layout.
 ##
-## build() makes the geometry; build_encounter() also creates the Sentinel, the player,
-## Agro, the camera, the HUD and the SentinelEncounter, and returns them all.
+## build() makes the geometry; build_encounter() also creates the Valus, the player,
+## Agro, the camera, the HUD and the BossEncounter, and returns them all.
 
-const SENTINEL_START := Vector3(0, 0, 0)
+const VALUS_START := Vector3(0, 0, 0)
 const PLAYER_START := Vector3(0, 0.95, 80)
 const HORSE_START := Vector3(4.5, 0, 77)
 ## Cheap world-space grid on the ground so scale and motion read in the greybox.
@@ -82,7 +82,7 @@ static func build(parent: Node3D) -> Dictionary:
 		var s: float = rk[1]
 		TerrainKit.box(parent, c + Vector3(0, s * 0.45, 0), Vector3(s * 1.3, s * 0.9, s * 1.1), dark, Basis(Vector3.UP, c.x * 0.1))
 	return {
-		"sentinel": [SENTINEL_START, PI],
+		"valus": [VALUS_START, PI],
 		"player": [PLAYER_START, 0.0],
 		"horse": [HORSE_START, 0.0],
 	}
@@ -92,14 +92,14 @@ static func build(parent: Node3D) -> Dictionary:
 ## input source (scenes); tests and bots drive PlayerActions themselves.
 static func build_encounter(parent: Node3D, with_input := false, brain_seed := 7) -> Dictionary:
 	var points := build(parent)
-	var sentinel := Sentinel.new()
-	sentinel.name = "Sentinel"
-	sentinel.brain_seed = brain_seed
-	sentinel.position = SENTINEL_START
-	sentinel.rotation.y = PI
-	parent.add_child(sentinel)
-	sentinel.teleport(SENTINEL_START, PI)
-	sentinel.reset_encounter(sentinel.global_transform, true)
+	var valus := Valus.new()
+	valus.name = "Valus"
+	valus.brain_seed = brain_seed
+	valus.position = VALUS_START
+	valus.rotation.y = PI
+	parent.add_child(valus)
+	valus.teleport(VALUS_START, PI)
+	valus.reset_encounter(valus.global_transform, true)
 
 	var horse := Horse.new()
 	horse.name = "Agro"
@@ -118,7 +118,7 @@ static func build_encounter(parent: Node3D, with_input := false, brain_seed := 7
 	var cam := PlayerCamera.new()
 	cam.name = "Camera1"
 	cam.player = p
-	cam.focus_target = sentinel
+	cam.focus_target = valus
 	parent.add_child(cam)
 	cam.current = true
 	cam.snap_behind_player()
@@ -130,23 +130,23 @@ static func build_encounter(parent: Node3D, with_input := false, brain_seed := 7
 		input.view = cam
 		parent.add_child(input)
 
-	var encounter := SentinelEncounter.new()
+	var encounter := BossEncounter.new()
 	encounter.name = "Encounter"
 	parent.add_child(encounter)
 	var players: Array[PlayerCharacter] = [p]
-	encounter.setup(sentinel, players, horse)
+	encounter.setup(valus, players, horse)
 
 	var draw := CombatDebugDraw.new()
-	draw.sentinel = sentinel
+	draw.valus = valus
 	parent.add_child(draw)
 
 	var layer := CanvasLayer.new()
 	var hud := PlayerHud.new()
 	hud.player = p
-	hud.colossus = sentinel
+	hud.colossus = valus
 	hud.camera = cam
 	hud.horse = horse
 	hud.encounter = encounter
 	layer.add_child(hud)
 	parent.add_child(layer)
-	return {"sentinel": sentinel, "player": p, "horse": horse, "camera": cam, "encounter": encounter, "hud": hud, "debug_draw": draw, "input": input, "points": points}
+	return {"valus": valus, "player": p, "horse": horse, "camera": cam, "encounter": encounter, "hud": hud, "debug_draw": draw, "input": input, "points": points}

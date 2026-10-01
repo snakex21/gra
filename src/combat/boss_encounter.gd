@@ -1,6 +1,6 @@
-class_name SentinelEncounter
+class_name BossEncounter
 extends Node
-## Runs one boss encounter around the Sentinel: watches for the player's death and the
+## Runs one boss encounter (Valus, Quadratus, ...): watches for the player's death and the
 ## boss' defeat, and resets everything needed to fight again (player, health, stamina,
 ## boss state, weak point, Agro) without a long walk back.
 ##
@@ -14,7 +14,8 @@ enum State { RUNNING, PLAYER_DEAD, DEFEATED }
 
 @export var death_pause := 2.5
 
-var sentinel: Sentinel
+## The boss: any Colossus with a ``defeated`` signal and reset_encounter().
+var boss: Colossus
 var players: Array[PlayerCharacter] = []
 var horse: Horse
 var horse_start := Transform3D.IDENTITY
@@ -33,8 +34,8 @@ func _ready() -> void:
 	process_physics_priority = 50
 
 
-func setup(p_sentinel: Sentinel, p_players: Array[PlayerCharacter], p_horse: Horse) -> void:
-	sentinel = p_sentinel
+func setup(p_boss: Colossus, p_players: Array[PlayerCharacter], p_horse: Horse) -> void:
+	boss = p_boss
 	players = p_players
 	horse = p_horse
 	if horse:
@@ -42,7 +43,7 @@ func setup(p_sentinel: Sentinel, p_players: Array[PlayerCharacter], p_horse: Hor
 	for p in players:
 		# The encounter owns death: pause, then reset the whole fight.
 		p.auto_respawn = false
-	sentinel.defeated.connect(_on_defeated)
+	boss.defeated.connect(_on_defeated)
 
 
 func _physics_process(delta: float) -> void:
@@ -65,7 +66,7 @@ func _physics_process(delta: float) -> void:
 
 func reset_encounter() -> void:
 	resets += 1
-	sentinel.reset_encounter()
+	boss.reset_encounter()
 	for p in players:
 		p.respawn()
 	if horse:

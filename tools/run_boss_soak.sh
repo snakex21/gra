@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Long regression run of the Sentinel fight: N full encounters played by the scripted bot
+# Long regression run of the Valus fight: N full encounters played by the scripted bot
 # (different brain seeds and starts). Summary on stdout, details in tests/output/boss_soak.json.
 #   tools/run_boss_soak.sh [runs] [first]
 set -euo pipefail

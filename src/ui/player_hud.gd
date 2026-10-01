@@ -7,7 +7,7 @@ var colossus: Colossus
 var camera: PlayerCamera
 var horse: Horse
 ## Boss encounter (banner, state); may be null.
-var encounter: SentinelEncounter
+var encounter: BossEncounter
 var show_debug := true
 var show_help := true
 
@@ -117,8 +117,8 @@ func _draw() -> void:
 	if player.sword.state == PlayerSword.State.CHARGE:
 		draw_arc(center, r + 14.0, -PI / 2.0, -PI / 2.0 + TAU * player.sword.charge, 48, Color(0.7, 0.9, 1.0), 4.0, true)
 	# Boss weak point.
-	if colossus is Sentinel:
-		var wp := (colossus as Sentinel).weak_point
+	if colossus is Valus:
+		var wp := (colossus as Valus).weak_point
 		var wb := Rect2(size.x * 0.5 - 150.0, 18.0, 300.0, 8.0)
 		draw_rect(wb, Color(0, 0, 0, 0.45))
 		draw_rect(Rect2(wb.position, Vector2(wb.size.x * (1.0 - wp.progress()), wb.size.y)), Color(0.5, 0.85, 1.0))

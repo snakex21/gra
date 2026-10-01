@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs the real sandbox with a scripted autopilot and saves screenshots to tests/output/.
 # "tools/capture_screenshots.sh agro" runs the Agro scene instead (tests/output/agro_*.png),
-# "tools/capture_screenshots.sh boss" the Sentinel fight (tests/output/boss_*.png).
+# "tools/capture_screenshots.sh boss" the Valus fight (tests/output/boss_*.png).
 # Works without a GPU (Mesa llvmpipe) through xvfb-run if no display is available.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -11,7 +11,7 @@ SCENE=res://tests/capture_demo.tscn
 if [[ "${1:-}" == "agro" ]]; then
 	SCENE=res://tests/capture_agro.tscn
 elif [[ "${1:-}" == "boss" ]]; then
-	SCENE=res://tests/capture_sentinel.tscn
+	SCENE=res://tests/capture_valus.tscn
 fi
 ARGS=(--rendering-method gl_compatibility --fixed-fps 60 --quit-after 60000 --resolution 1280x720 "$SCENE")
 if [[ -z "${DISPLAY:-}" ]] && command -v xvfb-run >/dev/null; then

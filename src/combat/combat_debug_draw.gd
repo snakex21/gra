@@ -14,7 +14,7 @@ const ROUTE := [
 	[&"head", Vector3(0, 1.4, 1.45)], [&"head", Vector3(0, 2.55, 0.4)],
 ]
 
-var sentinel: Sentinel
+var valus: Valus
 var _mesh := ImmediateMesh.new()
 
 
@@ -32,32 +32,32 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	if not visible or sentinel == null:
+	if not visible or valus == null:
 		return
 	global_transform = Transform3D.IDENTITY
 	_mesh.clear_surfaces()
 	_mesh.surface_begin(Mesh.PRIMITIVE_LINES)
-	var a := sentinel.attack
+	var a := valus.attack
 	var winding := a != null and not a.is_done() and a.phase == ColossusAttack.Phase.TELEGRAPH
-	for key in sentinel.hit_volumes:
-		var h: HitVolume = sentinel.hit_volumes[key]
-		var related := a != null and not a.is_done() and ((a.kind == Sentinel.STOMP and String(key).begins_with("foot") and (String(key).ends_with("_l") == (a.limb == 0))) or (a.kind == Sentinel.ARM_SWEEP and not String(key).begins_with("foot") and (String(key).ends_with("_l") == (a.limb == 0))))
+	for key in valus.hit_volumes:
+		var h: HitVolume = valus.hit_volumes[key]
+		var related := a != null and not a.is_done() and ((a.kind == Valus.STOMP and String(key).begins_with("foot") and (String(key).ends_with("_l") == (a.limb == 0))) or (a.kind == Valus.ARM_SWEEP and not String(key).begins_with("foot") and (String(key).ends_with("_l") == (a.limb == 0))))
 		var col := Color(0.5, 0.5, 0.5, 0.5)
 		if h.active:
 			col = Color.RED
 		elif related and winding:
 			col = Color.ORANGE
 		_capsule(h.world_a, h.world_b, h.radius, col)
-	if a != null and not a.is_done() and a.kind == Sentinel.STOMP and a.phase != ColossusAttack.Phase.PREPARE:
-		_circle(sentinel._slam_point + Vector3.UP * 0.1, sentinel.shockwave_radius, Color.ORANGE_RED if winding else Color.RED)
-	for z in sentinel.get_danger_zones():
+	if a != null and not a.is_done() and a.kind == Valus.STOMP and a.phase != ColossusAttack.Phase.PREPARE:
+		_circle(valus._slam_point + Vector3.UP * 0.1, valus.shockwave_radius, Color.ORANGE_RED if winding else Color.RED)
+	for z in valus.get_danger_zones():
 		_circle((z[0] as Vector3) + Vector3.UP * 0.2, z[1], Color(1, 0.6, 0.1))
-	var wp := sentinel.weak_point
+	var wp := valus.weak_point
 	var wc := Color.CYAN if wp.state == WeakPoint.State.OPEN else Color.GRAY
 	_cross(wp.world_point(), wp.radius, wc)
 	_circle(wp.world_point(), wp.radius, wc)
 	# Surfaces: grip (fur) outlines and rest plateaus.
-	for seg in sentinel.segments:
+	for seg in valus.segments:
 		for c in seg.get_children():
 			if c is CollisionShape3D and (c as CollisionShape3D).shape is BoxShape3D:
 				var cs := c as CollisionShape3D
@@ -82,7 +82,7 @@ func _process(_delta: float) -> void:
 
 
 func _seg(bone: StringName) -> BodySegment:
-	for s in sentinel.segments:
+	for s in valus.segments:
 		if s.bone_name == bone:
 			return s
 	return null

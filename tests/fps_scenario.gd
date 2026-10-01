@@ -14,7 +14,7 @@ var out_path := ""
 var scenario := "colossus"
 var horse: Horse
 var boss: Dictionary = {}
-var bot: SentinelBot
+var bot: ValusBot
 
 
 func _ready() -> void:
@@ -113,7 +113,7 @@ func _horse_tick() -> void:
 		get_tree().quit()
 
 
-## The whole Sentinel fight played by the scripted bot (attacks, shakes, weak point,
+## The whole Valus fight played by the scripted bot (attacks, shakes, weak point,
 ## defeat) with the camera running every rendered frame.
 func _setup_boss() -> void:
 	# The ground node created above is not needed: the arena has its own.
@@ -123,17 +123,17 @@ func _setup_boss() -> void:
 	Sfx.enabled = false
 	var arena := Node3D.new()
 	add_child(arena)
-	boss = SentinelArena.build_encounter(arena)
-	bot = SentinelBot.new()
+	boss = ValusArena.build_encounter(arena)
+	bot = ValusBot.new()
 	arena.add_child(bot)
-	bot.setup(boss.player, boss.sentinel, boss.encounter)
+	bot.setup(boss.player, boss.valus, boss.encounter)
 
 
 func _boss_tick() -> void:
-	if bot.phase != SentinelBot.Phase.DONE and tick < 60 * 400:
+	if bot.phase != ValusBot.Phase.DONE and tick < 60 * 400:
 		return
 	var p: PlayerCharacter = boss.player
-	var s: Sentinel = boss.sentinel
+	var s: Valus = boss.valus
 	var h: Horse = boss.horse
 	var data := {
 		"frames": Engine.get_process_frames(),
@@ -143,7 +143,7 @@ func _boss_tick() -> void:
 		"boss": [s.global_position.x, s.global_position.z, s.loco.yaw],
 		"horse": [h.global_position.x, h.global_position.z],
 		"weak_point": s.weak_point.health,
-		"attacks": s.stats.attacks.get(Sentinel.STOMP, 0) * 100 + s.stats.attacks.get(Sentinel.ARM_SWEEP, 0),
+		"attacks": s.stats.attacks.get(Valus.STOMP, 0) * 100 + s.stats.attacks.get(Valus.ARM_SWEEP, 0),
 		"hits": s.stats.hits_on_player,
 		"strikes": bot.stats.strikes,
 		"steps": s.loco.step_count,

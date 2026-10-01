@@ -1,9 +1,9 @@
-class_name Sentinel
+class_name Valus
 extends GreyboxHumanoid
-## Sentinel: the first complete boss (vertical slice of the colossus fight).
+## Valus: the first complete boss (vertical slice of the colossus fight).
 ##
 ## Same pipeline as every colossus:
-##   observe -> SentinelBrain.decide -> FairnessRules filter -> intent
+##   observe -> ValusBrain.decide -> FairnessRules filter -> intent
 ##   -> attacks (TELEGRAPH / ACTIVE / RECOVERY) + movement -> locomotion / IK -> segments
 ## The brain only proposes; the fairness rules (separate object) clamp timings, enforce
 ## cooldowns and keep the weak point reachable.
@@ -19,7 +19,6 @@ signal encounter_changed(state: Encounter)
 signal attack_started(attack: ColossusAttack)
 signal attack_phase_changed(attack: ColossusAttack)
 signal player_hit(player: Node3D, attack_kind: StringName, damage: float)
-signal defeated
 
 enum Encounter { DORMANT, NOTICE, ENGAGED, COMBAT, DEFEATED }
 
@@ -31,10 +30,10 @@ const PROTECT := &"protect_weakpoint"
 const RECOVER := &"recover"
 const SEARCH := &"search_player"
 
-## Sentinel body: the greybox humanoid plus a fur mane on the back of the neck (route to
+## Valus body: the greybox humanoid plus a fur mane on the back of the neck (route to
 ## the head), a fur cap over the head (weak point), armour on the front of the thighs, and
 ## the shoulder plateau tagged as a rest surface.
-const SENTINEL_PARTS := [
+const VALUS_PARTS := [
 	[&"hips", Kind.FUR, Vector3(4.2, 1.6, 2.6), Vector3(0, 0.2, 0)],
 	[&"spine", Kind.FUR, Vector3(3.4, 2.4, 2.4), Vector3(0, 1.1, 0)],
 	[&"chest", Kind.STONE, Vector3(5.0, 2.8, 3.0), Vector3(0, 1.4, 0), &"rest"],
@@ -128,7 +127,7 @@ var _seg_by_bone := {}
 
 
 func _ready() -> void:
-	brain = SentinelBrain.new(brain_seed)
+	brain = ValusBrain.new(brain_seed)
 	super()
 	add_to_group(&"danger_sources")
 	for s in segments:
@@ -142,7 +141,7 @@ func _ready() -> void:
 
 
 func _parts() -> Array:
-	return SENTINEL_PARTS
+	return VALUS_PARTS
 
 
 # --- encounter API ------------------------------------------------------------------
@@ -155,7 +154,7 @@ func reset_encounter(xf := Transform3D.IDENTITY, use_xf := false) -> void:
 	for leg in loco.legs:
 		leg.scripted = false
 	teleport(_start_xf.origin, _start_xf.basis.get_euler().y)
-	brain = SentinelBrain.new(brain_seed)
+	brain = ValusBrain.new(brain_seed)
 	rules.reset()
 	weak_point.reset()
 	intent = ColossusIntent.make(ColossusIntent.IDLE)
@@ -823,7 +822,7 @@ func _reset_stats() -> void:
 
 func debug_text() -> String:
 	var lines := PackedStringArray()
-	lines.append("SENTINEL %s (%.1fs)  intent %s  attack %s" % [encounter_name(), encounter_time, intent.describe(), attack.describe() if attack != null and not attack.is_done() else "-"])
+	lines.append("VALUS %s (%.1fs)  intent %s  attack %s" % [encounter_name(), encounter_time, intent.describe(), attack.describe() if attack != null and not attack.is_done() else "-"])
 	var timers := "-"
 	if attack != null and not attack.is_done():
 		timers = "telegraph %.2f  active %.2f  recovery %.2f  (left %.2f)" % [attack.telegraph_time, attack.active_time, attack.recovery_time, attack.time_left()]

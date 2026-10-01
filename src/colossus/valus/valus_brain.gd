@@ -1,6 +1,6 @@
-class_name SentinelBrain
+class_name ValusBrain
 extends ColossusBrain
-## Utility brain for the Sentinel. Proposes one intent per think tick:
+## Utility brain for the Valus. Proposes one intent per think tick:
 ##
 ##   player on the ground : stomp (close to a foot), arm_sweep (in front), approach (far),
 ##                          search_player (behind), observe_player (otherwise)
@@ -55,14 +55,14 @@ func decide(obs: ColossusObservation) -> ColossusIntent:
 
 func _ground_options(obs: ColossusObservation, p: ColossusObservation.PlayerInfo, options: Array[ColossusIntent]) -> void:
 	if p.stomp_foot >= 0:
-		options.append(_make(Sentinel.STOMP, p, 0.85))
+		options.append(_make(Valus.STOMP, p, 0.85))
 	if p.sweep_side != 0:
-		options.append(_make(Sentinel.ARM_SWEEP, p, 0.8 if p.stomp_foot < 0 else 0.7))
+		options.append(_make(Valus.ARM_SWEEP, p, 0.8 if p.stomp_foot < 0 else 0.7))
 	if absf(p.bearing) > 2.0 and p.distance < 30.0:
-		options.append(_make(Sentinel.SEARCH, p, 0.55))
+		options.append(_make(Valus.SEARCH, p, 0.55))
 	if p.distance > 16.0:
-		options.append(_make(Sentinel.APPROACH, p, 0.5 + 0.1 * clampf((p.distance - 16.0) / 30.0, 0.0, 1.0)))
-	options.append(_make(Sentinel.OBSERVE, p, 0.35))
+		options.append(_make(Valus.APPROACH, p, 0.5 + 0.1 * clampf((p.distance - 16.0) / 30.0, 0.0, 1.0)))
+	options.append(_make(Valus.OBSERVE, p, 0.35))
 
 
 func _body_options(obs: ColossusObservation, p: ColossusObservation.PlayerInfo, options: Array[ColossusIntent]) -> void:
@@ -88,10 +88,10 @@ func _body_options(obs: ColossusObservation, p: ColossusObservation.PlayerInfo, 
 			# The strongest attempt to throw the player off, and closing the weak point.
 			options.append(_shake(p, 0.6, 0.55 + 0.3 * clampf(t / 6.0, 0.0, 1.0)))
 			if p.near_weakpoint and obs.weak_point_open:
-				options.append(_make(Sentinel.PROTECT, p, 0.8))
+				options.append(_make(Valus.PROTECT, p, 0.8))
 		_:
 			options.append(_shake(p, 0.7, 0.3))
-	var observe := _make(Sentinel.OBSERVE, p, 0.2)
+	var observe := _make(Valus.OBSERVE, p, 0.2)
 	options.append(observe)
 
 

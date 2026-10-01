@@ -1,4 +1,8 @@
-# Etap 5 — pierwszy kompletny boss: Sentinel
+# Etap 5 — pierwszy kompletny boss: Sentinel (od Etapu 6: Valus)
+
+> Od Etapu 6 projekt używa oryginalnych nazw kolosów: ten boss to prototyp **Valusa**.
+> Klasy i pliki noszą już nazwy `Valus`, `ValusBrain`, `ValusArena`, `ValusBot`, a encounter
+> jest wspólny (`BossEncounter`). Ten dokument opisuje stan z Etapu 5 i zostawia starą nazwę.
 
 Pytanie etapu: **czy wszystkie dotychczasowe systemy składają się w dobrą walkę z kolosem?**
 Odpowiedź: tak. Wspinanie, stamina, balans, upadki, kamera, Agro, procedural locomotion

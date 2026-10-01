@@ -1,6 +1,6 @@
-class_name SentinelBot
+class_name ValusBot
 extends Node
-## Scripted test driver for the Sentinel fight. It is not clever: it KNOWS the route and
+## Scripted test driver for the Valus fight. It is not clever: it KNOWS the route and
 ## plays it through PlayerActions only (exactly like a human or a future AI companion):
 ##
 ##   enter the arena -> dodge telegraphed attacks -> run to the back of a calf -> grab
@@ -24,8 +24,8 @@ const TIMEOUTS := {
 }
 
 var player: PlayerCharacter
-var sentinel: Sentinel
-var encounter: SentinelEncounter
+var valus: Valus
+var encounter: BossEncounter
 var phase := Phase.ENTER
 var phase_time := 0.0
 var time := 0.0
@@ -53,9 +53,9 @@ func _ready() -> void:
 	process_physics_priority = -5
 
 
-func setup(p_player: PlayerCharacter, p_sentinel: Sentinel, p_encounter: SentinelEncounter) -> void:
+func setup(p_player: PlayerCharacter, p_valus: Valus, p_encounter: BossEncounter) -> void:
 	player = p_player
-	sentinel = p_sentinel
+	valus = p_valus
 	encounter = p_encounter
 	player.sword.struck.connect(_on_struck)
 	player.hit_taken.connect(func(dmg: float, source: StringName) -> void: _last_damage = "%s %.0f" % [source, dmg])
@@ -76,7 +76,7 @@ func _physics_process(delta: float) -> void:
 	a.move = Vector2.ZERO
 	a.attack_held = a.attack_held and phase == Phase.STRIKE
 	stats.max_height = maxf(stats.max_height, player.global_position.y)
-	if sentinel.is_defeated() and phase != Phase.DONE:
+	if valus.is_defeated() and phase != Phase.DONE:
 		_finish(true, "defeated")
 		return
 	if player.dead and phase != Phase.DEAD:
@@ -85,7 +85,7 @@ func _physics_process(delta: float) -> void:
 	if phase_time > float(TIMEOUTS.get(phase, 999.0)):
 		_stall()
 		return
-	var on_body := sentinel.owns_body(player.get_support_body())
+	var on_body := valus.owns_body(player.get_support_body())
 	# Thrown off / fell while on the body route: start again from the leg.
 	if phase in [Phase.CLIMB_BODY, Phase.REST, Phase.TO_NECK, Phase.CLIMB_HEAD, Phase.ON_HEAD, Phase.STRIKE] and not on_body and not player.is_climbing() and player.state != PlayerCharacter.State.AIR:
 		stats.falls += 1
@@ -94,10 +94,10 @@ func _physics_process(delta: float) -> void:
 	match phase:
 		Phase.ENTER:
 			a.grab_held = false
-			if sentinel.encounter == Sentinel.Encounter.COMBAT or _dist_to(sentinel.global_position) < 30.0:
+			if valus.encounter == Valus.Encounter.COMBAT or _dist_to(valus.global_position) < 30.0:
 				_enter(Phase.APPROACH_LEG)
 			else:
-				_run_to(sentinel.global_position)
+				_run_to(valus.global_position)
 		Phase.APPROACH_LEG:
 			a.grab_held = false
 			_approach_leg()
@@ -117,7 +117,7 @@ func _physics_process(delta: float) -> void:
 			_strike(delta)
 		Phase.FALLEN:
 			a.grab_held = false
-			var high := sentinel.region_of(player) in [&"shoulder", &"head"]
+			var high := valus.region_of(player) in [&"shoulder", &"head"]
 			if player.is_climbing() or (player.state == PlayerCharacter.State.GROUND and high):
 				_reroute()
 			elif player.state == PlayerCharacter.State.GROUND and player.balance.state != Balance.State.FALLEN and phase_time > 0.5:
@@ -133,9 +133,9 @@ func _approach_leg() -> void:
 		return
 	var seg := _seg(leg)
 	var entry := seg.target_transform * Vector3(0, -1.6, 1.9)
-	var ground_y := sentinel.global_position.y + 0.95
+	var ground_y := valus.global_position.y + 0.95
 	entry.y = ground_y
-	var inv := sentinel.global_transform.affine_inverse()
+	var inv := valus.global_transform.affine_inverse()
 	var local := inv * player.global_position
 	var entry_local := inv * entry
 	# Waypoints: wide beside the leg -> straight behind it -> in to the calf.
@@ -146,11 +146,11 @@ func _approach_leg() -> void:
 	var w1 := Vector3(entry_local.x, 0, entry_local.z + 3.0)
 	var goal := entry
 	if _approach_step == 0:
-		goal = sentinel.global_transform * w0
+		goal = valus.global_transform * w0
 		if local.z > entry_local.z + 2.5 or _flat(goal - player.global_position).length() < 1.2:
 			_approach_step = 1
 	if _approach_step == 1:
-		goal = sentinel.global_transform * w1
+		goal = valus.global_transform * w1
 		if _flat(goal - player.global_position).length() < 1.0:
 			_approach_step = 2
 	if _approach_step == 2:
@@ -192,7 +192,7 @@ func _climb_body() -> void:
 	_aim_at_colossus()
 	if not player.is_climbing():
 		# Pulled up onto the shoulders (standing on the chest), or somewhere else.
-		if player.state != PlayerCharacter.State.AIR and sentinel.region_of(player) != &"":
+		if player.state != PlayerCharacter.State.AIR and valus.region_of(player) != &"":
 			_reroute()
 		return
 	if _grip_bone() in [&"neck", &"head"]:
@@ -216,7 +216,7 @@ func _rest() -> void:
 			else:
 				_reroute()
 		return
-	if sentinel.region_of(player) != &"shoulder" and player.state != PlayerCharacter.State.AIR:
+	if valus.region_of(player) != &"shoulder" and player.state != PlayerCharacter.State.AIR:
 		_reroute()
 		return
 	var chest := _seg(&"chest")
@@ -225,7 +225,7 @@ func _rest() -> void:
 		_run_to(spot, 0.5)
 	# Plan the next climb: rested, and right after a shake (its cooldown keeps the next one
 	# away for a while) - or if no shake came for a long time.
-	var window := sentinel._shake_cooldown_left > 2.5 or phase_time > 10.0
+	var window := valus._shake_cooldown_left > 2.5 or phase_time > 10.0
 	if player.stamina.ratio() >= 0.95 and not shaking and window and phase_time > 1.0:
 		_enter(Phase.TO_NECK)
 
@@ -234,7 +234,7 @@ func _to_neck() -> void:
 	var a := player.actions
 	if player.is_climbing():
 		if _grip_bone() in [&"neck", &"head"]:
-			_log("grabbed the mane (stamina %.0f, shake cooldown %.1f)" % [player.stamina.value, sentinel._shake_cooldown_left])
+			_log("grabbed the mane (stamina %.0f, shake cooldown %.1f)" % [player.stamina.value, valus._shake_cooldown_left])
 			_enter(Phase.CLIMB_HEAD)
 		else:
 			a.grab_held = false
@@ -261,7 +261,7 @@ func _climb_head() -> void:
 		_log("  head climb: %s local %s n %s up %s st %.0f" % [_grip_bone(), str(player.grip.local_point.snapped(Vector3.ONE * 0.01)), str(player.grip.world_normal().snapped(Vector3.ONE * 0.01)), str(player.climb_up.snapped(Vector3.ONE * 0.01)), player.stamina.value])
 	_aim_at_colossus()
 	if not player.is_climbing():
-		if player.state != PlayerCharacter.State.AIR and sentinel.region_of(player) != &"":
+		if player.state != PlayerCharacter.State.AIR and valus.region_of(player) != &"":
 			_reroute()
 		return
 	# Gripping the fur on top of the head: the weak point is right here.
@@ -274,8 +274,8 @@ func _climb_head() -> void:
 
 func _on_head() -> void:
 	var a := player.actions
-	var wp := sentinel.weak_point.world_point()
-	if not player.is_climbing() and sentinel.region_of(player) != &"head" and player.state != PlayerCharacter.State.AIR:
+	var wp := valus.weak_point.world_point()
+	if not player.is_climbing() and valus.region_of(player) != &"head" and player.state != PlayerCharacter.State.AIR:
 		if verbose:
 			var hs := _seg(&"head").target_transform
 			_log("  left head: pos %s head-local %s support %s release %s" % [str(player.global_position.snapped(Vector3.ONE * 0.01)), str((hs.affine_inverse() * player.global_position).snapped(Vector3.ONE * 0.01)), str(player.get_support_body()), player.last_release_reason])
@@ -313,9 +313,9 @@ func _strike(delta: float) -> void:
 		_reroute()
 		return
 	var sw := player.sword
-	var wp := sentinel.weak_point
+	var wp := valus.weak_point
 	if verbose and int(phase_time * 60.0) % 30 == 0:
-		_log("  strike: grip %s d %.2f sword %s %.2f wp %s hold %s shake_lvl %.2f st %.0f intent %s" % [_grip_bone(), player.grip.world_point().distance_to(wp.world_point()), sw.state_name(), sw.charge, wp.state_name(), _hold_on(), player.shake_level, player.stamina.value, sentinel.intent.kind])
+		_log("  strike: grip %s d %.2f sword %s %.2f wp %s hold %s shake_lvl %.2f st %.0f intent %s" % [_grip_bone(), player.grip.world_point().distance_to(wp.world_point()), sw.state_name(), sw.charge, wp.state_name(), _hold_on(), player.shake_level, player.stamina.value, valus.intent.kind])
 	# Tired and it is calm: let go and stand on the head to recover.
 	if not _hold_on() and player.stamina.ratio() < 0.45 and sw.state == PlayerSword.State.READY and _over_head_top():
 		if verbose:
@@ -362,7 +362,7 @@ func _reroute() -> void:
 		else:
 			_enter(Phase.CLIMB_BODY)
 		return
-	match sentinel.region_of(player):
+	match valus.region_of(player):
 		&"shoulder":
 			_enter(Phase.REST)
 		&"head":
@@ -377,16 +377,16 @@ func _reroute() -> void:
 
 ## Telegraphed danger close by: run out of it. Returns true while evading.
 func _evade() -> bool:
-	for z in sentinel.get_danger_zones():
+	for z in valus.get_danger_zones():
 		var c: Vector3 = z[0]
 		var r: float = float(z[1]) + 1.5
 		var off := _flat(player.global_position - c)
 		if off.length() < r:
 			if not _evading:
 				stats.evades += 1
-				_log("evade %s" % sentinel.attack.kind)
+				_log("evade %s" % valus.attack.kind)
 			_evading = true
-			var away := off.normalized() if off.length() > 0.2 else _flat(player.global_position - sentinel.global_position).normalized()
+			var away := off.normalized() if off.length() > 0.2 else _flat(player.global_position - valus.global_position).normalized()
 			_run_to(player.global_position + away * 5.0)
 			return true
 	_evading = false
@@ -406,8 +406,8 @@ func _hold_on() -> bool:
 
 
 func _shaking() -> bool:
-	var k := sentinel.intent.kind
-	return k == ColossusIntent.SHAKE_PLAYER or k == Sentinel.RECOVER or sentinel._stagger > 0.2
+	var k := valus.intent.kind
+	return k == ColossusIntent.SHAKE_PLAYER or k == Valus.RECOVER or valus._stagger > 0.2
 
 
 func _side_of_neck() -> float:
@@ -451,11 +451,11 @@ func _look(dir: Vector3) -> void:
 
 
 func _aim_at_colossus() -> void:
-	_look(sentinel.global_position - player.global_position)
+	_look(valus.global_position - player.global_position)
 
 
 func _seg(bone: StringName) -> BodySegment:
-	return sentinel._seg_by_bone[bone]
+	return valus._seg_by_bone[bone]
 
 
 func _dist_to(p: Vector3) -> float:
@@ -510,7 +510,7 @@ func _on_struck(r: Dictionary) -> void:
 
 
 func _finish(won: bool, why: String) -> void:
-	result = {"won": won, "why": why, "time": time, "stats": stats.duplicate(true), "boss": sentinel.stats.duplicate(true), "resets": encounter.resets}
+	result = {"won": won, "why": why, "time": time, "stats": stats.duplicate(true), "boss": valus.stats.duplicate(true), "resets": encounter.resets}
 	_log("FINISHED %s (%s) after %.1f s" % ["WIN" if won else "LOSS", why, time])
 	phase = Phase.DONE
 	# Stop moving and swinging, but keep holding on: the colossus is still going down.

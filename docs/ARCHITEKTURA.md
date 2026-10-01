@@ -140,7 +140,7 @@ observe -> Brain.decide (proponuje) -> FairnessRules (blokuje, przycina czasy) -
        -> ColossusAttack: TELEGRAPH -> ACTIVE -> RECOVERY (pozy kończyn, HitVolume na kościach)
        -> ruch -> locomotion / IK -> segmenty -> trafienia testowane po synchronizacji kości
 gracz: PlayerActions -> PlayerSword (READY/CHARGE/STRIKE/RECOVERY) -> WeakPoint.try_hit
-SentinelEncounter: śmierć -> pauza -> reset; pokonanie -> DEFEATED
+BossEncounter: śmierć -> pauza -> reset; pokonanie -> DEFEATED
 ```
 Szczegóły: [ETAP_5.md](ETAP_5.md). Zasady:
 - Mózg niczego nie wymusza. Reguły fairness to osobny obiekt, silniejszy od każdego mózgu.
@@ -192,7 +192,7 @@ Zasada: kamera nie walczy z graczem.
 - Etap 4: Agro kosztuje ~180–230 µs na tick (sondy przeszkód ~75, planer kroków ~25, IK i poza
   ~60) i ~8 zapytań fizyki na tick. Osobne etykiety: `horse_controller`, `horse_probes`,
   `horse_steps`, `horse_ik`, `mount`, `camera`.
-- Etap 5: Sentinel w walce ~270–470 µs/tick (mózg ~10, walka/ataki ~35–65, trafienia ~15–30,
+- Etap 5: Valus w walce ~270–470 µs/tick (mózg ~10, walka/ataki ~35–65, trafienia ~15–30,
   locomotion ~115–190, IK ~30–45; zakres zależy od obciążenia maszyny). Etykiety: `brain`,
   `boss_combat`, `boss_hits`, `boss_pose`, `vfx`.
 - Nie ma potrzeby przenosić czegokolwiek do Ziga.
