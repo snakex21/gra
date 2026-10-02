@@ -48,9 +48,6 @@ func _physics_process(_delta: float) -> void:
 		cam.look_at(focus)
 	if tick == 60:
 		_shot("characters_02_back")
-		for m in p.find_children("*", "MeshInstance3D", true, false):
-			if (m as MeshInstance3D).is_visible_in_tree():
-				print("vis ", m.get_path(), " ", (m as MeshInstance3D).mesh.get_class(), " ", (m as MeshInstance3D).global_position.snapped(Vector3.ONE * 0.01))
 	if tick == 70:
 		get_tree().quit()
 

@@ -5,6 +5,7 @@ class_name Valley
 ##   Valus      south, across the open basin
 ##   Quadratus  north, past the lake
 ##   Gaius      west, through the canyon
+##   Phaedra    east, up the slope
 ##
 ## The ground, the temple and the rocks are the Ancient Valley kit (art/scripts/
 ## ancient_valley.gd, CC0): its height field and low-poly collisions are the gameplay
@@ -27,6 +28,7 @@ const GATES := {
 	&"valus": {"pos": Vector3(0, 0, -160), "out": Vector3(0, 0, -1)},
 	&"quadratus": {"pos": Vector3(20, 0, 160), "out": Vector3(0, 0, 1)},
 	&"gaius": {"pos": Vector3(-96, 0, 150), "out": Vector3(0, 0, 1)},
+	&"phaedra": {"pos": Vector3(128, 0, -100), "out": Vector3(1, 0, 0)},
 }
 const GATE_WIDTH := 12.0
 const GATE_TRIGGER := 6.0
@@ -53,6 +55,11 @@ static func build(parent: Node3D, open_gate: StringName, with_art := true) -> Di
 	if not with_art:
 		kit.set(&"vegetation_candidates", 0)
 	parent.add_child(kit)
+	# The height field is open ground: the horse's obstacle casts ignore it (it still
+	# stands on it and sees drops).
+	var terrain := kit.get_node_or_null("ArtTerrainCollision_91x91")
+	if terrain:
+		terrain.add_to_group(&"walkable_terrain")
 	# The temple floor modules have no collision of their own (the kit says the terrain
 	# carries them); the flat precinct is the terrain.
 

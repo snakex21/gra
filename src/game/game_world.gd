@@ -21,7 +21,7 @@ enum Phase { PLAYING, FADE_OUT, LOADING, FADE_IN }
 
 const VALLEY := &"valley"
 ## Brain seeds of the arenas (each fight is the same fight every time).
-const SEEDS := {&"valus": 7, &"quadratus": 11, &"gaius": 13}
+const SEEDS := {&"valus": 7, &"quadratus": 11, &"gaius": 13, &"phaedra": 17}
 ## How far behind the arena entrance the way back to the valley starts (arena frame, +Z).
 const ARENA_EXIT_Z := 104.0
 
@@ -36,6 +36,8 @@ const ARENA_EXIT_Z := 104.0
 @export var seed_offset := 0
 
 var state := GameState.new()
+## Player settings, applied to every region's input, rider and HUD.
+var settings := Settings.new()
 var region: Node3D
 var region_kind: StringName = &""
 ## The current region's objects: player, horse, camera, hud, input, and in an arena
@@ -57,9 +59,43 @@ var _sun: DirectionalLight3D
 
 ## Starts the game: loads the save (unless ``new_game``) and builds the temple.
 func start(new_game := false) -> void:
+	state = GameState.new()
 	if not new_game and save_path != "":
 		state.load_from(save_path)
+	phase = Phase.PLAYING
+	_fade.color.a = 0.0
 	_build_region(VALLEY)
+
+
+## Back to the title: the region goes, the progress stays saved.
+func stop() -> void:
+	if is_instance_valid(region):
+		remove_child(region)
+		region.free()
+	region = null
+	refs = {}
+	region_kind = &""
+	phase = Phase.PLAYING
+	_fade.color.a = 0.0
+
+
+func has_save() -> bool:
+	return save_path != "" and FileAccess.file_exists(save_path)
+
+
+## Settings onto the current region (and every later one).
+func apply_settings(s: Settings) -> void:
+	settings = s
+	var input: Variant = refs.get("input")
+	if input is FlatInputSource:
+		(input as FlatInputSource).mouse_sensitivity = s.mouse_sensitivity
+		(input as FlatInputSource).invert_y = s.invert_y
+	if player():
+		player().riding.steer_relative = s.ride_relative
+	var hud: Variant = refs.get("hud")
+	if hud is PlayerHud:
+		(hud as PlayerHud).show_help = s.show_help
+		(hud as PlayerHud).show_debug = s.show_debug
 
 
 func _ready() -> void:
@@ -97,6 +133,8 @@ func colossus() -> Colossus:
 
 
 func _physics_process(delta: float) -> void:
+	if region_kind == &"":
+		return   # at the title: nothing loaded
 	state.play_time += delta
 	region_time += delta
 	match phase:
@@ -191,6 +229,7 @@ func _build_region(kind: StringName) -> void:
 		p.riding.mount_now(h)
 	_arrive_riding = false
 	_arrive_gate = &""
+	apply_settings(settings)
 	region_loaded.emit(kind)
 	if kind == VALLEY and state.is_complete():
 		game_completed.emit()
@@ -263,4 +302,7 @@ func _build_arena(kind: StringName) -> void:
 		&"gaius":
 			r = GaiusArena.build_encounter(region, with_input, SEEDS[kind] + seed_offset, with_art)
 			r.colossus = r.gaius
+		&"phaedra":
+			r = PhaedraArena.build_encounter(region, with_input, SEEDS[kind] + seed_offset, with_art)
+			r.colossus = r.phaedra
 	refs = r

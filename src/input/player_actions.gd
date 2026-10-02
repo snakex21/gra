@@ -64,7 +64,6 @@ func press_call() -> void:
 func consume_call() -> bool:
 	var pressed := _call_pressed
 	_call_pressed = false
-	_switch_weapon_pressed = false
 	return pressed
 
 

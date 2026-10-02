@@ -28,6 +28,7 @@ static func ensure_defaults() -> void:
 	_action(&"debug_draw", [_key(KEY_F3)])
 	_action(&"debug_locomotion_mode", [_key(KEY_F4)])
 	_action(&"toggle_help", [_key(KEY_F1)])
+	_action(&"pause", [_key(KEY_ESCAPE), _key(KEY_P), _button(JOY_BUTTON_START)])
 
 
 static func _action(name: StringName, events: Array) -> void:

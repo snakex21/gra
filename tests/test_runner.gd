@@ -26,6 +26,8 @@ var _pre_etap7_results := {}
 var _etap7_started := false
 var _pre_etap8_results := {}
 var _etap8_started := false
+var _pre_etap9_results := {}
+var _etap9_started := false
 const BASELINE_PATH := "res://tests/baseline/etap2_baseline.json"
 ## Agro metrics (horse_*) are frozen separately, so the stage 2/3 baseline stays untouched.
 const HORSE_BASELINE_PATH := "res://tests/baseline/etap4_horse_baseline.json"
@@ -204,6 +206,18 @@ func _ready() -> void:
 		test_gaius_head_phase_is_fair_and_smooth,
 		test_sentinel_v2_dresses_valus,
 		all_etap7_and_earlier_tests_still_pass,
+		# --- ETAP 9: Phaedra, textures, menu, replay ---
+		test_phaedra_peeks_into_the_tunnel,
+		test_phaedra_grabbed_head_lifts_the_climber,
+		test_phaedra_keeps_away_in_the_open,
+		test_phaedra_can_be_defeated,
+		test_phaedra_no_peek_with_someone_on_it,
+		test_phaedra_simulation_independent_of_render_fps,
+		test_phaedra_cost_stays_within_budget,
+		test_four_colossi_in_order_with_fourth_gate,
+		test_fen_art_does_not_change_phaedra_arena_collision,
+		test_procedural_textures_are_deterministic,
+		all_etap8_and_earlier_tests_still_pass,
 	]
 	for t in tests:
 		var name := t.get_method()
@@ -233,6 +247,10 @@ func _ready() -> void:
 			_etap8_started = true
 		if not _etap8_started:
 			_pre_etap8_results[name] = ok
+		if name == "test_phaedra_peeks_into_the_tunnel":
+			_etap9_started = true
+		if not _etap9_started:
+			_pre_etap9_results[name] = ok
 		print("%s %s (%d ms)" % ["PASS" if ok else "FAIL", name, Time.get_ticks_msec() - t0])
 		for line in _log:
 			print("    ", line)
@@ -5632,4 +5650,289 @@ func all_etap7_and_earlier_tests_still_pass() -> void:
 		if not _pre_etap8_results[n]:
 			failed.append(n)
 	_log.append("%d earlier tests (Milestone 1, Etap 2-7) ran in this run, %d failed %s" % [ran, failed.size(), str(failed) if failed.size() > 0 else ""])
+	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))
+
+
+# --- ETAP 9: Phaedra, the fourth colossus; textures; menu; replay -----------------------
+
+func _setup_phaedra(seed_value := 17) -> Dictionary:
+	Sfx.enabled = false
+	Fx.enabled = false
+	_world = Node3D.new()
+	_world.name = "World_" + _current
+	add_child(_world)
+	var w := PhaedraArena.build_encounter(_world, false, seed_value)
+	await _ticks(2)
+	return w
+
+
+## Puts the player inside tunnel ``i``, 1.7 m behind the given mouth, facing out.
+func _hide_player(w: Dictionary, i: int, mouth_index := 0) -> Array:
+	var p: PlayerCharacter = w.player
+	var m: Array = (w.tunnels[i] as Dictionary).mouths[mouth_index]
+	p.global_position = (m[0] as Vector3) - (m[1] as Vector3) * 1.7 + Vector3.UP * 0.95
+	p.facing = m[1]
+	p.actions.view_basis = Basis.looking_at(m[1])
+	p.reset_physics_interpolation()
+	return m
+
+
+func test_phaedra_peeks_into_the_tunnel() -> void:
+	var w := await _setup_phaedra()
+	var ph: Phaedra = w.phaedra
+	var p: PlayerCharacter = w.player
+	_hide_player(w, 0, 1)
+	var t := 0
+	var hold_err := INF
+	var cap_height := 0.0
+	var approach_s := 0.0
+	var feet_in_tunnel := 0
+	while t < 60 * 70:
+		await _ticks(1)
+		t += 1
+		if ph.peek == Phaedra.Peek.APPROACH:
+			approach_s += DT
+		for leg in ph.loco.legs:
+			if ph.tunnel_of_point(leg.plant_pos) >= 0 or (w.tunnels[0].aabb as AABB).grow(0.6).has_point(leg.plant_pos + Vector3.UP * 0.5):
+				feet_in_tunnel += 1
+		if ph.peek == Phaedra.Peek.HOLD:
+			var target := ph.peek_mouth + ph.peek_out * Phaedra.PEEK_HEAD_OUT + Vector3.UP * Phaedra.PEEK_HEAD_HEIGHT
+			hold_err = ph.head_point().distance_to(target)
+			var head: BodySegment = ph._seg_by_bone[&"head"]
+			cap_height = (head.target_transform * Vector3(0, 1.2, -0.8)).y
+			break
+	_log.append("peek: approach %.1f s, head vs target %.3f m, fur cap top at %.2f m, feet inside the tunnel %d ticks, intent %s" % [approach_s, hold_err, cap_height, feet_in_tunnel, ph.intent.kind])
+	_metric("phaedra_peek_head_err", hold_err, "lower")
+	_check(ph.peek == Phaedra.Peek.HOLD, "Phaedra did not come to look into the tunnel (peek %s)" % ph.peek_name())
+	_check(hold_err < 0.3, "the head did not reach the mouth (%.2f m off)" % hold_err)
+	_check(cap_height > 1.9 and cap_height < 2.9, "the fur cap is not within reach from the tunnel floor (%.2f m)" % cap_height)
+	_check(feet_in_tunnel == 0, "Phaedra stepped into the tunnel")
+	_check(p.health >= p.fall.max_health, "hiding in the tunnel was not safe")
+
+
+func test_phaedra_grabbed_head_lifts_the_climber() -> void:
+	var w := await _setup_phaedra()
+	var ph: Phaedra = w.phaedra
+	var p: PlayerCharacter = w.player
+	var m := _hide_player(w, 0, 1)
+	var waited := 0
+	while ph.peek != Phaedra.Peek.HOLD and waited < 60 * 70:
+		await _ticks(1)
+		waited += 1
+	_check(ph.peek == Phaedra.Peek.HOLD, "no peek to grab")
+	p.global_position = (m[0] as Vector3) - (m[1] as Vector3) * 0.6 + Vector3.UP * 0.95
+	p.reset_physics_interpolation()
+	await _ticks(1)
+	p.actions.grab_held = true
+	var t := 0
+	while not p.is_climbing() and t < 30:
+		await _ticks(1)
+		t += 1
+	_check(p.is_climbing() and ph.region_of(p) in [&"head", &"neck"], "could not grab the fur on the lowered head")
+	var y0 := p.global_position.y
+	var raise_started := ph.peek == Phaedra.Peek.RAISE
+	await _ticks(2)
+	raise_started = raise_started or ph.peek == Phaedra.Peek.RAISE
+	var shakes := 0
+	for i in 60 * 6:
+		await _ticks(1)
+		if ph.intent.kind in ph._shake_kinds():
+			shakes += 1
+	_log.append("grabbed %s, startled: %s, lifted %.1f m -> %.1f m, shake ticks in the first 6 s %d" % [String(ph.region_of(p)), str(raise_started), y0, p.global_position.y, shakes])
+	_check(raise_started, "grabbing the head did not startle it")
+	_check(p.is_climbing() and p.global_position.y - y0 > 5.0, "the climber was not lifted with the head (%.1f m)" % (p.global_position.y - y0))
+	_check(shakes == 0, "it shook the climber off right after lifting the head")
+
+
+func test_phaedra_keeps_away_in_the_open() -> void:
+	var w := await _setup_phaedra()
+	var ph: Phaedra = w.phaedra
+	var p: PlayerCharacter = w.player
+	p.global_position = ph.global_position + Vector3(0, 0.95, 30)
+	p.reset_physics_interpolation()
+	var retreats := 0
+	var min_d := INF
+	var prev := &""
+	for i in 60 * 40:
+		var to := ph.global_position - p.global_position
+		to.y = 0.0
+		p.actions.view_basis = Basis.looking_at(to.normalized())
+		p.actions.move = Vector2(0, 1) if to.length() > 7.0 else Vector2.ZERO
+		await _ticks(1)
+		if ph.intent.kind == ColossusIntent.REPOSITION and prev != ColossusIntent.REPOSITION:
+			retreats += 1
+		prev = ph.intent.kind
+		min_d = minf(min_d, Vector2(to.x, to.z).length())
+	var stomps := int(ph.stats.attacks.get(Quadratus.STOMP, 0))
+	_log.append("chased in the open for 40 s: %d retreats, %d stomps, %d hits, closest %.1f m" % [retreats, stomps, int(ph.stats.hits_on_player), min_d])
+	_check(retreats >= 2, "Phaedra did not back away from someone coming close")
+	_check(ph.peeks == 0, "it peeked although nobody hid")
+
+
+func test_phaedra_can_be_defeated() -> void:
+	var w := await _setup_phaedra()
+	var ph: Phaedra = w.phaedra
+	var bot := PhaedraBot.new()
+	_world.add_child(bot)
+	bot.setup(w.player, ph, w.encounter)
+	var order: Array[int] = []
+	for i in ph.weak_points.size():
+		ph.weak_points[i].destroyed.connect(func() -> void: order.append(i))
+	var t := 0
+	while bot.phase != PhaedraBot.Phase.DONE and t < 60 * 300:
+		await _ticks(1)
+		t += 1
+	var height_before := ph.loco.pelvis.y
+	await _ticks(60 * 8)
+	_log.append("bot: %s in %.1f s (peeks %d, head grabs %d, falls %d); weak points destroyed in order %s; hips %.1f -> %.1f m" % ["WIN" if bot.result.get("won", false) else "no win", t * DT, ph.peeks, int(bot.stats.head_grabs), int(bot.stats.falls), str(order), height_before, ph.loco.pelvis.y])
+	_metric("phaedra_bot_win_time", t * DT, "lower")
+	_check(bot.result.get("won", false) and ph.is_defeated(), "Phaedra was not defeated")
+	_check(order == [0, 1], "weak points not neck first, then withers: %s" % str(order))
+	_check(ph.loco.pelvis.y < height_before - 0.5, "a defeated Phaedra does not lie down")
+
+
+func test_phaedra_no_peek_with_someone_on_it() -> void:
+	var w := await _setup_phaedra()
+	var ph: Phaedra = w.phaedra
+	var p: PlayerCharacter = w.player
+	ph.encounter = Quadratus.Encounter.COMBAT
+	# Standing on its back.
+	var body: BodySegment = ph._seg_by_bone[&"body"]
+	p.global_position = body.target_transform * Vector3(0, 3.0, 1.0)
+	p.reset_physics_interpolation()
+	await _ticks(30)
+	var blocked := ph._blocked_intents()
+	_check(ph.region_of(p) == &"back", "the player is not on its back (%s)" % ph.region_of(p))
+	_check(Phaedra.PEEK in blocked, "peeking is allowed with someone on the body")
+	_check(ph.peek == Phaedra.Peek.NONE, "it peeks with someone on it")
+
+
+func test_phaedra_simulation_independent_of_render_fps() -> void:
+	var exe := OS.get_executable_path()
+	var rates := [30, 60, 90, 144, 240]
+	# All rates at once (separate processes, each its own fixed step).
+	var jobs := []
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/phaedra_fps_%d.json" % fps)
+		DirAccess.remove_absolute(out_path)
+		jobs.append(["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "400000", "res://tests/fps_scenario.tscn", "--", "--scenario=phaedra", "--out=" + out_path])
+	var codes := await _execute_parallel(exe, jobs)
+	var results := {}
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/phaedra_fps_%d.json" % fps)
+		if codes[rates.find(fps)] != 0 or not FileAccess.file_exists(out_path):
+			_check(false, "phaedra scenario at %d fps failed" % fps)
+			return
+		results[fps] = JSON.parse_string(FileAccess.get_file_as_string(out_path))
+	var diff := _max_json_diff(results, rates)
+	var ref: Dictionary = results[60]
+	_log.append("Phaedra fight (bot) at %s fps: won %s at tick %d, peeks %d, max state difference %.8f" % [str(rates), str(ref.won), int(ref.tick), int(ref.peeks), diff])
+	_metric("phaedra_fps_max_diff", diff, "lower")
+	_check(int(ref.won) == 1, "reference run did not win")
+	_check(diff < 1e-4, "the Phaedra fight depends on the render rate (diff %.6f)" % diff)
+
+
+func test_phaedra_cost_stays_within_budget() -> void:
+	var w := await _setup_phaedra()
+	var ph: Phaedra = w.phaedra
+	var bot := PhaedraBot.new()
+	_world.add_child(bot)
+	bot.setup(w.player, ph, w.encounter)
+	await _ticks(60 * 12)
+	Perf.take()
+	var ticks := 60 * 30
+	await _ticks(ticks)
+	var m := Perf.take()
+	var u: Dictionary = m.usec
+	var per := func(k: StringName) -> float: return float(u.get(k, 0)) / ticks
+	var colossus: float = per.call(&"colossus")
+	_log.append("Phaedra (bot, 30 s incl. the peek): colossus %.1f us/tick = brain %.1f + combat %.1f + pose (neck IK incl.) %.1f + locomotion %.1f + IK %.1f; player %.1f" % [colossus, per.call(&"brain"), per.call(&"boss_combat"), per.call(&"boss_pose"), per.call(&"locomotion"), per.call(&"ik"), per.call(&"player")])
+	_metric("phaedra_colossus_us", colossus, "lower")
+	_check(colossus < 600.0, "Phaedra costs %.0f us per tick" % colossus)
+	_check(per.call(&"boss_pose") < 60.0, "the neck pose costs %.0f us per tick" % per.call(&"boss_pose"))
+
+
+func test_four_colossi_in_order_with_fourth_gate() -> void:
+	_check(GameState.ORDER.size() == 4 and GameState.ORDER[3] == &"phaedra", "Phaedra is not the fourth colossus")
+	var s := GameState.new()
+	for c in [&"valus", &"quadratus", &"gaius"]:
+		s.mark_defeated(c)
+	_check(s.next_colossus() == &"phaedra" and not s.is_complete(), "after three the beam should lead to Phaedra")
+	# An Etap 8 save (three names) still loads and leads on to Phaedra.
+	var old := GameState.new()
+	old.from_dict({"version": GameState.VERSION, "defeated": ["valus", "quadratus", "gaius"]})
+	_check(old.next_colossus() == &"phaedra", "an older save does not continue to Phaedra")
+	var path := "user://test_etap9_save.json"
+	var g := await _setup_game("")
+	g.state.from_dict(old.to_dict())
+	g._build_region(GameWorld.VALLEY)
+	await _ticks(2)
+	var gates: Dictionary = g.refs.gates
+	_check(gates.has(&"phaedra") and gates[&"phaedra"].open and not gates[&"gaius"].open, "the fourth gate is not the open one")
+	await _ticks(2)
+	_check(g.player().beam.target.distance_to(gates[&"phaedra"].trigger) < 0.01, "the beam does not lead to the fourth gate")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func test_fen_art_does_not_change_phaedra_arena_collision() -> void:
+	var inside := []
+	var outside := []
+	var props := 0
+	for art in [false, true]:
+		Sfx.enabled = false
+		_world = Node3D.new()
+		add_child(_world)
+		PhaedraArena.build_encounter(_world, false, 17, art)
+		await _ticks(2)
+		var shapes_in := PackedStringArray()
+		var out_n := 0
+		for n in _world.find_children("*", "CollisionShape3D", true, false):
+			var cs := n as CollisionShape3D
+			if cs.disabled or not (cs.get_parent() is StaticBody3D):
+				continue
+			var p := cs.global_position
+			if Vector2(p.x, p.z).length() < 75.0:
+				shapes_in.append("%s %s" % [str(p.snapped(Vector3.ONE * 0.01)), str(cs.shape.get_class())])
+			else:
+				out_n += 1
+		shapes_in.sort()
+		inside.append(shapes_in)
+		outside.append(out_n)
+		if art:
+			for n in _world.find_children("*", "Node3D", true, false):
+				if n.has_meta(&"mire"):
+					props += 1
+		await _teardown()
+	_log.append("collision shapes inside the fight (r < 75 m) without / with the fen art: %d / %d (identical: %s); outside on the rim: %d / %d; Mirewood props %d (render only)" % [inside[0].size(), inside[1].size(), str(inside[0] == inside[1]), outside[0], outside[1], props])
+	_check(props > 20, "the fen art did not dress the arena (%d props)" % props)
+	_check(inside[0] == inside[1], "the art changed the collision inside the fight")
+
+
+func test_procedural_textures_are_deterministic() -> void:
+	var a := ProcTextures._hair(Color(0.16, 0.1, 0.07), Color(0.07, 0.045, 0.035), 11, 18.0, 0.12)
+	var b := ProcTextures._hair(Color(0.16, 0.1, 0.07), Color(0.07, 0.045, 0.035), 11, 18.0, 0.12)
+	_check(a.get_data() == b.get_data(), "the coat texture is not the same twice")
+	var n := ProcTextures._normal_map(a, 2.0)
+	var flat := 0
+	for y in range(0, 256, 16):
+		for x in range(0, 256, 16):
+			var c := n.get_pixel(x, y)
+			if c.b > 0.5:
+				flat += 1
+	_check(flat == 256, "the normal map has inverted / broken texels")
+	_check(not ProcTextures.enabled() or DisplayServer.get_name() != "headless", "textures would be generated headless")
+	var plain := ProcTextures.or_plain(&"coat", Color(0.1, 0.1, 0.1))
+	_check(plain.albedo_texture == null, "headless runs should use plain colours (no texture cost)")
+	_log.append("coat %dx%d identical twice, normal map sane, headless uses plain colours" % [a.get_width(), a.get_height()])
+
+
+## Everything that ran before the Etap 9 tests passed.
+func all_etap8_and_earlier_tests_still_pass() -> void:
+	var ran := 0
+	var failed := PackedStringArray()
+	for n in _pre_etap9_results:
+		ran += 1
+		if not _pre_etap9_results[n]:
+			failed.append(n)
+	_log.append("%d earlier tests (Milestone 1, Etap 2-8) ran in this run, %d failed %s" % [ran, failed.size(), str(failed) if failed.size() > 0 else ""])
 	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))

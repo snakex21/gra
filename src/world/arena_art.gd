@@ -306,6 +306,72 @@ static func _grass(parent: Node3D, rng: RandomNumberGenerator, radius: float) ->
 	return n
 
 
-## Phaedra's fen: Mirewood kit over the greybox (filled in below).
+## Phaedra's fen: the shared arena dressing plus the Mirewood kit (CC0), render only.
+## Mossy walls along the tunnels and moss over their mouths; old trees, logs, reeds,
+## sedge and ferns, peat hummocks between the fight and the rim, a waystone at the way
+## in and a drowned shrine on the far side. Nothing here collides: the tunnels, the
+## ground and the rim are the greybox ones.
 static func dress_fen(parent: Node3D, tunnels: Array, fight_radius := 70.0, seed_value := 6047) -> Dictionary:
-	return dress_arena(parent, Vector3(0, 0, 1), fight_radius, seed_value)
+	var stats := dress_arena(parent, Vector3(0, 0, 1), fight_radius, seed_value)
+	stats.mire = 0
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value + 1
+	var keep_clear: Array[Vector3] = []
+	for t in tunnels:
+		var c: Vector3 = t.center
+		var along_x: bool = t.along_x
+		var length: float = t.length
+		var side := Vector3.BACK if along_x else Vector3.RIGHT
+		var yaw := 0.0 if along_x else PI * 0.5
+		for s in [-1.0, 1.0]:
+			_mire(parent, "moss_retaining_wall", c + side * s * (PhaedraArena.TUNNEL_WIDTH * 0.5 + 0.75), yaw + (0.0 if s > 0.0 else PI), Vector3(length / 11.15, 1.0, 0.45))
+			stats.mire += 1
+		for m in t.mouths:
+			var out: Vector3 = m[1]
+			_mire(parent, "hanging_moss", (m[0] as Vector3) + out * 0.15 + Vector3.UP * 1.4, atan2(out.x, out.z) + PI * 0.5, Vector3(1.4, 1.0, 1.0))
+			stats.mire += 1
+			# The mouth and the spot Phaedra stands on to look in stay free.
+			keep_clear.append(m[0] as Vector3)
+			keep_clear.append((m[0] as Vector3) + out * 11.0)
+		keep_clear.append(c)
+	var clear := func(p: Vector3, r: float) -> bool:
+		for k in keep_clear:
+			if Vector2(p.x - k.x, p.z - k.z).length() < r:
+				return false
+		return Vector2(p.x, p.z - 70.0).length() > 14.0   # the way in from the entrance
+	# Plants and hummocks in the fen (between the tunnels and the rim).
+	var small := ["cattail_rush", "broad_sedge", "marsh_fern", "cypress_knees", "peat_hummock"]
+	for i in 70:
+		var a := rng.randf() * TAU
+		var r := rng.randf_range(18.0, fight_radius - 4.0)
+		var p := Vector3(cos(a) * r, 0, sin(a) * r)
+		if not clear.call(p, 9.0):
+			continue
+		var id: String = small[i % small.size()]
+		_mire(parent, id, p, rng.randf() * TAU, Vector3.ONE * rng.randf_range(0.8, 1.3))
+		stats.mire += 1
+	# Old trees and fallen logs on the rim; landmarks.
+	for i in 7:
+		var a := i * TAU / 7.0 + rng.randf_range(-0.2, 0.2)
+		var p := Vector3(cos(a) * (fight_radius + 12.0), 0, sin(a) * (fight_radius + 12.0))
+		if not clear.call(p, 16.0):
+			continue
+		_mire(parent, "fen_elder_tree" if i % 2 == 0 else "hollow_fallen_log", p, rng.randf() * TAU, Vector3.ONE * rng.randf_range(0.8, 1.1))
+		stats.mire += 1
+	_mire(parent, "fen_waystone", Vector3(9, 0, 66), 0.3, Vector3.ONE)
+	_mire(parent, "drowned_shrine", Vector3(0, 0, -fight_radius - 6.0), PI, Vector3.ONE * 1.2)
+	stats.mire += 2
+	return stats
+
+
+static func _mire(parent: Node3D, id: String, pos: Vector3, yaw: float, scale: Vector3) -> void:
+	var n := Node3D.new()
+	n.set_script(load("res://art/scripts/mirewood_asset.gd"))
+	n.set(&"model_id", id)
+	n.set(&"collidable", false)
+	n.name = "Mire_" + id
+	n.set_meta(&"mire", true)
+	n.position = pos
+	n.rotation.y = yaw
+	n.scale = scale
+	parent.add_child(n)

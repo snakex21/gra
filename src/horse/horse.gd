@@ -203,6 +203,8 @@ func _physics_process(delta: float) -> void:
 	for src in get_tree().get_nodes_in_group(&"danger_sources"):
 		controller.danger_zones.append_array(src.get_danger_zones())
 	var tc := Perf.begin()
+	if Engine.get_physics_frames() % 30 == 0 or (controller.terrain_rids.is_empty() and Engine.get_physics_frames() % 30 == 1):
+		_refresh_terrain()
 	controller.update(intent, delta, space, _exclude)
 	Perf.end(&"horse_controller", tc)
 
@@ -419,6 +421,14 @@ func debug_text() -> String:
 		feet.append("%s %s slip %.3f" % [String(leg.name).substr(0, 1) + String(leg.name).split("_")[1].substr(0, 1), "ST" if leg.is_planted() else "SW%.0f" % (leg.swing_t * 100.0), leg.slip_speed])
 	lines.append("feet: " + "  ".join(feet) + "  | rays %d" % (c.rays_this_tick + gait_planner.probes_this_tick))
 	return "\n".join(lines)
+
+
+func _refresh_terrain() -> void:
+	var rids: Array[RID] = []
+	for t in get_tree().get_nodes_in_group(&"walkable_terrain"):
+		if t is CollisionObject3D:
+			rids.append((t as CollisionObject3D).get_rid())
+	controller.terrain_rids = rids
 
 
 func _build_rig() -> void:

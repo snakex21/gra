@@ -5,7 +5,7 @@ extends RefCounted
 ## at the temple, like after every won fight.
 
 const VERSION := 1
-const ORDER: Array[StringName] = [&"valus", &"quadratus", &"gaius"]
+const ORDER: Array[StringName] = [&"valus", &"quadratus", &"gaius", &"phaedra"]
 const DEFAULT_PATH := "user://save.json"
 
 var defeated: Array[StringName] = []

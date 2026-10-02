@@ -19,6 +19,7 @@ var qbot: QuadratusBot
 var gbot: GaiusBot
 var bow_world := {}
 var bow_log := []
+var pbot: PhaedraBot
 var game: GameWorld
 var game_bot: GameBot
 var arrived_tick := -1
@@ -63,6 +64,9 @@ func _ready() -> void:
 		return
 	if scenario == "valley":
 		_setup_valley()
+		return
+	if scenario == "phaedra":
+		_setup_phaedra()
 		return
 	TerrainKit.build_course(self, Vector3(0, 0, -6))
 	colossus = GreyboxHumanoid.new()
@@ -361,6 +365,46 @@ func _gaius_tick() -> void:
 	get_tree().quit()
 
 
+## The Phaedra fight played by its bot (hide, peek, head, mane, strikes).
+func _setup_phaedra() -> void:
+	for c in get_children():
+		remove_child(c)
+		c.free()
+	InputSetup.ensure_defaults()
+	Sfx.enabled = false
+	Fx.enabled = false
+	var arena := Node3D.new()
+	add_child(arena)
+	boss = PhaedraArena.build_encounter(arena, false, 17)
+	pbot = PhaedraBot.new()
+	arena.add_child(pbot)
+	pbot.setup(boss.player, boss.phaedra, boss.encounter)
+
+
+func _phaedra_tick() -> void:
+	if pbot.phase != PhaedraBot.Phase.DONE and tick < 60 * 300:
+		return
+	var p: PlayerCharacter = boss.player
+	var ph: Phaedra = boss.phaedra
+	var data := {
+		"frames": Engine.get_process_frames(),
+		"won": 1 if pbot.result.get("won", false) else 0,
+		"tick": tick,
+		"player": [p.global_position.x, p.global_position.y, p.global_position.z],
+		"boss": [ph.global_position.x, ph.global_position.z, ph.loco.yaw],
+		"head": [ph.head_point().x, ph.head_point().y, ph.head_point().z],
+		"peeks": ph.peeks,
+		"weak": [ph.weak_points[0].health, ph.weak_points[1].health],
+		"steps": ph.loco.step_count,
+		"stamina": p.stamina.value,
+		"health": p.health,
+	}
+	var f := FileAccess.open(out_path, FileAccess.WRITE)
+	f.store_string(JSON.stringify(data))
+	f.close()
+	get_tree().quit()
+
+
 ## The whole game from the temple: GameBot finds the way with the beam and rides Agro to
 ## the Valus gate (ends a little after the arena is loaded).
 func _setup_valley() -> void:
@@ -444,6 +488,9 @@ func _physics_process(_delta: float) -> void:
 		return
 	if scenario == "valley":
 		_valley_tick()
+		return
+	if scenario == "phaedra":
+		_phaedra_tick()
 		return
 	if scenario == "gaius":
 		_gaius_tick()

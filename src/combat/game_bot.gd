@@ -273,6 +273,13 @@ func _arena() -> void:
 			b.setup(p, game.refs.colossus, e)
 			b.finished.connect(_on_boss_finished.bind(kind))
 			boss_bot = b
+		&"phaedra":
+			var b := PhaedraBot.new()
+			b.verbose = verbose
+			game.region.add_child(b)
+			b.setup(p, game.refs.colossus, e)
+			b.finished.connect(_on_boss_finished.bind(kind))
+			boss_bot = b
 		&"quadratus":
 			var b := QuadratusBot.new()
 			b.verbose = verbose

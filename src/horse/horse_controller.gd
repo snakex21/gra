@@ -86,6 +86,8 @@ var _held_dir := Vector3.FORWARD
 var _last_hit := Vector3.ZERO
 var _sphere := SphereShape3D.new()
 var _params := PhysicsShapeQueryParameters3D.new()
+## Open terrain left out of the body casts (see _cast); set by the horse.
+var terrain_rids: Array[RID] = []
 
 
 func _init() -> void:
@@ -421,13 +423,16 @@ func _ground_y(space: PhysicsDirectSpaceState3D, dir: Vector3, d: float, ref_y: 
 	return y
 
 
-## Free distance for a body-wide sphere; walkable slopes do not block.
+## Free distance for a body-wide sphere; walkable slopes do not block. Open terrain
+## (bodies in the "walkable_terrain" group: the valley's height field) is left out of
+## this cast: it is never an obstacle there, and testing a slope ahead costs two queries
+## per direction. The ground probes (edges, steps) still see it.
 func _cast(space: PhysicsDirectSpaceState3D, from: Vector3, dir: Vector3, length: float, exclude: Array[RID]) -> float:
 	rays_this_tick += 1
 	Perf.count(&"horse_rays")
 	_params.transform = Transform3D(Basis.IDENTITY, from)
 	_params.motion = dir * length
-	_params.exclude = exclude
+	_params.exclude = exclude + terrain_rids if not terrain_rids.is_empty() else exclude
 	var r := space.cast_motion(_params)
 	if r.is_empty() or r[1] >= 1.0:
 		return length
