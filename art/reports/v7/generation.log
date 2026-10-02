@@ -1,0 +1,455 @@
+ERROR Draco mesh compression is not available because library could not be found at /usr/bin/4.3/python/lib/python3.13/site-packages/libextern_draco.so
+12:55:28 | INFO: Starting glTF 2.0 export
+12:55:28 | INFO: Extracting primitive: Cube.001
+12:55:28 | INFO: Primitives created: 1
+12:55:28 | INFO: Finished glTF 2.0 export in 0.004180908203125 s
+
+12:55:28 | INFO: Starting glTF 2.0 export
+12:55:28 | INFO: Extracting primitive: Cube.040
+12:55:28 | INFO: Primitives created: 1
+12:55:28 | INFO: Finished glTF 2.0 export in 0.0020546913146972656 s
+
+12:55:28 | INFO: Starting glTF 2.0 export
+12:55:28 | INFO: Extracting primitive: Cube.055
+12:55:28 | INFO: Primitives created: 1
+12:55:28 | INFO: Finished glTF 2.0 export in 0.0020117759704589844 s
+
+DEEPRELIC_ASSET processional_arch [1920, 312, 144] 22
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.060
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.009712696075439453 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.099
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0019795894622802734 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.114
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0018420219421386719 s
+
+DEEPRELIC_ASSET narrow_arch [1920, 312, 144] 22
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.119
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.004096508026123047 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.158
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0019283294677734375 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.173
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0021393299102783203 s
+
+DEEPRELIC_ASSET broken_lintel_gate [2036, 260, 80] 5
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.178
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0029189586639404297 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.200
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.002561330795288086 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.222
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0025818347930908203 s
+
+DEEPRELIC_ASSET parapet_crossing_10m [680, 264, 156] 13
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.235
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.002363920211791992 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.247
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0025053024291992188 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.259
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.002263307571411133 s
+
+DEEPRELIC_ASSET low_curb_crossing_6m [368, 144, 84] 7
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.267
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.00229644775390625 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.276
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0025529861450195312 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.285
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.002301454544067383 s
+
+DEEPRELIC_ASSET broken_crossing [288, 96, 72] 2
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.291
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0033254623413085938 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.294
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0025916099548339844 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.297
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0028200149536132812 s
+
+DEEPRELIC_ASSET horned_column [592, 304, 124] 7
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.300
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.002268075942993164 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.301
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.003320932388305664 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.302
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0019180774688720703 s
+
+DEEPRELIC_ASSET short_drum_column [504, 280, 100] 5
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.303
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.003445863723754883 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.304
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0022771358489990234 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.305
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0018436908721923828 s
+
+DEEPRELIC_ASSET fractured_column [504, 280, 100] 5
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.306
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0027704238891601562 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.310
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0028247833251953125 s
+
+12:55:29 | INFO: Starting glTF 2.0 export
+12:55:29 | INFO: Extracting primitive: Cube.314
+12:55:29 | INFO: Primitives created: 1
+12:55:29 | INFO: Finished glTF 2.0 export in 0.0022497177124023438 s
+
+DEEPRELIC_ASSET fallen_column_drums [176, 48, 48] 4
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.318
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0028142929077148438 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.327
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0025205612182617188 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.336
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0022373199462890625 s
+
+DEEPRELIC_ASSET processional_stair [420, 132, 132] 3
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.345
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.003176450729370117 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.350
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0027861595153808594 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.355
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0025491714477539062 s
+
+DEEPRELIC_ASSET utility_stair [220, 60, 60] 1
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.360
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.003137350082397461 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.368
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0031418800354003906 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.376
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0035669803619384766 s
+
+DEEPRELIC_ASSET stair_with_landing [352, 96, 96] 2
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.384
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.003674745559692383 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.389
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0023186206817626953 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.394
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.004087686538696289 s
+
+DEEPRELIC_ASSET offering_table [220, 60, 60] 5
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: ritual font
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0029616355895996094 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: ritual font.001
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.002275705337524414 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: ritual font.002
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.002646923065185547 s
+
+DEEPRELIC_ASSET mineral_font [480, 304, 168] 2
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.399
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.002780914306640625 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.404
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.002271413803100586 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.409
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.002839326858520508 s
+
+DEEPRELIC_ASSET empty_niche_shrine [296, 104, 88] 6
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.414
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.002450704574584961 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.421
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0027844905853271484 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.428
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0028007030487060547 s
+
+DEEPRELIC_ASSET carved_memorial [148, 84, 24] 2
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.430
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0030739307403564453 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.439
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0029544830322265625 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.448
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.002646923065185547 s
+
+DEEPRELIC_ASSET expedition_chest [332, 108, 108] 2
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.457
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.004058361053466797 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.466
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0027976036071777344 s
+
+12:55:30 | INFO: Starting glTF 2.0 export
+12:55:30 | INFO: Extracting primitive: Cube.475
+12:55:30 | INFO: Primitives created: 1
+12:55:30 | INFO: Finished glTF 2.0 export in 0.0027849674224853516 s
+
+DEEPRELIC_ASSET small_lockbox [332, 108, 108] 2
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.484
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.0032072067260742188 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.494
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.002725362777709961 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.500
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.0036690235137939453 s
+
+DEEPRELIC_ASSET stone_coffer [440, 72, 24] 2
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.502
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.0026137828826904297 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.511
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.002756834030151367 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.520
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.002525806427001953 s
+
+DEEPRELIC_ASSET supply_crate_stack [396, 108, 36] 3
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: storage jar
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.0026748180389404297 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: storage jar.001
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.0025582313537597656 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: storage jar.002
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.0024871826171875 s
+
+DEEPRELIC_ASSET sealed_storage_jar [312, 184, 120] 5
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Icosphere.003
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.0035936832427978516 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Icosphere.015
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.003103494644165039 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Icosphere.024
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.002996683120727539 s
+
+DEEPRELIC_ASSET cold_hearth [1124, 248, 172] 0
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.529
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.0024824142456054688 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.530
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.002779245376586914 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.531
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.0028231143951416016 s
+
+DEEPRELIC_ASSET abandoned_bedroll [120, 56, 40] 0
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.532
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.00289154052734375 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.535
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.00305938720703125 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.538
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.003058910369873047 s
+
+DEEPRELIC_ASSET timber_bench [132, 36, 36] 3
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.541
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.002627849578857422 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.547
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.0033986568450927734 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.553
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.0040476322174072266 s
+
+DEEPRELIC_ASSET provisions_table [232, 72, 72] 5
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.559
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.0035376548767089844 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.561
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.003162860870361328 s
+
+12:55:31 | INFO: Starting glTF 2.0 export
+12:55:31 | INFO: Extracting primitive: Cube.563
+12:55:31 | INFO: Primitives created: 1
+12:55:31 | INFO: Finished glTF 2.0 export in 0.0034859180450439453 s
+
+DEEPRELIC_ASSET torn_lean_to [112, 48, 48] 2
+12:55:32 | INFO: Starting glTF 2.0 export
+12:55:32 | INFO: Extracting primitive: Cube.565
+12:55:32 | INFO: Primitives created: 1
+12:55:32 | INFO: Finished glTF 2.0 export in 0.0028357505798339844 s
+
+12:55:32 | INFO: Starting glTF 2.0 export
+12:55:32 | INFO: Extracting primitive: Cube.567
+12:55:32 | INFO: Primitives created: 1
+12:55:32 | INFO: Finished glTF 2.0 export in 0.0031158924102783203 s
+
+12:55:32 | INFO: Starting glTF 2.0 export
+12:55:32 | INFO: Extracting primitive: Cube.569
+12:55:32 | INFO: Primitives created: 1
+12:55:32 | INFO: Finished glTF 2.0 export in 0.0031986236572265625 s
+
+DEEPRELIC_ASSET unlit_lamp [164, 68, 52] 2
+Info: Packed 1 file(s)
+Info: Saved "deeprelic.blend"
+DEEPRELIC_GENERATION_OK 28 [14820, 4248, 2496]
+Blender 4.3.2
+
+Blender quit

@@ -1,0 +1,45 @@
+{
+	"note": "llvmpipe viewport evidence; no FPS claim",
+	"views": [
+		{
+			"draw_calls": 38.0,
+			"primitives": 25296.0,
+			"view": "01_processional_ruins"
+		},
+		{
+			"draw_calls": 35.0,
+			"primitives": 24364.0,
+			"view": "02_abandoned_camp"
+		},
+		{
+			"draw_calls": 17.0,
+			"primitives": 14168.0,
+			"view": "03_shrine_and_crossing"
+		},
+		{
+			"draw_calls": 12.0,
+			"primitives": 10754.0,
+			"view": "04_gate_detail"
+		},
+		{
+			"draw_calls": 22.0,
+			"primitives": 8372.0,
+			"view": "05_catalogue_gates_bridges"
+		},
+		{
+			"draw_calls": 22.0,
+			"primitives": 2970.0,
+			"view": "06_catalogue_pillars_stairs"
+		},
+		{
+			"draw_calls": 22.0,
+			"primitives": 2958.0,
+			"view": "07_catalogue_altars_storage"
+		},
+		{
+			"draw_calls": 22.0,
+			"primitives": 2684.0,
+			"view": "08_catalogue_camp"
+		}
+	]
+}

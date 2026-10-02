@@ -1,0 +1,8 @@
+{
+  "checks": 432,
+  "upward_ceiling_rays": 0,
+  "assets": 28,
+  "lod_meshes": 84,
+  "result": "passed",
+  "coverage": "Editable meshes, UVs, finite coordinates, LOD counts, shared packed atlas, gates and broken bridge clear across all visual LODs"
+}
