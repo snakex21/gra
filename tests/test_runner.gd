@@ -254,6 +254,7 @@ func _ready() -> void:
 		test_player_dives_and_holds_breath,
 		test_diving_under_the_hydrus_ram,
 		test_replay_markers_jump_and_clip,
+		test_arenas_are_built_after_the_start,
 		all_etap10_and_earlier_tests_still_pass,
 	]
 	for t in tests:
@@ -6094,6 +6095,8 @@ func test_world_layout_keeps_arenas_apart_and_connected() -> void:
 			closest = minf(closest, dist - 2.0 * r)
 			_check(dist >= 2.0 * r, "the %s and %s arenas overlap" % [kinds[i], kinds[j]])
 	var g := await _setup_game()
+	# The arenas are built over the first ticks (Etap 11): the whole layout first.
+	g.build_pending()
 	await _ticks(2)
 	var space := g.get_world_3d().direct_space_state
 	var worst_step := 0.0
@@ -7090,3 +7093,64 @@ func test_replay_markers_jump_and_clip() -> void:
 	get_tree().paused = false
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(clip_path))
 	_log.append("markers %s; jump to the death's marker lands %.0f s before it (player %.0f m up); clip %s plays its 20 s and stops" % [str(kinds), ReplayViewer.MARKER_LEAD / 60.0, got[0][1] - ground, str(win)])
+
+
+## Counts what an arena root holds (collision shapes, meshes), for comparing two builds.
+static func _arena_census(root: Node3D) -> Vector2i:
+	var shapes := root.find_children("*", "CollisionShape3D", true, false).size()
+	var meshes := root.find_children("*", "GeometryInstance3D", true, false).size()
+	return Vector2i(shapes, meshes)
+
+
+func test_arenas_are_built_after_the_start() -> void:
+	Sfx.enabled = false
+	Fx.enabled = false
+	_world = Node3D.new()
+	add_child(_world)
+	# With art, as in the game: the start, then one step per tick.
+	var g := GameWorld.new()
+	g.with_input = false
+	g.save_path = ""
+	_world.add_child(g)
+	var t0 := Time.get_ticks_usec()
+	g.start(true)
+	var start_ms := (Time.get_ticks_usec() - t0) / 1000.0
+	var first: Array = g._pending[0] if not g._pending.is_empty() else []
+	_check(not g.arenas_ready() and not first.is_empty() and first[0] == g.state.next_colossus(), "the next colossus' arena is not the first to be built (%s)" % str(first))
+	var steps := 0
+	var worst := 0.0
+	while not g.arenas_ready() and steps < 60:
+		var ts := Time.get_ticks_usec()
+		await _ticks(1)
+		worst = maxf(worst, (Time.get_ticks_usec() - ts) / 1000.0)
+		steps += 1
+	_check(g.arenas_ready(), "the arenas were not built in %d ticks" % steps)
+	var lazy := {}
+	for k in g.arenas:
+		lazy[k] = _arena_census(g.arenas[k].root)
+	g.stop()
+	# The same world built all at once.
+	var g2 := GameWorld.new()
+	g2.with_input = false
+	g2.save_path = ""
+	g2.lazy_arenas = false
+	_world.add_child(g2)
+	var t1 := Time.get_ticks_usec()
+	g2.start(true)
+	var eager_ms := (Time.get_ticks_usec() - t1) / 1000.0
+	var same := true
+	for k in g2.arenas:
+		same = same and _arena_census(g2.arenas[k].root) == lazy[k]
+	_check(same, "the arenas built lazily differ from those built at once")
+	_check(start_ms < eager_ms * 0.85, "starting is not quicker (%.0f ms lazily, %.0f ms all at once)" % [start_ms, eager_ms])
+	g2.stop()
+	# A colossus whose arena is not built yet: it is built as it wakes.
+	var g3 := await _setup_game("")
+	g3.stop()
+	g3.lazy_arenas = true
+	g3.start(true)
+	g3._wake(&"valus")
+	_check(g3.arenas[&"valus"].points.has("player") or not (g3.arenas[&"valus"].points as Dictionary).is_empty(), "the woken colossus' arena was not built")
+	_check(g3.colossus() is Valus and g3.colossus().is_inside_tree(), "Valus did not wake in its arena")
+	_check(steps <= 2 * Valley.GATES.size() + 1, "the building took %d ticks" % steps)
+	_log.append("start %.0f ms (all at once %.0f ms), then %d ticks of building (ground, then art; the longest tick %.0f ms); same arenas either way; a colossus woken early gets its arena at once" % [start_ms, eager_ms, steps, worst])

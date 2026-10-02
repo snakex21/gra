@@ -33,6 +33,11 @@ const SEEDS := {&"valus": 7, &"quadratus": 11, &"gaius": 13, &"phaedra": 17, &"h
 @export var outro_time := 12.0
 ## Added to the arenas' brain seeds (soaks play other fights; 0 in the game).
 @export var seed_offset := 0
+## Build the arenas over the first ticks (one step per tick, the next colossus' arena
+## first) instead of all at once at the start: the game starts sooner, the arenas fill in
+## while the player is still in the temple. An arena is always complete when its colossus
+## wakes (built at once then if it is not yet).
+@export var lazy_arenas := true
 
 var state := GameState.new()
 ## Player settings, applied to the input, rider and HUD.
@@ -53,6 +58,8 @@ var transitions := 0
 var _phase_t := 0.0
 var _resets_seen := 0
 var _awake: Array[Node] = []
+## Arena building still to do: [[kind, root, stage]] (stage 0 ground and layout, 1 art).
+var _pending: Array = []
 var _fade: ColorRect
 var _sun: DirectionalLight3D
 
@@ -84,6 +91,7 @@ func stop() -> void:
 	region = null
 	refs = {}
 	arenas = {}
+	_pending.clear()
 	_awake.clear()
 	region_kind = &""
 	phase = Phase.PLAYING
@@ -148,6 +156,7 @@ func _physics_process(delta: float) -> void:
 		return   # at the title: nothing loaded
 	state.play_time += delta
 	region_time += delta
+	_build_step()
 	match phase:
 		Phase.PLAYING:
 			_play(delta)
@@ -235,7 +244,9 @@ func _build_world() -> void:
 	region.name = "World"
 	add_child(region)
 	var v := Valley.build(region, state.next_colossus(), with_art, true)
-	arenas = WorldMap.build(region, _build_arena, with_art)
+	_pending.clear()
+	arenas = WorldMap.build(region, _queue_arena if lazy_arenas else _build_arena, with_art)
+	_order_pending()
 	_spawn_actors(v.spawn, v.spawn_yaw, v.horse)
 	refs.gates = v.gates
 	refs.valley = v
@@ -248,8 +259,67 @@ func _build_world() -> void:
 		game_completed.emit()
 
 
+## Lazy building: the arena's root is there (with its rim), its contents come later.
+func _queue_arena(kind: StringName, root: Node3D) -> Dictionary:
+	_pending.append([kind, root, 0])
+	return {}
+
+
+## The next colossus' arena first, then the others in the game's order.
+func _order_pending() -> void:
+	var next := state.next_colossus()
+	var rank := func(item: Array) -> int:
+		var k: StringName = item[0]
+		return (-100 if k == next else GameState.ORDER.find(k)) * 2 + int(item[2])
+	_pending.sort_custom(func(a: Array, b: Array) -> bool: return rank.call(a) < rank.call(b))
+
+
+## One step of the arena building (one arena's ground and layout, or its art).
+func _build_step() -> void:
+	if _pending.is_empty():
+		return
+	var item: Array = _pending.pop_front()
+	_build_stage(item[0], item[1], item[2])
+
+
+func _build_stage(kind: StringName, root: Node3D, stage: int) -> void:
+	if not is_instance_valid(root):
+		return
+	if stage == 0:
+		arenas[kind].points = _build_arena_ground(kind, root)
+		if with_art:
+			_pending.push_front([kind, root, 1])
+	else:
+		_dress_arena(kind, root, arenas[kind].points)
+
+
+## Builds what is left of ``kind``'s arena now (its colossus is waking up).
+func ensure_arena(kind: StringName) -> void:
+	for item in _pending.duplicate():
+		if item[0] == kind:
+			_pending.erase(item)
+			_build_stage(item[0], item[1], item[2])
+
+
+## Everything still pending, now (tests, captures).
+func build_pending() -> void:
+	while not _pending.is_empty():
+		_build_step()
+
+
+func arenas_ready() -> bool:
+	return _pending.is_empty()
+
+
 ## An arena's ground and layout in its root (local frame), with its art.
 func _build_arena(kind: StringName, root: Node3D) -> Dictionary:
+	var points := _build_arena_ground(kind, root)
+	if with_art:
+		_dress_arena(kind, root, points)
+	return points
+
+
+func _build_arena_ground(kind: StringName, root: Node3D) -> Dictionary:
 	var points: Dictionary
 	match kind:
 		&"valus", &"gaius":
@@ -263,21 +333,23 @@ func _build_arena(kind: StringName, root: Node3D) -> Dictionary:
 		&"avion":
 			points = AvionArena.build(root)
 	_disc_ground(root)
-	if with_art:
-		match kind:
-			&"valus":
-				ArenaArt.dress_arena(root, Vector3(0, 0, 1), 55.0)
-			&"gaius":
-				ArenaArt.dress_arena(root, Vector3(0, 0, 1), 55.0, 5113)
-			&"quadratus":
-				ArenaArt.dress_arena(root, Vector3(0, 0, 1), 75.0, 4021)
-			&"phaedra":
-				ArenaArt.dress_fen(root, points.tunnels, 75.0, 6047)
-			&"hydrus":
-				ArenaArt.dress_arena(root, Vector3(0, 0, 1), 80.0, 7129, HydrusArena.WATER_RADIUS + 4.0)
-			&"avion":
-				ArenaArt.dress_arena(root, Vector3(0, 0, 1), 105.0, 8231, AvionArena.WATER_RADIUS + 6.0)
 	return points
+
+
+func _dress_arena(kind: StringName, root: Node3D, points: Dictionary) -> void:
+	match kind:
+		&"valus":
+			ArenaArt.dress_arena(root, Vector3(0, 0, 1), 55.0)
+		&"gaius":
+			ArenaArt.dress_arena(root, Vector3(0, 0, 1), 55.0, 5113)
+		&"quadratus":
+			ArenaArt.dress_arena(root, Vector3(0, 0, 1), 75.0, 4021)
+		&"phaedra":
+			ArenaArt.dress_fen(root, points.tunnels, 75.0, 6047)
+		&"hydrus":
+			ArenaArt.dress_arena(root, Vector3(0, 0, 1), 80.0, 7129, HydrusArena.WATER_RADIUS + 4.0)
+		&"avion":
+			ArenaArt.dress_arena(root, Vector3(0, 0, 1), 105.0, 8231, AvionArena.WATER_RADIUS + 6.0)
 
 
 ## The arenas' square test ground becomes a disc (they sit side by side in the world).
@@ -351,6 +423,7 @@ func _valley_message() -> String:
 
 ## The colossus behind ``kind``'s gate wakes up: built in its arena, with its encounter.
 func _wake(kind: StringName) -> void:
+	ensure_arena(kind)
 	var a: Dictionary = arenas[kind]
 	var root: Node3D = a.root
 	var xf: Transform3D = a.xf
