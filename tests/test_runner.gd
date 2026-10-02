@@ -6639,10 +6639,10 @@ func test_bug_report_saves_the_recording() -> void:
 	add_child(_world)
 	var g := (load("res://scenes/game.gd") as GDScript).new() as GameWorld
 	g.with_input = false
-	g.set(&"save_path", "")
 	_world.add_child(g)
-	g.call(&"_begin", true)
+	# The game picks the save slot in _ready: never touch the player's own save.
 	g.save_path = ""
+	g.call(&"_begin", true)
 	await _ticks(120)
 	var path: String = g.call(&"save_bug_report")
 	var data := ActionReplay.load_file(path)

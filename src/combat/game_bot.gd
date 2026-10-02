@@ -46,6 +46,7 @@ var _detour_side := 1.0
 var _dismounting := false
 ## Seconds the beam stayed dark while looking for the way (in a shadow: go out first).
 var _dark := 0.0
+var _last_pos := Vector3.INF
 var _out_of_shadow := 0.0
 ## The way out of the temple (the player's facing at the start).
 var _exit_dir := Vector3.FORWARD
@@ -180,12 +181,28 @@ func _to_horse() -> void:
 	if d.length() < 2.2:
 		_enter(Phase.MOUNT)
 		return
-	# Far away, or stuck on the way (a wall between us): call Agro over.
-	_slow = _slow + get_physics_process_delta_time() if _flat(p.velocity).length() < 0.4 and phase_time > 0.5 else 0.0
-	if (d.length() > 30.0 or _slow > 1.5) and int(phase_time * 60.0) % 120 == 0:
+	# Stuck on the way (a ledge, a wall between us: measured by how far we really got):
+	# try to get on if it is close, step round sideways, call Agro over.
+	var dt := get_physics_process_delta_time()
+	if p.global_position.distance_to(_last_pos) > 0.25:
+		_last_pos = p.global_position
+		_slow = 0.0
+	else:
+		_slow += dt
+	var stuck := _slow > 1.5 and phase_time > 0.5
+	if stuck and p.riding.horse_in_reach() != null:
+		_enter(Phase.MOUNT)
+		return
+	if (d.length() > 30.0 or stuck) and int(phase_time * 60.0) % 120 == 0:
 		a.press_call()
-	a.view_basis = Basis.looking_at(d.normalized())
+	var way := d.normalized()
+	if stuck:
+		# Round it: alternate sides every 1.5 s of being stuck.
+		way = Basis(Vector3.UP, 1.2 * (1.0 if int(_slow / 1.5) % 2 == 0 else -1.0)) * way
+	a.view_basis = Basis.looking_at(way)
 	a.move = Vector2(0, 1)
+	if verbose and int(phase_time * 60.0) % 120 == 0:
+		_log("  to horse: me %s v %.2f agro %s d %.1f slow %.1f called %s" % [str(p.global_position.snapped(Vector3.ONE * 0.1)), _flat(p.velocity).length(), str(h.global_position.snapped(Vector3.ONE * 0.1)), d.length(), _slow, str(h.controller.speed)])
 
 
 func _mount() -> void:
