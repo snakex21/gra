@@ -19,7 +19,7 @@ signal died
 ## A colossus attack (or anything else) hit the player.
 signal hit_taken(damage: float, source: StringName)
 
-enum State { GROUND, AIR, CLIMB, RIDE }
+enum State { GROUND, AIR, CLIMB, RIDE, SWIM }
 enum Weapon { SWORD, BOW }
 
 @export_group("Locomotion")
@@ -62,6 +62,17 @@ enum Weapon { SWORD, BOW }
 ## Respawn by itself after dying. An encounter that resets the whole fight turns this off
 ## and calls respawn() when it is done.
 @export var auto_respawn := true
+@export_group("Swimming")
+## Swimming speed on the surface (m/s) and how fast it is reached.
+@export var swim_speed := 2.4
+@export var swim_accel := 5.0
+## The body's centre floats this far under the surface (the head stays out).
+@export var swim_float := 0.55
+## Water this deep over the feet: swimming; shallower than swim_exit_depth: walking again.
+@export var swim_enter_depth := 1.35
+@export var swim_exit_depth := 1.15
+## Stamina drain multiplier while holding on under water (holding the breath).
+@export var underwater_drain := 1.6
 
 @export_group("Shake response")
 ## Surface acceleration (m/s^2) where the climber starts to feel the shake...
@@ -176,6 +187,8 @@ func _physics_process(delta: float) -> void:
 		var tc := Perf.begin()
 		_climb(delta)
 		Perf.end(&"climb", tc)
+	elif state == State.SWIM:
+		_swim(delta)
 	else:
 		_locomotion(delta)
 		if actions.consume_interact() and balance.state != Balance.State.FALLEN and riding.try_mount():
@@ -197,6 +210,8 @@ func _physics_process(delta: float) -> void:
 		# The sword held up to the sun: face where we look.
 		facing = _flat_dir(-actions.view_basis.z, facing)
 	visual.update_visual(self, delta)
+	if state != State.CLIMB and state != State.RIDE:
+		_unstick()
 	if global_position.y < -60.0:
 		respawn()
 	Perf.end(&"player", t0)
@@ -229,6 +244,8 @@ func get_display_state() -> String:
 			return "CLIMB" if _moving else "GRIP"
 		State.AIR:
 			return "AIR"
+		State.SWIM:
+			return "SWIM"
 	match balance.state:
 		Balance.State.FALLEN:
 			return "FALLEN"
@@ -371,6 +388,9 @@ func _locomotion(delta: float) -> void:
 		stamina.regen(regen_rate, delta)
 	else:
 		stamina.tick_idle(delta)
+	if water_depth() > swim_enter_depth:
+		_enter_swim()
+		return
 
 	# Grab: normal grab, or a rescue grab while losing balance / falling (even if the
 	# button has been held since a mantle).
@@ -643,14 +663,73 @@ func _climb(delta: float) -> void:
 		if down.length() > 0.2:
 			_crawl(down.normalized(), slip * delta)
 
-	# 5) Stamina.
+	# 5) Stamina (holding the breath under water costs more).
 	var drain := drain_hang + (drain_climb if _moving else 0.0) + drain_shake * shake_level
+	if is_under_water():
+		drain *= underwater_drain
 	stamina.drain(drain * grip.grip_cost() * delta)
 	if not stamina.can_grip():
 		_release(&"exhausted")
 		return
 
 	_place_on_grip()
+
+
+# --- water -----------------------------------------------------------------------------
+
+## Depth of water over the feet (0 when not in water).
+func water_depth() -> float:
+	var s := WaterBody.surface_at(get_tree(), global_position)
+	return 0.0 if is_nan(s) else maxf(0.0, s - (global_position.y - _shape.height * 0.5))
+
+
+## The head is under the surface.
+func is_under_water() -> bool:
+	var s := WaterBody.surface_at(get_tree(), global_position)
+	return not is_nan(s) and global_position.y + 0.6 < s
+
+
+func is_swimming() -> bool:
+	return state == State.SWIM
+
+
+func _enter_swim() -> void:
+	state = State.SWIM
+	# The water takes the fall (no landing damage) and most of the speed.
+	velocity *= Vector3(0.6, 0.2, 0.6)
+	_support = null
+	_carry_body = null
+	_slide_velocity = Vector3.ZERO
+	surface_velocity = Vector3.ZERO
+	surface_accel = Vector3.ZERO
+
+
+## On the surface: slow strokes where we look, floating; out again where it gets shallow.
+## Grabbing still works (the side of a swimming colossus).
+func _swim(delta: float) -> void:
+	var surface := WaterBody.surface_at(get_tree(), global_position)
+	if is_nan(surface):
+		state = State.AIR
+		return
+	var b := actions.view_basis
+	var wish := _flat_dir(b.x, Vector3.RIGHT) * actions.move.x + _flat_dir(-b.z, Vector3.FORWARD) * actions.move.y
+	if wish.length() > 1.0:
+		wish = wish.normalized()
+	if dead:
+		wish = Vector3.ZERO
+	var hv := Vector3(velocity.x, 0.0, velocity.z).move_toward(wish * swim_speed, swim_accel * delta)
+	var lift := clampf((surface - swim_float - global_position.y) * 3.0, -4.0, 2.5)
+	velocity = Vector3(hv.x, move_toward(velocity.y, lift, 14.0 * delta), hv.z)
+	move_and_slide()
+	if wish.length() > 0.1:
+		facing = facing.lerp(wish.normalized(), 1.0 - exp(-6.0 * delta)).normalized()
+	balance.recover(delta)
+	stamina.regen(regen_rate * 0.25, delta)
+	if is_on_floor() and water_depth() < swim_exit_depth:
+		state = State.GROUND
+		return
+	if actions.grab_held and not _grab_needs_release and _regrab_timer <= 0.0 and stamina.can_grip() and not dead:
+		_try_grab(false)
 
 
 func _crawl(dir: Vector3, distance: float) -> bool:
@@ -792,6 +871,47 @@ func _move_clear_of_surface(n: Vector3) -> void:
 		if not _overlaps(global_position + offset):
 			global_position += offset
 			return
+
+
+## Pushed into static geometry by a moving body (a serpent sweeping a swimmer against a
+## pillar): once deeply inside it for half a second, out upwards to the first free spot.
+## Checked every 15 ticks with a shrunken capsule (touching a wall is not being inside).
+var _stuck_checks := 0
+var _stuck_shape: CapsuleShape3D
+
+
+func _unstick() -> void:
+	if ticks % 15 != 0:
+		return
+	if _stuck_shape == null:
+		_stuck_shape = CapsuleShape3D.new()
+		_stuck_shape.radius = 0.2
+		_stuck_shape.height = 1.2
+	if not _inside_world(global_position):
+		_stuck_checks = 0
+		return
+	_stuck_checks += 1
+	if _stuck_checks < 3:
+		return
+	_stuck_checks = 0
+	for k in range(1, 40):
+		var up := global_position + Vector3.UP * (k * 0.5)
+		if not _inside_world(up) and not _overlaps(up):
+			global_position = up
+			velocity = Vector3.ZERO
+			state = State.AIR
+			reset_physics_interpolation()
+			last_release_reason = &"unstuck"
+			return
+
+
+func _inside_world(center: Vector3) -> bool:
+	var params := PhysicsShapeQueryParameters3D.new()
+	params.shape = _stuck_shape
+	params.transform = Transform3D(Basis.IDENTITY, center)
+	params.collision_mask = Layers.WORLD
+	params.exclude = _exclude
+	return not get_world_3d().direct_space_state.intersect_shape(params, 1).is_empty()
 
 
 func _overlaps(center: Vector3) -> bool:

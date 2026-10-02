@@ -228,6 +228,14 @@ func _ready() -> void:
 		test_world_leaving_puts_the_colossus_to_sleep,
 		test_world_ride_independent_of_render_fps,
 		test_quadruped_bosses_share_one_base,
+		test_player_swims_in_the_valley_lake,
+		test_hydrus_swims_round_the_lake_past_the_pillars,
+		test_hydrus_ram_is_telegraphed_and_can_be_dodged,
+		test_hydrus_dive_is_telegraphed_and_survivable,
+		test_hydrus_can_be_defeated,
+		test_hydrus_simulation_independent_of_render_fps,
+		test_hydrus_cost_stays_within_budget,
+		test_five_colossi_in_order_with_west_gate,
 		all_etap9_and_earlier_tests_still_pass,
 	]
 	for t in tests:
@@ -5871,7 +5879,7 @@ func test_phaedra_cost_stays_within_budget() -> void:
 
 
 func test_four_colossi_in_order_with_fourth_gate() -> void:
-	_check(GameState.ORDER.size() == 4 and GameState.ORDER[3] == &"phaedra", "Phaedra is not the fourth colossus")
+	_check(GameState.ORDER.size() >= 4 and GameState.ORDER[3] == &"phaedra", "Phaedra is not the fourth colossus")
 	var s := GameState.new()
 	for c in [&"valus", &"quadratus", &"gaius"]:
 		s.mark_defeated(c)
@@ -6104,7 +6112,7 @@ func test_world_layout_keeps_arenas_apart_and_connected() -> void:
 				leaks += 1
 	_check(worst_floor < 1.0 and worst_step < 0.6, "corridor floors are off (worst %.2f m from the expected height, step %.2f m)" % [worst_floor, worst_step])
 	_check(leaks == 0, "%d gaps in the arenas' rims" % leaks)
-	_log.append("4 arenas: closest pair %.0f m apart beyond their discs; corridor floors within %.2f m, largest step %.2f m per 2 m; rims closed (36 rays each), ways in open" % [closest, worst_floor, worst_step])
+	_log.append("%d arenas: closest pair %.0f m apart beyond their discs; corridor floors within %.2f m, largest step %.2f m per 2 m; rims closed (36 rays each), ways in open" % [kinds.size(), closest, worst_floor, worst_step])
 
 
 func test_world_ride_from_valley_into_fight_without_fade() -> void:
@@ -6204,6 +6212,268 @@ func test_quadruped_bosses_share_one_base() -> void:
 	_log.append("QuadrupedBoss -> Quadratus (%d lines: anatomy, brain, weak points), Phaedra; fights unchanged (same soak results before and after the split)" % lines)
 	q.free()
 	ph.free()
+
+
+func test_player_swims_in_the_valley_lake() -> void:
+	var g := await _setup_game()
+	var p := g.player()
+	var surface := Valley.LAKE_CENTER.y
+	var bottom := Valley.ground_height(40, 42)
+	# A jump into the lake from 6 m: the water takes it.
+	p.global_position = Vector3(40, surface + 6.0, 42)
+	p.velocity = Vector3.ZERO
+	p.reset_physics_interpolation()
+	var hp := p.health
+	await _ticks(90)
+	_check(p.is_swimming() and p.health == hp, "not swimming after the jump into the lake (state %s, health %.0f)" % [p.get_display_state(), p.health])
+	var head := p.global_position.y + 0.9
+	_check(head > surface and p.global_position.y < surface, "floating wrong: centre %.2f, head %.2f, surface %.2f" % [p.global_position.y, head, surface])
+	# Swim west to the shore and walk out.
+	var x0 := p.global_position.x
+	p.actions.view_basis = Basis(Vector3.UP, PI * 0.5)
+	p.actions.move = Vector2(0, 1)
+	await _ticks(60 * 3)
+	var speed := (x0 - p.global_position.x) / 3.0
+	var t := 0
+	while p.is_swimming() and t < 60 * 30:
+		await _ticks(1)
+		t += 1
+	_check(not p.is_swimming() and p.state == PlayerCharacter.State.GROUND, "did not walk out of the lake (%s at %s)" % [p.get_display_state(), str(p.global_position)])
+	p.actions.move = Vector2.ZERO
+	# Agro does not go into deep water: ridden at the lake, it stops at the edge.
+	var h: Horse = g.refs.horse
+	h.teleport(Valley.on_ground(Vector3(40, 0, 95)), 0.0)
+	await _ticks(2)
+	p.riding.mount_now(h)
+	p.actions.view_basis = Basis.IDENTITY
+	p.actions.move = Vector2(0, 1)
+	var deepest := 0.0
+	for i in 60 * 15:
+		await _ticks(1)
+		if i % 60 == 0 and h.controller.speed < 8.0:
+			p.actions.press_jump()
+		var ground := h.global_position.y
+		deepest = maxf(deepest, surface - ground)
+	p.actions.move = Vector2.ZERO
+	_check(deepest < 1.2, "Agro walked into deep water (%.2f m)" % deepest)
+	_log.append("into the lake from 6 m: SWIM, no damage; floating with the head %.2f m above the surface (lake %.1f m deep); swimming %.1f m/s; out on the shore after %.1f s; Agro stopped in %.2f m of water" % [head - surface, surface - bottom, speed, t / 60.0 + 3.0, maxf(0.0, deepest)])
+
+
+func _setup_hydrus(seed_value := 29) -> Dictionary:
+	Sfx.enabled = false
+	Fx.enabled = false
+	_world = Node3D.new()
+	_world.name = "World_" + _current
+	add_child(_world)
+	var w := HydrusArena.build_encounter(_world, false, seed_value)
+	await _ticks(2)
+	return w
+
+
+func test_hydrus_swims_round_the_lake_past_the_pillars() -> void:
+	var w := await _setup_hydrus()
+	var h: Hydrus = w.hydrus
+	var water := h.water_level
+	var closest := INF
+	var outer := 0.0
+	var depth_err := 0.0
+	var travelled := 0.0
+	var prev := h.head_point()
+	for i in 60 * 60:
+		await _ticks(1)
+		travelled += h.head_point().distance_to(prev)
+		prev = h.head_point()
+		for k in Hydrus.SEG_COUNT:
+			var c := h.segments[k].target_transform.origin
+			outer = maxf(outer, Vector2(c.x, c.z).length())
+			if i % 10 == 0:
+				for pl in w.pillars:
+					var pc: Vector3 = pl.center
+					closest = minf(closest, Vector2(c.x - pc.x, c.z - pc.z).length() - float(pl.radius))
+		depth_err = maxf(depth_err, absf(h.segments[2].target_transform.origin.y - (water - h.swim_depth)))
+	_check(travelled > 60.0 * h.cruise_speed * 0.8, "it hardly swims (%.0f m in 60 s)" % travelled)
+	_check(closest > 1.0, "its body went through a pillar (%.2f m from one's surface)" % closest)
+	_check(outer < HydrusArena.WATER_RADIUS - 8.0, "it swam out of the deep water (r %.0f)" % outer)
+	_check(depth_err < 0.3, "the body does not swim at its depth (%.2f m off)" % depth_err)
+	_log.append("60 s alone: %.0f m swum, body never closer than %.1f m to a pillar, at most %.0f m from the middle, depth within %.2f m" % [travelled, closest, outer, depth_err])
+
+
+func test_hydrus_ram_is_telegraphed_and_can_be_dodged() -> void:
+	var w := await _setup_hydrus()
+	var h: Hydrus = w.hydrus
+	var p: PlayerCharacter = w.player
+	# A swimmer near its path, sitting still: it rams.
+	p.global_position = h.head_point() + (Basis(Vector3.UP, h.yaw) * Vector3.FORWARD) * 14.0 + Vector3(0, 0.6, 0)
+	p.reset_physics_interpolation()
+	var start_t := -1
+	var charge_t := -1
+	var hp := p.health
+	for i in 60 * 25:
+		await _ticks(1)
+		if start_t < 0 and h.intent.kind == Hydrus.RAM:
+			start_t = i
+		if start_t >= 0 and charge_t < 0 and h.speed > 3.5:
+			charge_t = i
+		if charge_t >= 0 and i > charge_t + 60 * 4:
+			break
+	var hit_still := p.health < hp
+	_check(start_t >= 0 and hit_still, "no ram at a still swimmer (ram %d, health %.0f)" % [start_t, p.health])
+	var telegraph := (charge_t - start_t) / 60.0
+	_check(telegraph >= 1.0, "the ram is not telegraphed (%.2f s)" % telegraph)
+	# Again, but the swimmer moves sideways as soon as the head rears up.
+	await _teardown()
+	var w2 := await _setup_hydrus(31)
+	h = w2.hydrus
+	p = w2.player
+	p.global_position = h.head_point() + (Basis(Vector3.UP, h.yaw) * Vector3.FORWARD) * 18.0 + Vector3(0, 0.6, 0)
+	p.reset_physics_interpolation()
+	hp = p.health
+	var dodged_at := -1
+	for i in 60 * 25:
+		if dodged_at < 0 and h.intent.kind == Hydrus.RAM and h.rear_w > 0.2:
+			dodged_at = i
+			var side := (Basis(Vector3.UP, h.yaw) * Vector3.RIGHT)
+			p.actions.view_basis = Basis.looking_at(side)
+			p.actions.move = Vector2(0, 1)
+		if dodged_at >= 0 and i > dodged_at + 60 * 5:
+			break
+		await _ticks(1)
+	p.actions.move = Vector2.ZERO
+	_check(dodged_at >= 0 and p.health == hp, "swimming aside during the telegraph did not dodge the ram (health %.0f)" % p.health)
+	_log.append("ram: %.2f s telegraph (head rears up), a still swimmer is hit (-%.0f), one swimming aside is not" % [telegraph, Hydrus.new().ram_damage])
+
+
+func test_hydrus_dive_is_telegraphed_and_survivable() -> void:
+	var w := await _setup_hydrus()
+	var h: Hydrus = w.hydrus
+	var p: PlayerCharacter = w.player
+	await _ticks(10)
+	# Onto its back (standing on the fur of segment 4), holding on as a person would when it rears.
+	var seg := h.segments[4]
+	p.global_position = seg.target_transform * Vector3(0, 2.6, 0)
+	p.velocity = Vector3.ZERO
+	p.reset_physics_interpolation()
+	var on_at := -1
+	var rear_at := -1
+	var under_at := -1
+	var surfaced_at := -1
+	var lowest := INF
+	var underwater := 0.0
+	var max_under := 0.0
+	for i in 60 * 50:
+		await _ticks(1)
+		if on_at < 0 and h.owns_body(p.get_support_body()):
+			on_at = i
+		if rear_at < 0 and h.dive == Hydrus.Dive.REAR:
+			rear_at = i
+		var holding := h.dive != Hydrus.Dive.NONE
+		p.actions.grab_held = holding
+		if under_at < 0 and h.dive != Hydrus.Dive.NONE and p.is_under_water():
+			under_at = i
+		if p.is_under_water():
+			underwater += 1.0 / 60.0
+			max_under = maxf(max_under, underwater)
+		else:
+			underwater = 0.0
+		if under_at >= 0:
+			lowest = minf(lowest, p.stamina.value)
+		if under_at >= 0 and surfaced_at < 0 and h.dive == Hydrus.Dive.NONE:
+			surfaced_at = i
+			break
+	_check(on_at >= 0 and rear_at >= 0, "no dive with someone on its back (on %d, dive %d)" % [on_at, rear_at])
+	var wait := (rear_at - on_at) / 60.0
+	_check(wait >= h.dive_after_on_body - 0.1, "it dived %.1f s after the player got on" % wait)
+	var telegraph := (under_at - rear_at) / 60.0 if under_at >= 0 else 0.0
+	_check(under_at < 0 or telegraph >= 1.4, "the dive is not telegraphed (%.2f s)" % telegraph)
+	_check(surfaced_at >= 0 and (p.is_climbing() or h.owns_body(p.get_support_body())) and lowest > 0.0, "holding on did not get through the dive (lowest stamina %.0f, state %s)" % [lowest, p.get_display_state()])
+	_check(max_under < 7.0, "under water for %.1f s in one go" % max_under)
+	_log.append("dive %.1f s after getting on, %.2f s rearing up first, %.1f s under water, held on with stamina never below %.0f" % [wait, telegraph, max_under, lowest])
+
+
+func test_hydrus_can_be_defeated() -> void:
+	var w := await _setup_hydrus()
+	var bot := HydrusBot.new()
+	_world.add_child(bot)
+	bot.setup(w.player, w.hydrus, w.encounter)
+	var res := {}
+	bot.finished.connect(func(r: Dictionary) -> void: res.merge(r))
+	var t := 0
+	while res.is_empty() and t < 60 * 400:
+		await _ticks(1)
+		t += 1
+	var st: Dictionary = bot.stats
+	var hy: Dictionary = (w.hydrus as Hydrus).stats
+	_check(res.get("won", false), "the bot did not beat Hydrus in 400 s")
+	_log.append("bot: %s in %.1f s (grabs %d from the water, %d strikes / %d on a weak point, %d dives held, %.0f s under water, rams %d (%d hits, %d dodges), falls %d, deaths %d)" % ["WIN" if res.get("won", false) else "LOSS", t / 60.0, st.grabs, st.strikes, st.weak_hits, st.dives_held, st.underwater_s, hy.rams, hy.player_hits, st.dodges, st.falls, st.deaths])
+
+
+func test_hydrus_simulation_independent_of_render_fps() -> void:
+	var exe := OS.get_executable_path()
+	var rates := [30, 60, 90, 144, 240]
+	var results := {}
+	var jobs := []
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/hydrus_fps_%d.json" % fps)
+		DirAccess.remove_absolute(out_path)
+		jobs.append(["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "800000", "res://tests/fps_scenario.tscn", "--", "--scenario=hydrus", "--out=" + out_path])
+	var codes := await _execute_parallel(exe, jobs)
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/hydrus_fps_%d.json" % fps)
+		if codes[rates.find(fps)] != 0 or not FileAccess.file_exists(out_path):
+			_check(false, "hydrus scenario at %d fps failed" % fps)
+			return
+		results[fps] = JSON.parse_string(FileAccess.get_file_as_string(out_path))
+	var diff := _max_json_diff(results, rates)
+	var ref: Dictionary = results[60]
+	_log.append("Hydrus fight (bot) at %s fps: won %s at tick %d, dives %d, rams %d, max state difference %.8f" % [str(rates), str(ref.won), int(ref.tick), int(ref.dives), int(ref.rams), diff])
+	_metric("hydrus_fps_max_diff", diff, "lower")
+	_check(diff < 1e-4, "the Hydrus fight depends on the render rate (diff %.6f)" % diff)
+
+
+func test_hydrus_cost_stays_within_budget() -> void:
+	var w := await _setup_hydrus()
+	var bot := HydrusBot.new()
+	_world.add_child(bot)
+	bot.setup(w.player, w.hydrus, w.encounter)
+	await _ticks(60 * 10)
+	Perf.take()
+	var ticks := 60 * 30
+	await _ticks(ticks)
+	var m := Perf.take()
+	var u: Dictionary = m.usec
+	var per := func(k: StringName) -> float: return float(u.get(k, 0)) / ticks
+	var colossus: float = per.call(&"colossus")
+	_log.append("Hydrus (bot, 30 s): colossus %.1f us/tick (brain %.1f), player %.1f (swimming / climbing)" % [colossus, per.call(&"brain"), per.call(&"player")])
+	_metric("hydrus_colossus_us", colossus, "lower")
+	_check(colossus < 400.0, "Hydrus costs %.0f us per tick" % colossus)
+
+
+func test_five_colossi_in_order_with_west_gate() -> void:
+	_check(GameState.ORDER.size() == 5 and GameState.ORDER[4] == &"hydrus", "Hydrus is not the fifth colossus")
+	# An Etap 9 save (four names) loads and leads on to Hydrus.
+	var old := GameState.new()
+	old.from_dict({"version": GameState.VERSION, "defeated": ["valus", "quadratus", "gaius", "phaedra"]})
+	_check(old.next_colossus() == &"hydrus" and not old.is_complete(), "an Etap 9 save does not continue to Hydrus")
+	var g := await _setup_game("")
+	g.state.from_dict(old.to_dict())
+	g._build_world()
+	await _ticks(2)
+	var gates: Dictionary = g.refs.gates
+	_check(gates[&"hydrus"].open and not gates[&"phaedra"].open, "the west gate is not the open one")
+	await _ticks(2)
+	_check(g.player().beam.target.distance_to(gates[&"hydrus"].trigger) < 0.01, "the beam does not lead to the west gate")
+	# Through it: the lake, Hydrus awake in it.
+	var p := g.player()
+	var gate: Dictionary = gates[&"hydrus"]
+	p.global_position = Valley.on_ground((gate.pos as Vector3) - (gate.out as Vector3) * 2.0, 1.0)
+	p.reset_physics_interpolation()
+	p.actions.view_basis = Basis.looking_at(gate.out)
+	p.actions.move = Vector2(0, 1)
+	_check(await _wait_region(g, &"hydrus", 60 * 10), "did not wake Hydrus")
+	p.actions.move = Vector2.ZERO
+	var h := g.colossus() as Hydrus
+	_check(h != null and absf(h.water_level - (WorldMap.arena_height(&"hydrus") + HydrusArena.WATER_Y)) < 0.01, "Hydrus does not swim in its lake in the world")
+	_log.append("five colossi: an Etap 9 save leads to Hydrus through the west gate; its lake at %.1f m" % h.water_level)
 
 
 ## Everything that ran before the Etap 10 tests passed.

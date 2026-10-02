@@ -6,6 +6,7 @@ class_name Valley
 ##   Quadratus  north, past the lake
 ##   Gaius      west, through the canyon
 ##   Phaedra    east, up the slope
+##   Hydrus     west, over the ridge (a lake behind it)
 ##
 ## The ground, the temple and the rocks are the Ancient Valley kit (art/scripts/
 ## ancient_valley.gd, CC0): its height field and low-poly collisions are the gameplay
@@ -30,9 +31,13 @@ const GATES := {
 	&"quadratus": {"pos": Vector3(36, 0, 172), "out": Vector3(0.8, 0, 0.6)},
 	&"gaius": {"pos": Vector3(-96, 0, 172), "out": Vector3(0, 0, 1)},
 	&"phaedra": {"pos": Vector3(172, 0, -100), "out": Vector3(1, 0, 0)},
+	&"hydrus": {"pos": Vector3(-172, 0, -120), "out": Vector3(-1, 0, 0)},
 }
 const GATE_WIDTH := 12.0
 const GATE_TRIGGER := 6.0
+## The kit's lake: its surface and a disc round it (the water is where the ground is lower).
+const LAKE_CENTER := Vector3(40, -0.35, 42)
+const LAKE_RADIUS := 38.0
 ## Sun (towards the light) for the beam and the shadow test; matches the region's light.
 const SUN_DIRECTION := Vector3(0.35, 0.85, 0.4)
 
@@ -63,6 +68,13 @@ static func build(parent: Node3D, open_gate: StringName, with_art := true, world
 	var terrain := kit.get_node_or_null("ArtTerrainCollision_91x91")
 	if terrain:
 		terrain.add_to_group(&"walkable_terrain")
+	# The lake (the kit draws its surface): deep enough in the middle to swim.
+	var lake := WaterBody.new()
+	lake.name = "Lake"
+	lake.radius = LAKE_RADIUS
+	lake.show_surface = false
+	lake.position = LAKE_CENTER
+	parent.add_child(lake)
 	if world:
 		for c in kit.get_children():
 			if String(c.name).begins_with("DistantTerrain"):

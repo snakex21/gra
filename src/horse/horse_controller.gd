@@ -88,6 +88,10 @@ var _sphere := SphereShape3D.new()
 var _params := PhysicsShapeQueryParameters3D.new()
 ## Open terrain left out of the body casts (see _cast); set by the horse.
 var terrain_rids: Array[RID] = []
+## Water bodies round the horse (set by the Horse): water deeper than deep_water is an
+## edge, like a drop (Agro does not swim).
+var waters: Array[WaterBody] = []
+var deep_water := 1.0
 
 
 func _init() -> void:
@@ -419,6 +423,9 @@ func _ground_y(space: PhysicsDirectSpaceState3D, dir: Vector3, d: float, ref_y: 
 	var at := Vector3(position.x, ref_y, position.z) + dir * d
 	var hit := _ray(space, at + Vector3.UP * 2.0, at + Vector3.DOWN * (cliff_depth + 1.0), exclude)
 	var y: float = (hit.position as Vector3).y if not hit.is_empty() else -INF
+	for w in waters:
+		if is_instance_valid(w) and w.contains_xz(at) and w.surface() - y > deep_water:
+			y = -INF
 	probe_hits.append([at + Vector3.UP * 0.3, Vector3(at.x, maxf(y, at.y - cliff_depth - 1.0), at.z), hit.is_empty()])
 	return y
 

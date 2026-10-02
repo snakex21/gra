@@ -1,0 +1,35 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/hydrus_arena.gd" id="1_hydrus"]
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
+sky_top_color = Color(0.32, 0.46, 0.68, 1)
+sky_horizon_color = Color(0.76, 0.78, 0.8, 1)
+ground_bottom_color = Color(0.3, 0.3, 0.28, 1)
+ground_horizon_color = Color(0.76, 0.78, 0.8, 1)
+
+[sub_resource type="Sky" id="Sky"]
+sky_material = SubResource("SkyMat")
+
+[sub_resource type="Environment" id="Env"]
+background_mode = 2
+sky = SubResource("Sky")
+ambient_light_source = 3
+ambient_light_energy = 0.8
+tonemap_mode = 2
+fog_enabled = true
+fog_light_color = Color(0.74, 0.77, 0.8, 1)
+fog_density = 0.0025
+fog_sky_affect = 0.3
+
+[node name="HydrusArena" type="Node3D"]
+script = ExtResource("1_hydrus")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.383022, 0.321394, 0, 0.642788, 0.766044, -0.5, -0.663414, 0.556670, 0, 30, 0)
+light_energy = 1.2
+shadow_enabled = true
+directional_shadow_max_distance = 220.0

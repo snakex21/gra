@@ -429,6 +429,7 @@ func _refresh_terrain() -> void:
 		if t is CollisionObject3D:
 			rids.append((t as CollisionObject3D).get_rid())
 	controller.terrain_rids = rids
+	controller.waters = WaterBody.all(get_tree())
 
 
 func _build_rig() -> void:

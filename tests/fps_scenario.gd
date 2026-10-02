@@ -68,6 +68,9 @@ func _ready() -> void:
 	if scenario == "phaedra":
 		_setup_phaedra()
 		return
+	if scenario == "hydrus":
+		_setup_hydrus()
+		return
 	TerrainKit.build_course(self, Vector3(0, 0, -6))
 	colossus = GreyboxHumanoid.new()
 	colossus.debug_override = &"manual"
@@ -405,6 +408,52 @@ func _phaedra_tick() -> void:
 	get_tree().quit()
 
 
+## Etap 10: the Hydrus fight played by HydrusBot (swimming, a ram, climbing on from the
+## water, standing on the swimming back, a dive), until it is won or for 4 minutes.
+var hbot: HydrusBot
+
+
+func _setup_hydrus() -> void:
+	for c in get_children():
+		remove_child(c)
+		c.free()
+	InputSetup.ensure_defaults()
+	Sfx.enabled = false
+	Fx.enabled = false
+	var arena := Node3D.new()
+	add_child(arena)
+	boss = HydrusArena.build_encounter(arena, false, 29)
+	hbot = HydrusBot.new()
+	arena.add_child(hbot)
+	hbot.setup(boss.player, boss.hydrus, boss.encounter)
+
+
+func _hydrus_tick() -> void:
+	if hbot.phase != HydrusBot.Phase.DONE and tick < 60 * 240:
+		return
+	var p: PlayerCharacter = boss.player
+	var h: Hydrus = boss.hydrus
+	var head := h.head_point()
+	var tail := h.segments[Hydrus.SEG_COUNT - 1].target_transform.origin
+	var data := {
+		"frames": Engine.get_process_frames(),
+		"won": 1 if hbot.result.get("won", false) else 0,
+		"tick": tick,
+		"player": [p.global_position.x, p.global_position.y, p.global_position.z],
+		"head": [head.x, head.y, head.z],
+		"tail": [tail.x, tail.y, tail.z],
+		"weak": [h.weak_points[0].health, h.weak_points[1].health, h.weak_points[2].health],
+		"dives": h.stats.dives,
+		"rams": h.stats.rams,
+		"stamina": p.stamina.value,
+		"health": p.health,
+	}
+	var f := FileAccess.open(out_path, FileAccess.WRITE)
+	f.store_string(JSON.stringify(data))
+	f.close()
+	get_tree().quit()
+
+
 ## The whole game from the temple: GameBot finds the way with the beam and rides Agro to
 ## the Valus gate (ends a little after the arena is loaded).
 func _setup_valley() -> void:
@@ -528,6 +577,9 @@ func _physics_process(_delta: float) -> void:
 		return
 	if scenario == "phaedra":
 		_phaedra_tick()
+		return
+	if scenario == "hydrus":
+		_hydrus_tick()
 		return
 	if scenario == "gaius":
 		_gaius_tick()

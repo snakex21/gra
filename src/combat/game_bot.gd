@@ -17,9 +17,6 @@ enum Phase { FIND, TO_HORSE, MOUNT, RIDE, ARENA, DONE }
 const TIMEOUTS := {Phase.FIND: 20.0, Phase.TO_HORSE: 40.0, Phase.MOUNT: 10.0, Phase.RIDE: 150.0, Phase.ARENA: 420.0}
 ## Seconds between beam checks while riding.
 const RIDE_CHECK := 7.0
-## In an arena (local z, the way in is +Z): where the colossus' own bot takes over (the
-## arenas' fights start ~80 m from the colossus).
-const ARENA_REACHED := 84.0
 
 var game: GameWorld
 var verbose := false
@@ -251,7 +248,7 @@ func _arena(delta: float) -> void:
 	var kind := game.region_kind
 	var a := p.actions
 	var root: Node3D = game.refs.get("arena")
-	if root and (root.global_transform.affine_inverse() * p.global_position).z > ARENA_REACHED:
+	if root and (root.global_transform.affine_inverse() * p.global_position).z > (GameWorld.arena_starts(kind)[0] as Vector3).z + 4.0:
 		# Still in the corridor: on along the beam (it now leads to the colossus).
 		if p.is_riding():
 			_ride(delta)
@@ -295,6 +292,13 @@ func _arena(delta: float) -> void:
 			boss_bot = b
 		&"phaedra":
 			var b := PhaedraBot.new()
+			b.verbose = verbose
+			game.region.add_child(b)
+			b.setup(p, game.refs.colossus, e)
+			b.finished.connect(_on_boss_finished.bind(kind))
+			boss_bot = b
+		&"hydrus":
+			var b := HydrusBot.new()
 			b.verbose = verbose
 			game.region.add_child(b)
 			b.setup(p, game.refs.colossus, e)

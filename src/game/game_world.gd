@@ -22,7 +22,7 @@ enum Phase { PLAYING, FADE_OUT, LOADING, FADE_IN }
 
 const VALLEY := &"valley"
 ## Brain seeds of the arenas (each fight is the same fight every time).
-const SEEDS := {&"valus": 7, &"quadratus": 11, &"gaius": 13, &"phaedra": 17}
+const SEEDS := {&"valus": 7, &"quadratus": 11, &"gaius": 13, &"phaedra": 17, &"hydrus": 29}
 
 @export var with_input := true
 @export var with_art := true
@@ -258,6 +258,8 @@ func _build_arena(kind: StringName, root: Node3D) -> Dictionary:
 			points = QuadratusArena.build(root)
 		&"phaedra":
 			points = PhaedraArena.build(root)
+		&"hydrus":
+			points = HydrusArena.build(root)
 	_disc_ground(root)
 	if with_art:
 		match kind:
@@ -269,6 +271,8 @@ func _build_arena(kind: StringName, root: Node3D) -> Dictionary:
 				ArenaArt.dress_arena(root, Vector3(0, 0, 1), 75.0, 4021)
 			&"phaedra":
 				ArenaArt.dress_fen(root, points.tunnels, 75.0, 6047)
+			&"hydrus":
+				ArenaArt.dress_arena(root, Vector3(0, 0, 1), 80.0, 7129)
 	return points
 
 
@@ -277,6 +281,9 @@ static func _disc_ground(root: Node3D) -> void:
 	var ground := root.get_node_or_null("Ground")
 	if ground == null:
 		return
+	for c in ground.get_children():
+		if c is CollisionShape3D and not ((c as CollisionShape3D).shape is BoxShape3D):
+			return   # an arena with its own shaped ground (the lake's basin)
 	for c in ground.get_children():
 		if c is CollisionShape3D:
 			var cyl := CylinderShape3D.new()
@@ -347,6 +354,8 @@ func _wake(kind: StringName) -> void:
 	var p := player()
 	var horse: Horse = refs.horse
 	var c: Colossus
+	if kind == &"hydrus":
+		c = HydrusArena.spawn(root, SEEDS[kind] + seed_offset)
 	match kind:
 		&"valus":
 			c = Valus.new()
@@ -360,13 +369,14 @@ func _wake(kind: StringName) -> void:
 			ph.arena_radius = 65.0
 			refs.tunnels = ph.tunnels
 			c = ph
-	c.name = String(kind).capitalize()
-	c.set(&"brain_seed", SEEDS[kind] + seed_offset)
-	# Every colossus starts at its arena's centre facing the way in (local +Z).
-	c.rotation.y = PI
-	root.add_child(c)
-	c.call(&"teleport", xf.origin, yaw + PI)
-	c.call(&"reset_encounter", c.global_transform, true)
+	if not c.is_inside_tree():
+		c.name = String(kind).capitalize()
+		c.set(&"brain_seed", SEEDS[kind] + seed_offset)
+		# Every colossus starts at its arena's centre facing the way in (local +Z).
+		c.rotation.y = PI
+		root.add_child(c)
+		c.call(&"teleport", xf.origin, yaw + PI)
+		c.call(&"reset_encounter", c.global_transform, true)
 	if with_art:
 		if c is Valus:
 			ArenaArt.dress_valus(c)
@@ -378,8 +388,9 @@ func _wake(kind: StringName) -> void:
 	var players: Array[PlayerCharacter] = [p]
 	e.setup(c, players, horse)
 	# A death puts the player (and Agro) back at the arena's way in.
-	e.horse_start = Transform3D(xf.basis, xf * ValusArena.HORSE_START)
-	p.spawn_transform = Transform3D(xf.basis, xf * ValusArena.PLAYER_START)
+	var starts := arena_starts(kind)
+	e.horse_start = Transform3D(xf.basis, xf * (starts[1] as Vector3))
+	p.spawn_transform = Transform3D(xf.basis, xf * (starts[0] as Vector3))
 	var arrows := ArrowSystem.of(p)
 	e.encounter_reset.connect(func(_n: int) -> void: arrows.clear())
 	_awake = [c, e]
@@ -401,6 +412,13 @@ func _wake(kind: StringName) -> void:
 	refs.arena = root
 	refs[kind] = c
 	_change_region(kind)
+
+
+## Where a fight starts in an arena (local): [player, Agro].
+static func arena_starts(kind: StringName) -> Array:
+	if kind == &"hydrus":
+		return [HydrusArena.PLAYER_START, HydrusArena.HORSE_START]
+	return [ValusArena.PLAYER_START, ValusArena.HORSE_START]
 
 
 ## The awake colossus goes (the player went back into the valley).

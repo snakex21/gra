@@ -51,6 +51,11 @@ static func _stream(kind: StringName) -> AudioStreamWAV:
 			s = _make(0.5, func(t: float, n: float) -> float: return (n * 0.7 * exp(-t * 35.0) + _low(n, t, 80.0) * 0.5 * exp(-t * 10.0)))
 		&"grip_lost":
 			s = _make(0.3, func(t: float, n: float) -> float: return n * 0.4 * exp(-t * 12.0))
+		&"roar":
+			# A long low growl rising a little (the serpent rearing up before a dive).
+			s = _make(1.6, func(t: float, n: float) -> float: return (_low(n, t, 40.0 + 30.0 * t) * 0.7 + sin(t * TAU * (70.0 + 25.0 * t)) * 0.3) * sin(PI * t / 1.6))
+		&"splash":
+			s = _make(0.6, func(t: float, n: float) -> float: return n * 0.6 * exp(-t * 7.0) * (0.6 + 0.4 * sin(t * 90.0)))
 		&"defeat":
 			s = _make(3.0, func(t: float, n: float) -> float: return (_low(n, t, 35.0) * 0.7 + sin(t * TAU * 55.0) * 0.3) * sin(PI * t / 3.0))
 	_cache[kind] = s
