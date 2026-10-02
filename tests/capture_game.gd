@@ -1,9 +1,9 @@
 extends Node
 ## Visual smoke test for the whole game: the valley with the art kit, the sword's beam,
-## the ride to the gate and the arrival in the arena, played by GameBot. Then (a
-## shortcut, this is a capture, not a test) the valley after two victories: the canyon
-## ride to Gaius' gate. Saves tests/output/game_*.png. Run with
-## tools/capture_screenshots.sh game.
+## the ride to the gate, the corridor and the way into the arena (one continuous world),
+## played by GameBot. Then (a shortcut, this is a capture, not a test) the valley after
+## two victories: the canyon ride to Gaius' gate, and the whole world from above. Saves
+## tests/output/game_*.png. Run with tools/capture_screenshots.sh game.
 
 var game: GameWorld
 var bot: GameBot
@@ -51,15 +51,18 @@ func _physics_process(_delta: float) -> void:
 			var gate: Dictionary = game.refs.gates[next]
 			var d := Vector2(p.global_position.x - gate.pos.x, p.global_position.z - gate.pos.z).length()
 			if d < 35.0:
-				_want("game_06_gate" if not _shortcut else "game_09_gaius_gate")
+				_want("game_06_gate" if not _shortcut else "game_09b_gaius_gate")
 		if _shortcut and p.global_position.x < -75.0 and bot.phase == GameBot.Phase.RIDE:
-			_want("game_08_canyon_ride")
+			_want("game_09a_canyon_ride")
 	else:
-		# In the arena: look at the colossus once arrived.
-		p.actions.focus_held = game.region_time < 6.0
-		if game.region_time > 2.5:
-			_want("game_07_arrival_valus")
-		if taken.has("game_07_arrival_valus") and _queue.is_empty() and not _shortcut:
+		# Through the gate: the corridor, then the arena (looking at the colossus).
+		var local := (game.arenas[game.region_kind].xf as Transform3D).affine_inverse() * p.global_position
+		if game.region_time > 1.5:
+			_want("game_07_corridor")
+		if local.z < 150.0:
+			p.actions.focus_held = local.z > 110.0
+			_want("game_08_into_the_arena")
+		if taken.has("game_08_into_the_arena") and _queue.is_empty() and not _shortcut:
 			# Shortcut to the third journey: Valus and Quadratus defeated, back at the temple.
 			_shortcut = true
 			game.state.mark_defeated(&"valus")
@@ -67,7 +70,15 @@ func _physics_process(_delta: float) -> void:
 			if is_instance_valid(bot.boss_bot):
 				bot.boss_bot.queue_free()
 			game._go(GameWorld.VALLEY, false)
-	if taken.has("game_09_gaius_gate") or tick > 60 * 300:
+	if taken.has("game_09b_gaius_gate") and not taken.has("game_10_world_from_above") and _queue.is_empty():
+		# The whole world from high above: the valley, the corridors and the four arenas.
+		var top := Camera3D.new()
+		top.far = 4000.0
+		add_child(top)
+		top.look_at_from_position(Vector3(60, 900, 420), Vector3(60, 0, -10), Vector3.FORWARD)
+		top.current = true
+		_want("game_10_world_from_above")
+	elif taken.has("game_10_world_from_above") and _queue.is_empty() or tick > 60 * 400:
 		get_tree().quit()
 	if not _queue.is_empty():
 		_shot(_queue.pop_front())

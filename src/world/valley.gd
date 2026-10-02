@@ -23,12 +23,13 @@ const HORSE_SPAWN := Vector3(-26, 0, 8)
 ## The world's edge (half size): beyond it the kit has no ground.
 const EDGE := 172.0
 ## Gate: centre of the opening on the ground, the outward direction (towards the arena),
-## and the trigger distance past the opening.
+## and the trigger distance past the opening. The gates stand in the world's edge: the
+## only openings in it, each into the corridor to its arena (WorldMap).
 const GATES := {
-	&"valus": {"pos": Vector3(0, 0, -160), "out": Vector3(0, 0, -1)},
-	&"quadratus": {"pos": Vector3(20, 0, 160), "out": Vector3(0, 0, 1)},
-	&"gaius": {"pos": Vector3(-96, 0, 150), "out": Vector3(0, 0, 1)},
-	&"phaedra": {"pos": Vector3(128, 0, -100), "out": Vector3(1, 0, 0)},
+	&"valus": {"pos": Vector3(0, 0, -172), "out": Vector3(0, 0, -1)},
+	&"quadratus": {"pos": Vector3(36, 0, 172), "out": Vector3(0.8, 0, 0.6)},
+	&"gaius": {"pos": Vector3(-96, 0, 172), "out": Vector3(0, 0, 1)},
+	&"phaedra": {"pos": Vector3(172, 0, -100), "out": Vector3(1, 0, 0)},
 }
 const GATE_WIDTH := 12.0
 const GATE_TRIGGER := 6.0
@@ -46,8 +47,10 @@ static func on_ground(p: Vector3, lift := 0.0) -> Vector3:
 
 ## Builds the valley under ``parent``. ``open_gate``: the colossus whose gate lets you
 ## through (&"" = none). Without art the kit still builds its ground and collisions, only
-## the grass is left out (tests).
-static func build(parent: Node3D, open_gate: StringName, with_art := true) -> Dictionary:
+## the grass is left out (tests). ``world``: the valley is part of the continuous world
+## (WorldMap): the world's edge has openings where the corridors leave, and the kit's
+## own horizon gives way to the world's.
+static func build(parent: Node3D, open_gate: StringName, with_art := true, world := false) -> Dictionary:
 	var kit := Node3D.new()
 	kit.name = "AncientValley"
 	kit.set_script(ValleyArt)
@@ -60,6 +63,10 @@ static func build(parent: Node3D, open_gate: StringName, with_art := true) -> Di
 	var terrain := kit.get_node_or_null("ArtTerrainCollision_91x91")
 	if terrain:
 		terrain.add_to_group(&"walkable_terrain")
+	if world:
+		for c in kit.get_children():
+			if String(c.name).begins_with("DistantTerrain"):
+				c.queue_free()
 	# The temple floor modules have no collision of their own (the kit says the terrain
 	# carries them); the flat precinct is the terrain.
 
@@ -71,8 +78,7 @@ static func build(parent: Node3D, open_gate: StringName, with_art := true) -> Di
 	mist.cull_mode = BaseMaterial3D.CULL_DISABLED
 
 	# The edge of the world: tall invisible walls (the horizon mesh shows what lies beyond).
-	for w in [[Vector3(0, 30, -EDGE - 2), Vector3(2 * EDGE + 8, 80, 4)], [Vector3(0, 30, EDGE + 2), Vector3(2 * EDGE + 8, 80, 4)],
-			[Vector3(-EDGE - 2, 30, 0), Vector3(4, 80, 2 * EDGE + 8)], [Vector3(EDGE + 2, 30, 0), Vector3(4, 80, 2 * EDGE + 8)]]:
+	for w in _edge_walls(world):
 		var wall := TerrainKit.box(parent, w[0], w[1], dark)
 		wall.name = "WorldEdge"
 		for c in wall.get_children():
@@ -102,6 +108,41 @@ static func build(parent: Node3D, open_gate: StringName, with_art := true) -> Di
 		gates[c] = {"pos": pos, "out": out, "trigger": on_ground(pos + out * GATE_TRIGGER), "open": c == open_gate, "node": root}
 	return {"kit": kit, "gates": gates, "spawn": on_ground(TEMPLE_SPAWN, 0.95), "spawn_yaw": TEMPLE_YAW,
 		"horse": on_ground(HORSE_SPAWN), "sun": SUN_DIRECTION.normalized()}
+
+
+## The edge walls ([centre, size]); in the world they leave an opening for each corridor.
+static func _edge_walls(world: bool) -> Array:
+	var out := []
+	var e := EDGE + 2.0
+	var span := EDGE + 4.0
+	# Sides: [axis along the wall (x or z), fixed coordinate, sign].
+	for side in [[0, -e], [0, e], [1, -e], [1, e]]:
+		var along_x: bool = side[0] == 0
+		var fixed: float = side[1]
+		var gaps := []
+		if world:
+			for c: StringName in GATES:
+				var g: Vector3 = GATES[c].pos
+				var o: Vector3 = (GATES[c].out as Vector3).normalized()
+				var to := fixed - (g.z if along_x else g.x)
+				var d := o.z if along_x else o.x
+				if absf(d) < 0.2 or signf(to) != signf(d):
+					continue
+				var hit := g + o * (to / d)
+				var at := hit.x if along_x else hit.z
+				# Up to the middle of the gate's pillars (they close the rest).
+				var half := (GATE_WIDTH * 0.5 + 1.5) / absf(d)
+				gaps.append([at - half, at + half])
+		gaps.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+		var from := -span
+		for gp in gaps + [[span, span]]:
+			var to_: float = minf(gp[0], span)
+			if to_ - from > 0.5:
+				var mid := (from + to_) * 0.5
+				var length := to_ - from
+				out.append([Vector3(mid, 30, fixed) if along_x else Vector3(fixed, 30, mid), Vector3(length, 80, 4) if along_x else Vector3(4, 80, length)])
+			from = maxf(from, gp[1])
+	return out
 
 
 ## True when ``p`` has gone through the open gate ``gate`` (a gates entry of build()).

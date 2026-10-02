@@ -62,7 +62,7 @@ func _ready() -> void:
 	if scenario == "art":
 		_setup_art()
 		return
-	if scenario == "valley":
+	if scenario == "valley" or scenario == "world":
 		_setup_valley()
 		return
 	if scenario == "phaedra":
@@ -452,6 +452,40 @@ func _valley_tick() -> void:
 	get_tree().quit()
 
 
+## Etap 10: one continuous ride, temple -> Valus' gate -> the corridor -> the fight, with
+## the colossus' bot for 20 s once it took over. No fade on the way (max_fade).
+var _fight_tick := -1
+var _max_fade := 0.0
+
+
+func _world_tick() -> void:
+	_max_fade = maxf(_max_fade, game._fade.color.a)
+	if arrived_tick < 0 and game.region_kind == &"valus":
+		arrived_tick = tick
+	if _fight_tick < 0 and is_instance_valid(game_bot.boss_bot):
+		_fight_tick = tick
+	if not (_fight_tick >= 0 and tick > _fight_tick + 60 * 20) and tick < 60 * 200:
+		return
+	var p := game.player()
+	var v := game.colossus()
+	var data := {
+		"frames": Engine.get_process_frames(),
+		"woke": arrived_tick,
+		"fight": _fight_tick,
+		"max_fade": _max_fade,
+		"transitions": game.transitions,
+		"player": [p.global_position.x, p.global_position.y, p.global_position.z],
+		"stamina": p.stamina.value,
+		"colossus": [v.global_position.x, v.global_position.y, v.global_position.z] if v else [],
+		"weak_point": v.beam_weak_point().health if v and v.beam_weak_point() else -1.0,
+		"intent": String(v.intent.kind) if v else "",
+	}
+	var f := FileAccess.open(out_path, FileAccess.WRITE)
+	f.store_string(JSON.stringify(data))
+	f.close()
+	get_tree().quit()
+
+
 ## Valus walking and turning in its arena, with or without the art layer (--art).
 func _setup_art() -> void:
 	for c in get_children():
@@ -488,6 +522,9 @@ func _physics_process(_delta: float) -> void:
 		return
 	if scenario == "valley":
 		_valley_tick()
+		return
+	if scenario == "world":
+		_world_tick()
 		return
 	if scenario == "phaedra":
 		_phaedra_tick()

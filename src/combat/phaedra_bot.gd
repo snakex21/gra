@@ -144,7 +144,7 @@ func _hide() -> void:
 	var inside: Vector3 = (best[0] as Vector3) - (best[1] as Vector3) * 2.0
 	var off := _flat(player.global_position - (best[0] as Vector3))
 	var target := inside if off.dot(best[1]) < 3.0 and absf(off.dot((best[1] as Vector3).cross(Vector3.UP))) < 2.2 else outside
-	if player.global_position.y > 2.5:
+	if player.global_position.y - phaedra.arena_center.y > 2.5:
 		# On a roof (fell there from the head): off its end first.
 		target = outside + (best[1] as Vector3) * 2.0
 	if verbose and int(phase_time * 60.0) % 120 == 0:

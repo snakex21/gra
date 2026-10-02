@@ -135,3 +135,17 @@ static func build_encounter(parent: Node3D, with_input := false, brain_seed := 1
 	layer.add_child(hud)
 	parent.add_child(layer)
 	return {"phaedra": ph, "player": p, "horse": horse, "camera": cam, "encounter": encounter, "hud": hud, "debug_draw": ph.debug_draw, "input": input, "points": points, "tunnels": points.tunnels}
+
+
+## The tunnels of an arena built in a transformed root (world positions for Phaedra and
+## its bot; the arena's art keeps the local ones).
+static func tunnels_in_world(local_tunnels: Array, xf: Transform3D) -> Array:
+	var out := []
+	for t in local_tunnels:
+		var mouths := []
+		for m in t.mouths:
+			mouths.append([xf * (m[0] as Vector3), (xf.basis * (m[1] as Vector3)).normalized()])
+		var axis := xf.basis * (Vector3.RIGHT if t.along_x else Vector3.BACK)
+		out.append({"aabb": xf * (t.aabb as AABB), "mouths": mouths, "center": xf * (t.center as Vector3),
+			"along_x": absf(axis.x) > absf(axis.z), "length": t.length})
+	return out

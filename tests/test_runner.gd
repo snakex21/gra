@@ -27,6 +27,8 @@ var _etap7_started := false
 var _pre_etap8_results := {}
 var _etap8_started := false
 var _pre_etap9_results := {}
+var _etap10_started := false
+var _pre_etap10_results := {}
 var _etap9_started := false
 const BASELINE_PATH := "res://tests/baseline/etap2_baseline.json"
 ## Agro metrics (horse_*) are frozen separately, so the stage 2/3 baseline stays untouched.
@@ -220,6 +222,12 @@ func _ready() -> void:
 		test_replay_reproduces_a_fight,
 		test_settings_and_pause,
 		all_etap8_and_earlier_tests_still_pass,
+		# --- ETAP 10: continuous world, ... ---
+		test_world_layout_keeps_arenas_apart_and_connected,
+		test_world_ride_from_valley_into_fight_without_fade,
+		test_world_leaving_puts_the_colossus_to_sleep,
+		test_world_ride_independent_of_render_fps,
+		all_etap9_and_earlier_tests_still_pass,
 	]
 	for t in tests:
 		var name := t.get_method()
@@ -253,6 +261,10 @@ func _ready() -> void:
 			_etap9_started = true
 		if not _etap9_started:
 			_pre_etap9_results[name] = ok
+		if name == "test_world_layout_keeps_arenas_apart_and_connected":
+			_etap10_started = true
+		if not _etap10_started:
+			_pre_etap10_results[name] = ok
 		print("%s %s (%d ms)" % ["PASS" if ok else "FAIL", name, Time.get_ticks_msec() - t0])
 		for line in _log:
 			print("    ", line)
@@ -5404,7 +5416,8 @@ func test_open_gate_leads_to_next_colossus() -> void:
 	_check(arrived and g.colossus() is Valus, "riding through the gate did not lead to Valus (region %s)" % g.region_kind)
 	_check(p.is_riding() and p.riding.horse == g.refs.horse, "arrived on foot although we rode through the gate")
 	_check(p.beam.target.distance_to(g.colossus().beam_target()) < 0.01 and g.colossus().beam_weak_point() != null, "in the arena the beam does not lead to the weak point")
-	# Raise the sword towards the weak point: it lights up.
+	# On out of the gate's shadow, then raise the sword towards the weak point: it lights up.
+	await _ticks(90)
 	p.actions.move = Vector2.ZERO
 	var wp := g.colossus().beam_weak_point()
 	for i in 90:
@@ -5412,7 +5425,7 @@ func test_open_gate_leads_to_next_colossus() -> void:
 		p.actions.view_basis = Basis.looking_at(Vector3(to.x, 0, to.z).normalized())
 		p.actions.beam_held = true
 		await _ticks(1)
-	_check(p.beam.locked and wp.revealed > 0.5, "the beam did not reveal the weak point (focus %.2f, revealed %.2f)" % [p.beam.focus, wp.revealed])
+	_check(p.beam.locked and wp.revealed > 0.5, "the beam did not reveal the weak point (focus %.2f, revealed %.2f, raise %.2f, lit %s, at %s)" % [p.beam.focus, wp.revealed, p.beam.raise, str(p.beam.lit), str(p.global_position.snapped(Vector3.ONE * 0.1))])
 	_log.append("through the gate after %d transitions, riding %s" % [g.transitions, str(p.is_riding())])
 
 
@@ -5869,7 +5882,7 @@ func test_four_colossi_in_order_with_fourth_gate() -> void:
 	var path := "user://test_etap9_save.json"
 	var g := await _setup_game("")
 	g.state.from_dict(old.to_dict())
-	g._build_region(GameWorld.VALLEY)
+	g._build_world()
 	await _ticks(2)
 	var gates: Dictionary = g.refs.gates
 	_check(gates.has(&"phaedra") and gates[&"phaedra"].open and not gates[&"gaius"].open, "the fourth gate is not the open one")
@@ -6028,4 +6041,159 @@ func all_etap8_and_earlier_tests_still_pass() -> void:
 		if not _pre_etap9_results[n]:
 			failed.append(n)
 	_log.append("%d earlier tests (Milestone 1, Etap 2-8) ran in this run, %d failed %s" % [ran, failed.size(), str(failed) if failed.size() > 0 else ""])
+	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))
+
+
+# --- ETAP 10: continuous world ---------------------------------------------------------
+
+func test_world_layout_keeps_arenas_apart_and_connected() -> void:
+	var kinds: Array = Valley.GATES.keys()
+	var r := WorldMap.GROUND_RADIUS
+	var closest := INF
+	for i in kinds.size():
+		var c := WorldMap.arena_transform(kinds[i]).origin
+		# Off the valley's height field (a square of VALLEY_HALF).
+		var q := Vector2(clampf(c.x, -WorldMap.VALLEY_HALF, WorldMap.VALLEY_HALF), clampf(c.z, -WorldMap.VALLEY_HALF, WorldMap.VALLEY_HALF))
+		_check(Vector2(c.x, c.z).distance_to(q) >= r, "the %s arena overlaps the valley" % kinds[i])
+		for j in range(i + 1, kinds.size()):
+			var d := WorldMap.arena_transform(kinds[j]).origin
+			var dist := Vector2(c.x - d.x, c.z - d.z).length()
+			closest = minf(closest, dist - 2.0 * r)
+			_check(dist >= 2.0 * r, "the %s and %s arenas overlap" % [kinds[i], kinds[j]])
+	var g := await _setup_game()
+	await _ticks(2)
+	var space := g.get_world_3d().direct_space_state
+	var worst_step := 0.0
+	var worst_floor := 0.0
+	var leaks := 0
+	for kind: StringName in kinds:
+		# The corridor has a floor all the way, without steps a horse could not take.
+		var gate: Vector3 = Valley.GATES[kind].pos
+		var o := WorldMap.out_dir(kind)
+		var rim := WorldMap.rim_entry(kind)
+		var length := Vector2(rim.x - gate.x, rim.z - gate.z).length()
+		var prev := NAN
+		var dd := 2.0
+		while dd < length + 10.0:
+			var at := gate + o * dd
+			var expect := Valley.ground_height(at.x, at.z) if maxf(absf(at.x), absf(at.z)) < WorldMap.VALLEY_HALF else WorldMap.arena_height(kind)
+			var q := PhysicsRayQueryParameters3D.create(Vector3(at.x, expect + 20.0, at.z), Vector3(at.x, expect - 20.0, at.z), Layers.WORLD)
+			var hit := space.intersect_ray(q)
+			if hit.is_empty():
+				_check(false, "no floor in the %s corridor %.0f m past the gate" % [kind, dd])
+				break
+			var y: float = (hit.position as Vector3).y
+			worst_floor = maxf(worst_floor, absf(y - expect))
+			if not is_nan(prev):
+				worst_step = maxf(worst_step, absf(y - prev))
+			prev = y
+			dd += 2.0
+		# The rim is closed except where the corridor comes in.
+		var xf := WorldMap.arena_transform(kind)
+		for i in 36:
+			var a := i * TAU / 36.0
+			var dir := xf.basis * Vector3(sin(a), 0, cos(a))
+			var from := xf.origin + Vector3.UP * 12.0
+			# Past the rim (the way in: only into the corridor, not up to its gate).
+			var reach := WorldMap.RIM + (8.0 if i == 0 else 30.0)
+			var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(from, from + dir * reach, Layers.WORLD))
+			if i == 0:
+				_check(hit.is_empty(), "the way into the %s arena is blocked at %s" % [kind, str(hit.get("position"))])
+			elif hit.is_empty():
+				leaks += 1
+	_check(worst_floor < 1.0 and worst_step < 0.6, "corridor floors are off (worst %.2f m from the expected height, step %.2f m)" % [worst_floor, worst_step])
+	_check(leaks == 0, "%d gaps in the arenas' rims" % leaks)
+	_log.append("4 arenas: closest pair %.0f m apart beyond their discs; corridor floors within %.2f m, largest step %.2f m per 2 m; rims closed (36 rays each), ways in open" % [closest, worst_floor, worst_step])
+
+
+func test_world_ride_from_valley_into_fight_without_fade() -> void:
+	var g := await _setup_game()
+	var p := g.player()
+	var first := p.get_instance_id()
+	var bot := GameBot.new()
+	g.region.add_child(bot)
+	bot._heading = Vector3.BACK
+	bot.setup(g)
+	var max_fade := 0.0
+	var max_colossi := 0
+	var same_player := true
+	var t := 0
+	while not is_instance_valid(bot.boss_bot) and t < 60 * 150:
+		await _ticks(1)
+		t += 1
+		max_fade = maxf(max_fade, g._fade.color.a)
+		max_colossi = maxi(max_colossi, get_tree().get_nodes_in_group(&"colossi").size())
+		same_player = same_player and g.player() != null and g.player().get_instance_id() == first
+	var started := is_instance_valid(bot.boss_bot)
+	var c := g.colossus()
+	_check(started and g.region_kind == &"valus" and c is Valus, "the bot did not ride from the temple into the Valus fight (region %s)" % g.region_kind)
+	_check(max_fade == 0.0, "the screen faded on the way (%.2f)" % max_fade)
+	_check(same_player, "the player was rebuilt on the way")
+	_check(max_colossi == 1, "%d colossi existed at once" % max_colossi)
+	var local := (g.arenas[&"valus"].xf as Transform3D).affine_inverse() * g.player().global_position
+	_check(WorldMap.in_arena(&"valus", g.player().global_position), "the fight started outside the arena (%s)" % str(local))
+	_log.append("temple -> fight in %.1f s of play, no fade, one player, at most %d colossus; the fight starts at the arena's local z %.0f (riding %s)" % [t / 60.0, max_colossi, local.z, str(g.player().is_riding())])
+	bot.queue_free()
+
+
+func test_world_leaving_puts_the_colossus_to_sleep() -> void:
+	var g := await _setup_game()
+	var p := g.player()
+	var gate: Dictionary = g.refs.gates[&"valus"]
+	var out: Vector3 = gate.out
+	p.global_position = Valley.on_ground((gate.pos as Vector3) - out * 2.0, 1.0)
+	p.reset_physics_interpolation()
+	p.actions.view_basis = Basis.looking_at(out)
+	p.actions.move = Vector2(0, 1)
+	_check(await _wait_region(g, &"valus", 60 * 10), "did not wake Valus")
+	var first := g.colossus()
+	await _ticks(60)
+	var awake := get_tree().get_nodes_in_group(&"colossi").size()
+	# Back into the valley: it goes.
+	p.actions.view_basis = Basis.looking_at(-out)
+	_check(await _wait_region(g, GameWorld.VALLEY, 60 * 10), "walking back did not lead into the valley")
+	await _ticks(2)
+	var asleep := get_tree().get_nodes_in_group(&"colossi").size()
+	_check(awake == 1 and asleep == 0 and g.colossus() == null, "colossi awake %d, after leaving %d" % [awake, asleep])
+	_check(g.player() == p and p.auto_respawn, "the player changed or keeps the arena's death rules in the valley")
+	# And again: a new, whole colossus.
+	p.actions.view_basis = Basis.looking_at(out)
+	_check(await _wait_region(g, &"valus", 60 * 10), "did not wake Valus again")
+	var second := g.colossus()
+	_check(second != first and second.beam_weak_point() != null and second.beam_weak_point().health >= second.beam_weak_point().max_health, "the second visit did not start a new fight")
+	p.actions.move = Vector2.ZERO
+	_log.append("through the gate: 1 colossus awake; back in the valley: %d; through again: a new one (transitions %d)" % [asleep, g.transitions])
+
+
+func test_world_ride_independent_of_render_fps() -> void:
+	var exe := OS.get_executable_path()
+	var rates := [30, 60, 144, 240]
+	var results := {}
+	var jobs := []
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/world_fps_%d.json" % fps)
+		DirAccess.remove_absolute(out_path)
+		jobs.append(["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "800000", "res://tests/fps_scenario.tscn", "--", "--scenario=world", "--out=" + out_path])
+	var codes := await _execute_parallel(exe, jobs)
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/world_fps_%d.json" % fps)
+		if codes[rates.find(fps)] != 0 or not FileAccess.file_exists(out_path):
+			_check(false, "world scenario at %d fps failed" % fps)
+			return
+		results[fps] = JSON.parse_string(FileAccess.get_file_as_string(out_path))
+	var diff := _max_json_diff(results, rates)
+	var ref: Dictionary = results[60]
+	_log.append("temple -> gate -> corridor -> 20 s of the Valus fight at %s fps: woke at tick %d, fight from tick %d, max fade %.2f, max state difference %.8f" % [str(rates), int(ref.woke), int(ref.fight), float(ref.max_fade), diff])
+	_metric("world_fps_max_diff", diff, "lower")
+	_check(int(ref.fight) > 0 and float(ref.max_fade) == 0.0, "the reference ride did not reach the fight without a fade")
+	_check(diff < 1e-4, "the continuous ride depends on the render rate (diff %.6f)" % diff)
+
+
+## Everything that ran before the Etap 10 tests passed.
+func all_etap9_and_earlier_tests_still_pass() -> void:
+	var failed := PackedStringArray()
+	for n in _pre_etap10_results:
+		if not _pre_etap10_results[n]:
+			failed.append(n)
+	_log.append("%d earlier tests (Milestone 1, Etap 2-9) ran in this run, %d failed %s" % [_pre_etap10_results.size(), failed.size(), str(failed) if failed.size() > 0 else ""])
 	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))

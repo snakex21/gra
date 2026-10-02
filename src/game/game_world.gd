@@ -1,17 +1,18 @@
 class_name GameWorld
 extends Node3D
-## The whole game: the valley and the three arenas as regions, one loaded at a time.
+## The whole game in one continuous world (WorldMap): the valley in the middle, and
+## behind each gate a corridor to that colossus' arena. One player, one Agro, one camera
+## for the whole game; no loading between the valley and an arena.
 ##
-##   new game / load -> VALLEY (temple) -- through the open gate --> ARENA (the next colossus)
-##   ARENA: defeated -> (the fall of the colossus) -> VALLEY, back at the temple, saved
-##          back out through the arena entrance -> VALLEY, at that gate
-##   all three defeated -> VALLEY, every gate closed, the end
+##   new game / load -> the temple in the valley
+##   through the open gate -> the corridor: that colossus wakes up (built, simulated)
+##   back through the gate into the valley -> it goes again (the fight starts over)
+##   defeated -> (the fall of the colossus) -> fade -> the temple, saved, the next gate open
+##   all four defeated -> the temple, every gate closed, the end
 ##
-## Only the loaded region simulates (one colossus at a time). Moving between regions is
-## a short fade; whoever rode through the gate arrives in the saddle. The player, Agro,
-## the camera and the HUD are rebuilt with each region (the arenas own theirs); what
-## carries over is the GameState and whether the player was riding.
-## Everything runs in physics ticks (bots, tests and the FPS-independence check).
+## Only one colossus exists at a time. ``region_kind`` is where the game is: VALLEY, or
+## the colossus that is awake. Everything runs in physics ticks (bots, tests and the
+## FPS-independence check).
 
 signal region_loaded(kind: StringName)
 signal colossus_defeated(colossus: StringName)
@@ -22,8 +23,6 @@ enum Phase { PLAYING, FADE_OUT, LOADING, FADE_IN }
 const VALLEY := &"valley"
 ## Brain seeds of the arenas (each fight is the same fight every time).
 const SEEDS := {&"valus": 7, &"quadratus": 11, &"gaius": 13, &"phaedra": 17}
-## How far behind the arena entrance the way back to the valley starts (arena frame, +Z).
-const ARENA_EXIT_Z := 104.0
 
 @export var with_input := true
 @export var with_art := true
@@ -36,23 +35,24 @@ const ARENA_EXIT_Z := 104.0
 @export var seed_offset := 0
 
 var state := GameState.new()
-## Player settings, applied to every region's input, rider and HUD.
+## Player settings, applied to the input, rider and HUD.
 var settings := Settings.new()
+## The world (valley, corridors, arenas, actors).
 var region: Node3D
 var region_kind: StringName = &""
-## The current region's objects: player, horse, camera, hud, input, and in an arena
-## colossus + encounter, in the valley gates.
+## The arenas in the world: {kind: {"root", "xf", "points"}}.
+var arenas := {}
+## The current objects: player, horse, camera, hud, input, gates, valley; while a
+## colossus is awake also colossus, encounter, arena (its root) and the colossus' name.
 var refs := {}
 var phase := Phase.PLAYING
-## Seconds in the current region.
+## Seconds since the last change of region_kind.
 var region_time := 0.0
 var transitions := 0
 
 var _phase_t := 0.0
-var _next_kind: StringName = &""
-var _arrive_riding := false
-var _arrive_gate: StringName = &""
 var _resets_seen := 0
+var _awake: Array[Node] = []
 var _fade: ColorRect
 var _sun: DirectionalLight3D
 
@@ -64,7 +64,7 @@ func start(new_game := false) -> void:
 		state.load_from(save_path)
 	phase = Phase.PLAYING
 	_fade.color.a = 0.0
-	_build_region(VALLEY)
+	_build_world()
 
 
 ## Starts from a given progress (a replay's start), without touching the save file.
@@ -73,16 +73,18 @@ func start_from(progress: Dictionary) -> void:
 	state.from_dict(progress)
 	phase = Phase.PLAYING
 	_fade.color.a = 0.0
-	_build_region(VALLEY)
+	_build_world()
 
 
-## Back to the title: the region goes, the progress stays saved.
+## Back to the title: the world goes, the progress stays saved.
 func stop() -> void:
 	if is_instance_valid(region):
 		remove_child(region)
 		region.free()
 	region = null
 	refs = {}
+	arenas = {}
+	_awake.clear()
 	region_kind = &""
 	phase = Phase.PLAYING
 	_fade.color.a = 0.0
@@ -155,7 +157,8 @@ func _physics_process(delta: float) -> void:
 			if _phase_t >= fade_time:
 				phase = Phase.LOADING
 		Phase.LOADING:
-			_build_region(_next_kind)
+			# Back at the temple after a victory: the world again, with the next gate open.
+			_build_world()
 			phase = Phase.FADE_IN
 			_phase_t = 0.0
 		Phase.FADE_IN:
@@ -169,17 +172,17 @@ func _play(_delta: float) -> void:
 	var p := player()
 	if p == null:
 		return
+	var gates: Dictionary = refs.gates
 	if region_kind == VALLEY:
 		var next := state.next_colossus()
-		var gates: Dictionary = refs.gates
 		p.beam.target = (gates[next].trigger as Vector3) if next != &"" else Vector3.INF
 		if p.beam.locked and refs.has("hud"):
 			# The hint has done its job once the beam gathered.
 			(refs.hud as PlayerHud).message = ""
 		if next != &"" and Valley.passed_gate(gates[next], p.global_position):
-			_go(next, p.is_riding())
+			_wake(next)
 		return
-	# Arena.
+	# A colossus is awake.
 	var c := colossus()
 	var e: BossEncounter = refs.encounter
 	p.beam.target = c.beam_target() if not c.is_defeated() else Vector3.INF
@@ -195,15 +198,13 @@ func _play(_delta: float) -> void:
 		colossus_defeated.emit(region_kind)
 		_save()
 		_go(VALLEY, false)
-	elif e.state == BossEncounter.State.RUNNING and p.global_position.z > ARENA_EXIT_Z:
-		# Back out through the entrance: to the valley, at this arena's gate.
-		_arrive_gate = region_kind
-		_go(VALLEY, p.is_riding())
+	elif e.state == BossEncounter.State.RUNNING and _back_in_valley(gates[region_kind], p.global_position):
+		# Back through the gate into the valley: the colossus goes, the fight starts over.
+		_sleep()
 
 
-func _go(kind: StringName, riding: bool) -> void:
-	_next_kind = kind
-	_arrive_riding = riding
+## Fade to the temple (after a victory). ``riding`` is kept for old callers.
+func _go(_kind: StringName, _riding: bool) -> void:
 	phase = Phase.FADE_OUT
 	_phase_t = 0.0
 	transitions += 1
@@ -214,48 +215,85 @@ func _save() -> void:
 		state.save(save_path)
 
 
-func _build_region(kind: StringName) -> void:
+static func _back_in_valley(gate: Dictionary, p: Vector3) -> bool:
+	var d: Vector3 = p - (gate.pos as Vector3)
+	var out: Vector3 = (gate.out as Vector3).normalized()
+	var along := d.dot(out)
+	var across := d - out * along
+	across.y = 0.0
+	return along < -Valley.GATE_TRIGGER * 0.5 and across.length() < Valley.GATE_WIDTH
+
+
+## The whole world, the player and Agro at the temple.
+func _build_world() -> void:
 	if is_instance_valid(region):
 		remove_child(region)
 		region.free()
 	refs = {}
+	_awake.clear()
 	region = Node3D.new()
-	region.name = "Region_%s" % kind
+	region.name = "World"
 	add_child(region)
-	region_kind = kind
+	var v := Valley.build(region, state.next_colossus(), with_art, true)
+	arenas = WorldMap.build(region, _build_arena, with_art)
+	_spawn_actors(v.spawn, v.spawn_yaw, v.horse)
+	refs.gates = v.gates
+	refs.valley = v
+	region_kind = VALLEY
 	region_time = 0.0
 	_resets_seen = 0
-	if kind == VALLEY:
-		_build_valley()
-	else:
-		_build_arena(kind)
-	var p := player()
-	p.beam.sun_direction = Valley.SUN_DIRECTION.normalized()
-	if _arrive_riding:
-		var h: Horse = refs.horse
-		# Agro under the player, already moving on.
-		h.teleport(p.global_position, atan2(-p.facing.x, -p.facing.z))
-		p.riding.mount_now(h)
-	_arrive_riding = false
-	_arrive_gate = &""
 	apply_settings(settings)
-	region_loaded.emit(kind)
-	if kind == VALLEY and state.is_complete():
+	region_loaded.emit(VALLEY)
+	if state.is_complete():
 		game_completed.emit()
 
 
-func _build_valley() -> void:
-	var v := Valley.build(region, state.next_colossus(), with_art)
-	var spawn: Vector3 = v.spawn
-	var yaw: float = v.spawn_yaw
-	var horse_at: Vector3 = v.horse
-	if _arrive_gate != &"":
-		# Coming back from an arena: just inside its gate, facing the valley.
-		var g: Dictionary = v.gates[_arrive_gate]
-		var out: Vector3 = g.out
-		spawn = Valley.on_ground((g.pos as Vector3) - out * 10.0, 0.95)
-		yaw = atan2(out.x, out.z)
-		horse_at = Valley.on_ground((g.pos as Vector3) - out * 13.0 + out.cross(Vector3.UP) * 3.0)
+## An arena's ground and layout in its root (local frame), with its art.
+func _build_arena(kind: StringName, root: Node3D) -> Dictionary:
+	var points: Dictionary
+	match kind:
+		&"valus", &"gaius":
+			points = ValusArena.build(root)
+		&"quadratus":
+			points = QuadratusArena.build(root)
+		&"phaedra":
+			points = PhaedraArena.build(root)
+	_disc_ground(root)
+	if with_art:
+		match kind:
+			&"valus":
+				ArenaArt.dress_arena(root, Vector3(0, 0, 1), 55.0)
+			&"gaius":
+				ArenaArt.dress_arena(root, Vector3(0, 0, 1), 55.0, 5113)
+			&"quadratus":
+				ArenaArt.dress_arena(root, Vector3(0, 0, 1), 75.0, 4021)
+			&"phaedra":
+				ArenaArt.dress_fen(root, points.tunnels, 75.0, 6047)
+	return points
+
+
+## The arenas' square test ground becomes a disc (they sit side by side in the world).
+static func _disc_ground(root: Node3D) -> void:
+	var ground := root.get_node_or_null("Ground")
+	if ground == null:
+		return
+	for c in ground.get_children():
+		if c is CollisionShape3D:
+			var cyl := CylinderShape3D.new()
+			cyl.radius = WorldMap.GROUND_RADIUS
+			cyl.height = 2.0
+			(c as CollisionShape3D).shape = cyl
+		elif c is MeshInstance3D:
+			var m := CylinderMesh.new()
+			m.top_radius = WorldMap.GROUND_RADIUS
+			m.bottom_radius = WorldMap.GROUND_RADIUS
+			m.height = 2.0
+			m.radial_segments = 48
+			(c as MeshInstance3D).mesh = m
+			(c as MeshInstance3D).position = Vector3(0, -1, 0)
+
+
+func _spawn_actors(spawn: Vector3, yaw: float, horse_at: Vector3) -> void:
 	var horse := Horse.new()
 	horse.name = "Agro"
 	region.add_child(horse)
@@ -267,6 +305,7 @@ func _build_valley() -> void:
 	p.facing = Basis(Vector3.UP, yaw) * Vector3.FORWARD
 	p.spawn_transform = p.global_transform
 	p.actions.view_basis = Basis(Vector3.UP, yaw)
+	p.beam.sun_direction = Valley.SUN_DIRECTION.normalized()
 	p.reset_physics_interpolation()
 	var cam := PlayerCamera.new()
 	cam.name = "Camera1"
@@ -288,7 +327,7 @@ func _build_valley() -> void:
 	hud.message = _valley_message()
 	layer.add_child(hud)
 	region.add_child(layer)
-	refs = {"player": p, "horse": horse, "camera": cam, "hud": hud, "input": input, "gates": v.gates, "valley": v}
+	refs.merge({"player": p, "horse": horse, "camera": cam, "hud": hud, "input": input}, true)
 
 
 func _valley_message() -> String:
@@ -299,19 +338,95 @@ func _valley_message() -> String:
 	return ""
 
 
-func _build_arena(kind: StringName) -> void:
-	var r: Dictionary
+## The colossus behind ``kind``'s gate wakes up: built in its arena, with its encounter.
+func _wake(kind: StringName) -> void:
+	var a: Dictionary = arenas[kind]
+	var root: Node3D = a.root
+	var xf: Transform3D = a.xf
+	var yaw := xf.basis.get_euler().y
+	var p := player()
+	var horse: Horse = refs.horse
+	var c: Colossus
 	match kind:
 		&"valus":
-			r = ValusArena.build_encounter(region, with_input, SEEDS[kind] + seed_offset, with_art)
-			r.colossus = r.valus
+			c = Valus.new()
 		&"quadratus":
-			r = QuadratusArena.build_encounter(region, with_input, SEEDS[kind] + seed_offset, with_art)
-			r.colossus = r.quadratus
+			c = Quadratus.new()
 		&"gaius":
-			r = GaiusArena.build_encounter(region, with_input, SEEDS[kind] + seed_offset, with_art)
-			r.colossus = r.gaius
+			c = Gaius.new()
 		&"phaedra":
-			r = PhaedraArena.build_encounter(region, with_input, SEEDS[kind] + seed_offset, with_art)
-			r.colossus = r.phaedra
-	refs = r
+			var ph := Phaedra.new()
+			ph.tunnels = PhaedraArena.tunnels_in_world(a.points.tunnels, xf)
+			ph.arena_radius = 65.0
+			refs.tunnels = ph.tunnels
+			c = ph
+	c.name = String(kind).capitalize()
+	c.set(&"brain_seed", SEEDS[kind] + seed_offset)
+	# Every colossus starts at its arena's centre facing the way in (local +Z).
+	c.rotation.y = PI
+	root.add_child(c)
+	c.call(&"teleport", xf.origin, yaw + PI)
+	c.call(&"reset_encounter", c.global_transform, true)
+	if with_art:
+		if c is Valus:
+			ArenaArt.dress_valus(c)
+		else:
+			ArenaArt.skin_colossus(c)
+	var e := BossEncounter.new()
+	e.name = "Encounter"
+	root.add_child(e)
+	var players: Array[PlayerCharacter] = [p]
+	e.setup(c, players, horse)
+	# A death puts the player (and Agro) back at the arena's way in.
+	e.horse_start = Transform3D(xf.basis, xf * ValusArena.HORSE_START)
+	p.spawn_transform = Transform3D(xf.basis, xf * ValusArena.PLAYER_START)
+	var arrows := ArrowSystem.of(p)
+	e.encounter_reset.connect(func(_n: int) -> void: arrows.clear())
+	_awake = [c, e]
+	if c is HumanoidBoss:
+		var draw := CombatDebugDraw.new()
+		draw.valus = c
+		root.add_child(draw)
+		_awake.append(draw)
+		refs.debug_draw = draw
+	else:
+		refs.debug_draw = c.debug_draw
+	(refs.camera as PlayerCamera).focus_target = c
+	var hud: PlayerHud = refs.hud
+	hud.colossus = c
+	hud.encounter = e
+	hud.message = ""
+	refs.colossus = c
+	refs.encounter = e
+	refs.arena = root
+	refs[kind] = c
+	_change_region(kind)
+
+
+## The awake colossus goes (the player went back into the valley).
+func _sleep() -> void:
+	var p := player()
+	var kind := region_kind
+	ArrowSystem.of(p).clear()
+	(refs.camera as PlayerCamera).focus_target = null
+	var hud: PlayerHud = refs.hud
+	hud.colossus = null
+	hud.encounter = null
+	p.auto_respawn = true
+	var g: Dictionary = refs.gates[kind]
+	p.spawn_transform = Transform3D(Basis(Vector3.UP, atan2((g.out as Vector3).x, (g.out as Vector3).z)), Valley.on_ground((g.pos as Vector3) - (g.out as Vector3) * 10.0, 0.95))
+	for n in _awake:
+		if is_instance_valid(n):
+			n.queue_free()
+	_awake.clear()
+	for k in ["colossus", "encounter", "arena", "debug_draw", "tunnels", kind]:
+		refs.erase(k)
+	_change_region(VALLEY)
+
+
+func _change_region(kind: StringName) -> void:
+	region_kind = kind
+	region_time = 0.0
+	_resets_seen = 0
+	transitions += 1
+	region_loaded.emit(kind)

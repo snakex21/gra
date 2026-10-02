@@ -314,7 +314,7 @@ func _ride() -> void:
 		_enter(Phase.DISMOUNT)
 		return
 	if verbose and int(phase_time * 60.0) % 300 == 0:
-		_log("  ride: boss %s speed %.1f dist %.1f horse %.1f m/s bow %s" % [quadratus.intent.kind, quadratus.loco.speed, _flat(quadratus.global_position - player.global_position).length(), horse.controller.speed, player.bow.state])
+		_log("  ride: boss %s speed %.1f dist %.1f horse %.1f m/s (%s) bow %s; from centre: me %.0f m, boss %.0f m" % [quadratus.intent.kind, quadratus.loco.speed, _flat(quadratus.global_position - player.global_position).length(), horse.controller.speed, horse.controller.obstacle, player.bow.state, _flat(player.global_position - quadratus.arena_center).length(), _flat(quadratus.global_position - quadratus.arena_center).length()])
 	# Ride a wide circle behind it; shoot from the saddle when a sole shows.
 	var behind := quadratus.global_transform * Vector3(_side * 6.0, 0, 5.0 + shoot_distance + 6.0)
 	var to := _flat(behind - player.global_position)

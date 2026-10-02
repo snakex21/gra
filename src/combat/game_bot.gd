@@ -17,6 +17,9 @@ enum Phase { FIND, TO_HORSE, MOUNT, RIDE, ARENA, DONE }
 const TIMEOUTS := {Phase.FIND: 20.0, Phase.TO_HORSE: 40.0, Phase.MOUNT: 10.0, Phase.RIDE: 150.0, Phase.ARENA: 420.0}
 ## Seconds between beam checks while riding.
 const RIDE_CHECK := 7.0
+## In an arena (local z, the way in is +Z): where the colossus' own bot takes over (the
+## arenas' fights start ~80 m from the colossus).
+const ARENA_REACHED := 84.0
 
 var game: GameWorld
 var verbose := false
@@ -81,7 +84,7 @@ func _physics_process(delta: float) -> void:
 		Phase.RIDE:
 			_ride(delta)
 		Phase.ARENA:
-			_arena()
+			_arena(delta)
 
 
 func _player() -> PlayerCharacter:
@@ -209,7 +212,7 @@ func _ride(delta: float) -> void:
 		_detour_side = -_detour_side
 		_slow = 0.0
 		stats.detours += 1
-		_log("detour (%s)" % ("left" if _detour_side < 0.0 else "right"))
+		_log("detour (%s) at %s heading %s" % ["left" if _detour_side < 0.0 else "right", str(_player().global_position.snapped(Vector3.ONE * 0.1)), str(_heading.snapped(Vector3.ONE * 0.01))])
 	if _detour > 0.0:
 		_detour -= delta
 		dir = Basis(Vector3.UP, 1.1 * _detour_side) * dir
@@ -236,15 +239,32 @@ func _on_region(kind: StringName) -> void:
 		_heading = _player().facing
 		_enter(Phase.RIDE if _player().is_riding() else Phase.FIND)
 	else:
+		# The way on is no longer the gate: look again with the beam first.
+		_since_check = RIDE_CHECK + 0.01
 		_enter(Phase.ARENA)
 
 
-func _arena() -> void:
+func _arena(delta: float) -> void:
 	var p := _player()
 	if boss_bot != null:
 		return
 	var kind := game.region_kind
 	var a := p.actions
+	var root: Node3D = game.refs.get("arena")
+	if root and (root.global_transform.affine_inverse() * p.global_position).z > ARENA_REACHED:
+		# Still in the corridor: on along the beam (it now leads to the colossus).
+		if p.is_riding():
+			_ride(delta)
+		else:
+			if _sweeping or _since_check > RIDE_CHECK:
+				a.move = Vector2.ZERO
+				if _sweep(delta):
+					_since_check = 0.0
+				return
+			_since_check += delta
+			a.view_basis = Basis.looking_at(_heading)
+			a.move = Vector2(0, 1)
+		return
 	if p.is_riding() and kind != &"quadratus":
 		# Valus and Gaius are fought on foot: off the horse first.
 		a.move = Vector2.ZERO
