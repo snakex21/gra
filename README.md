@@ -95,7 +95,7 @@ godot --path . # albo otwórz project.godot w edytorze Godot 4.4+
 ## Testy
 
 ```bash
-tools/run_tests.sh                 # 184 testy + A/B + porównanie z zamrożonymi wzorcami, headless, ~15 min
+tools/run_tests.sh                 # 197 testów + A/B + porównanie z zamrożonymi wzorcami, headless, ~15 min
 tools/run_tests.sh --save-baseline # zamraża nowy wzorzec regresji Etapu 2/3 (tylko świadomie)
 tools/run_tests.sh --save-horse-baseline  # zamraża wzorzec metryk Agro (tylko świadomie)
 tools/run_tests.sh --only=horse    # wybrane testy

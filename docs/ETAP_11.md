@@ -80,7 +80,7 @@ tylko testy regresji):
   następnego kolosa.
 - Kolos, który budzi się przed ukończeniem swojej areny, dostaje ją od razu w całości
   (`ensure_arena`).
-- Start trwa o połowę krócej: ~0,8 s zamiast ~1,4 s z grafiką. Areny są gotowe po
+- Start trwa krócej: ~0,8 s zamiast ~1,1–1,4 s z grafiką. Areny są gotowe po
   12 tickach, a najdłuższy krok to ~50–110 ms.
 - Areny zbudowane po kolei są identyczne z tymi zbudowanymi naraz (test porównuje
   liczbę kształtów kolizji i siatek).
@@ -120,18 +120,55 @@ tylko testy regresji):
 
 ### Testy
 
-Pełny przebieg `tools/run_tests.sh`: **WYNIK_TESTOW**.
+Pełny przebieg `tools/run_tests.sh`: **197/197 PASS** (184 wcześniejsze + 13 nowych).
 
-TABELA_TESTOW
+| Test | Wynik |
+|---|---|
+| `avion_circles_high_over_the_lake` | 40 s sam: 560 m lotu, nigdy niżej niż 32,8 m nad wodą, najdalej 70 m od środka, skręt ≤ 0,55 rad/s |
+| `avion_swoop_is_telegraphed_and_wing_reaches_the_tower` | 1,6 s krzyku i przechyłu, spód skrzydła 0,87 m od głowy na wieży, w przelocie ≤ 4,5 m/s |
+| `avion_glides_over_the_water_with_a_rider` | 35 s na ptaku, pierwsze kołysanie 6,5 s po wejściu, pochylenie ≤ 0,17 rad, ≤ 61 m od środka, bez pikowania z jeźdźcem |
+| `avion_can_be_defeated` | bot wygrywa w 243 s, bez śmierci |
+| `avion_simulation_independent_of_render_fps` | walka botem przy 30/60/90/144/240 FPS: różnica 0,00000000 |
+| `avion_cost_stays_within_budget` | kolos 87 µs/tick (mózg 6,6), gracz 116 µs |
+| `six_colossi_in_order_with_south_west_gate` | zapis z Etapu 10 (pięć kolosów) prowadzi przez bramę SW do Aviona; jezioro i 5 wież na miejscu |
+| `player_dives_and_holds_breath` | 6,7 m w dół w 4 s, z powrotem w 3,4 s; bez powietrza nurek sam wypływa (zdrowie 100 → 59) |
+| `diving_under_the_hydrus_ram` | zanurkowanie przy uniesionej głowie: taran przechodzi górą |
+| `replay_markers_jump_and_clip` | znaczniki śmierci i upadku; skok ląduje 3 s przed znacznikiem; wycinek gra swoje okno i staje |
+| `arenas_are_built_after_the_start` | start 0,77 s (naraz 1,1 s), 12 ticków dobudowy, najdłuższy 66 ms; areny identyczne |
+| `default_keys_do_not_clash` | 13 akcji, 30 klawiszy / przycisków, bez powtórzeń |
+| `all_etap10_and_earlier_tests_still_pass` | 184 wcześniejsze, 0 porażek |
+
+Adaptacje starych asercji (bez usuwania testów): opis slotu liczy teraz kolosy z listy
+(„1/6 kolosów”), test układu świata najpierw dobudowuje areny, test pięciu kolosów
+akceptuje dłuższą listę.
+
+Porównanie z zamrożonymi wzorcami flaguje 8 metryk sandboxa Etapu 2: 7 czasów (jak
+w Etapach 9 i 10) i liczbę promieni wspinaczki przy wstrząsie (0,18 wobec 0). Ta ostatnia
+jest zaflagowana także na kodzie Etapu 10 uruchomionym osobno (0,42), więc to nie zmiana
+z tego etapu.
 
 ### Soak
 
-SOAK_TEKST
+- **Avion** (`tools/run_boss_soak.sh 100 1 avion`, 4 × 25): **100/100 wygranych**,
+  0 zakleszczeń, 0 skoków obrazu, 0 złych resetów.
+  - Czas: min 105 / mediana 228 / max 571 s.
+  - 998 nurkowań (307 przerwanych), 329 chwytów skrzydła, 245 upadków do jeziora.
+  - 3 śmierci na 100 walk: upadek z dużej wysokości na szczyt wieży albo brzeg.
+- **Cała gra z sześcioma kolosami, zróżnicowana** (`tests/game_soak.gd`, 4 × 6):
+  **24/24 gier ukończonych**, 0 zatrzymań bota.
+  - Od świątyni do końca: min 948 / mediana 1064 / max 1473 s.
+  - Walka z Avionem w grze: min 120 / mediana 172 / max 467 s.
+  - 9 śmierci na 24 gry, wszystkie w walkach.
+  - Pierwsze przejazdy znalazły błąd: kierunki pnączy wież były podawane botowi
+    w układzie areny, a arena Aviona jest w świecie obrócona, więc bot płynął do ściany
+    bez pnączy. Teraz są w układzie świata.
+- Starych walk nie soakowałem ponownie (zgodnie z ustaleniem); pilnują ich testy
+  regresji, a cała gra przechodzi przez wszystkie.
 
 ### Wydajność
 
 - Avion: ~80 µs/tick (mózg ~6 µs), gracz ~100 µs.
-- Start gry z grafiką: ~0,8 s (wcześniej ~1,4 s), potem 12 ticków dobudowy aren.
+- Start gry z grafiką: ~0,8 s (wcześniej ~1,1–1,4 s), potem 12 ticków dobudowy aren.
 
 ## Ograniczenia
 
