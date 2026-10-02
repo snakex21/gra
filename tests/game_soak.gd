@@ -1,6 +1,6 @@
 extends Node
 ## Long regression run of the whole game: N new games played start to finish by GameBot
-## (temple -> beam -> ride -> Valus -> temple -> ... -> Gaius -> the end). Each run uses
+## (temple -> beam -> ride -> Valus -> temple -> ... -> Phaedra -> the end). Each run uses
 ## other brain seeds in the arenas and another first guess of the way.
 ##
 ##   godot --headless --fixed-fps 60 res://tests/game_soak.tscn -- --runs=20 [--from=1]

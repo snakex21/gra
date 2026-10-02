@@ -4201,6 +4201,8 @@ func _execute_parallel(exe: String, jobs: Array) -> Array:
 			if not OS.is_process_running(pid):
 				codes[running[pid]] = 0
 				running.erase(pid)
+		# A real pause between polls: spinning frames here would use up --quit-after.
+		OS.delay_msec(20)
 		await get_tree().process_frame
 	return codes
 

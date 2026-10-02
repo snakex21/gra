@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Long regression run of the whole game: N new games played start to finish by GameBot
-# (beam, ride, three fights, back to the temple). Details in tests/output/game_soak.json.
+# (beam, ride, four fights, back to the temple). Details in tests/output/game_soak.json.
 #   tools/run_game_soak.sh [runs] [first]
 set -euo pipefail
 cd "$(dirname "$0")/.."
