@@ -2,8 +2,8 @@ extends GameWorld
 ## The whole game: the title menu, the temple in the valley, the beam of the sword, the
 ## arenas behind their gates, the save. ``-- --new-game`` (or NEW_GAME=1) skips the menu
 ## and starts a new game; ``-- --continue`` skips it and loads the save;
-## ``-- --replay=<file>`` plays a recording back (ReplayViewer: pause, seek, speed, free
-## camera). F9 in a game saves a bug report: the recording so far and a short summary.
+## ``-- --replay=<file> [--seek=<s>]`` plays a recording back (ReplayViewer: pause, seek,
+## speed, markers, clips, free camera). F9 in a game saves a bug report: the recording so far and a short summary.
 
 const LAST_REPLAY := "user://replays/last.replay"
 const REPORTS := "user://replays/"
@@ -88,7 +88,11 @@ func _play_replay(path: String) -> void:
 	viewer.name = "ReplayViewer"
 	viewer.setup(self, data)
 	add_child(viewer)
-	print("Replaying %s: %d recorded ticks" % [path, int(data.get("ticks", 0))])
+	print("Replaying %s: %d recorded ticks, %d markers" % [path, int(data.get("ticks", 0)), (data.get("markers", []) as Array).size()])
+	# ``-- --seek=<s>``: straight to that moment (a time from a bug report).
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--seek="):
+			viewer.seek(int(float(a.trim_prefix("--seek=")) * ReplayViewer.BASE_TICKS))
 
 
 ## F9: the recording so far and what the game looked like, side by side in user://replays.

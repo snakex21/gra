@@ -14,7 +14,7 @@ signal finished(result: Dictionary)
 
 enum Phase { FIND, TO_HORSE, MOUNT, RIDE, ARENA, DONE }
 
-const TIMEOUTS := {Phase.FIND: 20.0, Phase.TO_HORSE: 40.0, Phase.MOUNT: 10.0, Phase.RIDE: 150.0, Phase.ARENA: 420.0}
+const TIMEOUTS := {Phase.FIND: 20.0, Phase.TO_HORSE: 40.0, Phase.MOUNT: 10.0, Phase.RIDE: 150.0, Phase.ARENA: 720.0}
 ## Seconds between beam checks while riding.
 const RIDE_CHECK := 7.0
 

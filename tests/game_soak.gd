@@ -5,6 +5,7 @@ extends Node
 ## waiting somewhere else and a random first ride before the beam is checked again.
 ##
 ##   godot --headless --fixed-fps 60 res://tests/game_soak.tscn -- --runs=20 [--from=1]
+##     [--defeated=N]   start from a save with the first N colossi already defeated
 ## Writes tests/output/game_soak.json and prints a summary. Nothing is retried.
 
 ## Simulation limit per game (s).
@@ -12,6 +13,7 @@ const LIMIT := 60.0 * 45.0
 
 var runs := 10
 var first := 1
+var defeated := 0
 var results := []
 
 
@@ -21,6 +23,8 @@ func _ready() -> void:
 			runs = int(a.trim_prefix("--runs="))
 		elif a.begins_with("--from="):
 			first = int(a.trim_prefix("--from="))
+		elif a.begins_with("--defeated="):
+			defeated = int(a.trim_prefix("--defeated="))
 	InputSetup.ensure_defaults()
 	Sfx.enabled = false
 	Fx.enabled = false
@@ -41,6 +45,9 @@ func _run(i: int) -> Dictionary:
 	g.seed_offset = i * 101
 	add_child(g)
 	g.start(true)
+	if defeated > 0:
+		g.state.from_dict({"version": GameState.VERSION, "defeated": GameState.ORDER.slice(0, defeated).map(func(k: StringName) -> String: return String(k))})
+		g._build_world()
 	var bot := GameBot.new()
 	bot.verbose = OS.get_environment("BOT_VERBOSE") != ""
 	add_child(bot)

@@ -258,6 +258,27 @@ Szczegóły: [ETAP_10.md](ETAP_10.md). Zasady:
   `time_scale` rozciąga krok, więc zmienia się go zawsze razem z liczbą ticków na
   sekundę, o potęgę dwójki.
 
+## 2j. Avion, dobudowa aren, znaczniki (Etap 11)
+
+```
+Colossus ── Avion: węzeł sam leci (yaw/pitch/speed z limitami, przechył), skrzydła na kościach
+   SWOOP: TELEGRAPH -> DIVE -> PASS -> CLIMB (z jeźdźcem: bez CLIMB, lot płaski nad środkiem)
+GameWorld._pending: [arena, etap] — po jednym na tick (teren, potem grafika), ensure_arena(kind)
+ActionReplay.markers [[tick, kind, text]] -> ReplayViewer: pasek, ,/. skok, C wycinek (okno)
+```
+Szczegóły: [ETAP_11.md](ETAP_11.md). Zasady:
+- Latający kolos to zwykły `Colossus`: mózg wybiera intencję (CIRCLE / SWOOP / CARRY /
+  SHAKE_BODY), reguły ją blokują (bez pikowania z jeźdźcem, kołysanie tylko nad wodą),
+  a kontroler lotu jedzie po gładkiej ścieżce. Segmenty z futrem idą za kośćmi jak
+  u każdego kolosa, więc wspinaczka działa bez zmian.
+- Dane areny podawane botom są w przestrzeni świata (kierunki pnączy też), bo arena
+  w świecie jest obrócona.
+- Statyczny świat nadal powstaje cały, ale rozłożony na pierwsze ticki gry, i zawsze
+  przed przebudzeniem kolosa w danej arenie.
+- Znaczniki zapisuje nagrywarka (sygnały gracza i `GameWorld`); przeglądarka tylko je
+  czyta. Wycinek to nagranie z oknem `header.clip`, bo stan da się odtworzyć tylko od
+  początku.
+
 ## 3. Gracze i wejście
 
 - Nie ma singletona gracza. Każdy `PlayerCharacter` jest w grupie `players`, a sandbox trzyma

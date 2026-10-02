@@ -5,7 +5,7 @@ elementy ograniczone w oryginale sprzętem PS2, czasem produkcji albo wycięte z
 Silnik: **Godot 4.4+** (GDScript, a Zig dopiero tam, gdzie profiler pokaże realną potrzebę).
 Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych assetów oryginału.
 
-## Stan: Etap 10 — ciągły świat, Hydrus i pływanie, narzędzia powtórek
+## Stan: Etap 11 — Avion (latający kolos), nurkowanie, znaczniki w powtórkach
 
 - Milestone 1 (wspinanie po poruszającym się kolosie): [docs/MILESTONE_1.md](docs/MILESTONE_1.md)
 - Etap 2 (równowaga na kolosie, upadki, kamera, przejścia): [docs/ETAP_2.md](docs/ETAP_2.md)
@@ -17,20 +17,24 @@ Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych
 - Etap 8 (dolina Ancient Valley ze świątynią i trzema bramami, promień miecza, pętla gry z zapisem, bot całej gry, Sentinel v2): [docs/ETAP_8.md](docs/ETAP_8.md)
 - Etap 9 (Phaedra: płochliwy kolos z długą szyją, zwabienie do tunelu; menu i ustawienia; nagrywanie i deterministyczne powtórki; tańszy Agro w dolinie; tekstury Agro i Wędrowca): [docs/ETAP_9.md](docs/ETAP_9.md)
 - Etap 10 (ciągły świat bez wygaszeń, wspólna baza czworonogów, piąty kolos Hydrus w jeziorze i pływanie, przewijanie powtórek, F9, sloty zapisu, zmiana klawiszy, głośność): [docs/ETAP_10.md](docs/ETAP_10.md)
+- Etap 11 (szósty kolos Avion: ptak nad jeziorem z wieżami, chwyt skrzydła przy pikowaniu; areny budowane po starcie; nurkowanie i oddech; znaczniki, skoki i wycinki w powtórkach): [docs/ETAP_11.md](docs/ETAP_11.md)
 - Architektura: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md)
 
 **Cała gra: `scenes/game.tscn`** (scena główna): menu (Kontynuuj / Nowa gra / Wczytaj / Ustawienia,
 trzy sloty zapisu), start w świątyni, promień miecza (V / lewy spust) wskazuje drogę. Jeden ciągły
-świat: brama w krawędzi doliny prowadzi korytarzem prosto do areny kolejnego z pięciu kolosów, bez
+świat: brama w krawędzi doliny prowadzi korytarzem prosto do areny kolejnego z sześciu kolosów, bez
 ekranu ładowania; po wygranej powrót do świątyni i zapis. Esc / P / Start = pauza.
 Bez menu: `-- --new-game` (albo `NEW_GAME=1`) lub `-- --continue`.
 
 Każda gra jest nagrywana (`user://replays/last.replay`, akcje gracza tick po ticku), F9 zapisuje
 zgłoszenie błędu (nagranie + podsumowanie). Odtworzenie tick w tick z przewijaniem:
-`godot --path . -- --replay=user://replays/last.replay` (K pauza, J/L ±10 s, [ ] prędkość, F7 kamera).
+`godot --path . -- --replay=user://replays/last.replay [--seek=<s>]` (K pauza, J/L ±10 s, [ ] prędkość,
+`,` / `.` poprzedni / następny znacznik — śmierć, trafienie, upadek, pokonanie, zgłoszenie —, C wycinek
+do zgłoszenia, F7 kamera).
 
 Pojedyncze walki z bossami: `scenes/valus_arena.tscn` (Valus), `scenes/quadratus_arena.tscn` (Quadratus),
-`scenes/gaius_arena.tscn` (Gaius), `scenes/phaedra_arena.tscn` (Phaedra) i `scenes/hydrus_arena.tscn` (Hydrus, jezioro); we wszystkich jest Agro, F5 resetuje walkę, Tab przełącza miecz / łuk.
+`scenes/gaius_arena.tscn` (Gaius), `scenes/phaedra_arena.tscn` (Phaedra), `scenes/hydrus_arena.tscn` (Hydrus, jezioro)
+i `scenes/avion_arena.tscn` (Avion, jezioro z wieżami); we wszystkich jest Agro, F5 resetuje walkę, Tab przełącza miecz / łuk.
 Areny mają warstwę assetów (paczka Saltward, CC0); `NO_ART=1` pokazuje czysty greybox.
 
 Co działa w sandboxie (`scenes/sandbox.tscn`):
@@ -86,6 +90,7 @@ godot --path . # albo otwórz project.godot w edytorze Godot 4.4+
 | Pauza / menu | Esc / P | Start |
 | Zgłoszenie błędu (nagranie + opis) | F9 | — |
 | Pływanie | jak chód (w głębokiej wodzie) | — |
+| Nurkowanie (trzymaj w wodzie; oddech 14 s) | Ctrl / Z | B |
 
 ## Testy
 

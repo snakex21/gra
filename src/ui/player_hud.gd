@@ -107,6 +107,13 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if player == null:
 		return
+	# Under water (the camera below a surface): the light turns blue-green and dim.
+	if camera and is_instance_valid(camera):
+		var at := (camera as Node3D).global_position
+		var surface := WaterBody.surface_at(get_tree(), at)
+		if not is_nan(surface) and at.y < surface:
+			var depth := clampf((surface - at.y) / 8.0, 0.0, 1.0)
+			draw_rect(Rect2(Vector2.ZERO, size), Color(0.08, 0.32, 0.42, 0.35 + 0.3 * depth))
 	var center := Vector2(size.x - 90.0, size.y - 90.0)
 	var r := 42.0
 	var ratio := player.stamina.ratio()

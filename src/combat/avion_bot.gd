@@ -354,8 +354,8 @@ func _tower_base(i: int) -> Vector3:
 	var t: Dictionary = towers[i]
 	var c: Vector3 = t.center
 	var best := Vector3.INF
-	for a: float in t.creepers:
-		var p := c + Vector3(cos(a), 0, sin(a)) * (float(t.radius) + 0.9)
+	for dir: Vector3 in t.creepers:
+		var p := c + dir * (float(t.radius) + 0.9)
 		if best == Vector3.INF or _flat(p - player.global_position).length() < _flat(best - player.global_position).length():
 			best = p
 	return Vector3(best.x, player.global_position.y, best.z)

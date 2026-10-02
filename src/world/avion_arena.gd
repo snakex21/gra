@@ -114,7 +114,12 @@ static func _tower(parent: Node3D, at: Vector3, radius: float, stone: Material, 
 		body.add_child(vm)
 	body.position = at + Vector3.UP * (bottom + h * 0.5)
 	parent.add_child(body)
-	return {"center": parent.global_transform * (at + Vector3.UP * TOWER_TOP), "radius": radius, "creepers": [0.4, 0.4 + PI * 0.5, 0.4 + PI, 0.4 + PI * 1.5]}
+	# The creepers' outward directions in world space (the arena may be turned in the world).
+	var dirs: Array[Vector3] = []
+	for k in 4:
+		var a := k * TAU / 4.0 + 0.4
+		dirs.append((parent.global_basis * Vector3(cos(a), 0, sin(a))).normalized())
+	return {"center": parent.global_transform * (at + Vector3.UP * TOWER_TOP), "radius": radius, "creepers": dirs}
 
 
 static func _basin_mesh(half: float, cell: float) -> ArrayMesh:

@@ -255,6 +255,7 @@ func _ready() -> void:
 		test_diving_under_the_hydrus_ram,
 		test_replay_markers_jump_and_clip,
 		test_arenas_are_built_after_the_start,
+		test_default_keys_do_not_clash,
 		all_etap10_and_earlier_tests_still_pass,
 	]
 	for t in tests:
@@ -6638,7 +6639,7 @@ func test_menu_slots_volume_and_rebinding() -> void:
 	b.save(GameState.slot_path(3))
 	var d2 := GameState.describe(GameState.slot_path(2))
 	var d3 := GameState.describe(GameState.slot_path(3))
-	_check(d2 == "1/5 kolosów, 10 min" and d3 == "ukończona, 50 min", "slots described as %s / %s" % [d2, d3])
+	_check(d2 == "1/%d kolosów, 10 min" % GameState.ORDER.size() and d3 == "ukończona, 50 min", "slots described as %s / %s" % [d2, d3])
 	var picked := []
 	menu.slot_chosen.connect(func(slot: int, new_game: bool) -> void: picked.append([slot, new_game]))
 	menu._open_slots(false)
@@ -6823,14 +6824,18 @@ func test_avion_glides_over_the_water_with_a_rider() -> void:
 	var max_pitch := 0.0
 	var outer := 0.0
 	var swoops := int(av.stats.swoops)
+	var bad_swoops := 0
 	var on_s := 0.0
 	for i in 60 * 40:
 		await _ticks(1)
 		var on := av.owns_body(p.get_support_body()) or p.is_climbing() and av.owns_body(p.grip.body)
 		if on_at < 0 and on:
 			on_at = i
-		if on_at >= 0 and i == on_at + 60:
-			swoops = int(av.stats.swoops) if av.swoop == Avion.Swoop.NONE else int(av.stats.swoops) - 1
+		# A swoop that begins while the player is on it (a fall first is fair game).
+		if int(av.stats.swoops) != swoops:
+			if on and on_at >= 0 and i > on_at + 60:
+				bad_swoops += 1
+			swoops = int(av.stats.swoops)
 		if on:
 			on_s += 1.0 / 60.0
 		p.actions.grab_held = av.intent.kind == Avion.SHAKE_BODY or absf(av.roll) > 0.25
@@ -6842,7 +6847,7 @@ func test_avion_glides_over_the_water_with_a_rider() -> void:
 	_check(on_at >= 0, "the player did not land on its back")
 	_check(shake_at < 0 or (shake_at - on_at) / 60.0 >= 3.0 - 0.05, "it rolled %.1f s after the player got on" % ((shake_at - on_at) / 60.0))
 	_check(shake_at >= 0, "it never tried to roll the rider off")
-	_check(int(av.stats.swoops) == swoops, "it began a swoop with someone on it")
+	_check(bad_swoops == 0, "it began %d swoop(s) with someone on it" % bad_swoops)
 	_check(max_pitch <= 0.2, "it climbed / dived at %.2f rad with a rider" % max_pitch)
 	_check(outer < AvionArena.WATER_RADIUS - 30.0, "with a rider it flew out to r %.0f (a fall would miss the water)" % outer)
 	_log.append("rider: %.1f s on it, first roll %.1f s after getting on, pitch at most %.2f rad, at most %.0f m from the lake's middle" % [on_s, (shake_at - on_at) / 60.0, max_pitch, outer])
@@ -7154,3 +7159,27 @@ func test_arenas_are_built_after_the_start() -> void:
 	_check(g3.colossus() is Valus and g3.colossus().is_inside_tree(), "Valus did not wake in its arena")
 	_check(steps <= 2 * Valley.GATES.size() + 1, "the building took %d ticks" % steps)
 	_log.append("start %.0f ms (all at once %.0f ms), then %d ticks of building (ground, then art; the longest tick %.0f ms); same arenas either way; a colossus woken early gets its arena at once" % [start_ms, eager_ms, steps, worst])
+
+
+## Found while adding dive: C already called Agro. No two rebindable actions share a key.
+func test_default_keys_do_not_clash() -> void:
+	var d := InputSetup.defaults()
+	var seen := {}
+	var clashes := []
+	for pair in InputSetup.REBINDABLE:
+		var action: StringName = pair[0]
+		for e in d.get(action, []):
+			var k := ""
+			if e is InputEventKey:
+				k = "key %d" % (e as InputEventKey).physical_keycode
+			elif e is InputEventMouseButton:
+				k = "mouse %d" % (e as InputEventMouseButton).button_index
+			elif e is InputEventJoypadButton:
+				k = "pad %d" % (e as InputEventJoypadButton).button_index
+			if k == "":
+				continue
+			if seen.has(k) and seen[k] != action:
+				clashes.append("%s: %s / %s" % [k, seen[k], action])
+			seen[k] = action
+	_check(clashes.is_empty(), "default keys shared: %s" % str(clashes))
+	_log.append("%d rebindable actions, %d keys / buttons, no clashes" % [InputSetup.REBINDABLE.size(), seen.size()])
