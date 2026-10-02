@@ -30,6 +30,8 @@ var result := {}
 var _last_damage := ""
 var _off_body := 0.0
 var _was_under := false
+var _last_pos := Vector3.INF
+var _stuck := 0.0
 
 
 func setup(p_player: PlayerCharacter, p_hydrus: Hydrus, p_encounter: BossEncounter) -> void:
@@ -318,6 +320,16 @@ func _go(target: Vector3, speed := 1.0) -> void:
 	if d.length() < 0.05:
 		player.actions.move = Vector2.ZERO
 		return
+	# Something in the way (Agro, a block on the shore): measured by real progress, then
+	# round it sideways for a moment.
+	var dt := get_physics_process_delta_time()
+	if player.global_position.distance_to(_last_pos) > 0.2:
+		_last_pos = player.global_position
+		_stuck = 0.0
+	else:
+		_stuck += dt
+	if _stuck > 1.0 and not _on_body():
+		d = d.rotated(Vector3.UP, 1.2 * (1.0 if int(_stuck) % 2 == 0 else -1.0))
 	_look(d)
 	player.actions.move = Vector2(0, speed)
 
