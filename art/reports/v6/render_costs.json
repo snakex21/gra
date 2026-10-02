@@ -1,0 +1,45 @@
+{
+	"note": "llvmpipe viewport evidence; no FPS claim",
+	"views": [
+		{
+			"draw_calls": 61.0,
+			"primitives": 47394.0,
+			"view": "01_grand_interior"
+		},
+		{
+			"draw_calls": 14.0,
+			"primitives": 8934.0,
+			"view": "02_closed_ceiling"
+		},
+		{
+			"draw_calls": 5.0,
+			"primitives": 3598.0,
+			"view": "03_passage"
+		},
+		{
+			"draw_calls": 3.0,
+			"primitives": 2582.0,
+			"view": "04_side_sanctuary"
+		},
+		{
+			"draw_calls": 22.0,
+			"primitives": 8194.0,
+			"view": "05_catalogue_chambers"
+		},
+		{
+			"draw_calls": 22.0,
+			"primitives": 11522.0,
+			"view": "06_catalogue_minerals"
+		},
+		{
+			"draw_calls": 22.0,
+			"primitives": 5160.0,
+			"view": "07_catalogue_rocks"
+		},
+		{
+			"draw_calls": 22.0,
+			"primitives": 2240.0,
+			"view": "08_catalogue_ruins"
+		}
+	]
+}
