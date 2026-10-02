@@ -5,7 +5,7 @@ extends RefCounted
 ## at the temple, like after every won fight.
 
 const VERSION := 1
-const ORDER: Array[StringName] = [&"valus", &"quadratus", &"gaius", &"phaedra", &"hydrus"]
+const ORDER: Array[StringName] = [&"valus", &"quadratus", &"gaius", &"phaedra", &"hydrus", &"avion"]
 const DEFAULT_PATH := "user://save.json"
 ## Save slots (slot 1 is the save file of the earlier versions).
 const SLOTS := 3

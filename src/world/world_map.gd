@@ -15,7 +15,7 @@ class_name WorldMap
 ## under the arenas and corridors and rises to ridges between them.
 
 ## Gate -> arena centre (along the gate's outward direction).
-const DISTANCE := {&"valus": 193.0, &"quadratus": 280.0, &"gaius": 183.0, &"phaedra": 193.0, &"hydrus": 193.0}
+const DISTANCE := {&"valus": 193.0, &"quadratus": 280.0, &"gaius": 183.0, &"phaedra": 193.0, &"hydrus": 193.0, &"avion": 373.0}
 const GROUND_RADIUS := 175.0
 ## The invisible rim of an arena (local radius).
 const RIM := 170.0

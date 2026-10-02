@@ -71,6 +71,9 @@ func _ready() -> void:
 	if scenario == "hydrus":
 		_setup_hydrus()
 		return
+	if scenario == "avion":
+		_setup_avion()
+		return
 	TerrainKit.build_course(self, Vector3(0, 0, -6))
 	colossus = GreyboxHumanoid.new()
 	colossus.debug_override = &"manual"
@@ -408,6 +411,49 @@ func _phaedra_tick() -> void:
 	get_tree().quit()
 
 
+## Etap 11: the Avion fight played by AvionBot (swimming, a tower, a swoop caught by the
+## wing, the flight on its back, the rolls), until it is won or for 3 minutes.
+var abot: AvionBot
+
+
+func _setup_avion() -> void:
+	for c in get_children():
+		remove_child(c)
+		c.free()
+	InputSetup.ensure_defaults()
+	Sfx.enabled = false
+	Fx.enabled = false
+	var arena := Node3D.new()
+	add_child(arena)
+	boss = AvionArena.build_encounter(arena, false, 41)
+	abot = AvionBot.new()
+	arena.add_child(abot)
+	abot.setup(boss.player, boss.avion, boss.encounter, boss.towers)
+
+
+func _avion_tick() -> void:
+	if abot.phase != AvionBot.Phase.DONE and tick < 60 * 180:
+		return
+	var p: PlayerCharacter = boss.player
+	var av: Avion = boss.avion
+	var data := {
+		"frames": Engine.get_process_frames(),
+		"won": 1 if abot.result.get("won", false) else 0,
+		"tick": tick,
+		"player": [p.global_position.x, p.global_position.y, p.global_position.z],
+		"avion": [av.global_position.x, av.global_position.y, av.global_position.z],
+		"yaw": av.yaw,
+		"weak": [av.weak_points[0].health, av.weak_points[1].health, av.weak_points[2].health],
+		"swoops": av.stats.swoops,
+		"stamina": p.stamina.value,
+		"health": p.health,
+	}
+	var f := FileAccess.open(out_path, FileAccess.WRITE)
+	f.store_string(JSON.stringify(data))
+	f.close()
+	get_tree().quit()
+
+
 ## Etap 10: the Hydrus fight played by HydrusBot (swimming, a ram, climbing on from the
 ## water, standing on the swimming back, a dive), until it is won or for 4 minutes.
 var hbot: HydrusBot
@@ -580,6 +626,9 @@ func _physics_process(_delta: float) -> void:
 		return
 	if scenario == "hydrus":
 		_hydrus_tick()
+		return
+	if scenario == "avion":
+		_avion_tick()
 		return
 	if scenario == "gaius":
 		_gaius_tick()

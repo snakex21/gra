@@ -22,7 +22,7 @@ enum Phase { PLAYING, FADE_OUT, LOADING, FADE_IN }
 
 const VALLEY := &"valley"
 ## Brain seeds of the arenas (each fight is the same fight every time).
-const SEEDS := {&"valus": 7, &"quadratus": 11, &"gaius": 13, &"phaedra": 17, &"hydrus": 29}
+const SEEDS := {&"valus": 7, &"quadratus": 11, &"gaius": 13, &"phaedra": 17, &"hydrus": 29, &"avion": 41}
 
 @export var with_input := true
 @export var with_art := true
@@ -260,6 +260,8 @@ func _build_arena(kind: StringName, root: Node3D) -> Dictionary:
 			points = PhaedraArena.build(root)
 		&"hydrus":
 			points = HydrusArena.build(root)
+		&"avion":
+			points = AvionArena.build(root)
 	_disc_ground(root)
 	if with_art:
 		match kind:
@@ -273,6 +275,8 @@ func _build_arena(kind: StringName, root: Node3D) -> Dictionary:
 				ArenaArt.dress_fen(root, points.tunnels, 75.0, 6047)
 			&"hydrus":
 				ArenaArt.dress_arena(root, Vector3(0, 0, 1), 80.0, 7129, HydrusArena.WATER_RADIUS + 4.0)
+			&"avion":
+				ArenaArt.dress_arena(root, Vector3(0, 0, 1), 105.0, 8231, AvionArena.WATER_RADIUS + 6.0)
 	return points
 
 
@@ -356,6 +360,9 @@ func _wake(kind: StringName) -> void:
 	var c: Colossus
 	if kind == &"hydrus":
 		c = HydrusArena.spawn(root, SEEDS[kind] + seed_offset)
+	elif kind == &"avion":
+		c = AvionArena.spawn(root, SEEDS[kind] + seed_offset)
+		refs.towers = a.points.towers
 	match kind:
 		&"valus":
 			c = Valus.new()
@@ -418,6 +425,8 @@ func _wake(kind: StringName) -> void:
 static func arena_starts(kind: StringName) -> Array:
 	if kind == &"hydrus":
 		return [HydrusArena.PLAYER_START, HydrusArena.HORSE_START]
+	if kind == &"avion":
+		return [AvionArena.PLAYER_START, AvionArena.HORSE_START]
 	return [ValusArena.PLAYER_START, ValusArena.HORSE_START]
 
 

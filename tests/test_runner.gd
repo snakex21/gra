@@ -29,6 +29,8 @@ var _etap8_started := false
 var _pre_etap9_results := {}
 var _etap10_started := false
 var _pre_etap10_results := {}
+var _etap11_started := false
+var _pre_etap11_results := {}
 var _etap9_started := false
 const BASELINE_PATH := "res://tests/baseline/etap2_baseline.json"
 ## Agro metrics (horse_*) are frozen separately, so the stage 2/3 baseline stays untouched.
@@ -241,6 +243,15 @@ func _ready() -> void:
 		test_bug_report_saves_the_recording,
 		test_temple_way_out_is_walkable,
 		all_etap9_and_earlier_tests_still_pass,
+		# --- ETAP 11: Avion, ... ---
+		test_avion_circles_high_over_the_lake,
+		test_avion_swoop_is_telegraphed_and_wing_reaches_the_tower,
+		test_avion_glides_over_the_water_with_a_rider,
+		test_avion_can_be_defeated,
+		test_avion_simulation_independent_of_render_fps,
+		test_avion_cost_stays_within_budget,
+		test_six_colossi_in_order_with_south_west_gate,
+		all_etap10_and_earlier_tests_still_pass,
 	]
 	for t in tests:
 		var name := t.get_method()
@@ -278,6 +289,10 @@ func _ready() -> void:
 			_etap10_started = true
 		if not _etap10_started:
 			_pre_etap10_results[name] = ok
+		if name == "test_avion_circles_high_over_the_lake":
+			_etap11_started = true
+		if not _etap11_started:
+			_pre_etap11_results[name] = ok
 		print("%s %s (%d ms)" % ["PASS" if ok else "FAIL", name, Time.get_ticks_msec() - t0])
 		for line in _log:
 			print("    ", line)
@@ -6455,7 +6470,7 @@ func test_hydrus_cost_stays_within_budget() -> void:
 
 
 func test_five_colossi_in_order_with_west_gate() -> void:
-	_check(GameState.ORDER.size() == 5 and GameState.ORDER[4] == &"hydrus", "Hydrus is not the fifth colossus")
+	_check(GameState.ORDER.size() >= 5 and GameState.ORDER[4] == &"hydrus", "Hydrus is not the fifth colossus")
 	# An Etap 9 save (four names) loads and leads on to Hydrus.
 	var old := GameState.new()
 	old.from_dict({"version": GameState.VERSION, "defeated": ["valus", "quadratus", "gaius", "phaedra"]})
@@ -6681,3 +6696,238 @@ func all_etap9_and_earlier_tests_still_pass() -> void:
 			failed.append(n)
 	_log.append("%d earlier tests (Milestone 1, Etap 2-9) ran in this run, %d failed %s" % [_pre_etap10_results.size(), failed.size(), str(failed) if failed.size() > 0 else ""])
 	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))
+
+
+# --- ETAP 11 ------------------------------------------------------------------------------
+
+func all_etap10_and_earlier_tests_still_pass() -> void:
+	var failed := PackedStringArray()
+	for n in _pre_etap11_results:
+		if not _pre_etap11_results[n]:
+			failed.append(n)
+	_log.append("%d earlier tests (Milestone 1, Etap 2-10) ran in this run, %d failed %s" % [_pre_etap11_results.size(), failed.size(), str(failed) if failed.size() > 0 else ""])
+	_check(failed.is_empty(), "earlier tests failed: %s" % str(failed))
+
+
+func _setup_avion(seed_value := 41) -> Dictionary:
+	Sfx.enabled = false
+	Fx.enabled = false
+	_world = Node3D.new()
+	_world.name = "World_" + _current
+	add_child(_world)
+	var w := AvionArena.build_encounter(_world, false, seed_value)
+	await _ticks(2)
+	return w
+
+
+## The underside of the inner wings nearest to ``head`` (distance).
+static func _avion_wing_gap(av: Avion, head: Vector3) -> float:
+	var best := INF
+	for s in av.segments:
+		if s.bone_name != &"wing_l_in" and s.bone_name != &"wing_r_in":
+			continue
+		var left := s.bone_name == &"wing_l_in"
+		var local := s.target_transform.affine_inverse() * head
+		var q := Vector3(clampf(local.x, -7.0 if left else 0.0, 0.0 if left else 7.0), -0.25, clampf(local.z, -2.0, 2.0))
+		best = minf(best, (s.target_transform * q).distance_to(head))
+	return best
+
+
+func test_avion_circles_high_over_the_lake() -> void:
+	var w := await _setup_avion()
+	var av: Avion = w.avion
+	var p: PlayerCharacter = w.player
+	var low := INF
+	var outer := 0.0
+	var travelled := 0.0
+	var prev := av.global_position
+	var max_turn := 0.0
+	var prev_yaw := av.yaw
+	for i in 60 * 40:
+		await _ticks(1)
+		travelled += av.global_position.distance_to(prev)
+		prev = av.global_position
+		low = minf(low, av.global_position.y - av.water_level)
+		outer = maxf(outer, Vector2(av.global_position.x, av.global_position.z).length())
+		max_turn = maxf(max_turn, absf(angle_difference(prev_yaw, av.yaw)) * 60.0)
+		prev_yaw = av.yaw
+	_check(av.encounter == Avion.Encounter.DORMANT, "it noticed the player on the shore (%s)" % av.encounter_name())
+	_check(travelled > 40.0 * av.cruise_speed * 0.8, "it hardly flies (%.0f m in 40 s)" % travelled)
+	_check(low > 20.0, "it came down to %.1f m over the water while alone" % low)
+	_check(outer < AvionArena.WATER_RADIUS + 10.0, "it flew out over the shore (r %.0f)" % outer)
+	_check(max_turn <= av.turn_rate + 0.01, "it turned at %.2f rad/s (limit %.2f)" % [max_turn, av.turn_rate])
+	_check(p.health == p.fall.max_health, "the player was hurt standing on the shore")
+	_log.append("40 s alone: %.0f m flown, never below %.1f m over the water, at most %.0f m from the middle, turns at most %.2f rad/s" % [travelled, low, outer, max_turn])
+
+
+func test_avion_swoop_is_telegraphed_and_wing_reaches_the_tower() -> void:
+	var w := await _setup_avion()
+	var av: Avion = w.avion
+	var p: PlayerCharacter = w.player
+	var t0: Dictionary = w.towers[0]
+	p.global_position = (t0.center as Vector3) + Vector3.UP * 0.95
+	p.velocity = Vector3.ZERO
+	p.reset_physics_interpolation()
+	var tele_at := -1
+	var dive_at := -1
+	var pass_at := -1
+	var closest := INF
+	var pass_speed := 0.0
+	var hp := p.health
+	for i in 60 * 60:
+		await _ticks(1)
+		if tele_at < 0 and av.swoop == Avion.Swoop.TELEGRAPH:
+			tele_at = i
+		if tele_at >= 0 and dive_at < 0 and av.swoop == Avion.Swoop.DIVE:
+			dive_at = i
+		if av.swoop in [Avion.Swoop.DIVE, Avion.Swoop.PASS]:
+			closest = minf(closest, _avion_wing_gap(av, p.global_position + Vector3.UP * 0.9))
+		if pass_at < 0 and av.swoop == Avion.Swoop.PASS:
+			pass_at = i
+		if pass_at >= 0:
+			pass_speed = maxf(pass_speed, av.speed)
+		if pass_at >= 0 and av.swoop == Avion.Swoop.CLIMB:
+			break
+	_check(tele_at >= 0 and dive_at >= 0, "no swoop at someone on a tower (telegraph %d, dive %d)" % [tele_at, dive_at])
+	var telegraph := (dive_at - tele_at) / 60.0
+	_check(telegraph >= 1.5, "the swoop is not telegraphed (%.2f s)" % telegraph)
+	_check(pass_at >= 0, "the dive never reached its low pass")
+	_check(closest < 2.0, "the wing does not come within reach (%.2f m from the head at best)" % closest)
+	_check(closest > 0.2 or p.health == hp, "the pass hurt the player")
+	_check(pass_speed < av.swoop_speed * 0.6, "it does not slow down for the pass (%.1f m/s)" % pass_speed)
+	_log.append("swoop: %.2f s screech and bank first, the inner wing's underside %.2f m from the head on the tower, %.1f m/s at most in the pass" % [telegraph, closest, pass_speed])
+
+
+func test_avion_glides_over_the_water_with_a_rider() -> void:
+	var w := await _setup_avion()
+	var av: Avion = w.avion
+	var p: PlayerCharacter = w.player
+	# Wake it, then onto its back (standing on the fur), holding on when it rolls.
+	av._set_encounter(Avion.Encounter.COMBAT)
+	await _ticks(10)
+	var body: BodySegment = null
+	for s in av.segments:
+		if s.bone_name == &"body":
+			body = s
+	p.global_position = body.target_transform * Vector3(0, 2.5, 0.5)
+	p.velocity = av.global_basis * Vector3(0, 0, -av.speed)
+	p.reset_physics_interpolation()
+	var on_at := -1
+	var shake_at := -1
+	var max_pitch := 0.0
+	var outer := 0.0
+	var swoops := int(av.stats.swoops)
+	var on_s := 0.0
+	for i in 60 * 40:
+		await _ticks(1)
+		var on := av.owns_body(p.get_support_body()) or p.is_climbing() and av.owns_body(p.grip.body)
+		if on_at < 0 and on:
+			on_at = i
+		if on_at >= 0 and i == on_at + 60:
+			swoops = int(av.stats.swoops) if av.swoop == Avion.Swoop.NONE else int(av.stats.swoops) - 1
+		if on:
+			on_s += 1.0 / 60.0
+		p.actions.grab_held = av.intent.kind == Avion.SHAKE_BODY or absf(av.roll) > 0.25
+		if on_at >= 0 and on and i > on_at + 120:
+			max_pitch = maxf(max_pitch, absf(av.pitch))
+			outer = maxf(outer, Vector2(av.global_position.x, av.global_position.z).length())
+		if shake_at < 0 and av.intent.kind == Avion.SHAKE_BODY:
+			shake_at = i
+	_check(on_at >= 0, "the player did not land on its back")
+	_check(shake_at < 0 or (shake_at - on_at) / 60.0 >= 3.0 - 0.05, "it rolled %.1f s after the player got on" % ((shake_at - on_at) / 60.0))
+	_check(shake_at >= 0, "it never tried to roll the rider off")
+	_check(int(av.stats.swoops) == swoops, "it began a swoop with someone on it")
+	_check(max_pitch <= 0.2, "it climbed / dived at %.2f rad with a rider" % max_pitch)
+	_check(outer < AvionArena.WATER_RADIUS - 30.0, "with a rider it flew out to r %.0f (a fall would miss the water)" % outer)
+	_log.append("rider: %.1f s on it, first roll %.1f s after getting on, pitch at most %.2f rad, at most %.0f m from the lake's middle" % [on_s, (shake_at - on_at) / 60.0, max_pitch, outer])
+
+
+func test_avion_can_be_defeated() -> void:
+	var w := await _setup_avion()
+	var bot := AvionBot.new()
+	_world.add_child(bot)
+	bot.setup(w.player, w.avion, w.encounter, w.towers)
+	var res := {}
+	bot.finished.connect(func(r: Dictionary) -> void: res.merge(r))
+	var t := 0
+	while res.is_empty() and t < 60 * 500:
+		await _ticks(1)
+		t += 1
+	var st: Dictionary = bot.stats
+	var av: Dictionary = (w.avion as Avion).stats
+	_check(res.get("won", false), "the bot did not beat Avion in 500 s")
+	_check(int(st.deaths) == 0, "the bot died %d times (%s)" % [int(st.deaths), str(st.death_causes)])
+	_log.append("bot: %s in %.1f s (%d swoops, %d aborted, %d caught by the wing, %d missed, %d towers climbed, %d strikes / %d on a weak point, falls %d into the lake, deaths %d)" % ["WIN" if res.get("won", false) else "LOSS", t / 60.0, int(av.swoops), int(av.get("swoops_aborted", 0)), st.grabs, st.missed_passes, st.towers, st.strikes, st.weak_hits, st.falls, st.deaths])
+
+
+func test_avion_simulation_independent_of_render_fps() -> void:
+	var exe := OS.get_executable_path()
+	var rates := [30, 60, 90, 144, 240]
+	var results := {}
+	var jobs := []
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/avion_fps_%d.json" % fps)
+		DirAccess.remove_absolute(out_path)
+		jobs.append(["--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", str(fps), "--quit-after", "800000", "res://tests/fps_scenario.tscn", "--", "--scenario=avion", "--out=" + out_path])
+	var codes := await _execute_parallel(exe, jobs)
+	for fps in rates:
+		var out_path := ProjectSettings.globalize_path("res://tests/output/avion_fps_%d.json" % fps)
+		if codes[rates.find(fps)] != 0 or not FileAccess.file_exists(out_path):
+			_check(false, "avion scenario at %d fps failed" % fps)
+			return
+		results[fps] = JSON.parse_string(FileAccess.get_file_as_string(out_path))
+	var diff := _max_json_diff(results, rates)
+	var ref: Dictionary = results[60]
+	_log.append("Avion fight (bot) at %s fps: won %s at tick %d, swoops %d, max state difference %.8f" % [str(rates), str(ref.won), int(ref.tick), int(ref.swoops), diff])
+	_metric("avion_fps_max_diff", diff, "lower")
+	_check(diff < 1e-4, "the Avion fight depends on the render rate (diff %.6f)" % diff)
+
+
+func test_avion_cost_stays_within_budget() -> void:
+	var w := await _setup_avion()
+	var bot := AvionBot.new()
+	_world.add_child(bot)
+	bot.setup(w.player, w.avion, w.encounter, w.towers)
+	await _ticks(60 * 10)
+	Perf.take()
+	var ticks := 60 * 30
+	await _ticks(ticks)
+	var m := Perf.take()
+	var u: Dictionary = m.usec
+	var per := func(k: StringName) -> float: return float(u.get(k, 0)) / ticks
+	var colossus: float = per.call(&"colossus")
+	_log.append("Avion (bot, 30 s): colossus %.1f us/tick (brain %.1f), player %.1f" % [colossus, per.call(&"brain"), per.call(&"player")])
+	_metric("avion_colossus_us", colossus, "lower")
+	_check(colossus < 400.0, "Avion costs %.0f us per tick" % colossus)
+
+
+func test_six_colossi_in_order_with_south_west_gate() -> void:
+	_check(GameState.ORDER.size() == 6 and GameState.ORDER[5] == &"avion", "Avion is not the sixth colossus")
+	# An Etap 10 save (five names) loads and leads on to Avion.
+	var old := GameState.new()
+	old.from_dict({"version": GameState.VERSION, "defeated": ["valus", "quadratus", "gaius", "phaedra", "hydrus"]})
+	_check(old.next_colossus() == &"avion" and not old.is_complete(), "an Etap 10 save does not continue to Avion")
+	var g := await _setup_game("")
+	g.state.from_dict(old.to_dict())
+	g._build_world()
+	await _ticks(2)
+	var gates: Dictionary = g.refs.gates
+	_check(gates[&"avion"].open and not gates[&"hydrus"].open, "the south-west gate is not the open one")
+	await _ticks(2)
+	_check(g.player().beam.target.distance_to(gates[&"avion"].trigger) < 0.01, "the beam does not lead to the south-west gate")
+	# Through it: the lake with the towers, Avion awake over it.
+	var p := g.player()
+	var gate: Dictionary = gates[&"avion"]
+	p.global_position = Valley.on_ground((gate.pos as Vector3) - (gate.out as Vector3) * 2.0, 1.0)
+	p.reset_physics_interpolation()
+	p.actions.view_basis = Basis.looking_at(gate.out)
+	p.actions.move = Vector2(0, 1)
+	_check(await _wait_region(g, &"avion", 60 * 10), "did not wake Avion")
+	p.actions.move = Vector2.ZERO
+	var av := g.colossus() as Avion
+	var xf := WorldMap.arena_transform(&"avion")
+	_check(av != null and absf(av.water_level - (WorldMap.arena_height(&"avion") + AvionArena.WATER_Y)) < 0.01, "Avion's lake is not in its arena in the world")
+	_check(av != null and av.arena_center.distance_to(xf.origin) < 0.01, "Avion does not circle over its own arena")
+	var towers: Array = g.refs.towers
+	_check(towers.size() == AvionArena.TOWERS.size() and (towers[0].center as Vector3).distance_to(xf * (AvionArena.TOWERS[0][0] + Vector3.UP * AvionArena.TOWER_TOP)) < 0.01, "the towers are not where the bot looks for them")
+	_log.append("six colossi: an Etap 10 save leads to Avion through the south-west gate; its lake at %.1f m, %d towers" % [av.water_level if av else 0.0, towers.size()])

@@ -362,6 +362,13 @@ func _arena(delta: float) -> void:
 			b.setup(p, game.refs.colossus, e)
 			b.finished.connect(_on_boss_finished.bind(kind))
 			boss_bot = b
+		&"avion":
+			var b := AvionBot.new()
+			b.verbose = verbose
+			game.region.add_child(b)
+			b.setup(p, game.refs.colossus, e, game.refs.towers)
+			b.finished.connect(_on_boss_finished.bind(kind))
+			boss_bot = b
 		&"quadratus":
 			var b := QuadratusBot.new()
 			b.verbose = verbose

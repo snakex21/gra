@@ -7,6 +7,7 @@ class_name Valley
 ##   Gaius      west, through the canyon
 ##   Phaedra    east, up the slope
 ##   Hydrus     west, over the ridge (a lake behind it)
+##   Avion      south-west, a long way to a lake with towers
 ##
 ## The ground, the temple and the rocks are the Ancient Valley kit (art/scripts/
 ## ancient_valley.gd, CC0): its height field and low-poly collisions are the gameplay
@@ -32,6 +33,7 @@ const GATES := {
 	&"gaius": {"pos": Vector3(-96, 0, 172), "out": Vector3(0, 0, 1)},
 	&"phaedra": {"pos": Vector3(172, 0, -100), "out": Vector3(1, 0, 0)},
 	&"hydrus": {"pos": Vector3(-172, 0, -120), "out": Vector3(-1, 0, 0)},
+	&"avion": {"pos": Vector3(-150, 0, -172), "out": Vector3(-0.544, 0, -0.839)},
 }
 const GATE_WIDTH := 12.0
 const GATE_TRIGGER := 6.0
