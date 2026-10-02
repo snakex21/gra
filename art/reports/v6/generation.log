@@ -1,0 +1,479 @@
+ERROR Draco mesh compression is not available because library could not be found at /usr/bin/4.3/python/lib/python3.13/site-packages/libextern_draco.so
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: continuous enclosed mineral dome
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.005784273147583008 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: continuous enclosed mineral dome.001
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.003127574920654297 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: continuous enclosed mineral dome.002
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0033257007598876953 s
+
+MIREWOOD_ASSET great_closed_dome [2276, 1140, 660] 521
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: continuous enclosed mineral dome.003
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.004227399826049805 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: continuous enclosed mineral dome.004
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0041697025299072266 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: continuous enclosed mineral dome.005
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.003773212432861328 s
+
+MIREWOOD_ASSET side_closed_dome [2276, 1140, 660] 521
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: arched passage with continuous ceiling
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0027680397033691406 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: arched passage with continuous ceiling.001
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0025300979614257812 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: arched passage with continuous ceiling.002
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0024237632751464844 s
+
+MIREWOOD_ASSET vault_tunnel_12m [848, 416, 208] 168
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: arched passage with continuous ceiling.003
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0031599998474121094 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: arched passage with continuous ceiling.004
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.004231691360473633 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: arched passage with continuous ceiling.005
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.002158641815185547 s
+
+MIREWOOD_ASSET vault_bend_12m [848, 416, 208] 168
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: arched passage with continuous ceiling.006
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.002914905548095703 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: arched passage with continuous ceiling.007
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0029697418212890625 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: arched passage with continuous ceiling.008
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0023796558380126953 s
+
+MIREWOOD_ASSET vault_ramp_12m [848, 416, 208] 168
+Warning: No mesh data to join
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: great stalagmite
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0024585723876953125 s
+
+Warning: No mesh data to join
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: great stalagmite.001
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.002007722854614258 s
+
+Warning: No mesh data to join
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: great stalagmite.002
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0018837451934814453 s
+
+MIREWOOD_ASSET stalagmite_great [284, 116, 44] 1
+Warning: No mesh data to join
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: slender stalagmite
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0021636486053466797 s
+
+Warning: No mesh data to join
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: slender stalagmite.001
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0019807815551757812 s
+
+Warning: No mesh data to join
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: slender stalagmite.002
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0023059844970703125 s
+
+MIREWOOD_ASSET stalagmite_slender [284, 116, 44] 1
+Warning: No mesh data to join
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: great stalactite
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0018222332000732422 s
+
+Warning: No mesh data to join
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: great stalactite.001
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.002187013626098633 s
+
+Warning: No mesh data to join
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: great stalactite.002
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0015845298767089844 s
+
+MIREWOOD_ASSET stalactite_great [284, 116, 44] 0
+Warning: No mesh data to join
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: slender stalactite
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0030450820922851562 s
+
+Warning: No mesh data to join
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: slender stalactite.001
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0020134449005126953 s
+
+Warning: No mesh data to join
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: slender stalactite.002
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0023429393768310547 s
+
+MIREWOOD_ASSET stalactite_slender [284, 116, 44] 0
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: mineral cluster
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0052869319915771484 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: mineral cluster.009
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.004995107650756836 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: mineral cluster.015
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.002602815628051758 s
+
+MIREWOOD_ASSET stalagmite_cluster [2556, 696, 176] 9
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: mineral cluster.019
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.005726337432861328 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: mineral cluster.028
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.004110813140869141 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: mineral cluster.034
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.002452850341796875 s
+
+MIREWOOD_ASSET stalactite_cluster [2556, 696, 176] 0
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: floor mineral column
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0035448074340820312 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: floor mineral column.001
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0025365352630615234 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: floor mineral column.002
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0025877952575683594 s
+
+MIREWOOD_ASSET fused_column [568, 232, 88] 1
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: calcite drapery
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.006443023681640625 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: calcite drapery.011
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.003435373306274414 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: calcite drapery.019
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0030939579010009766 s
+
+MIREWOOD_ASSET calcite_curtain [3124, 928, 220] 0
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: Icosphere
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.004683256149291992 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: Icosphere.005
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.002920866012573242 s
+
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: Icosphere.009
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.00466609001159668 s
+
+MIREWOOD_ASSET flowstone_shelf [1600, 320, 60] 5
+12:23:45 | INFO: Starting glTF 2.0 export
+12:23:45 | INFO: Extracting primitive: Icosphere.012
+12:23:45 | INFO: Primitives created: 1
+12:23:45 | INFO: Finished glTF 2.0 export in 0.0050449371337890625 s
+
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.036
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.002727508544921875 s
+
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.052
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.003060579299926758 s
+
+MIREWOOD_ASSET travertine_pool [2012, 380, 236] 0
+Warning: No mesh data to join
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.062
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.002825498580932617 s
+
+Warning: No mesh data to join
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.063
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.002840757369995117 s
+
+Warning: No mesh data to join
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.064
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.003062725067138672 s
+
+MIREWOOD_ASSET cave_boulder_large [320, 80, 20] 1
+Warning: No mesh data to join
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.065
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.002635955810546875 s
+
+Warning: No mesh data to join
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.066
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.002717256546020508 s
+
+Warning: No mesh data to join
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.067
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.0026509761810302734 s
+
+MIREWOOD_ASSET cave_boulder_small [320, 80, 20] 1
+Warning: No mesh data to join
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.068
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.002715587615966797 s
+
+Warning: No mesh data to join
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.069
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.003101348876953125 s
+
+Warning: No mesh data to join
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.070
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.002897500991821289 s
+
+MIREWOOD_ASSET fallen_slab [320, 80, 20] 1
+Warning: No mesh data to join
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.071
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.002712726593017578 s
+
+Warning: No mesh data to join
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.072
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.0026967525482177734 s
+
+Warning: No mesh data to join
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.073
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.0027756690979003906 s
+
+MIREWOOD_ASSET stone_needle [320, 80, 20] 1
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.074
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.0034453868865966797 s
+
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.089
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.0029141902923583984 s
+
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Icosphere.098
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.0029518604278564453 s
+
+MIREWOOD_ASSET talus_scatter [1200, 180, 100] 0
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Cube.049
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.0024929046630859375 s
+
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Cube.056
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.0029048919677734375 s
+
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Cube.059
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.0028939247131347656 s
+
+MIREWOOD_ASSET buried_altar [180, 36, 36] 3
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Cube.062
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.002813100814819336 s
+
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Cube.070
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.002917051315307617 s
+
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Cube.078
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.003356456756591797 s
+
+MIREWOOD_ASSET buried_stairs [352, 96, 96] 1
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Cube.086
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.002635955810546875 s
+
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Cube.088
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.0030508041381835938 s
+
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Cube.090
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.0038254261016845703 s
+
+MIREWOOD_ASSET buried_gate [268, 156, 108] 17
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Cube.092
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.003124713897705078 s
+
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Cube.099
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.0029604434967041016 s
+
+12:23:46 | INFO: Starting glTF 2.0 export
+12:23:46 | INFO: Extracting primitive: Cube.102
+12:23:46 | INFO: Primitives created: 1
+12:23:46 | INFO: Finished glTF 2.0 export in 0.002824544906616211 s
+
+MIREWOOD_ASSET buried_bridge [180, 36, 36] 3
+12:23:47 | INFO: Starting glTF 2.0 export
+12:23:47 | INFO: Extracting primitive: Cube.105
+12:23:47 | INFO: Primitives created: 1
+12:23:47 | INFO: Finished glTF 2.0 export in 0.003355264663696289 s
+
+12:23:47 | INFO: Starting glTF 2.0 export
+12:23:47 | INFO: Extracting primitive: Cube.112
+12:23:47 | INFO: Primitives created: 1
+12:23:47 | INFO: Finished glTF 2.0 export in 0.0038216114044189453 s
+
+12:23:47 | INFO: Starting glTF 2.0 export
+12:23:47 | INFO: Extracting primitive: Cube.115
+12:23:47 | INFO: Primitives created: 1
+12:23:47 | INFO: Finished glTF 2.0 export in 0.003427743911743164 s
+
+MIREWOOD_ASSET buried_lantern [180, 36, 36] 3
+12:23:47 | INFO: Starting glTF 2.0 export
+12:23:47 | INFO: Extracting primitive: Icosphere.103
+12:23:47 | INFO: Primitives created: 1
+12:23:47 | INFO: Finished glTF 2.0 export in 0.003324270248413086 s
+
+12:23:47 | INFO: Starting glTF 2.0 export
+12:23:47 | INFO: Extracting primitive: Icosphere.104
+12:23:47 | INFO: Primitives created: 1
+12:23:47 | INFO: Finished glTF 2.0 export in 0.002959012985229492 s
+
+12:23:47 | INFO: Starting glTF 2.0 export
+12:23:47 | INFO: Extracting primitive: Icosphere.105
+12:23:47 | INFO: Primitives created: 1
+12:23:47 | INFO: Finished glTF 2.0 export in 0.0027730464935302734 s
+
+MIREWOOD_ASSET buried_marker [404, 116, 56] 1
+12:23:47 | INFO: Starting glTF 2.0 export
+12:23:47 | INFO: Extracting primitive: Cube.131
+12:23:47 | INFO: Primitives created: 1
+12:23:47 | INFO: Finished glTF 2.0 export in 0.002665996551513672 s
+
+12:23:47 | INFO: Starting glTF 2.0 export
+12:23:47 | INFO: Extracting primitive: Cube.139
+12:23:47 | INFO: Primitives created: 1
+12:23:47 | INFO: Finished glTF 2.0 export in 0.003234386444091797 s
+
+12:23:47 | INFO: Starting glTF 2.0 export
+12:23:47 | INFO: Extracting primitive: Cube.143
+12:23:47 | INFO: Primitives created: 1
+12:23:47 | INFO: Finished glTF 2.0 export in 0.0030345916748046875 s
+
+MIREWOOD_ASSET buried_wall [224, 48, 48] 4
+12:23:47 | INFO: Starting glTF 2.0 export
+12:23:47 | INFO: Extracting primitive: Cube.147
+12:23:47 | INFO: Primitives created: 1
+12:23:47 | INFO: Finished glTF 2.0 export in 0.002923727035522461 s
+
+12:23:47 | INFO: Starting glTF 2.0 export
+12:23:47 | INFO: Extracting primitive: Cube.154
+12:23:47 | INFO: Primitives created: 1
+12:23:47 | INFO: Finished glTF 2.0 export in 0.002921581268310547 s
+
+12:23:47 | INFO: Starting glTF 2.0 export
+12:23:47 | INFO: Extracting primitive: Cube.157
+12:23:47 | INFO: Primitives created: 1
+12:23:47 | INFO: Finished glTF 2.0 export in 0.003426790237426758 s
+
+MIREWOOD_ASSET buried_pillar [180, 36, 36] 3
+Info: Packed 1 file(s)
+Info: Saved "hollowvault.blend"
+MIREWOOD_GENERATION_OK 28 [25096, 8304, 3708]
+Blender 4.3.2
+
+Blender quit

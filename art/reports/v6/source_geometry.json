@@ -1,0 +1,8 @@
+{
+  "checks": 459,
+  "upward_ceiling_rays": 1470,
+  "assets": 28,
+  "lod_meshes": 84,
+  "result": "passed",
+  "coverage": "Manifold solid dome shells, complete upper hemisphere, inward roof normals, visual passages all three LODs"
+}

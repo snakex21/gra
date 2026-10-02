@@ -1,0 +1,21 @@
+{
+  "asset_count": 28,
+  "GLB_count": 84,
+  "triangles": [
+    14820,
+    4248,
+    2496
+  ],
+  "collision_shapes": 139,
+  "runtime_checks": 702,
+  "source_checks": 432,
+  "screenshots": 8,
+  "renderer": "Godot 4.6.3 OpenGL Compatibility llvmpipe",
+  "limitations": [
+    "No target-GPU FPS claim",
+    "No gameplay test; no gameplay changes",
+    "Proxy ramps for stairs; no climbing contract",
+    "Small camp textiles/hearth decorative"
+  ],
+  "result": "passed"
+}

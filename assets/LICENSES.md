@@ -92,3 +92,23 @@ Shared local primitive/UV helpers retain the earlier pipeline's MIT terms.
 Existing game code is not relicensed.
 
 Last verified: 2026-10-01.
+
+## Part 6 original additions: Hollowvault
+
+The asset-only CC0-1.0 dedication applies to `art/source/hollowvault.blend`,
+`models/hollowvault/`, `textures/hollowvault/`, `environment/hollowvault/`,
+`environment/hollowvault_environment.tscn`, `materials/hollowvault/`,
+`assets/hollowvault_manifest.json`, `art/tests/hollowvault.tscn` and the actual
+viewport captures in `art/screenshots/v6/`. New Hollowvault scripts and tests
+are MIT under `tools/art/LICENSE`. Original enclosed-cavern geometry and palette;
+no external art assets, ImageGen or commercial-game reconstruction.
+
+## Part 7 original additions: Deeprelic
+
+The asset-only CC0-1.0 dedication applies to `art/source/deeprelic.blend`,
+`models/deeprelic/`, `environment/deeprelic/`, `environment/deeprelic_environment.tscn`,
+`assets/deeprelic_manifest.json`, `art/tests/deeprelic.tscn` and actual viewport
+captures in `art/screenshots/v7/`. Deeprelic generator, exporter, art-only Godot
+scripts and tests are MIT under `tools/art/LICENSE`. Reuses the original shared
+Hollowvault atlas and cave geometry; no downloaded art, ImageGen or commercial
+assets. Existing game code is not relicensed.
