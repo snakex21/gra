@@ -5,7 +5,7 @@ elementy ograniczone w oryginale sprzętem PS2, czasem produkcji albo wycięte z
 Silnik: **Godot 4.4+** (GDScript, a Zig dopiero tam, gdzie profiler pokaże realną potrzebę).
 Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych assetów oryginału.
 
-## Stan: Etap 9 — Phaedra, menu, powtórki, tekstury Agro i Wędrowca
+## Stan: Etap 10 — ciągły świat, Hydrus i pływanie, narzędzia powtórek
 
 - Milestone 1 (wspinanie po poruszającym się kolosie): [docs/MILESTONE_1.md](docs/MILESTONE_1.md)
 - Etap 2 (równowaga na kolosie, upadki, kamera, przejścia): [docs/ETAP_2.md](docs/ETAP_2.md)
@@ -16,18 +16,21 @@ Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych
 - Etap 7 (Gaius: miecz jako droga, hełm do rozbicia; assety Saltward; pętla i zryw Quadratusa; widok łuku zza ramienia, odbicia strzał; soaki 3×100): [docs/ETAP_7.md](docs/ETAP_7.md)
 - Etap 8 (dolina Ancient Valley ze świątynią i trzema bramami, promień miecza, pętla gry z zapisem, bot całej gry, Sentinel v2): [docs/ETAP_8.md](docs/ETAP_8.md)
 - Etap 9 (Phaedra: płochliwy kolos z długą szyją, zwabienie do tunelu; menu i ustawienia; nagrywanie i deterministyczne powtórki; tańszy Agro w dolinie; tekstury Agro i Wędrowca): [docs/ETAP_9.md](docs/ETAP_9.md)
+- Etap 10 (ciągły świat bez wygaszeń, wspólna baza czworonogów, piąty kolos Hydrus w jeziorze i pływanie, przewijanie powtórek, F9, sloty zapisu, zmiana klawiszy, głośność): [docs/ETAP_10.md](docs/ETAP_10.md)
 - Architektura: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md)
 
-**Cała gra: `scenes/game.tscn`** (scena główna): menu (Kontynuuj / Nowa gra / Ustawienia), start
-w świątyni, promień miecza (V / lewy spust) wskazuje drogę, brama prowadzi do areny kolejnego z czterech
-kolosów, po wygranej powrót do świątyni i zapis (`user://save.json`). Esc / P / Start = pauza.
+**Cała gra: `scenes/game.tscn`** (scena główna): menu (Kontynuuj / Nowa gra / Wczytaj / Ustawienia,
+trzy sloty zapisu), start w świątyni, promień miecza (V / lewy spust) wskazuje drogę. Jeden ciągły
+świat: brama w krawędzi doliny prowadzi korytarzem prosto do areny kolejnego z pięciu kolosów, bez
+ekranu ładowania; po wygranej powrót do świątyni i zapis. Esc / P / Start = pauza.
 Bez menu: `-- --new-game` (albo `NEW_GAME=1`) lub `-- --continue`.
 
-Każda gra jest nagrywana (`user://replays/last.replay`, akcje gracza tick po ticku); odtworzenie
-tick w tick: `godot --path . -- --replay=user://replays/last.replay`.
+Każda gra jest nagrywana (`user://replays/last.replay`, akcje gracza tick po ticku), F9 zapisuje
+zgłoszenie błędu (nagranie + podsumowanie). Odtworzenie tick w tick z przewijaniem:
+`godot --path . -- --replay=user://replays/last.replay` (K pauza, J/L ±10 s, [ ] prędkość, F7 kamera).
 
 Pojedyncze walki z bossami: `scenes/valus_arena.tscn` (Valus), `scenes/quadratus_arena.tscn` (Quadratus),
-`scenes/gaius_arena.tscn` (Gaius) i `scenes/phaedra_arena.tscn` (Phaedra); we wszystkich jest Agro, F5 resetuje walkę, Tab przełącza miecz / łuk.
+`scenes/gaius_arena.tscn` (Gaius), `scenes/phaedra_arena.tscn` (Phaedra) i `scenes/hydrus_arena.tscn` (Hydrus, jezioro); we wszystkich jest Agro, F5 resetuje walkę, Tab przełącza miecz / łuk.
 Areny mają warstwę assetów (paczka Saltward, CC0); `NO_ART=1` pokazuje czysty greybox.
 
 Co działa w sandboxie (`scenes/sandbox.tscn`):
@@ -81,11 +84,13 @@ godot --path . # albo otwórz project.godot w edytorze Godot 4.4+
 | Unieś miecz do słońca (promień prowadzi do kolosa / słabego punktu) | V | lewy spust |
 | Reset walki z bossem | F5 | — |
 | Pauza / menu | Esc / P | Start |
+| Zgłoszenie błędu (nagranie + opis) | F9 | — |
+| Pływanie | jak chód (w głębokiej wodzie) | — |
 
 ## Testy
 
 ```bash
-tools/run_tests.sh                 # 166 testów + A/B + porównanie z zamrożonymi wzorcami, headless, ~15 min
+tools/run_tests.sh                 # 183 testy + A/B + porównanie z zamrożonymi wzorcami, headless, ~15 min
 tools/run_tests.sh --save-baseline # zamraża nowy wzorzec regresji Etapu 2/3 (tylko świadomie)
 tools/run_tests.sh --save-horse-baseline  # zamraża wzorzec metryk Agro (tylko świadomie)
 tools/run_tests.sh --only=horse    # wybrane testy
@@ -97,7 +102,8 @@ tools/run_boss_soak.sh 50                # długi test: 50 pełnych walk z Valus
 tools/run_boss_soak.sh 50 1 quadratus    # 50 walk z Quadratusem (na zmianę pieszo / z Agro)
 tools/run_boss_soak.sh 50 1 gaius        # 50 walk z Gaiusem
 tools/run_boss_soak.sh 50 1 phaedra      # 50 walk z Phaedrą
-tools/run_game_soak.sh 20                # 20 całych gier: świątynia -> promień -> jazda -> cztery walki
+tools/run_boss_soak.sh 50 1 hydrus       # 50 walk z Hydrusem
+tools/run_game_soak.sh 20                # 20 całych gier: świątynia -> promień -> jazda -> korytarz -> pięć walk
 tools/capture_screenshots.sh gaius  # walka z Gaiusem grana przez bota -> tests/output/gaius_*.png
 tools/capture_screenshots.sh art    # statyczne widoki aren z assetami -> tests/output/art_*.png
 tools/capture_screenshots.sh game   # dolina, promień, jazda, brama -> tests/output/game_*.png
@@ -118,7 +124,7 @@ fizyki (benchmark regresji).
 
 ```
 src/core/       warstwy fizyki, liczniki wydajności (Perf)
-src/game/       GameWorld (regiony: dolina / areny, przejścia), GameState (postęp, zapis), Settings
+src/game/       GameWorld (ciągły świat, budzenie kolosów), GameState (postęp, sloty), Settings, ReplayViewer
 src/input/      PlayerActions (abstrakcyjne akcje), FlatInputSource, ActionReplay (nagrywanie / powtórki), domyślne bindy
 src/player/     PlayerCharacter (lokomocja + wspinanie + stanie na kolosie), PlayerRiding, Stamina, Balance, FallImpact, PlayerVisual
 src/climb/      ClimbPatch (chwytalny kształt), SurfaceAnchor (punkt na ruchomym ciele), ClimbQuery
@@ -129,15 +135,17 @@ src/horse/      Horse, HorseController, QuadrupedGait, HorseInputIntent, Scripte
 src/colossus/valus/  Valus (pierwszy boss), ValusBrain
 src/colossus/quadratus/  Quadratus (drugi boss, czworonóg), QuadratusBrain
 src/colossus/gaius/  Gaius (trzeci boss, miecz), GaiusBrain; wspólna baza HumanoidBoss w greybox/
-src/colossus/phaedra/  Phaedra (czwarty boss, długa szyja, zaglądanie do tunelu), PhaedraBrain
+src/colossus/phaedra/  Phaedra (czwarty boss, długa szyja, zaglądanie do tunelu), PhaedraBrain; wspólna baza QuadrupedBoss w greybox/
+src/colossus/hydrus/   Hydrus (piąty boss, wąż w jeziorze: ślad głowy, taran, nurkowanie), HydrusBrain
 src/combat/     ColossusAttack, HitVolume, WeakPoint, FairnessRules, LimbStomp, PlayerSword, PlayerBow,
-                ArrowSystem, ArrowTarget, ArmorPlate, SwordBeam, BossEncounter, ValusBot, QuadratusBot, GaiusBot, PhaedraBot, GameBot, debug draw
+                ArrowSystem, ArrowTarget, ArmorPlate, SwordBeam, BossEncounter, ValusBot, QuadratusBot, GaiusBot, PhaedraBot, HydrusBot, GameBot, debug draw
 src/fx/         Sfx (syntezowane dźwięki zastępcze), Fx (lekki kurz / błysk), ProcTextures (tekstury Agro i Wędrowca generowane w kodzie)
-src/world/      TerrainKit, AgroArena, ValusArena, QuadratusArena, GaiusArena, PhaedraArena — teren testowy; Valley (dolina);
+src/world/      TerrainKit, AgroArena, ValusArena, QuadratusArena, GaiusArena, PhaedraArena, HydrusArena — teren; WorldMap (układ świata,
+                korytarze, horyzont), WaterBody (woda); Valley (dolina);
                 ArenaArt — warstwa wizualna z assetów (bez wpływu na gameplay)
 src/camera/     PlayerCamera
 src/ui/         PlayerHud, GameMenu (tytuł, pauza, ustawienia)
-scenes/         game (cała gra), sandbox, agro_test, valus_arena, quadratus_arena, gaius_arena, phaedra_arena
+scenes/         game (cała gra), sandbox, agro_test, valus_arena, quadratus_arena, gaius_arena, phaedra_arena, hydrus_arena
 models/ textures/ materials/ environment/ art/  assety (CC0) od agenta graficznego: Saltward, Ancient Valley, Sentinel v2, Stonewater, Saltwind, Mirewood
 tests/          testy headless + wizualny smoke test
 docs/           dokumentacja projektu

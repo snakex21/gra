@@ -25,6 +25,8 @@ elif [[ "${1:-}" == "characters" ]]; then
 	SCENE=res://tests/capture_characters.tscn
 elif [[ "${1:-}" == "game" ]]; then
 	SCENE=res://tests/capture_game.tscn
+elif [[ "${1:-}" == "hydrus" ]]; then
+	SCENE=res://tests/capture_hydrus.tscn
 elif [[ "${1:-}" == "menu" ]]; then
 	SCENE=res://tests/capture_menu.tscn
 elif [[ "${1:-}" == "art" ]]; then

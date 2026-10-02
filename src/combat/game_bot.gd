@@ -29,6 +29,10 @@ var stats := {"stalls": [], "beam_sweeps": 0, "beam_locks": 0, "beam_unlit": 0, 
 var result := {}
 
 var boss_bot: Node
+## Seconds of riding towards ``wander_dir`` on the first ride, before the first look with
+## the beam from the saddle (soaks: other ways through the valley).
+var wander := 0.0
+var wander_dir := Vector3.FORWARD
 var _heading := Vector3.FORWARD
 var _sweep_yaw := 0.0
 var _sweep_dir := 1.0
@@ -40,10 +44,17 @@ var _slow := 0.0
 var _detour := 0.0
 var _detour_side := 1.0
 var _dismounting := false
+## Seconds the beam stayed dark while looking for the way (in a shadow: go out first).
+var _dark := 0.0
+var _out_of_shadow := 0.0
+## The way out of the temple (the player's facing at the start).
+var _exit_dir := Vector3.FORWARD
 
 
 func setup(p_game: GameWorld) -> void:
 	game = p_game
+	if game.player():
+		_exit_dir = game.player().facing
 	game.region_loaded.connect(_on_region)
 	game.game_completed.connect(func() -> void: _finish(true, "all colossi defeated"))
 	if game.region_kind != &"":
@@ -135,6 +146,23 @@ func _find(delta: float) -> void:
 	if p.is_riding():
 		_enter(Phase.RIDE)
 		return
+	if _out_of_shadow > 0.0:
+		# Out into the sun: straight on the way out of the temple first, then towards
+		# Agro (who waits outside); then look again.
+		_out_of_shadow -= delta
+		p.actions.beam_held = false
+		var to := _flat(_horse().global_position - p.global_position)
+		var way := _exit_dir if _out_of_shadow > 2.0 or to.length() < 0.5 else to.normalized()
+		p.actions.view_basis = Basis.looking_at(way)
+		p.actions.move = Vector2(0, 1)
+		return
+	_dark = _dark + delta if p.beam.raise >= 1.0 and not p.beam.lit else 0.0
+	if _dark > 2.0:
+		_dark = 0.0
+		_sweeping = false
+		_out_of_shadow = 4.0
+		_log("beam dark at %s (Agro %s): out into the sun" % [str(p.global_position.snapped(Vector3.ONE * 0.1)), str(_horse().global_position.snapped(Vector3.ONE * 0.1))])
+		return
 	if _sweep(delta):
 		_log("beam locked: heading %s" % str(_heading.snapped(Vector3.ONE * 0.01)))
 		_enter(Phase.TO_HORSE)
@@ -180,6 +208,17 @@ func _ride(delta: float) -> void:
 		return
 	stats.ride_time += delta
 	var c := _horse().controller
+	if wander > 0.0:
+		# A detour first (soaks): off somewhere else, then the beam shows the way again.
+		wander -= delta
+		p.riding.steer_relative = false
+		a.view_basis = Basis.looking_at(wander_dir)
+		a.move = Vector2(0, 1)
+		if c.speed < 9.0 and int(phase_time * 60.0) % 45 == 0:
+			a.press_jump()
+		if wander <= 0.0:
+			_since_check = RIDE_CHECK + 0.01
+		return
 	_since_check += delta
 	if _sweeping or _since_check > RIDE_CHECK:
 		# Beam check from the saddle: steer relative to the horse meanwhile (straight on).

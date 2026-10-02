@@ -35,6 +35,12 @@ func _physics_process(_delta: float) -> void:
 			menu._open_options(&"pause")
 		72:
 			await _shot("menu_03_settings")
+			menu._open_controls()
+		76:
+			await _shot("menu_04_controls")
+			menu._open_slots(true)
+		80:
+			await _shot("menu_05_slots")
 			get_tree().quit()
 
 

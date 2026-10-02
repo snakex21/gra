@@ -80,7 +80,15 @@ static func build(parent: Node3D, open_gate: StringName, with_art := true, world
 			if String(c.name).begins_with("DistantTerrain"):
 				c.queue_free()
 	# The temple floor modules have no collision of their own (the kit says the terrain
-	# carries them); the flat precinct is the terrain.
+	# carries them); the flat precinct is the terrain. The stairs' collision in the kit
+	# rises away from the temple and ends in a 2.6 m drop (a step nobody can take at the
+	# middle of the way out); the terrain under them is already the gentle way down, so
+	# the stairs are only seen.
+	for c in kit.get_children():
+		if String(c.name).begins_with("stairs"):
+			for b in c.find_children("*", "CollisionObject3D", true, false):
+				(b as CollisionObject3D).collision_layer = 0
+				(b as CollisionObject3D).collision_mask = 0
 
 	var stone := ArenaArt.material(ArenaArt.Kind.STONE) if with_art else _plain(Color(0.6, 0.58, 0.53))
 	var dark := _plain(Color(0.45, 0.44, 0.41))

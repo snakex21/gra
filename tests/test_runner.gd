@@ -239,6 +239,7 @@ func _ready() -> void:
 		test_replay_viewer_seeks_back_and_forth_exactly,
 		test_menu_slots_volume_and_rebinding,
 		test_bug_report_saves_the_recording,
+		test_temple_way_out_is_walkable,
 		all_etap9_and_earlier_tests_still_pass,
 	]
 	for t in tests:
@@ -6649,6 +6650,25 @@ func test_bug_report_saves_the_recording() -> void:
 	for f in [path, path.get_basename() + ".json"]:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(f))
 	g.call(&"stop")
+
+
+## Found by the varied game soak: the kit's stairs' collision rose away from the temple
+## and blocked the middle of the way out. Straight out at three points across the arch.
+func test_temple_way_out_is_walkable() -> void:
+	var g := await _setup_game()
+	var p := g.player()
+	var reached := []
+	for x in [-32.0, -30.3, -33.5]:
+		p.global_position = Valley.on_ground(Vector3(x, 0, 22), 0.95)
+		p.velocity = Vector3.ZERO
+		p.reset_physics_interpolation()
+		p.actions.view_basis = Basis.IDENTITY
+		p.actions.move = Vector2(0, 1)
+		await _ticks(60 * 4)
+		reached.append(snappedf(p.global_position.z, 0.1))
+	p.actions.move = Vector2.ZERO
+	_check(reached.all(func(z: float) -> bool: return z < 8.0), "stuck on the way out of the temple (z reached %s)" % str(reached))
+	_log.append("out of the temple straight through the arch at x -32 / -30.3 / -33.5: z %s after 4 s" % str(reached))
 
 
 ## Everything that ran before the Etap 10 tests passed.

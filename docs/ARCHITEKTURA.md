@@ -1,4 +1,4 @@
-# Architektura (stan po Etapie 9)
+# Architektura (stan po Etapie 10)
 
 Dokument opisuje decyzje, które mają przetrwać dalszy rozwój. Kod jest komentowany po angielsku
 (open source), a dokumentacja projektowa jest po polsku.
@@ -234,6 +234,30 @@ Szczegóły: [ETAP_9.md](ETAP_9.md). Zasady:
   albo być deterministyczne (seed). Bot, który pisałby bezpośrednio do stanu gracza,
   zepsułby powtórki; test to wyłapie.
 
+## 2i. Ciągły świat, Hydrus, powtórki (Etap 10)
+
+```
+GameWorld ── WorldMap: dolina (Valley, krawędź z bramami) + korytarze + areny (korzenie z
+   │          transformacją: lokalny układ areny bez zmian) + horyzont
+   ├─ jeden gracz, Agro, kamera, HUD przez całą grę
+   └─ brama przekroczona -> _wake(kolos) w jego arenie; powrót do doliny -> _sleep()
+QuadrupedBoss ── Quadratus, Phaedra          Colossus ── Hydrus (ślad głowy, bez nóg)
+WaterBody (grupa "water") -> PlayerCharacter.SWIM, Agro (głęboka woda = urwisko), Hydrus
+ReplayViewer: restart + bieg do ticku; time_scale i ticks/s razem ×2^n (krok = 1/60 s)
+```
+Szczegóły: [ETAP_10.md](ETAP_10.md). Zasady:
+- Kod walki nie zna położenia areny w świecie: kolos liczy środek areny od swojej pozycji
+  startowej, boty działają względnie do kolosa. Wysokości porównujemy względem areny,
+  nigdy z zerem.
+- Naraz symuluje się najwyżej jeden kolos. Statyczny świat (geometria, grafika) jest
+  zbudowany cały.
+- Ciało bez nóg (Hydrus) to segmenty na śladzie głowy: tanie, deterministyczne,
+  z naturalnym „ogonem”, który opóźnia się za głową. Nurkowanie kończy się dopiero, gdy
+  całe ciało wypłynie.
+- Przyspieszanie symulacji (przewijanie powtórek) nigdy nie zmienia kroku. W Godocie 4
+  `time_scale` rozciąga krok, więc zmienia się go zawsze razem z liczbą ticków na
+  sekundę, o potęgę dwójki.
+
 ## 3. Gracze i wejście
 
 - Nie ma singletona gracza. Każdy `PlayerCharacter` jest w grupie `players`, a sandbox trzyma
@@ -285,4 +309,7 @@ Zasada: kamera nie walczy z graczem.
   IK nóg ~38). Agro w dolinie 234 µs/tick (wcześniej 398): sondy przeszkód pomijają mapę
   wysokości (grupa `walkable_terrain`), bo to otwarty teren, a spadki i tak widzi sonda
   w dół.
+- Etap 10: Hydrus ~130 µs/tick (ślad głowy: punkt co 0,5 m, jedno przejście na tick;
+  pierwsza wersja z punktem co tick kosztowała 1274 µs). Świat z pięcioma arenami buduje
+  się w ~1,2 s (z grafiką).
 - Nie ma potrzeby przenosić czegokolwiek do Ziga.

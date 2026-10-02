@@ -1,13 +1,14 @@
 extends Node
 ## Long regression run of the whole game: N new games played start to finish by GameBot
-## (temple -> beam -> ride -> Valus -> temple -> ... -> Phaedra -> the end). Each run uses
-## other brain seeds in the arenas and another first guess of the way.
+## (temple -> beam -> ride -> corridor -> Valus -> temple -> ... -> Hydrus -> the end).
+## Each run uses other brain seeds in the arenas, another first guess of the way, Agro
+## waiting somewhere else and a random first ride before the beam is checked again.
 ##
 ##   godot --headless --fixed-fps 60 res://tests/game_soak.tscn -- --runs=20 [--from=1]
 ## Writes tests/output/game_soak.json and prints a summary. Nothing is retried.
 
 ## Simulation limit per game (s).
-const LIMIT := 60.0 * 30.0
+const LIMIT := 60.0 * 45.0
 
 var runs := 10
 var first := 1
@@ -47,6 +48,12 @@ func _run(i: int) -> Dictionary:
 	rng.seed = i
 	# Another first guess of the way: the bot starts the sweep from a random heading.
 	bot._heading = Basis(Vector3.UP, rng.randf() * TAU) * Vector3.FORWARD
+	# Other ways through the valley: Agro somewhere else below the temple, and a ride off
+	# in a random direction first, then the first look from the saddle.
+	bot.wander = rng.randf_range(0.0, 15.0)
+	bot.wander_dir = Basis(Vector3.UP, rng.randf() * TAU) * Vector3.FORWARD
+	var h: Horse = g.refs.horse
+	h.teleport(Valley.on_ground(Valley.HORSE_SPAWN + Vector3(rng.randf_range(-14.0, 14.0), 0, rng.randf_range(-12.0, 6.0))), rng.randf() * TAU)
 	bot.setup(g)
 	var t := 0
 	while bot.phase != GameBot.Phase.DONE and t < LIMIT * 60.0:
