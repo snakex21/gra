@@ -67,6 +67,15 @@ func start(new_game := false) -> void:
 	_build_region(VALLEY)
 
 
+## Starts from a given progress (a replay's start), without touching the save file.
+func start_from(progress: Dictionary) -> void:
+	state = GameState.new()
+	state.from_dict(progress)
+	phase = Phase.PLAYING
+	_fade.color.a = 0.0
+	_build_region(VALLEY)
+
+
 ## Back to the title: the region goes, the progress stays saved.
 func stop() -> void:
 	if is_instance_valid(region):

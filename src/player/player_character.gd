@@ -70,6 +70,11 @@ enum Weapon { SWORD, BOW }
 @export var shake_accel_max := 30.0
 
 var player_index := 0
+## Physics ticks this player has run (replays are keyed to it).
+var ticks := 0
+## Called with this player at the very start of every tick, before anything reads the
+## actions: a replay records them there, or puts recorded ones back.
+var action_hook: Callable
 var actions := PlayerActions.new()
 var stamina := Stamina.new()
 var state := State.AIR
@@ -153,6 +158,9 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if action_hook.is_valid():
+		action_hook.call(self)
+	ticks += 1
 	var t0 := Perf.begin()
 	_regrab_timer -= delta
 	if not actions.grab_held:

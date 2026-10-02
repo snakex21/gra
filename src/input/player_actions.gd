@@ -78,6 +78,27 @@ func consume_switch_weapon() -> bool:
 	return pressed
 
 
+## Everything gameplay reads this tick (no consuming): for recording and replay.
+func snapshot() -> Array:
+	return [move, view_basis, grab_held, focus_held, attack_held, beam_held, aim_origin,
+		_jump_pressed, _interact_pressed, _call_pressed, _switch_weapon_pressed]
+
+
+## Puts a snapshot back (replay).
+func restore(s: Array) -> void:
+	move = s[0]
+	view_basis = s[1]
+	grab_held = s[2]
+	focus_held = s[3]
+	attack_held = s[4]
+	beam_held = s[5]
+	aim_origin = s[6]
+	_jump_pressed = s[7]
+	_interact_pressed = s[8]
+	_call_pressed = s[9]
+	_switch_weapon_pressed = s[10]
+
+
 func clear() -> void:
 	move = Vector2.ZERO
 	look_delta = Vector2.ZERO

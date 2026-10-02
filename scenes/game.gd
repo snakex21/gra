@@ -3,7 +3,12 @@ extends GameWorld
 ## arenas behind their gates, the save. ``-- --new-game`` (or NEW_GAME=1) skips the menu
 ## and starts a new game; ``-- --continue`` skips it and loads the save.
 
+const LAST_REPLAY := "user://replays/last.replay"
+
 var menu: GameMenu
+## Every game is recorded (PlayerActions per tick): a playtest can be replayed exactly.
+var replay: ActionReplay
+var _replay_saved_at := 0
 
 
 func _ready() -> void:
@@ -18,11 +23,18 @@ func _ready() -> void:
 	menu.continue_chosen.connect(func() -> void: _begin(false))
 	menu.resume_chosen.connect(_resume)
 	menu.quit_to_title_chosen.connect(_to_title)
-	menu.quit_chosen.connect(func() -> void: get_tree().quit())
+	menu.quit_chosen.connect(func() -> void:
+		if is_instance_valid(replay) and replay.mode == ActionReplay.Mode.RECORD:
+			replay.save(LAST_REPLAY)
+		get_tree().quit())
 	menu.settings_changed.connect(func(s: Settings) -> void:
 		apply_settings(s)
 		s.save())
 	var args := OS.get_cmdline_user_args()
+	for a in args:
+		if a.begins_with("--replay="):
+			_play_replay(a.trim_prefix("--replay="))
+			return
 	if OS.has_environment("NEW_GAME") or "--new-game" in args:
 		_begin(true)
 	elif "--continue" in args:
@@ -34,7 +46,42 @@ func _ready() -> void:
 func _begin(new_game: bool) -> void:
 	get_tree().paused = false
 	start(new_game)
+	_record({"start": "new" if new_game else "continue", "progress": state.to_dict(), "seed_offset": seed_offset})
 	_capture_mouse(true)
+
+
+func _record(header: Dictionary) -> void:
+	if is_instance_valid(replay):
+		replay.queue_free()
+	replay = ActionReplay.recorder(null, header)
+	replay.player_source = player
+	add_child(replay)
+	_replay_saved_at = 0
+
+
+func _play_replay(path: String) -> void:
+	var data := ActionReplay.load_file(path)
+	if data.is_empty():
+		push_error("Cannot read replay " + path)
+		_to_title()
+		return
+	with_input = false
+	save_path = ""
+	var h: Dictionary = data.header
+	seed_offset = int(h.get("seed_offset", 0))
+	start_from(h.get("progress", {}))
+	replay = ActionReplay.player_for(null, data)
+	replay.player_source = player
+	add_child(replay)
+	print("Replaying %s: %d recorded ticks" % [path, int(data.get("ticks", 0))])
+
+
+func _physics_process(delta: float) -> void:
+	super(delta)
+	# Keep the last minute of play safe on disk (a crash keeps its replay).
+	if is_instance_valid(replay) and replay.mode == ActionReplay.Mode.RECORD and replay.tick - _replay_saved_at >= 60 * 60:
+		_replay_saved_at = replay.tick
+		replay.save(LAST_REPLAY)
 
 
 func _resume() -> void:
@@ -44,6 +91,9 @@ func _resume() -> void:
 
 func _to_title() -> void:
 	get_tree().paused = false
+	if is_instance_valid(replay) and replay.mode == ActionReplay.Mode.RECORD:
+		replay.save(LAST_REPLAY)
+		replay.queue_free()
 	stop()
 	_capture_mouse(false)
 	menu.show_title(has_save())

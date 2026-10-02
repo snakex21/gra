@@ -217,6 +217,8 @@ func _ready() -> void:
 		test_four_colossi_in_order_with_fourth_gate,
 		test_fen_art_does_not_change_phaedra_arena_collision,
 		test_procedural_textures_are_deterministic,
+		test_replay_reproduces_a_fight,
+		test_settings_and_pause,
 		all_etap8_and_earlier_tests_still_pass,
 	]
 	for t in tests:
@@ -5924,6 +5926,95 @@ func test_procedural_textures_are_deterministic() -> void:
 	var plain := ProcTextures.or_plain(&"coat", Color(0.1, 0.1, 0.1))
 	_check(plain.albedo_texture == null, "headless runs should use plain colours (no texture cost)")
 	_log.append("coat %dx%d identical twice, normal map sane, headless uses plain colours" % [a.get_width(), a.get_height()])
+
+
+func _fight_state(w: Dictionary) -> PackedByteArray:
+	var p: PlayerCharacter = w.player
+	var v: Valus = w.valus
+	return var_to_bytes([p.global_transform, p.velocity, p.stamina.value, p.health, v.global_transform, v.weak_point.health, v.encounter, v.intent.kind])
+
+
+## A fresh Valus fight with a replay bound before the player's first tick. Built at the
+## same point of a physics frame every time, so both runs are sampled at the same tick.
+func _replay_world(rep: ActionReplay) -> Dictionary:
+	await get_tree().physics_frame
+	Sfx.enabled = false
+	Fx.enabled = false
+	_world = Node3D.new()
+	_world.name = "World_" + _current
+	add_child(_world)
+	var w := ValusArena.build_encounter(_world, false, 7)
+	rep.player = w.player
+	_world.add_child(rep)
+	return w
+
+
+func test_replay_reproduces_a_fight() -> void:
+	var ticks := 60 * 45
+	# 1) The bot plays, the recorder records.
+	var rec := ActionReplay.recorder(null, {"arena": "valus", "seed": 7})
+	var a := await _replay_world(rec)
+	var bot := ValusBot.new()
+	_world.add_child(bot)
+	bot.setup(a.player, a.valus, a.encounter)
+	await _ticks(ticks)
+	var recorded := _fight_state(a)
+	var data := rec.to_dict()
+	var path := "user://test_etap9.replay"
+	_check(rec.save(path), "the replay could not be saved")
+	var size := FileAccess.get_file_as_bytes(path).size()
+	await _teardown()
+	# 2) A fresh fight, no bot: the recording drives the player.
+	var loaded := ActionReplay.load_file(path)
+	_check(not loaded.is_empty() and (loaded.frames as Array).size() == (data.frames as Array).size(), "the replay file did not load back")
+	var play := ActionReplay.player_for(null, loaded)
+	var b := await _replay_world(play)
+	await _ticks(ticks)
+	var replayed := _fight_state(b)
+	_log.append("45 s of the Valus fight (bot) recorded: %d changed ticks of %d, file %d bytes; replay without the bot identical: %s (weak point %.0f -> %.0f, player at %s)" % [(data.frames as Array).size(), ticks, size, str(recorded == replayed), 100.0, (b.valus as Valus).weak_point.health, str((b.player as PlayerCharacter).global_position.snapped(Vector3.ONE * 0.01))])
+	_check(recorded == replayed, "the replay did not reproduce the fight")
+	_check(size < 200000, "the replay is too large (%d bytes)" % size)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func test_settings_and_pause() -> void:
+	var path := "user://test_etap9_settings.json"
+	var s := Settings.new()
+	s.mouse_sensitivity = 0.004
+	s.invert_y = true
+	s.ride_relative = true
+	s.show_debug = true
+	_check(s.save(path), "settings could not be saved")
+	var l := Settings.new()
+	_check(l.load_from(path) and l.to_dict() == s.to_dict(), "settings did not load back")
+	var broken := Settings.new()
+	broken.from_dict({"version": Settings.VERSION, "mouse_sensitivity": 99.0})
+	_check(broken.mouse_sensitivity <= 0.01, "an out-of-range sensitivity was accepted")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	# Applied to the region; pause stops the simulation; the menu runs while paused.
+	var g := await _setup_game("")
+	g.apply_settings(s)
+	var p := g.player()
+	_check(p.riding.steer_relative and (g.refs.hud as PlayerHud).show_debug, "settings were not applied to the rider / HUD")
+	var menu := GameMenu.new()
+	_world.add_child(menu)
+	await _ticks(2)
+	p.actions.move = Vector2(0, 1)
+	await _ticks(10)
+	var before := p.global_position
+	get_tree().paused = true
+	menu.show_pause()
+	await get_tree().create_timer(0.3, true, false, true).timeout
+	var during := p.global_position
+	var open := menu.is_open() and menu.process_mode == Node.PROCESS_MODE_ALWAYS
+	get_tree().paused = false
+	menu.resume_chosen.emit()
+	await _ticks(10)
+	_log.append("paused 0.3 s: player moved %.4f m (walking before and after); menu open while paused %s" % [during.distance_to(before), str(open)])
+	_check(during.distance_to(before) < 0.2 and open, "pausing did not stop the game")
+	_check(p.global_position.distance_to(during) > 0.3, "the game did not resume")
+	g.stop()
+	_check(g.region_kind == &"" and g.player() == null, "back to the title left the region loaded")
 
 
 ## Everything that ran before the Etap 9 tests passed.
