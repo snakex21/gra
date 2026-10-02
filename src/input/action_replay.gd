@@ -12,6 +12,10 @@ extends Node
 ## one-tick presses). The file is binary (exact floats) and compressed:
 ##   {"version", "header": {...}, "frames": [[[player #, player tick], snapshot, ride], ...]}
 ## ``header`` is free-form (what is needed to recreate the start: scene, seeds, save).
+##
+## Markers: while recording, what a viewer wants to find again is noted with its tick:
+## the player's deaths, hits taken, hurting falls, regions entered, colossi defeated, bug
+## reports (``mark()``). They are saved with the frames: [[tick, kind, text], ...].
 
 enum Mode { RECORD, PLAY }
 
@@ -25,6 +29,7 @@ var player_source: Callable
 var header := {}
 var tick := 0
 var frames: Array = []
+var markers: Array = []
 ## Playback: the recording ran out.
 var finished := false
 
@@ -49,6 +54,7 @@ static func player_for(p: PlayerCharacter, data: Dictionary) -> ActionReplay:
 	r.player = p
 	r.header = data.get("header", {})
 	r.frames = data.get("frames", [])
+	r.markers = data.get("markers", [])
 	r.name = "ActionReplay"
 	return r
 
@@ -57,6 +63,20 @@ func _ready() -> void:
 	# Early, to hand the hook to a new player before it runs its first tick.
 	process_physics_priority = -100
 	_bind()
+	var g := get_parent() as GameWorld
+	if mode == Mode.RECORD and g:
+		g.region_loaded.connect(func(kind: StringName) -> void: mark(&"region", String(kind)))
+		g.colossus_defeated.connect(func(kind: StringName) -> void: mark(&"defeat", String(kind)))
+
+
+## Notes ``kind`` (death, hit, fall, region, defeat, report) at this tick. Hits close
+## together (a blow and the drowning after it) are one marker.
+func mark(kind: StringName, text := "") -> void:
+	if mode != Mode.RECORD:
+		return
+	if kind == &"hit" and not markers.is_empty() and markers[-1][1] == "hit" and tick - int(markers[-1][0]) < 60:
+		return
+	markers.append([tick, String(kind), text])
 
 
 func _physics_process(_delta: float) -> void:
@@ -74,6 +94,12 @@ func _bind() -> void:
 	_segment += 1
 	_last = []
 	player.action_hook = _on_player_tick
+	if mode == Mode.RECORD:
+		player.died.connect(func() -> void: mark(&"death"))
+		player.hit_taken.connect(func(dmg: float, source: StringName) -> void: mark(&"hit", "%s %.0f" % [source, dmg]))
+		player.landed.connect(func(speed: float, _tier: int, dmg: float) -> void:
+			if dmg > 0.0:
+				mark(&"fall", "%.0f m/s, -%.0f" % [speed, dmg]))
 
 
 ## Called by the player at the start of its tick, before it reads its actions.
@@ -113,7 +139,7 @@ static func _without_presses(s: Array) -> Array:
 
 
 func to_dict() -> Dictionary:
-	return {"version": VERSION, "header": header, "frames": frames, "ticks": tick}
+	return {"version": VERSION, "header": header, "frames": frames, "ticks": tick, "markers": markers}
 
 
 func save(path: String) -> bool:

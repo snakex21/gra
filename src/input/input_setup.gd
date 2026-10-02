@@ -10,7 +10,7 @@ const REBINDABLE := [
 	[&"move_forward", "Naprzód"], [&"move_back", "Do tyłu"], [&"move_left", "W lewo"], [&"move_right", "W prawo"],
 	[&"jump", "Skok"], [&"grab", "Chwyt"], [&"attack", "Cios / strzał"], [&"focus", "Patrz na kolosa"],
 	[&"interact", "Wsiądź / zsiądź"], [&"call_horse", "Zawołaj Agro"], [&"switch_weapon", "Zmień broń"],
-	[&"sword_beam", "Miecz do słońca"],
+	[&"sword_beam", "Miecz do słońca"], [&"dive", "Nurkuj"],
 ]
 
 
@@ -30,6 +30,7 @@ static func defaults() -> Dictionary:
 		&"interact": [_key(KEY_E), _button(JOY_BUTTON_Y)],
 		&"attack": [_mouse(MOUSE_BUTTON_LEFT), _key(KEY_F), _button(JOY_BUTTON_X)],
 		&"sword_beam": [_key(KEY_V), _axis(JOY_AXIS_TRIGGER_LEFT, 1.0)],
+		&"dive": [_key(KEY_C), _key(KEY_CTRL), _button(JOY_BUTTON_B)],
 		&"switch_weapon": [_key(KEY_TAB), _key(KEY_R), _button(JOY_BUTTON_DPAD_RIGHT)],
 		&"encounter_reset": [_key(KEY_F5)],
 		&"call_horse": [_key(KEY_C), _button(JOY_BUTTON_DPAD_DOWN)],

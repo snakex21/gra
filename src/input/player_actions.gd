@@ -24,6 +24,8 @@ var focus_held := false
 var attack_held := false
 ## Hold to raise the sword to the sun (the beam that leads to the next colossus).
 var beam_held := false
+## Hold to dive (swimming: down under the surface; let go to come up).
+var dive_held := false
 ## Where the aim ray starts (camera / controller position); INF = from the player's eyes.
 ## The aim direction is -view_basis.z.
 var aim_origin := Vector3.INF
@@ -81,7 +83,7 @@ func consume_switch_weapon() -> bool:
 ## Everything gameplay reads this tick (no consuming): for recording and replay.
 func snapshot() -> Array:
 	return [move, view_basis, grab_held, focus_held, attack_held, beam_held, aim_origin,
-		_jump_pressed, _interact_pressed, _call_pressed, _switch_weapon_pressed]
+		_jump_pressed, _interact_pressed, _call_pressed, _switch_weapon_pressed, dive_held]
 
 
 ## Puts a snapshot back (replay).
@@ -97,6 +99,8 @@ func restore(s: Array) -> void:
 	_interact_pressed = s[8]
 	_call_pressed = s[9]
 	_switch_weapon_pressed = s[10]
+	# Recordings from before diving (Etap 10) have no dive.
+	dive_held = s[11] if s.size() > 11 else false
 
 
 func clear() -> void:
@@ -106,6 +110,7 @@ func clear() -> void:
 	focus_held = false
 	attack_held = false
 	beam_held = false
+	dive_held = false
 	_jump_pressed = false
 	_interact_pressed = false
 	_call_pressed = false

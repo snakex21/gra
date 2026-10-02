@@ -118,6 +118,11 @@ func _draw() -> void:
 		draw_arc(center, r, -PI / 2.0, -PI / 2.0 + TAU * ratio, 64, col, 10.0, true)
 	if player.is_climbing():
 		draw_circle(center, 6.0 + 6.0 * player.shake_level, Color(1, 1, 1, 0.8))
+	# Breath (inside the ring, only when some is used).
+	var air := clampf(player.breath / player.breath_max, 0.0, 1.0)
+	if air < 0.999:
+		var ac := Color(0.45, 0.75, 1.0) if air > 0.25 else Color(0.45, 0.75, 1.0, 0.4 + 0.6 * absf(sin(_flash * 8.0)))
+		draw_arc(center, r - 14.0, -PI / 2.0, -PI / 2.0 + TAU * air, 48, ac, 5.0, true)
 	# Health (bottom left of the ring) and sword charge.
 	var hp := clampf(player.health / player.fall.max_health, 0.0, 1.0)
 	var bar := Rect2(size.x - 260.0, size.y - 30.0, 140.0, 8.0)

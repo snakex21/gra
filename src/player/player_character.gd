@@ -73,6 +73,14 @@ enum Weapon { SWORD, BOW }
 @export var swim_exit_depth := 1.15
 ## Stamina drain multiplier while holding on under water (holding the breath).
 @export var underwater_drain := 1.6
+## Diving (hold dive while swimming): down at this speed, slower strokes under water.
+@export var dive_speed := 2.2
+@export var dive_swim_speed := 1.9
+## Breath: seconds under water before drowning starts, how fast it comes back at the
+## surface (s per s), and the damage per second once it is gone.
+@export var breath_max := 14.0
+@export var breath_refill := 5.0
+@export var drown_damage := 12.0
 
 @export_group("Shake response")
 ## Surface acceleration (m/s^2) where the climber starts to feel the shake...
@@ -104,6 +112,9 @@ var spawn_transform := Transform3D.IDENTITY
 var balance := Balance.new()
 var fall := FallImpact.new()
 var health := 100.0
+## Seconds of air left (breath_max at the surface).
+var breath := 14.0
+var _drowning := 0.0
 ## World angular velocity of the supporting / gripped segment (rad/s).
 var surface_angular_velocity := Vector3.ZERO
 ## Impact speed and tier of the last landing (debug/tests).
@@ -177,6 +188,7 @@ func _physics_process(delta: float) -> void:
 	if not actions.grab_held:
 		_grab_needs_release = false
 	_update_health(delta)
+	_update_breath(delta)
 	if state == State.RIDE:
 		if actions.consume_interact():
 			riding.try_dismount()
@@ -310,6 +322,7 @@ func respawn() -> void:
 	_carry_body = null
 	global_transform = spawn_transform
 	stamina.refill()
+	breath = breath_max
 	balance.reset()
 	sword.reset()
 	bow.reset()
@@ -535,6 +548,29 @@ func _update_health(delta: float) -> void:
 		health = minf(fall.max_health, health + health_regen * delta)
 
 
+## Breath: held under water (swimming down, or holding on to something that dives), back
+## at the surface; once it is gone the water hurts until the head is out again.
+func _update_breath(delta: float) -> void:
+	if dead:
+		return
+	if is_under_water():
+		breath = maxf(0.0, breath - delta)
+		if breath <= 0.0:
+			_drowning += delta
+			_take_damage(drown_damage * delta)
+			if _drowning >= 1.0:
+				_drowning -= 1.0
+				hit_taken.emit(drown_damage, &"drown")
+	else:
+		breath = minf(breath_max, breath + breath_refill * delta)
+		_drowning = 0.0
+
+
+## Swimming under the surface (diving).
+func is_diving() -> bool:
+	return state == State.SWIM and is_under_water()
+
+
 func _update_support() -> void:
 	var previous := _support
 	_support = null
@@ -717,8 +753,12 @@ func _swim(delta: float) -> void:
 		wish = wish.normalized()
 	if dead:
 		wish = Vector3.ZERO
-	var hv := Vector3(velocity.x, 0.0, velocity.z).move_toward(wish * swim_speed, swim_accel * delta)
+	# Diving: down while the button is held and there is breath left; up again otherwise.
+	var diving := actions.dive_held and breath > 0.0 and not dead
+	var hv := Vector3(velocity.x, 0.0, velocity.z).move_toward(wish * (dive_swim_speed if is_under_water() else swim_speed), swim_accel * delta)
 	var lift := clampf((surface - swim_float - global_position.y) * 3.0, -4.0, 2.5)
+	if diving:
+		lift = -dive_speed
 	velocity = Vector3(hv.x, move_toward(velocity.y, lift, 14.0 * delta), hv.z)
 	move_and_slide()
 	if wish.length() > 0.1:

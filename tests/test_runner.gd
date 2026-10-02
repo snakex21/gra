@@ -251,6 +251,9 @@ func _ready() -> void:
 		test_avion_simulation_independent_of_render_fps,
 		test_avion_cost_stays_within_budget,
 		test_six_colossi_in_order_with_south_west_gate,
+		test_player_dives_and_holds_breath,
+		test_diving_under_the_hydrus_ram,
+		test_replay_markers_jump_and_clip,
 		all_etap10_and_earlier_tests_still_pass,
 	]
 	for t in tests:
@@ -6931,3 +6934,159 @@ func test_six_colossi_in_order_with_south_west_gate() -> void:
 	var towers: Array = g.refs.towers
 	_check(towers.size() == AvionArena.TOWERS.size() and (towers[0].center as Vector3).distance_to(xf * (AvionArena.TOWERS[0][0] + Vector3.UP * AvionArena.TOWER_TOP)) < 0.01, "the towers are not where the bot looks for them")
 	_log.append("six colossi: an Etap 10 save leads to Avion through the south-west gate; its lake at %.1f m, %d towers" % [av.water_level if av else 0.0, towers.size()])
+
+
+func test_player_dives_and_holds_breath() -> void:
+	var w := await _setup_hydrus()
+	var h: Hydrus = w.hydrus
+	h.process_mode = Node.PROCESS_MODE_DISABLED
+	var p: PlayerCharacter = w.player
+	# In open water away from the pillars.
+	p.global_position = Vector3(12, HydrusArena.WATER_Y - 0.5, 40)
+	p.reset_physics_interpolation()
+	await _ticks(60)
+	_check(p.is_swimming() and not p.is_under_water(), "not swimming at the surface (%s)" % p.get_display_state())
+	var surface := HydrusArena.WATER_Y
+	# Dive for 4 s.
+	p.actions.dive_held = true
+	await _ticks(60 * 4)
+	var depth := surface - (p.global_position.y + 0.6)
+	var used := p.breath_max - p.breath
+	_check(p.is_diving() and depth > 2.5, "holding dive did not take the player down (%.1f m under, %s)" % [depth, p.get_display_state()])
+	_check(absf(used - 4.0 + 0.4) < 1.0, "breath went down by %.1f s in 4 s of diving" % used)
+	# Let go: back up and breathing.
+	p.actions.dive_held = false
+	var up_t := 0
+	while p.is_under_water() and up_t < 60 * 8:
+		await _ticks(1)
+		up_t += 1
+	_check(not p.is_under_water(), "did not come back up within 8 s")
+	await _ticks(60 * 3)
+	_check(p.breath >= p.breath_max - 0.01, "breath did not come back at the surface (%.1f)" % p.breath)
+	# Hold it too long: no air left, it hurts, the player comes up by itself and lives.
+	var hp := p.health
+	p.actions.dive_held = true
+	var out_of_air := -1
+	var surfaced := -1
+	for i in 60 * 30:
+		await _ticks(1)
+		if out_of_air < 0 and p.breath <= 0.0:
+			out_of_air = i
+		if out_of_air >= 0 and not p.is_under_water():
+			surfaced = i
+			break
+	p.actions.dive_held = false
+	_check(out_of_air >= 0 and (out_of_air / 60.0) > p.breath_max - 1.5, "the breath ran out after %.1f s" % (out_of_air / 60.0))
+	_check(surfaced >= 0, "out of air, the diver did not come up")
+	_check(p.health < hp and not p.dead, "drowning did not hurt, or killed (health %.0f)" % p.health)
+	_log.append("dive: %.1f m down in 4 s, back up in %.1f s, breath %.0f s, out of air the diver floats up in %.1f s (health %.0f -> %.0f)" % [depth, up_t / 60.0, p.breath_max, (surfaced - out_of_air) / 60.0, hp, p.health])
+
+
+func test_diving_under_the_hydrus_ram() -> void:
+	var w := await _setup_hydrus(31)
+	var h: Hydrus = w.hydrus
+	var p: PlayerCharacter = w.player
+	p.global_position = h.head_point() + (Basis(Vector3.UP, h.yaw) * Vector3.FORWARD) * 18.0 + Vector3(0, 0.6, 0)
+	p.reset_physics_interpolation()
+	var hp := p.health
+	var dived_at := -1
+	var deepest := 0.0
+	for i in 60 * 25:
+		if dived_at < 0 and h.intent.kind == Hydrus.RAM and h.rear_w > 0.2:
+			dived_at = i
+		p.actions.dive_held = dived_at >= 0 and i < dived_at + 60 * 5
+		if dived_at >= 0:
+			deepest = maxf(deepest, HydrusArena.WATER_Y - p.global_position.y)
+		if dived_at >= 0 and i > dived_at + 60 * 7:
+			break
+		await _ticks(1)
+	p.actions.dive_held = false
+	_check(dived_at >= 0, "no ram to dive under")
+	_check(p.health == hp, "diving under the ram did not dodge it (health %.0f)" % p.health)
+	_log.append("ram: diving when the head rears up (%.1f m down) - it passes over" % deepest)
+
+
+func test_replay_markers_jump_and_clip() -> void:
+	Sfx.enabled = false
+	Fx.enabled = false
+	_world = Node3D.new()
+	add_child(_world)
+	# 1) A recorded game: 4 s in, the player is dropped from high up (a deadly fall, ~5 s).
+	var g := GameWorld.new()
+	g.with_input = false
+	g.with_art = false
+	g.save_path = ""
+	_world.add_child(g)
+	g.start(true)
+	var rec := ActionReplay.recorder(null, {"progress": g.state.to_dict(), "seed_offset": 0})
+	rec.player_source = g.player
+	g.add_child(rec)
+	var drop_at := 240
+	# The drop is not an action: the playback below does it again at the same tick.
+	var drop := func(game: GameWorld, t: int) -> void:
+		if t == drop_at:
+			var p := game.player()
+			p.global_position += Vector3.UP * 260.0
+			p.velocity = Vector3.ZERO
+			p.reset_physics_interpolation()
+	var probe := _TickProbe.new()
+	probe.f = func(_n: int) -> void: drop.call(g, rec.tick)
+	g.add_child(probe)
+	await _ticks(60 * 12)
+	var data := rec.to_dict()
+	var kinds := (data.markers as Array).map(func(m: Array) -> String: return m[1])
+	_check("fall" in kinds and "death" in kinds, "no fall / death markers (%s)" % str(data.markers))
+	var death_t := -1
+	for m in data.markers:
+		if m[1] == "death":
+			death_t = int(m[0])
+	_check(death_t > drop_at and death_t < drop_at + 60 * 7, "the death marker is at tick %d (dropped at %d)" % [death_t, drop_at])
+	_world.free()
+	_world = Node3D.new()
+	add_child(_world)
+	# 2) The viewer jumps to the next marker (a moment before it): the player still in the air.
+	var g2 := GameWorld.new()
+	g2.with_art = false
+	_world.add_child(g2)
+	var v := ReplayViewer.new()
+	v.setup(g2, data)
+	_world.add_child(v)
+	var probe2 := _TickProbe.new()
+	probe2.f = func(_n: int) -> void: drop.call(g2, v.tick())
+	_world.add_child(probe2)
+	var got := []
+	v.reached.connect(func(t: int) -> void: got.append([t, g2.player().global_position.y, g2.player().dead]))
+	await _ticks(2)
+	var m1 := v.jump_marker(1)
+	while got.size() < 1:
+		await _ticks(1)
+	_check(not m1.is_empty() and got[0][0] == int(m1[0]) - ReplayViewer.MARKER_LEAD, "the jump did not land %d ticks before the marker (%s, at %s)" % [ReplayViewer.MARKER_LEAD, str(m1), str(got)])
+	var ground := Valley.ground_height(g2.player().global_position.x, g2.player().global_position.z)
+	_check(not got[0][2] and got[0][1] > ground + 10.0, "a moment before the fall's marker the player is not in the air (y %.1f)" % got[0][1])
+	# 3) A clip around the death: opened, it runs to its start and stops at its end.
+	var clip_path := "user://test_etap11_clip.replay"
+	_check(v.save_clip(death_t, clip_path) == clip_path, "the clip was not saved")
+	get_tree().paused = false
+	_world.free()
+	_world = Node3D.new()
+	add_child(_world)
+	var clip := ActionReplay.load_file(clip_path)
+	var win: Array = clip.get("header", {}).get("clip", [])
+	_check(win.size() == 2 and int(win[0]) == maxi(0, death_t - ReplayViewer.CLIP_BEFORE) and int(win[1]) == mini(int(data.ticks), death_t + ReplayViewer.CLIP_AFTER), "the clip's window is %s" % str(win))
+	var g3 := GameWorld.new()
+	g3.with_art = false
+	_world.add_child(g3)
+	var v3 := ReplayViewer.new()
+	v3.setup(g3, clip)
+	var stops := []
+	v3.reached.connect(func(t: int) -> void: stops.append(t))
+	_world.add_child(v3)
+	var waited := 0
+	while stops.size() < 2 and waited < 60 * 40:
+		await _ticks(1)
+		waited += 1
+	_check(stops.size() == 2 and stops[0] == int(win[0]) and stops[1] == int(win[1]) and v3.paused, "the clip did not play its window (stops %s)" % str(stops))
+	_check(v3.markers().size() >= 1 and v3.markers().all(func(m: Array) -> bool: return int(m[0]) >= int(win[0])), "the clip's markers are not those in its window")
+	get_tree().paused = false
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(clip_path))
+	_log.append("markers %s; jump to the death's marker lands %.0f s before it (player %.0f m up); clip %s plays its 20 s and stops" % [str(kinds), ReplayViewer.MARKER_LEAD / 60.0, got[0][1] - ground, str(win)])

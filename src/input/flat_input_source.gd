@@ -29,6 +29,7 @@ func _process(delta: float) -> void:
 	actions.focus_held = Input.is_action_pressed(&"focus")
 	actions.attack_held = Input.is_action_pressed(&"attack")
 	actions.beam_held = Input.is_action_pressed(&"sword_beam")
+	actions.dive_held = Input.is_action_pressed(&"dive")
 	if Input.is_action_just_pressed(&"jump"):
 		actions.press_jump()
 	if Input.is_action_just_pressed(&"interact"):

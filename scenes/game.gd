@@ -97,6 +97,7 @@ func save_bug_report() -> String:
 		return ""
 	var stamp := Time.get_datetime_string_from_system().replace(":", "-")
 	var base := REPORTS + "report_" + stamp
+	replay.mark(&"report", stamp)
 	replay.save(base + ".replay")
 	var p := player()
 	var info := {"time": stamp, "tick": replay.tick, "region": String(region_kind), "progress": state.to_dict(),

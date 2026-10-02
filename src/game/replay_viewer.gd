@@ -4,6 +4,12 @@ extends Node
 ##
 ##   K        pause / play          J / L     10 s back / forward
 ##   [ / ]    slower / faster       F7        free camera (WASD, Q/E, arrows) / back
+##   , / .    previous / next marker (a death, a hit, a fall, a defeat, a report...)
+##   C        save a clip: the 15 s before here and 5 s after
+##
+## The timeline at the bottom shows where the markers are. A clip is the same recording
+## (it still starts from the beginning: the world can only be recreated from there) with a
+## window: opened, it runs to the window's start and plays only the window.
 ##
 ## The recording is deterministic, so going back means starting the world again from
 ## the recording's start and running forward to that tick, fast. Running faster (or
@@ -18,6 +24,11 @@ const SPEEDS := [0.25, 0.5, 1.0, 2.0, 4.0]
 ## Fast-forward when seeking.
 const SEEK_SPEED := 16.0
 const BASE_TICKS := 60
+## A jump to a marker lands this long before it (to see what led to it).
+const MARKER_LEAD := 3 * 60
+const CLIP_BEFORE := 15 * 60
+const CLIP_AFTER := 5 * 60
+const CLIPS := "user://replays/"
 
 var game: GameWorld
 var data: Dictionary
@@ -30,6 +41,9 @@ var _target := -1
 var _was_paused := false
 var _restore := false
 var _label: Label
+var _timeline: Control
+## The clip's window [from, to] (ticks) when the recording is a clip.
+var _clip := []
 var _yaw := 0.0
 var _pitch := -0.3
 
@@ -50,8 +64,19 @@ func _ready() -> void:
 	_label.add_theme_font_size_override(&"font_size", 18)
 	_label.add_theme_color_override(&"font_shadow_color", Color.BLACK)
 	layer.add_child(_label)
+	_timeline = Control.new()
+	_timeline.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_timeline.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_timeline.draw.connect(_draw_timeline)
+	layer.add_child(_timeline)
 	add_child(layer)
+	var clip: Variant = data.get("header", {}).get("clip", [])
+	if clip is Array and (clip as Array).size() == 2:
+		_clip = clip
 	restart()
+	if not _clip.is_empty():
+		paused = false
+		seek(int(_clip[0]))
 
 
 ## The world again from the recording's start, with a fresh playback.
@@ -73,7 +98,54 @@ func tick() -> int:
 
 
 func length() -> int:
-	return int(data.get("ticks", 0))
+	return int(_clip[1]) if not _clip.is_empty() else int(data.get("ticks", 0))
+
+
+## [[tick, kind, text], ...] from the recording (inside the clip's window for a clip).
+func markers() -> Array:
+	var out := []
+	for m in data.get("markers", []):
+		if _clip.is_empty() or (int(m[0]) >= int(_clip[0]) and int(m[0]) <= int(_clip[1])):
+			out.append(m)
+	return out
+
+
+## Seeks to the next (``dir`` 1) or previous (-1) marker, MARKER_LEAD before it; returns
+## the marker ([] when there is none that way).
+func jump_marker(dir: int) -> Array:
+	var now := tick()
+	var best := []
+	for m in markers():
+		var at := int(m[0])
+		if dir > 0 and at - MARKER_LEAD > now and (best.is_empty() or at < int(best[0])):
+			best = m
+		elif dir < 0 and at - MARKER_LEAD < now - 30 and (best.is_empty() or at > int(best[0])):
+			best = m
+	if not best.is_empty():
+		seek(maxi(int(best[0]) - MARKER_LEAD, 0 if _clip.is_empty() else int(_clip[0])))
+	return best
+
+
+## Saves a clip around ``at`` (default: here): the same recording with a window. Returns
+## its path ("" when it could not be written).
+func save_clip(at := -1, path := "") -> String:
+	if at < 0:
+		at = tick()
+	var from := maxi(0, at - CLIP_BEFORE)
+	var to := mini(int(data.get("ticks", 0)), at + CLIP_AFTER)
+	var clip := data.duplicate(true)
+	var h: Dictionary = clip.get("header", {})
+	h["clip"] = [from, to]
+	clip["header"] = h
+	if path == "":
+		path = CLIPS + "clip_%s.replay" % Time.get_datetime_string_from_system().replace(":", "-")
+	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	var f := FileAccess.open_compressed(path, FileAccess.WRITE, FileAccess.COMPRESSION_ZSTD)
+	if f == null:
+		return ""
+	f.store_var(clip)
+	f.close()
+	return path
 
 
 ## Runs (or rewinds and runs) to ``t`` and stops there, paused or playing as before.
@@ -104,6 +176,11 @@ func faster(step: int) -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if _target < 0 and not _clip.is_empty() and tick() >= int(_clip[1]) and not paused:
+		# The end of the clip: it stops there.
+		set_paused(true)
+		reached.emit(tick())
+		return
 	if _target >= 0 and tick() >= _target:
 		# Exactly here: stop the tree before the next tick of this frame.
 		_target = -1
@@ -118,11 +195,18 @@ func _process(delta: float) -> void:
 		_set_rate(speed)
 		paused = _was_paused
 		get_tree().paused = paused
+	_flash_t = maxf(0.0, _flash_t - delta)
 	if free_cam and free_cam.current:
 		_fly(delta)
 	if _label:
 		var t := tick() / float(BASE_TICKS)
-		_label.text = "POWTÓRKA  %.1f / %.1f s  x%s%s   K pauza  J/L ±10 s  [ ] prędkość  F7 kamera" % [t, length() / float(BASE_TICKS), str(speed), "  (pauza)" if paused else ""]
+		var next := ""
+		for m in markers():
+			if int(m[0]) > tick():
+				next = "   następny: %s %s za %.0f s" % [_marker_name(m[1]), m[2], (int(m[0]) - tick()) / float(BASE_TICKS)]
+				break
+		_label.text = "%s  %.1f / %.1f s  x%s%s   K pauza  J/L ±10 s  [ ] prędkość  ,/. znaczniki  C wycinek  F7 kamera%s" % ["WYCINEK" if not _clip.is_empty() else "POWTÓRKA", t, length() / float(BASE_TICKS), str(speed), "  (pauza)" if paused else "", next]
+		_timeline.queue_redraw()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -141,6 +225,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			faster(1)
 		KEY_F7:
 			_toggle_free_camera()
+		KEY_COMMA:
+			jump_marker(-1)
+		KEY_PERIOD:
+			jump_marker(1)
+		KEY_C:
+			var path := save_clip()
+			if path != "":
+				print("Clip saved: ", ProjectSettings.globalize_path(path))
+				_flash_text = "Zapisano wycinek " + path.get_file()
+				_flash_t = 3.0
 		_:
 			return
 	get_viewport().set_input_as_handled()
@@ -151,6 +245,33 @@ static func _set_rate(k: float) -> void:
 	Engine.physics_ticks_per_second = int(round(BASE_TICKS * k))
 	Engine.time_scale = k
 	Engine.max_physics_steps_per_frame = maxi(8, int(8 * k))
+
+
+const MARKER_COLORS := {"death": Color(0.9, 0.2, 0.2), "hit": Color(1.0, 0.6, 0.2), "fall": Color(0.95, 0.85, 0.3),
+	"region": Color(0.6, 0.8, 1.0), "defeat": Color(0.5, 1.0, 0.5), "report": Color(1, 1, 1)}
+const MARKER_NAMES := {"death": "śmierć", "hit": "trafienie", "fall": "upadek", "region": "obszar", "defeat": "pokonany", "report": "zgłoszenie"}
+var _flash_text := ""
+var _flash_t := 0.0
+
+
+static func _marker_name(kind: String) -> String:
+	return MARKER_NAMES.get(kind, kind)
+
+
+## The timeline: the whole recording (or the clip's window), where we are, the markers.
+func _draw_timeline() -> void:
+	var size := _timeline.size
+	var bar := Rect2(24.0, size.y - 34.0, size.x - 48.0, 6.0)
+	_timeline.draw_rect(bar, Color(0, 0, 0, 0.5))
+	var lo := 0 if _clip.is_empty() else int(_clip[0])
+	var hi := maxi(length(), lo + 1)
+	var x_of := func(t: int) -> float: return bar.position.x + bar.size.x * clampf(float(t - lo) / float(hi - lo), 0.0, 1.0)
+	_timeline.draw_rect(Rect2(bar.position, Vector2(float(x_of.call(tick())) - bar.position.x, bar.size.y)), Color(0.85, 0.85, 0.85, 0.8))
+	for m in markers():
+		var x: float = x_of.call(int(m[0]))
+		_timeline.draw_rect(Rect2(x - 2.0, bar.position.y - 7.0, 4.0, bar.size.y + 14.0), MARKER_COLORS.get(m[1], Color.WHITE))
+	if _flash_t > 0.0:
+		_timeline.draw_string(ThemeDB.fallback_font, Vector2(24.0, size.y - 46.0), _flash_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 16)
 
 
 func _exit_tree() -> void:
