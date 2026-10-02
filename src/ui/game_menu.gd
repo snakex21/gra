@@ -81,7 +81,8 @@ func _ready() -> void:
 	_debug = _check(_options, "Tekst diagnostyczny", func(on: bool) -> void: settings.show_debug = on; _changed())
 	_button(_options, "Sterowanie…", func() -> void: _open_controls())
 	_button(_options, "Wróć", func() -> void: _show(_back_to))
-	_controls = _panel("Sterowanie")
+	_controls = _panel("Sterowanie", -330.0)
+	_controls.add_theme_constant_override(&"separation", 4)
 	for pair in InputSetup.REBINDABLE:
 		var action: StringName = pair[0]
 		var row := HBoxContainer.new()
@@ -90,7 +91,7 @@ func _ready() -> void:
 		label.custom_minimum_size = Vector2(190, 0)
 		row.add_child(label)
 		var b := Button.new()
-		b.custom_minimum_size = Vector2(190, 30)
+		b.custom_minimum_size = Vector2(190, 28)
 		b.pressed.connect(func() -> void: _start_capture(action))
 		row.add_child(b)
 		_controls.add_child(row)
@@ -212,11 +213,11 @@ func _changed() -> void:
 	settings_changed.emit(settings)
 
 
-func _panel(title: String) -> VBoxContainer:
+func _panel(title: String, top := -220.0) -> VBoxContainer:
 	var box := VBoxContainer.new()
 	box.set_anchors_preset(Control.PRESET_CENTER)
 	box.custom_minimum_size = Vector2(400, 0)
-	box.position = Vector2(-200, -220)
+	box.position = Vector2(-200, top)
 	box.add_theme_constant_override(&"separation", 8)
 	var t := Label.new()
 	t.text = title

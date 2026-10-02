@@ -5404,7 +5404,9 @@ func test_valley_ground_world_edge_and_closed_gates() -> void:
 	p.reset_physics_interpolation()
 	p.actions.view_basis = Basis.looking_at(q.out)
 	await _ticks(60 * 4)
-	var through := (p.global_position - (q.pos as Vector3)).dot(q.out)
+	# Past the valley's edge or not (a gate may stand at an angle to the edge: sliding
+	# along its mist is not getting through).
+	var through := maxf(absf(p.global_position.x), absf(p.global_position.z)) - Valley.EDGE
 	_check(through < 0.0 and g.region_kind == GameWorld.VALLEY, "walked through a closed gate (%.2f m past it, region %s)" % [through, g.region_kind])
 	p.actions.move = Vector2.ZERO
 	_log.append("valley built in %d ms (no grass); temple floor %.2f m; edge stop x %.1f; closed gate stop %.2f m before" % [build_ms, ground, edge_x, -through])
@@ -6090,7 +6092,7 @@ func test_world_layout_keeps_arenas_apart_and_connected() -> void:
 		while dd < length + 10.0:
 			var at := gate + o * dd
 			var expect := Valley.ground_height(at.x, at.z) if maxf(absf(at.x), absf(at.z)) < WorldMap.VALLEY_HALF else WorldMap.arena_height(kind)
-			var q := PhysicsRayQueryParameters3D.create(Vector3(at.x, expect + 20.0, at.z), Vector3(at.x, expect - 20.0, at.z), Layers.WORLD)
+			var q := PhysicsRayQueryParameters3D.create(Vector3(at.x, expect + 8.0, at.z), Vector3(at.x, expect - 20.0, at.z), Layers.WORLD)
 			var hit := space.intersect_ray(q)
 			if hit.is_empty():
 				_check(false, "no floor in the %s corridor %.0f m past the gate" % [kind, dd])

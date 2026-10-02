@@ -161,7 +161,7 @@ static func build_encounter(parent: Node3D, with_input := false, brain_seed := 2
 	var points := build(parent)
 	var hy := spawn(parent, brain_seed)
 	if with_art:
-		ArenaArt.dress_arena(parent, Vector3(0, 0, 1), 80.0, 7129)
+		ArenaArt.dress_arena(parent, Vector3(0, 0, 1), 80.0, 7129, WATER_RADIUS + 4.0)
 		ArenaArt.skin_colossus(hy)
 
 	var horse := Horse.new()

@@ -110,9 +110,9 @@ static func _rim(root: Node3D) -> void:
 				c.visible = false
 
 
-## Walls from the gate to the rim, and the floor from the valley's edge to the rim.
+## Walls from the valley's edge (where they close the gate's opening) to the rim, and
+## the floor from the valley's edge to the rim.
 static func _corridor(parent: Node3D, kind: StringName, stone: Material) -> void:
-	var g: Vector3 = gate(kind).pos
 	var o := out_dir(kind)
 	var side := o.cross(Vector3.UP).normalized()
 	var yaw := atan2(o.x, o.z)
@@ -120,14 +120,17 @@ static func _corridor(parent: Node3D, kind: StringName, stone: Material) -> void
 	var exit := valley_exit(kind)
 	var y := exit.y
 	var rim := rim_entry(kind)
-	var gate_ground := Valley.ground_height(g.x, g.z)
-	var start := g + o * 1.5
-	var length := Vector2(rim.x - start.x, rim.z - start.z).length() + 3.0
-	var mid := start + o * length * 0.5
-	var low := minf(gate_ground, y) - 6.0
-	var high := maxf(gate_ground, y) + WALL_HEIGHT
+	var starts := Valley.gate_opening(kind, Valley.EDGE)
+	var i := 0
 	for s: float in [-1.0, 1.0]:
-		var c := mid + side * s * (CORRIDOR_WIDTH * 0.5 + 1.0)
+		var a: Vector3 = starts[i] - o * 1.0
+		var b := rim + side * s * (CORRIDOR_WIDTH * 0.5 + 1.0) + o * 1.0
+		i += 1
+		var length := Vector2(b.x - a.x, b.z - a.z).length()
+		var ground_a := Valley.ground_height(a.x, a.z)
+		var low := minf(ground_a, y) - 6.0
+		var high := maxf(ground_a, y) + WALL_HEIGHT
+		var c := (a + b) * 0.5
 		c.y = (low + high) * 0.5
 		var wall := TerrainKit.box(parent, c, Vector3(2.0, high - low, length), stone, rot)
 		wall.name = "CorridorWall_%s" % kind

@@ -108,26 +108,52 @@ static func build(parent: Node3D, open_gate: StringName, with_art := true, world
 	var gates := {}
 	for c: StringName in GATES:
 		var g: Dictionary = GATES[c]
-		var out: Vector3 = g.out
+		var out: Vector3 = (g.out as Vector3).normalized()
 		var pos := on_ground(g.pos)
-		var side := out.cross(Vector3.UP).normalized()
-		var yaw := atan2(-out.x, -out.z)
-		var rot := Basis(Vector3.UP, yaw)
 		var root := Node3D.new()
 		root.name = "Gate_%s" % c
 		parent.add_child(root)
-		for s in [-1.0, 1.0]:
-			var base := on_ground(pos + side * s * (GATE_WIDTH * 0.5 + 1.5))
-			TerrainKit.box(root, base + Vector3(0, 6, 0), Vector3(3, 14, 3), stone, rot)
-		TerrainKit.box(root, pos + Vector3(0, 12.2, 0), Vector3(GATE_WIDTH + 6, 2, 3.4), dark, rot)
+		# The opening is where the corridor's walls meet the edge: pillars there, the lintel
+		# and (closed) the mist between them, along the edge line (also for a gate at an
+		# angle to the edge).
+		var ends := gate_opening(c, EDGE)
+		var a: Vector3 = ends[0]
+		var b: Vector3 = ends[1]
+		var mid := on_ground((a + b) * 0.5)
+		var across := (b - a)
+		across.y = 0.0
+		var rot := Basis(Vector3.UP, atan2(-across.z, across.x))
+		for e: Vector3 in ends:
+			TerrainKit.box(root, on_ground(e) + Vector3(0, 6, 0), Vector3(3, 14, 3), stone, rot)
+		var top := maxf(on_ground(a).y, on_ground(b).y)
+		TerrainKit.box(root, Vector3(mid.x, top + 12.2, mid.z), Vector3(across.length() + 3.0, 2, 3.4), dark, rot)
 		# Closed gates: a wall of mist that blocks the way (collision on the WORLD layer).
 		var barrier: StaticBody3D = null
 		if c != open_gate:
-			barrier = TerrainKit.box(root, pos + Vector3(0, 5.5, 0), Vector3(GATE_WIDTH, 12, 1.2), mist, rot)
+			barrier = TerrainKit.box(root, mid + Vector3(0, 5.5, 0), Vector3(across.length(), 14, 1.2), mist, rot)
 			barrier.name = "Mist"
 		gates[c] = {"pos": pos, "out": out, "trigger": on_ground(pos + out * GATE_TRIGGER), "open": c == open_gate, "node": root}
 	return {"kit": kit, "gates": gates, "spawn": on_ground(TEMPLE_SPAWN, 0.95), "spawn_yaw": TEMPLE_YAW,
 		"horse": on_ground(HORSE_SPAWN), "sun": SUN_DIRECTION.normalized()}
+
+
+## Where the two walls of ``c``'s corridor cross the edge line at ``at`` (|x| or |z|):
+## the ends of the gate's opening (XZ, y = 0).
+static func gate_opening(c: StringName, at: float) -> Array[Vector3]:
+	var g: Dictionary = GATES[c]
+	var pos: Vector3 = g.pos
+	var out: Vector3 = (g.out as Vector3).normalized()
+	var side := out.cross(Vector3.UP).normalized()
+	var on_z := absf(absf(pos.z) - EDGE) < 0.5
+	var fixed := signf(pos.z if on_z else pos.x) * at
+	var ends: Array[Vector3] = []
+	for s: float in [-1.0, 1.0]:
+		var q := pos + side * s * (WorldMap.CORRIDOR_WIDTH * 0.5 + 1.0)
+		var d := out.z if on_z else out.x
+		var t := (fixed - (q.z if on_z else q.x)) / d
+		var e := q + out * t
+		ends.append(Vector3(e.x, 0, e.z))
+	return ends
 
 
 ## The edge walls ([centre, size]); in the world they leave an opening for each corridor.
@@ -143,16 +169,14 @@ static func _edge_walls(world: bool) -> Array:
 		if world:
 			for c: StringName in GATES:
 				var g: Vector3 = GATES[c].pos
-				var o: Vector3 = (GATES[c].out as Vector3).normalized()
-				var to := fixed - (g.z if along_x else g.x)
-				var d := o.z if along_x else o.x
-				if absf(d) < 0.2 or signf(to) != signf(d):
+				var on_z := absf(absf(g.z) - EDGE) < 0.5
+				if on_z != along_x or signf(g.z if on_z else g.x) != signf(fixed):
 					continue
-				var hit := g + o * (to / d)
-				var at := hit.x if along_x else hit.z
-				# Up to the middle of the gate's pillars (they close the rest).
-				var half := (GATE_WIDTH * 0.5 + 1.5) / absf(d)
-				gaps.append([at - half, at + half])
+				# Between the corridor's walls where they cross this wall's middle.
+				var ends := gate_opening(c, absf(fixed))
+				var u0: float = ends[0].x if along_x else ends[0].z
+				var u1: float = ends[1].x if along_x else ends[1].z
+				gaps.append([minf(u0, u1), maxf(u0, u1)])
 		gaps.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
 		var from := -span
 		for gp in gaps + [[span, span]]:
@@ -170,11 +194,14 @@ static func passed_gate(gate: Dictionary, p: Vector3) -> bool:
 	if not gate.open:
 		return false
 	var d: Vector3 = p - (gate.pos as Vector3)
-	var out: Vector3 = gate.out
+	var out: Vector3 = (gate.out as Vector3).normalized()
 	var along := d.dot(out)
 	var across := (d - out * along)
 	across.y = 0.0
-	return along > GATE_TRIGGER * 0.5 and across.length() < GATE_WIDTH
+	# Through the opening and out of the valley (a gate at an angle to the edge leaves
+	# valley ground beside it that is "ahead" of the gate too).
+	var outside := maxf(absf(p.x), absf(p.z)) > EDGE
+	return along > GATE_TRIGGER * 0.5 and across.length() < GATE_WIDTH * 0.5 + 1.0 and outside
 
 
 static func _plain(c: Color) -> StandardMaterial3D:

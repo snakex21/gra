@@ -180,7 +180,9 @@ func _to_horse() -> void:
 	if d.length() < 2.2:
 		_enter(Phase.MOUNT)
 		return
-	if d.length() > 30.0 and int(phase_time * 60.0) % 120 == 0:
+	# Far away, or stuck on the way (a wall between us): call Agro over.
+	_slow = _slow + get_physics_process_delta_time() if _flat(p.velocity).length() < 0.4 and phase_time > 0.5 else 0.0
+	if (d.length() > 30.0 or _slow > 1.5) and int(phase_time * 60.0) % 120 == 0:
 		a.press_call()
 	a.view_basis = Basis.looking_at(d.normalized())
 	a.move = Vector2(0, 1)

@@ -272,7 +272,7 @@ func _build_arena(kind: StringName, root: Node3D) -> Dictionary:
 			&"phaedra":
 				ArenaArt.dress_fen(root, points.tunnels, 75.0, 6047)
 			&"hydrus":
-				ArenaArt.dress_arena(root, Vector3(0, 0, 1), 80.0, 7129)
+				ArenaArt.dress_arena(root, Vector3(0, 0, 1), 80.0, 7129, HydrusArena.WATER_RADIUS + 4.0)
 	return points
 
 

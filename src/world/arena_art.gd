@@ -131,7 +131,8 @@ static func _base_part_keys() -> Dictionary:
 
 ## Dresses an arena built from TerrainKit boxes. ``entrance`` is the direction (from the
 ## centre) kept free of backdrop cliffs; ``fight_radius`` is kept free of trees.
-static func dress_arena(parent: Node3D, entrance := Vector3(0, 0, 1), fight_radius := 50.0, seed_value := 7013) -> Dictionary:
+## ``keep_clear``: nothing grows or lies inside this radius (Hydrus' lake).
+static func dress_arena(parent: Node3D, entrance := Vector3(0, 0, 1), fight_radius := 50.0, seed_value := 7013, keep_clear := 0.0) -> Dictionary:
 	var stats := {"columns": 0, "rocks": 0, "terrain": 0, "cliffs": 0, "trees": 0, "grass": 0}
 	var ground := parent.get_node_or_null("Ground")
 	if ground:
@@ -178,7 +179,7 @@ static func dress_arena(parent: Node3D, entrance := Vector3(0, 0, 1), fight_radi
 	for i in 10:
 		var a := rng.randf() * TAU
 		var r := rng.randf_range(fight_radius + 25.0, fight_radius + 55.0)
-		if absf(angle_difference(a, gap)) < 0.3:
+		if absf(angle_difference(a, gap)) < 0.3 or r < keep_clear:
 			continue
 		_prop(parent, "tree_juniper" if i % 2 == 0 else "tree_windward", Vector3(cos(a) * r, 0, sin(a) * r), rng.randf() * TAU, rng.randf_range(1.0, 1.4), "trunk")
 		stats.trees += 1
@@ -186,15 +187,17 @@ static func dress_arena(parent: Node3D, entrance := Vector3(0, 0, 1), fight_radi
 	for i in 26:
 		var a := rng.randf() * TAU
 		var r := rng.randf_range(fight_radius + 12.0, fight_radius + 70.0)
-		if absf(angle_difference(a, gap)) < 0.25:
+		if absf(angle_difference(a, gap)) < 0.25 or r < keep_clear:
 			continue
 		_prop(parent, "rock_%02d" % (i % 5 + 1), Vector3(cos(a) * r, 0, sin(a) * r), rng.randf() * TAU, rng.randf_range(0.8, 1.8), "hull")
 		stats.rocks += 1
 	for i in 40:
 		var a := rng.randf() * TAU
 		var r := rng.randf_range(20.0, fight_radius + 60.0)
+		if r < keep_clear:
+			continue
 		_prop(parent, "shrub_salt" if i % 2 == 0 else "plant_spear", Vector3(cos(a) * r, 0, sin(a) * r), rng.randf() * TAU, rng.randf_range(0.7, 1.3), "none")
-	stats.grass = _grass(parent, rng, fight_radius + 70.0)
+	stats.grass = _grass(parent, rng, fight_radius + 70.0, keep_clear)
 	return stats
 
 
@@ -268,14 +271,14 @@ static func _prop(parent: Node3D, id: String, pos: Vector3, yaw: float, size: fl
 
 
 ## Grass tufts in chunked multimeshes (two LODs), no collision.
-static func _grass(parent: Node3D, rng: RandomNumberGenerator, radius: float) -> int:
+static func _grass(parent: Node3D, rng: RandomNumberGenerator, radius: float, keep_clear := 0.0) -> int:
 	var chunks := {}
 	var n := 0
 	for i in 3200:
 		var a := rng.randf() * TAU
 		var r := sqrt(rng.randf()) * radius
 		var p := Vector3(cos(a) * r, 0, sin(a) * r)
-		if sin(p.x * 0.11) * cos(p.z * 0.09) < -0.35 and i % 4 != 0:
+		if sin(p.x * 0.11) * cos(p.z * 0.09) < -0.35 and i % 4 != 0 or r < keep_clear:
 			continue
 		var key := Vector3i(floori(p.x / 20.0), floori(p.z / 20.0), i % 3)
 		if not chunks.has(key):
