@@ -433,10 +433,10 @@ func _build_rig() -> void:
 			skeleton.set_bone_parent(idx, _bone[b[1]])
 		skeleton.set_bone_rest(idx, Transform3D(Basis.IDENTITY, b[2]))
 	skeleton.reset_bone_poses()
-	var coat := StandardMaterial3D.new()
-	coat.albedo_color = Color(0.13, 0.11, 0.1)
-	var hoof := StandardMaterial3D.new()
-	hoof.albedo_color = Color(0.4, 0.38, 0.35)
+	# Render only: a dark bay coat, black points (lower legs, mane, tail), dark hooves.
+	var coat := ProcTextures.or_plain(&"coat", Color(0.13, 0.11, 0.1))
+	var points := ProcTextures.or_plain(&"mane", Color(0.05, 0.04, 0.035))
+	var hoof := ProcTextures.or_plain(&"hoof", Color(0.4, 0.38, 0.35))
 	var nodes := {}
 	for part in PARTS:
 		var bone: StringName = part[0]
@@ -453,7 +453,8 @@ func _build_rig() -> void:
 		bm.size = part[1]
 		mesh.mesh = bm
 		mesh.position = part[2]
-		mesh.material_override = hoof if String(bone).ends_with("hoof") else coat
+		var b := String(bone)
+		mesh.material_override = hoof if b.ends_with("hoof") else (points if b.ends_with("low") else coat)
 		node.add_child(mesh)
 	# Saddle marker.
 	var saddle := MeshInstance3D.new()
@@ -461,7 +462,29 @@ func _build_rig() -> void:
 	sm.size = Vector3(0.6, 0.08, 0.55)
 	saddle.mesh = sm
 	saddle.position = SEAT_LOCAL - Vector3(0, 0.02, 0)
-	var smat := StandardMaterial3D.new()
-	smat.albedo_color = Color(0.45, 0.25, 0.12)
-	saddle.material_override = smat
+	saddle.material_override = ProcTextures.or_plain(&"leather", Color(0.45, 0.25, 0.12))
 	(nodes[&"body"] as Node3D).add_child(saddle)
+	# Saddle blanket, mane and tail: visual only.
+	var blanket := MeshInstance3D.new()
+	var blm := BoxMesh.new()
+	blm.size = Vector3(0.76, 0.34, 0.7)
+	blanket.mesh = blm
+	# Drapes over the back and down both flanks, under the saddle.
+	blanket.position = SEAT_LOCAL - Vector3(0, 0.2, 0)
+	blanket.material_override = ProcTextures.or_plain(&"blanket", Color(0.48, 0.16, 0.12))
+	(nodes[&"body"] as Node3D).add_child(blanket)
+	var mane := MeshInstance3D.new()
+	var mm := BoxMesh.new()
+	mm.size = Vector3(0.08, 0.9, 0.16)
+	mane.mesh = mm
+	mane.position = Vector3(0, 0.5, 0.2)
+	mane.material_override = points
+	(nodes[&"neck"] as Node3D).add_child(mane)
+	var tail := MeshInstance3D.new()
+	var tm := BoxMesh.new()
+	tm.size = Vector3(0.12, 0.75, 0.12)
+	tail.mesh = tm
+	tail.position = Vector3(0, -0.2, 1.1)
+	tail.rotation.x = 0.35
+	tail.material_override = points
+	(nodes[&"body"] as Node3D).add_child(tail)

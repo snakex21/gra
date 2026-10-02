@@ -19,6 +19,8 @@ elif [[ "${1:-}" == "quadratus" ]]; then
 	SCENE=res://tests/capture_quadratus.tscn
 elif [[ "${1:-}" == "gaius" ]]; then
 	SCENE=res://tests/capture_gaius.tscn
+elif [[ "${1:-}" == "characters" ]]; then
+	SCENE=res://tests/capture_characters.tscn
 elif [[ "${1:-}" == "game" ]]; then
 	SCENE=res://tests/capture_game.tscn
 elif [[ "${1:-}" == "art" ]]; then

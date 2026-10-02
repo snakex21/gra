@@ -206,28 +206,59 @@ func _parts() -> Array:
 	return PARTS
 
 
+# --- hooks for other four-legged bosses (Phaedra) ----------------------------------------
+# Quadratus is, for now, also the base of the other quadruped bosses: they replace the
+# anatomy, the brain, the weak points and the foot targets through these hooks.
+
+func _make_brain() -> ColossusBrain:
+	return QuadratusBrain.new(brain_seed)
+
+
+## [[bone, local point, health, starts protected], ...]; the first two are also
+## exposed as ``rump`` and ``crown`` (Quadratus' names).
+func _weak_point_specs() -> Array:
+	return [[&"body", RUMP_LOCAL, weak_point_health, false], [&"head", CROWN_LOCAL, weak_point_health, true]]
+
+
+## Legs whose soles are arrow targets.
+func _target_legs() -> Array:
+	return TARGET_LEGS
+
+
+## Attack cooldowns for the FairnessRules.
+func _attack_cooldowns() -> Dictionary:
+	return {STOMP: 6.0, HEAD_ATTACK: 6.0}
+
+
+func _boss_label() -> String:
+	return "QUADRATUS"
+
+
 func _ready() -> void:
-	brain = QuadratusBrain.new(brain_seed)
+	brain = _make_brain()
 	super()
 	add_to_group(&"danger_sources")
 	loco.max_body_tilt = 0.4
 	loco.buckle_reach = 0.38
 	for s in segments:
 		_seg_by_bone[s.bone_name] = s
-	rump = WeakPoint.create(_seg_by_bone[&"body"], RUMP_LOCAL, weak_point_health)
-	crown = WeakPoint.create(_seg_by_bone[&"head"], CROWN_LOCAL, weak_point_health)
-	weak_points = [rump, crown]
-	crown.set_protected(true)
+	for spec in _weak_point_specs():
+		var wp := WeakPoint.create(_seg_by_bone[spec[0]], spec[1], spec[2])
+		wp.set_meta(&"starts_protected", spec[3])
+		weak_points.append(wp)
+	rump = weak_points[0]
+	crown = weak_points[1] if weak_points.size() > 1 else weak_points[0]
 	for wp in weak_points:
+		wp.set_protected(wp.get_meta(&"starts_protected"))
 		wp.struck.connect(_on_weak_point_struck.bind(wp))
 		wp.destroyed.connect(_on_weak_point_destroyed)
-	for i in TARGET_LEGS:
+	for i in _target_legs():
 		var t := ArrowTarget.create(_seg_by_bone[leg_bones[i][2]], SOLE_LOCAL, Vector3.DOWN, 0.8, i)
 		t.max_incidence_deg = 80.0
 		t.hit.connect(_on_sole_hit)
 		arrow_targets.append(t)
 	_stomp.height = stomp_height
-	rules.cooldowns = {STOMP: 6.0, HEAD_ATTACK: 6.0}
+	rules.cooldowns = _attack_cooldowns()
 	_build_hit_volumes()
 	_start_xf = global_transform
 	_reset_stats()
@@ -243,11 +274,11 @@ func reset_encounter(xf := Transform3D.IDENTITY, use_xf := false) -> void:
 		leg.scripted = false
 		leg.support = 1.0
 	teleport(_start_xf.origin, _start_xf.basis.get_euler().y)
-	brain = QuadratusBrain.new(brain_seed)
+	brain = _make_brain()
 	rules.reset()
 	for wp in weak_points:
 		wp.reset()
-	crown.set_protected(true)
+		wp.set_protected(wp.get_meta(&"starts_protected"))
 	intent = ColossusIntent.make(ColossusIntent.IDLE)
 	_intent_time = 0.0
 	_shake_cooldown_left = 0.0
@@ -977,7 +1008,7 @@ func _reset_stats() -> void:
 
 func debug_text() -> String:
 	var lines := PackedStringArray()
-	lines.append("QUADRATUS %s (%.1fs)  move %s  intent %s  attack %s" % [encounter_name(), encounter_time, move_state(), intent.describe(), attack.describe() if attack != null and not attack.is_done() else "-"])
+	lines.append("%s %s (%.1fs)  move %s  intent %s  attack %s" % [_boss_label(), encounter_name(), encounter_time, move_state(), intent.describe(), attack.describe() if attack != null and not attack.is_done() else "-"])
 	lines.append("foot hit: %s leg %d (%.1fs)  cooldown %.1fs  hits %d  soles %s" % [buckle_name(), buckle_leg, buckle_t, _buckle_cooldown_left, int(stats.foot_hits), ", ".join(PackedStringArray(arrow_targets.map(func(t: ArrowTarget) -> String: return "%s %s" % [LEG_NAMES[int(t.tag)], "OPEN" if t.enabled else "-"])))])
 	var wps := PackedStringArray()
 	for wp in weak_points:
@@ -987,7 +1018,7 @@ func debug_text() -> String:
 		var r := region_of(p)
 		if r != &"":
 			region = "%s on %s" % [p.name, r]
-	lines.append("weak points rump %s crown %s  shake cooldown %.1fs  player %s" % [wps[0], wps[1], _shake_cooldown_left, region])
+	lines.append("weak points %s  shake cooldown %.1fs  player %s" % [" / ".join(wps), _shake_cooldown_left, region])
 	lines.append("blocked: %s" % ", ".join(PackedStringArray(_blocked_intents())))
 	lines.append(brain.debug_text())
 	lines.append(locomotion_debug_text())

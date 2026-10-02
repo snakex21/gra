@@ -42,6 +42,8 @@ func _ready() -> void:
 	for i in range(first, first + runs):
 		if boss == "quadratus":
 			results.append(await _run_quadratus(i))
+		elif boss == "phaedra":
+			results.append(await _run_phaedra(i))
 		else:
 			results.append(await _run(i))
 		var r: Dictionary = results[-1]
@@ -129,6 +131,69 @@ func _run(i: int) -> Dictionary:
 		"strikes": int(bot.stats.strikes), "weak_hits": int(bot.stats.weak_hits), "evades": int(bot.stats.evades),
 		"hits_taken": int(s.stats.hits_on_player), "resets": e.resets, "glitches": glitches,
 		"bad_resets": bad_resets, "ai_stuck": ai_stuck, "unreachable": unreachable,
+		"last_events": bot.events.slice(-12) if not r.get("won", false) else [],
+	}
+	world.queue_free()
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	return out
+
+
+func _run_phaedra(i: int) -> Dictionary:
+	var world := Node3D.new()
+	add_child(world)
+	var w := PhaedraArena.build_encounter(world, false, 4000 + i * 17)
+	var p: PlayerCharacter = w.player
+	var rng := RandomNumberGenerator.new()
+	rng.seed = i
+	p.global_position += Vector3(rng.randf_range(-8.0, 8.0), 0.0, rng.randf_range(-4.0, 4.0))
+	p.spawn_transform = p.global_transform
+	p.reset_physics_interpolation()
+	var ph: Phaedra = w.phaedra
+	var e: BossEncounter = w.encounter
+	var bot := PhaedraBot.new()
+	bot.verbose = OS.get_environment("BOT_VERBOSE") != ""
+	world.add_child(bot)
+	bot.setup(p, ph, e)
+	var bad_resets := 0
+	e.encounter_reset.connect(func(_n: int) -> void:
+		var ok := ph.encounter == Quadratus.Encounter.DORMANT and ph.weak_points_left() == 2 and ph.peek == Phaedra.Peek.NONE and ph.peek_w == 0.0 and not p.dead and p.health >= p.fall.max_health
+		if not ok:
+			bad_resets += 1)
+	var t := 0
+	var dt := 1.0 / 60.0
+	var glitches := 0
+	var prev := p.visual.global_position
+	var was := false
+	var since_strike := 0.0
+	var unreachable := false
+	var last_hits := 0
+	while bot.phase != PhaedraBot.Phase.DONE and t < LIMIT:
+		await get_tree().physics_frame
+		t += 1
+		var drawn := p.visual.global_position
+		if p.is_climbing() and was and drawn.distance_to(prev) - p.surface_velocity.length() * dt > 0.5:
+			glitches += 1
+		was = p.is_climbing()
+		prev = drawn
+		if ph.encounter == Quadratus.Encounter.COMBAT:
+			since_strike += dt
+			if since_strike > 180.0:
+				unreachable = true
+		if int(bot.stats.weak_hits) != last_hits:
+			last_hits = int(bot.stats.weak_hits)
+			since_strike = 0.0
+	var r := bot.result
+	var st: Dictionary = bot.stats
+	var out := {
+		"run": i, "seed": 4000 + i * 17, "outcome": "WIN" if r.get("won", false) else "DEADLOCK",
+		"time": float(r.get("time", t * dt)),
+		"deaths": int(st.deaths), "death_causes": st.death_causes.duplicate(), "falls": int(st.falls), "stalls": st.stalls.duplicate(),
+		"strikes": int(st.strikes), "weak_hits": int(st.weak_hits), "evades": int(st.evades),
+		"hits_taken": int(ph.stats.hits_on_player), "resets": e.resets, "glitches": glitches,
+		"bad_resets": bad_resets, "ai_stuck": 0, "unreachable": unreachable,
+		"peeks": int(ph.stats.get("peeks", 0)), "head_grabs": int(st.head_grabs),
+		"extra_line": "  peeks %d head grabs %d" % [int(ph.stats.get("peeks", 0)), int(st.head_grabs)],
 		"last_events": bot.events.slice(-12) if not r.get("won", false) else [],
 	}
 	world.queue_free()

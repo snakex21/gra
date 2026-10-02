@@ -304,3 +304,8 @@ static func _grass(parent: Node3D, rng: RandomNumberGenerator, radius: float) ->
 			node.visibility_range_end = 30.0 if level == 0 else 80.0
 			parent.add_child(node)
 	return n
+
+
+## Phaedra's fen: Mirewood kit over the greybox (filled in below).
+static func dress_fen(parent: Node3D, tunnels: Array, fight_radius := 70.0, seed_value := 6047) -> Dictionary:
+	return dress_arena(parent, Vector3(0, 0, 1), fight_radius, seed_value)

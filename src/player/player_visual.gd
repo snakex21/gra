@@ -22,10 +22,9 @@ var _beam_mat: StandardMaterial3D
 
 
 func _ready() -> void:
-	var body_mat := StandardMaterial3D.new()
-	body_mat.albedo_color = Color(0.18, 0.28, 0.45)
-	var skin_mat := StandardMaterial3D.new()
-	skin_mat.albedo_color = Color(0.85, 0.7, 0.55)
+	# Render only: a linen tunic, a dark wool cloak, a belt, skin and dark hair.
+	var body_mat := ProcTextures.or_plain(&"linen", Color(0.18, 0.28, 0.45))
+	var skin_mat := ProcTextures.or_plain(&"skin", Color(0.85, 0.7, 0.55))
 
 	var body := MeshInstance3D.new()
 	var capsule := CapsuleMesh.new()
@@ -44,6 +43,32 @@ func _ready() -> void:
 	head.position = Vector3(0, 0.72, 0)
 	head.material_override = skin_mat
 	add_child(head)
+
+	var hair := MeshInstance3D.new()
+	var hair_mesh := SphereMesh.new()
+	hair_mesh.radius = 0.185
+	hair_mesh.height = 0.34
+	hair.mesh = hair_mesh
+	hair.position = Vector3(0, 0.75, 0.04)
+	hair.material_override = ProcTextures.or_plain(&"hair", Color(0.15, 0.1, 0.07))
+	add_child(hair)
+	var cloak := MeshInstance3D.new()
+	var cloak_mesh := BoxMesh.new()
+	cloak_mesh.size = Vector3(0.44, 0.9, 0.05)
+	cloak.mesh = cloak_mesh
+	cloak.position = Vector3(0, 0.02, 0.36)
+	cloak.rotation.x = -0.12
+	cloak.material_override = ProcTextures.or_plain(&"cloak", Color(0.2, 0.25, 0.26))
+	add_child(cloak)
+	var belt := MeshInstance3D.new()
+	var belt_mesh := CylinderMesh.new()
+	belt_mesh.top_radius = 0.31
+	belt_mesh.bottom_radius = 0.31
+	belt_mesh.height = 0.08
+	belt.mesh = belt_mesh
+	belt.position = Vector3(0, -0.12, 0)
+	belt.material_override = ProcTextures.or_plain(&"belt", Color(0.24, 0.15, 0.09))
+	add_child(belt)
 
 	# Nose so facing is readable.
 	var nose := MeshInstance3D.new()
