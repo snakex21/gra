@@ -236,6 +236,9 @@ func _ready() -> void:
 		test_hydrus_simulation_independent_of_render_fps,
 		test_hydrus_cost_stays_within_budget,
 		test_five_colossi_in_order_with_west_gate,
+		test_replay_viewer_seeks_back_and_forth_exactly,
+		test_menu_slots_volume_and_rebinding,
+		test_bug_report_saves_the_recording,
 		all_etap9_and_earlier_tests_still_pass,
 	]
 	for t in tests:
@@ -6474,6 +6477,178 @@ func test_five_colossi_in_order_with_west_gate() -> void:
 	var h := g.colossus() as Hydrus
 	_check(h != null and absf(h.water_level - (WorldMap.arena_height(&"hydrus") + HydrusArena.WATER_Y)) < 0.01, "Hydrus does not swim in its lake in the world")
 	_log.append("five colossi: an Etap 9 save leads to Hydrus through the west gate; its lake at %.1f m" % h.water_level)
+
+
+## Calls ``f`` at the end of every tick (after everything else), with the tick count.
+class _TickProbe extends Node:
+	var f: Callable
+	var n := 0
+	func _ready() -> void:
+		process_physics_priority = 2000
+		process_mode = Node.PROCESS_MODE_PAUSABLE
+	func _physics_process(_d: float) -> void:
+		n += 1
+		f.call(n)
+
+
+func _world_state(g: GameWorld) -> PackedByteArray:
+	var p := g.player()
+	var h: Horse = g.refs.horse
+	var c := g.colossus()
+	return var_to_bytes([String(g.region_kind), p.global_transform, p.velocity, p.stamina.value, p.health, h.global_transform, c.global_transform if c else Transform3D.IDENTITY])
+
+
+func test_replay_viewer_seeks_back_and_forth_exactly() -> void:
+	Sfx.enabled = false
+	Fx.enabled = false
+	_world = Node3D.new()
+	add_child(_world)
+	# 1) A recorded game: the bot rides from the temple towards Valus.
+	var g := GameWorld.new()
+	g.with_input = false
+	g.with_art = false
+	g.save_path = ""
+	_world.add_child(g)
+	g.start(true)
+	var rec := ActionReplay.recorder(null, {"progress": g.state.to_dict(), "seed_offset": 0})
+	rec.player_source = g.player
+	g.add_child(rec)
+	var bot := GameBot.new()
+	g.add_child(bot)
+	bot._heading = Vector3.BACK
+	bot.setup(g)
+	var at := {}
+	var probe := _TickProbe.new()
+	probe.f = func(n: int) -> void:
+		if rec.tick in [900, 1800] and not at.has(rec.tick):
+			at[rec.tick] = _world_state(g)
+	g.add_child(probe)
+	await _ticks(60 * 40)
+	var data := rec.to_dict()
+	_world.free()
+	_world = Node3D.new()
+	add_child(_world)
+	# 2) Played back: forward to 30 s, back to 15 s, forward to 30 s again.
+	var g2 := GameWorld.new()
+	g2.with_art = false
+	_world.add_child(g2)
+	var v := ReplayViewer.new()
+	v.setup(g2, data)
+	_world.add_child(v)
+	var states := {}
+	v.reached.connect(func(t: int) -> void: states["%d_%d" % [t, states.size()]] = _world_state(g2))
+	var t0 := Time.get_ticks_msec()
+	v.seek(1800)
+	while states.size() < 1:
+		await _ticks(1)
+	var ff_ms := Time.get_ticks_msec() - t0
+	await _ticks(3)
+	v.seek(900)
+	while states.size() < 2:
+		await _ticks(1)
+	await _ticks(3)
+	v.seek(1800)
+	while states.size() < 3:
+		await _ticks(1)
+	await _ticks(3)
+	var ok_first: bool = states.get("1800_0") == at.get(1800)
+	var ok_back: bool = states.get("900_1") == at.get(900)
+	var ok_again: bool = states.get("1800_2") == at.get(1800)
+	_check(at.size() == 2, "the recording did not reach 30 s")
+	_check(ok_first and ok_back and ok_again, "seeking does not reproduce the recorded game (30 s %s, back to 15 s %s, 30 s again %s)" % [str(ok_first), str(ok_back), str(ok_again)])
+	_check(Engine.time_scale == 1.0 and Engine.physics_ticks_per_second == 60, "the viewer left the engine running fast")
+	_log.append("40 s recorded; viewer: to 30 s in %d ms (x%d), back to 15 s, to 30 s again - all bit-identical with the recording" % [ff_ms, int(ReplayViewer.SEEK_SPEED)])
+	get_tree().paused = false
+
+
+func test_menu_slots_volume_and_rebinding() -> void:
+	InputSetup.ensure_defaults()
+	# Settings: volume, keys and the slot survive a save.
+	var path := "user://test_etap10_settings.json"
+	var s := Settings.new()
+	s.volume = 0.3
+	s.slot = 2
+	var menu := GameMenu.new()
+	menu.settings = s
+	_world = Node3D.new()
+	add_child(_world)
+	_world.add_child(menu)
+	var k := InputEventKey.new()
+	k.physical_keycode = KEY_K
+	menu.bind(&"jump", k)
+	_check(s.save(path), "settings could not be saved")
+	var l := Settings.new()
+	_check(l.load_from(path) and l.to_dict() == s.to_dict(), "volume / keys / slot did not load back")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	l.apply_engine()
+	var has := func(action: StringName, code: Key) -> bool:
+		for e in InputMap.action_get_events(action):
+			if e is InputEventKey and (e as InputEventKey).physical_keycode == code:
+				return true
+		return false
+	var pad_kept := false
+	for e in InputMap.action_get_events(&"jump"):
+		pad_kept = pad_kept or e is InputEventJoypadButton
+	var db := AudioServer.get_bus_volume_db(AudioServer.get_bus_index(&"Master"))
+	_check(has.call(&"jump", KEY_K) and not has.call(&"jump", KEY_SPACE) and pad_kept, "the new jump key is not applied (or the pad lost its button)")
+	_check(absf(db - linear_to_db(0.3)) < 0.01, "the volume is not applied (%.1f dB)" % db)
+	# Back to the defaults.
+	l.bindings = {}
+	l.volume = 0.8
+	l.apply_engine()
+	_check(has.call(&"jump", KEY_SPACE) and not has.call(&"jump", KEY_K), "the defaults did not come back")
+	# Slots: separate files, described in the menu.
+	var backup := {}
+	for i in [2, 3]:
+		var p := GameState.slot_path(i)
+		if FileAccess.file_exists(p):
+			backup[p] = FileAccess.get_file_as_string(p)
+	var a := GameState.new()
+	a.mark_defeated(&"valus")
+	a.play_time = 600.0
+	a.save(GameState.slot_path(2))
+	var b := GameState.new()
+	for c in GameState.ORDER:
+		b.mark_defeated(c)
+	b.play_time = 3000.0
+	b.save(GameState.slot_path(3))
+	var d2 := GameState.describe(GameState.slot_path(2))
+	var d3 := GameState.describe(GameState.slot_path(3))
+	_check(d2 == "1/5 kolosów, 10 min" and d3 == "ukończona, 50 min", "slots described as %s / %s" % [d2, d3])
+	var picked := []
+	menu.slot_chosen.connect(func(slot: int, new_game: bool) -> void: picked.append([slot, new_game]))
+	menu._open_slots(false)
+	menu._pick_slot(3)
+	_check(picked == [[3, false]], "loading a slot did not report it (%s)" % str(picked))
+	for i in [2, 3]:
+		var p := GameState.slot_path(i)
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(p))
+		if backup.has(p):
+			var f := FileAccess.open(p, FileAccess.WRITE)
+			f.store_string(backup[p])
+			f.close()
+	_log.append("settings: volume %.1f -> %.1f dB, jump rebound to K (pad kept), defaults back; slots: '%s', '%s'" % [0.3, db, d2, d3])
+
+
+func test_bug_report_saves_the_recording() -> void:
+	Sfx.enabled = false
+	_world = Node3D.new()
+	add_child(_world)
+	var g := (load("res://scenes/game.gd") as GDScript).new() as GameWorld
+	g.with_input = false
+	g.set(&"save_path", "")
+	_world.add_child(g)
+	g.call(&"_begin", true)
+	g.save_path = ""
+	await _ticks(120)
+	var path: String = g.call(&"save_bug_report")
+	var data := ActionReplay.load_file(path)
+	var info: Variant = JSON.parse_string(FileAccess.get_file_as_string(path.get_basename() + ".json"))
+	_check(path != "" and not data.is_empty() and int(data.ticks) >= 100 and info is Dictionary and (info as Dictionary).get("region") == "valley", "the bug report was not saved (%s)" % path)
+	_log.append("F9: %s (%d ticks) + summary %s" % [path.get_file(), int(data.get("ticks", 0)), JSON.stringify(info)])
+	for f in [path, path.get_basename() + ".json"]:
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(f))
+	g.call(&"stop")
 
 
 ## Everything that ran before the Etap 10 tests passed.

@@ -7,12 +7,30 @@ extends RefCounted
 const VERSION := 1
 const ORDER: Array[StringName] = [&"valus", &"quadratus", &"gaius", &"phaedra", &"hydrus"]
 const DEFAULT_PATH := "user://save.json"
+## Save slots (slot 1 is the save file of the earlier versions).
+const SLOTS := 3
 
 var defeated: Array[StringName] = []
 ## Simulation seconds played (fights and travel).
 var play_time := 0.0
 ## Number of deaths (encounter resets) over the whole game.
 var deaths := 0
+
+
+static func slot_path(slot: int) -> String:
+	return DEFAULT_PATH if slot <= 1 else "user://save_%d.json" % slot
+
+
+## A slot as the menu shows it: "3/5 kolosów, 42 min" ("" when empty).
+static func describe(path: String) -> String:
+	if not FileAccess.file_exists(path):
+		return ""
+	var s := GameState.new()
+	if not s.load_from(path):
+		return ""
+	if s.is_complete():
+		return "ukończona, %d min" % int(s.play_time / 60.0)
+	return "%d/%d kolosów, %d min" % [s.defeated.size(), ORDER.size(), int(s.play_time / 60.0)]
 
 
 ## The colossus the beam leads to, or &"" when all are defeated.
