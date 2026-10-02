@@ -1,4 +1,4 @@
-# Architektura (stan po Etapie 8)
+# Architektura (stan po Etapie 9)
 
 Dokument opisuje decyzje, które mają przetrwać dalszy rozwój. Kod jest komentowany po angielsku
 (open source), a dokumentacja projektowa jest po polsku.
@@ -212,6 +212,28 @@ Szczegóły: [ETAP_8.md](ETAP_8.md). Zasady:
 - Wszystko w tickach fizyki, łącznie z wygaszeniem i przejściami, więc rozgrywka jest
   niezależna od FPS także między regionami.
 
+## 2h. Czwarty kolos przez hooki, menu, powtórki (Etap 9)
+
+```
+Quadratus (czworonóg: encounter, stomp, shake, weak pointy, pokonanie; hooki)
+  └─ Phaedra (_make_brain, _weak_point_specs, _attack_cooldowns, _boss_label,
+              _adjust_movement, _pose_overrides: szyja 3 kości + CCD, PEEK)
+GameMenu (CanvasLayer, PROCESS_MODE_ALWAYS) -> sygnały -> scenes/game.gd -> GameWorld
+Settings (user://settings.json) -> FlatInputSource, PlayerRiding, PlayerHud (nigdy rozgrywka)
+źródło wejścia / bot -> PlayerActions -> [PlayerCharacter.action_hook: ActionReplay] -> tick gracza
+```
+Szczegóły: [ETAP_9.md](ETAP_9.md). Zasady:
+- Nowy kolos czworonożny to podklasa z hookami, nie kopia. Wszystko, co wspólne (cykl
+  ataku, fairness, trafienia, reset), zostaje w bazie.
+- Menu nie dotyka rozgrywki: emituje wybór i edytuje `Settings`. Pauza to
+  `SceneTree.paused`, więc symulacja stoi, a menu działa.
+- Powtórka zapisuje tylko `PlayerActions`, w chwili gdy gracz je czyta (hook na początku
+  jego ticku), z kluczem `[gracz w kolejności, tick gracza]`. Reszta wynika z determinizmu
+  symulacji, więc ten sam start i te same akcje dają bitowo ten sam przebieg.
+- Konsekwencja: wszystko, co wpływa na rozgrywkę, musi przechodzić przez `PlayerActions`
+  albo być deterministyczne (seed). Bot, który pisałby bezpośrednio do stanu gracza,
+  zepsułby powtórki; test to wyłapie.
+
 ## 3. Gracze i wejście
 
 - Nie ma singletona gracza. Każdy `PlayerCharacter` jest w grupie `players`, a sandbox trzyma
@@ -259,4 +281,8 @@ Zasada: kamera nie walczy z graczem.
   czterech nóg ~120 w tym balans/przenoszenie ciężaru, IK czterech nóg ~40); strzały ~6 µs/tick
   przy kilku strzałach w locie (1 raycast na strzałę i tick). Etykiety: `loco_balance`,
   `arrows`, `bow`, `climb`, zapytania `arrow_rays`, `arrow_target_tests`, `bow_aim_rays`.
+- Etap 9: Phaedra ~310 µs/tick (mózg ~8, walka ~32, poza z IK szyi ~20, locomotion ~136,
+  IK nóg ~38). Agro w dolinie 234 µs/tick (wcześniej 398): sondy przeszkód pomijają mapę
+  wysokości (grupa `walkable_terrain`), bo to otwarty teren, a spadki i tak widzi sonda
+  w dół.
 - Nie ma potrzeby przenosić czegokolwiek do Ziga.

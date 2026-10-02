@@ -27,6 +27,7 @@ func _ready() -> void:
 		if is_instance_valid(replay) and replay.mode == ActionReplay.Mode.RECORD:
 			replay.save(LAST_REPLAY)
 		get_tree().quit())
+	menu.open_changed.connect(_hide_hud)
 	menu.settings_changed.connect(func(s: Settings) -> void:
 		apply_settings(s)
 		s.save())
@@ -97,6 +98,11 @@ func _to_title() -> void:
 	stop()
 	_capture_mouse(false)
 	menu.show_title(has_save())
+
+
+func _hide_hud(hidden: bool) -> void:
+	if refs.get("hud") is CanvasItem:
+		(refs.hud as CanvasItem).visible = not hidden
 
 
 func _capture_mouse(on: bool) -> void:

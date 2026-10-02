@@ -40,7 +40,7 @@ func _ready() -> void:
 		"Q / MMB / L1: frame the colossus   HOLD V / L2: raise the sword to the sun (the beam leads to the next colossus)",
 		"E / Y: mount / dismount Agro   C: call Agro   riding: stick = direction, Space/A = kick, RMB/R1 = reins",
 		"F5: reset encounter   F6: ride steering camera/horse-relative   Backspace: respawn   F2: colossus mode   F3: debug + overlays   F4: locomotion A/B   F1: help",
-		"Click to capture the mouse, Esc to release",
+		"Click to capture the mouse, Esc to release it (in the game: Esc / P / Start = pause menu)",
 	])
 	add_child(_help)
 	_banner = Label.new()

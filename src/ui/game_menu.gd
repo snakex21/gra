@@ -14,6 +14,8 @@ signal resume_chosen
 signal quit_to_title_chosen
 signal quit_chosen
 signal settings_changed(settings: Settings)
+## The menu opened or closed (the game hides its HUD under it).
+signal open_changed(open: bool)
 
 var settings := Settings.new()
 var screen := &""
@@ -85,6 +87,8 @@ func is_open() -> bool:
 
 
 func _show(s: StringName) -> void:
+	if screen == &"":
+		open_changed.emit(true)
 	screen = s
 	_root.visible = true
 	_title.visible = s == &"title"
@@ -98,6 +102,8 @@ func _show(s: StringName) -> void:
 
 
 func _close() -> void:
+	if screen != &"":
+		open_changed.emit(false)
 	screen = &""
 	_root.visible = false
 
