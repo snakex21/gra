@@ -92,3 +92,13 @@ under the existing `tools/art/LICENSE`. No downloaded models, commercial-game
 assets, third-party textures, paid generation service or ImageGen was used.
 Shared local primitive/UV helpers retain the earlier pipeline's MIT terms.
 Existing game code is not relicensed.
+
+## Part 6 original additions: Hollowvault
+
+The asset-only CC0-1.0 dedication applies to `art/source/hollowvault.blend`,
+`models/hollowvault/`, `textures/hollowvault/`, `environment/hollowvault/`,
+`environment/hollowvault_environment.tscn`, `materials/hollowvault/`,
+`assets/hollowvault_manifest.json`, `art/tests/hollowvault.tscn` and the actual
+viewport captures in `art/screenshots/v6/`. New Hollowvault scripts and tests
+are MIT under `tools/art/LICENSE`. Original enclosed-cavern geometry and palette;
+no external art assets, ImageGen or commercial-game reconstruction.
