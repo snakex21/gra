@@ -227,6 +227,7 @@ func _ready() -> void:
 		test_world_ride_from_valley_into_fight_without_fade,
 		test_world_leaving_puts_the_colossus_to_sleep,
 		test_world_ride_independent_of_render_fps,
+		test_quadruped_bosses_share_one_base,
 		all_etap9_and_earlier_tests_still_pass,
 	]
 	for t in tests:
@@ -6187,6 +6188,22 @@ func test_world_ride_independent_of_render_fps() -> void:
 	_metric("world_fps_max_diff", diff, "lower")
 	_check(int(ref.fight) > 0 and float(ref.max_fade) == 0.0, "the reference ride did not reach the fight without a fade")
 	_check(diff < 1e-4, "the continuous ride depends on the render rate (diff %.6f)" % diff)
+
+
+func test_quadruped_bosses_share_one_base() -> void:
+	var q := Quadratus.new()
+	var ph := Phaedra.new()
+	_check(q is QuadrupedBoss and ph is QuadrupedBoss, "the quadruped bosses do not share QuadrupedBoss")
+	_check((ph.get_script() as Script).get_base_script() == QuadrupedBoss and (q.get_script() as Script).get_base_script() == QuadrupedBoss, "Phaedra is not a sibling of Quadratus")
+	var lines := FileAccess.get_file_as_string("res://src/colossus/quadratus/quadratus.gd").count("\n")
+	_check(lines < 200, "Quadratus still carries the shared behaviour (%d lines)" % lines)
+	# Both fight as before: their own tests (defeat, FPS, cost, replay) run on the base.
+	var a := await _setup_quadratus()
+	var b: Quadratus = a.quadratus
+	_check(b.weak_points.size() == 2 and b.arrow_targets.size() == 2 and b.brain is QuadratusBrain, "Quadratus lost its weak points / targets / brain")
+	_log.append("QuadrupedBoss -> Quadratus (%d lines: anatomy, brain, weak points), Phaedra; fights unchanged (same soak results before and after the split)" % lines)
+	q.free()
+	ph.free()
 
 
 ## Everything that ran before the Etap 10 tests passed.

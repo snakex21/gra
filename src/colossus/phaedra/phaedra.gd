@@ -1,5 +1,5 @@
 class_name Phaedra
-extends Quadratus
+extends QuadrupedBoss
 ## Phaedra: the fourth boss. A long-necked four-legged colossus, timid and curious: it
 ## keeps its distance in the open and backs away from anyone who comes close, but it
 ## cannot resist looking for someone who hid. Its body is stone; only the top of it is
@@ -15,7 +15,7 @@ extends Quadratus
 ## The neck is a chain of three bones and the head; lowering it into a mouth is a small
 ## planar IK (CCD on the three neck joints) blended by the peek weight.
 ## Everything else (encounter, stomp, shake, fairness, weak points, defeat) is the shared
-## quadruped boss behaviour (Quadratus' hooks).
+## quadruped boss behaviour (QuadrupedBoss), like Quadratus.
 
 enum Peek { NONE, APPROACH, LOWER, HOLD, RAISE }
 
