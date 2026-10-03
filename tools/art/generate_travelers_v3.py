@@ -74,7 +74,10 @@ def export_edited_source():
                 'vertices':sum(len(cp.data.vertices) for cp in copies if cp.type=='MESH'),
                 'bytes':path.stat().st_size,'bounds_godot':[[min(p[i] for p in points) for i in range(3)],[max(p[i] for p in points) for i in range(3)]]})
             for cp in reversed(copies): bpy.data.objects.remove(cp,do_unlink=True)
-        next(a for a in manifest['assets'] if a['id']==identifier)['lods']=records
+        asset=next(a for a in manifest['assets'] if a['id']==identifier)
+        asset['lods']=records
+        asset['materials']=sorted({m.name for ob in base_objects if ob.type=='MESH' for m in ob.data.materials if m})
+        asset['mesh_parts']=sum(ob.type=='MESH' for ob in base_objects)
         root.matrix_world=original_matrix
     manifest['last_export']='from edited source; .blend left untouched'
     manifest_path.write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
@@ -95,8 +98,8 @@ scene.unit_settings.system = 'METRIC'
 scene.unit_settings.scale_length = 1.0
 
 PALETTE = [
-    ('linen', (.68,.64,.54), .93, 0), ('bluecloth', (.26,.34,.37), .91, 0),
-    ('cloak', (.15,.20,.20), .96, 0), ('skin', (.72,.53,.40), .68, 0),
+    ('linen', (.66,.625,.55), .94, 0), ('bluecloth', (.29,.34,.35), .94, 0),
+    ('cloak', (.19,.225,.225), .96, 0), ('skin', (.67,.515,.427), .76, 0),
     ('mono_skin', (.82,.69,.57), .70, 0), ('hair', (.10,.071,.048), .59, 0),
     ('boots', (.18,.115,.076), .74, 0), ('leather', (.34,.23,.14), .75, 0),
     ('bronze', (.59,.46,.26), .52, .55), ('thread', (.77,.71,.54), .91, 0),
@@ -301,6 +304,7 @@ def join_part(name, objects, parent):
     return ob
 
 def face(name, skin, sleeping=False, female=False):
+    if name=='Traveler': return traveler_face()
     width=.94 if female else 1.0
     rows=[(.626,.054,.063,.003),(.643,.073,.078,-.004),(.67,.089,.089,0),
           (.709,.104,.098,.002),(.756,.119,.108,.005),(.802,.122,.108,.010),
@@ -337,6 +341,7 @@ def face(name, skin, sleeping=False, female=False):
     return parts
 
 def hair(name, long=False):
+    if name=='Traveler': return traveler_hair()
     parts=[]
     # Scalp envelope with an open front below the irregular hairline.
     verts=[];faces=[];nr=12;ns=40
@@ -392,44 +397,216 @@ def embroidered_diamonds(name, xs, y, z, tile, scale=1):
         pts=[(x,y+.026*scale,z),(x+.020*scale,y,z-.001),(x,y-.026*scale,z),
              (x-.020*scale,y,z-.001),(x,y+.026*scale,z)]
         parts.append(tube(name+' double weft',pts,.0022*scale,tile,5,1))
-        parts.append(ellipsoid(name+' seed stitch',(x,y,z-.002),(.003,.005,.0025),tile,10,6))
+        # Submillimetre stitches do not benefit from full facial sphere density.
+        segments,rings=(10,6) if name.startswith('Mono') else (8,4)
+        parts.append(ellipsoid(name+' seed stitch',(x,y,z-.002),(.003,.005,.0025),tile,segments,rings))
     return parts
+
+def gaussian(x,y,cx,cy,sx,sy):
+    return math.exp(-((x-cx)/sx)**2-((y-cy)/sy)**2)
+
+FACE_PROFILE=[(.615,.043,.048,.003),(.632,.067,.067,-.006),(.653,.081,.078,-.003),
+             (.678,.088,.087,0),(.710,.101,.091,.003),(.753,.116,.104,.009),
+             (.790,.121,.108,.013),(.830,.118,.108,.013),(.861,.110,.104,.014),
+             (.891,.079,.078,.014),(.912,.036,.036,.014),(.919,.004,.004,.014)]
+
+def traveler_face_z(x,y):
+    rx,rz,zc=[float(np.interp(y,[r[0] for r in FACE_PROFILE],[r[k] for r in FACE_PROFILE])) for k in [1,2,3]]
+    sa=-math.sqrt(max(0,1-(x/max(rx,.001))**2))
+    z=zc-rz*(-sa)**.64
+    sculpt=.006*gaussian(x,y,0,.685,.031,.025)
+    sculpt+=.011*gaussian(x,y,0,.773,.010,.031)
+    sculpt+=.023*gaussian(x,y,0,.745,.015,.011)
+    sculpt+=.007*gaussian(x,y,0,.721,.014,.008)
+    for side in [-1,1]:
+        sculpt+=.008*gaussian(x,y,side*.065,.763,.023,.023)
+        sculpt+=.006*gaussian(x,y,side*.045,.817,.026,.013)
+        sculpt-=.004*gaussian(x,y,side*.046,.792,.020,.010)
+        sculpt+=.005*gaussian(x,y,side*.017,.742,.010,.008)
+    return z-sculpt*max(0,-sa)**10
+
+def facial_line(name,xy,r,tile,sides=6,subdiv=3,flatten=1,offset=.0008):
+    # Keep eyelids, philtrum and lip rims on the sculpt in a side profile too.
+    pts=[(x,y,traveler_face_z(x,y)-offset) for x,y in xy]
+    return tube(name,pts,r,tile,sides,subdiv,True,flatten)
+
+def traveler_face():
+    # A single continuous sculpt carries forehead, brow sockets, nose, cheek,
+    # philtrum and chin. The same surface positions all small facial details.
+    yy=[.615,.628,.640,.653,.670,.685,.696,.702,.710,.720,.728,.735,.740,.745,
+        .750,.755,.761,.770,.780,.788,.796,.805,.814,.824,.835,.847,.859,.874,.891,.907,.919]
+    angles=[math.pi*i/12 for i in range(12)]+[math.pi+math.pi*i/32 for i in range(32)]
+    sides=len(angles);verts=[];faces=[]
+    for y in yy:
+        rx,rz,zc=[float(np.interp(y,[r[0] for r in FACE_PROFILE],[r[k] for r in FACE_PROFILE])) for k in [1,2,3]]
+        for a in angles:
+            ca,sa=math.cos(a),math.sin(a)
+            x=rx*ca;z=zc+rz*sa
+            if sa<0: z=traveler_face_z(x,y)
+            verts.append((x,float(y),z))
+    for j in range(len(yy)-1):
+        for i in range(sides):
+            a=j*sides+i;b=j*sides+(i+1)%sides;faces.append((a,b,b+sides,a+sides))
+    faces+=[tuple(reversed(range(sides))),tuple((len(yy)-1)*sides+i for i in range(sides))]
+    parts=[mesh('Traveler continuous facial sculpt',verts,faces,'skin')]
+    for side in [-1,1]:
+        parts.append(ellipsoid('Traveler shaped ear',(side*.121,.765,.019),(.014,.027,.012),'skin',16,10))
+        parts.append(tube('Traveler ear helix',[(side*.131,.743,.014),(side*.134,.771,.009),(side*.126,.789,.009)],.0024,'skin',6,3))
+        x=side*.045
+        eye_z=traveler_face_z(x,.792)
+        sclera=ellipsoid('Traveler inset sclera',(x,.792,0),(.0185,.0058,.0039),'eye_white',16,8)
+        # A shallow conformal sclera follows the curvature of the cheek surface.
+        for v in sclera.data.vertices:
+            p=godot(v.co);v.co=vec((p.x,p.y,p.z+traveler_face_z(p.x,p.y)-.0004))
+        parts.append(sclera)
+        parts.append(ellipsoid('Traveler brown iris',(x,.792,eye_z-.0043),(.0057,.0054,.0006),'eye_dark',12,8))
+        parts.append(ellipsoid('Traveler small eye glint',(x-.0014,.794,eye_z-.0050),(.0008,.0008,.0003),'eye_white',8,5))
+        upper=[(x-.020,.791),(x-.009,.799),(x+.009,.798),(x+.020,.791)]
+        lower=[(x-.020,.791),(x,.787),(x+.020,.791)]
+        parts.append(facial_line('Traveler modeled upper eyelid',upper,.0021,'skin',6,4,offset=.0009))
+        parts.append(facial_line('Traveler modeled lower eyelid',lower,.0016,'skin',6,4,offset=.0009))
+        brow=[(x-side*.024,.817),(x,.822),(x+side*.025,.811)]
+        parts.append(facial_line('Traveler fine tapered brow',brow,.0023,'hair',6,4,.25))
+        parts.append(ellipsoid('Traveler nostril crease',(side*.012,.738,traveler_face_z(side*.012,.738)-.0004),(.003,.0013,.0016),'lips',10,6))
+    upper=[(-.024,.704),(-.009,.707),(0,.705),(.009,.707),(.024,.704)]
+    parts.append(facial_line('Traveler lip rim integrated with skin',upper,.0018,'skin',6,3,.5))
+    parts.append(facial_line('Traveler lower lip soft volume',[(-.023,.701),(0,.699),(.023,.701)],.0020,'skin',6,4,.6))
+    parts.append(facial_line('Traveler closed mouth crease',[(-.020,.703),(0,.702),(.020,.703)],.00075,'lips',5,3,.4,.0017))
+    return parts
+
+def traveler_hair():
+    # Thin, irregular tapered clumps lie along the scalp; matte fibre response
+    # replaces the old seven shiny sausage-shaped fringe tubes.
+    hair_mat=mat.copy();hair_mat.name='Traveler_matte_hair_fibres'
+    shader=hair_mat.node_tree.nodes.get('Principled BSDF')
+    for link in list(shader.inputs['Roughness'].links): hair_mat.node_tree.links.remove(link)
+    shader.inputs['Roughness'].default_value=.83
+    for node in hair_mat.node_tree.nodes:
+        if node.type=='NORMAL_MAP': node.inputs['Strength'].default_value=.15
+    parts=[];verts=[];faces=[];nr=16;ns=40
+    for j in range(nr+1):
+        phi=.03+(math.pi*.90-.03)*j/nr
+        for k in range(ns):
+            a=math.tau*k/ns
+            x=.129*math.sin(phi)*math.cos(a)
+            y=.803+.125*math.cos(phi)
+            z=.020+.118*math.sin(phi)*math.sin(a)
+            verts.append((x,y,z))
+    for j in range(nr):
+        for k in range(ns):
+            a=j*ns+k;b=j*ns+(k+1)%ns
+            y=(verts[a][1]+verts[b][1])/2;z=(verts[a][2]+verts[b][2])/2
+            if z<-.016 and y<.853+.007*math.cos(k*.8): continue
+            faces.append((a,b,b+ns,a+ns))
+    parts.append(mesh('Traveler natural irregular hair cap',verts,faces,'hair'))
+    for i in range(14):
+        a=.12+(math.pi-.24)*i/13;x=math.cos(a)*.122;z=math.sin(a)*.106+.019
+        pts=[(x*.55,.915,z*.46),(x,.838,z+.004),(x*1.04,.763,z+.009),(x*.98,.696+(i%4)*.007,z)]
+        parts.append(tube('Traveler flattened nape clump %02d'%i,pts,.012+(i%3)*.002,'hair',6,3,True,.22))
+    for i in range(10):
+        x=(i-4.5)*.022
+        drift=.022+.012*math.sin(i*1.71)
+        pts=[(x*.60-.014,.920-.001*(i%3),-.012),(x-.010,.883,-.090),
+             (x+drift*.35,.858-(i%3)*.004,-.110),(x+drift,.840-(i%4)*.004,-.102)]
+        parts.append(tube('Traveler uneven swept fringe %02d'%i,pts,.011+(i%3)*.0018,'hair',6,3,True,.20))
+    for ob in parts: ob.data.materials[0]=hair_mat
+    return parts
+
+def grip_hand(name, side):
+    # Closed neutral grip: each curled finger wraps the vertical hilt axis,
+    # leaving a 26mm channel centred at Wrist-local (0,-.050,-.037).
+    parts=[loft(name+' metacarpal palm',[(.004,.025,.021,0),(-.018,.034,.023,-.002),
+            (-.043,.036,.022,-.002),(-.068,.031,.019,-.001),(-.084,.017,.013,0)],'skin',24)]
+    for i,y in enumerate([-.027,-.043,-.059,-.073]):
+        r=[.0072,.0077,.0072,.0060][i]
+        pts=[(side*.025,y,-.004),(side*.039,y-.002,-.025),(side*.026,y-.003,-.060),
+             (side*.001,y-.004,-.064),(-side*.017,y-.002,-.044)]
+        parts.append(tube(name+' curled finger %d'%i,pts,r,'skin',7,3,False,.85))
+        parts.append(ellipsoid(name+' knuckle %d'%i,(side*.026,y,-.021),(.009,r*.93,.010),'skin',8,5))
+    parts.append(tube(name+' opposed thumb',[(side*.025,-.009,-.006),(side*.038,-.022,-.036),
+                  (side*.019,-.031,-.058),(-side*.003,-.034,-.057)],.0080,'skin',7,4,True,.83))
+    return parts
+
+TUNIC_PROFILE=[(-.32,.240,.165,.008),(-.25,.246,.166,.006),(-.15,.235,.155,0),
+               (-.065,.199,.128,0),(.04,.215,.135,0),(.18,.236,.145,.002),(.32,.255,.146,.003),
+               (.42,.251,.126,.003),(.477,.176,.089,0)]
+
+def tunic_point(y,a):
+    rx,rz,zc=[float(np.interp(y,[r[0] for r in TUNIC_PROFILE],[r[k] for r in TUNIC_PROFILE])) for k in [1,2,3]]
+    lower=max(0,min(1,(-y-.06)/.22))
+    crease=.011*lower*math.sin(a*7+.4)+.004*math.sin(a*11+y*17)*math.exp(-((y+.025)/.18)**2)
+    pull=.005*math.sin(a*6-y*19)*math.exp(-((y-.25)/.15)**2)
+    return math.cos(a)*(rx+crease+pull),zc+math.sin(a)*(rz+crease+pull)
+
+def fit_tunic_embroidery(parts):
+    # Ornament follows the gathered surface instead of floating on a flat plane
+    # or disappearing under deeper skirt folds. Preserve its actual thickness.
+    for ob in parts:
+        for v in ob.data.vertices:
+            p=godot(v.co)
+            samples=[tunic_point(p.y,math.pi+math.pi*i/80) for i in range(81)]
+            z=float(np.interp(p.x,[s[0] for s in samples],[s[1] for s in samples]))
+            v.co=vec((p.x,p.y,z+p.z-.0035))
+        ob.data.update()
+    return parts
+
+def gathered_tunic():
+    verts=[];faces=[];sides=48;rows=27
+    for j in range(rows):
+        y=-.32+.797*j/(rows-1)
+        for i in range(sides):
+            a=math.tau*i/sides
+            x,z=tunic_point(y,a)
+            hem=.012*math.sin(a*5+.8)*(1-j/(rows-1))**14
+            verts.append((x,y+hem,z))
+    for j in range(rows-1):
+        for i in range(sides):
+            a=j*sides+i;b=j*sides+(i+1)%sides;faces.append((a,b,b+sides,a+sides))
+    faces+=[tuple(reversed(range(sides))),tuple((rows-1)*sides+i for i in range(sides))]
+    return mesh('Traveler gathered tunic folds under belt',verts,faces,'bluecloth')
 
 # Traveler: editable rigid pieces in the existing two shoulder frames.
 traveler = empty('Traveler_v3')
 torso=[]
-torso.append(loft('Tailored long tunic',[(-.30,.225,.145,.015),(-.24,.235,.153,.01),(-.14,.215,.134,0),
-                   (-.04,.194,.123,0),(.11,.225,.141,0),(.31,.259,.146,0),(.42,.255,.127,0),(.475,.183,.094,0)],'bluecloth',40,.035))
+torso.append(gathered_tunic())
 torso.append(loft('Visible linen collar',[(.43,.105,.082,0),(.47,.102,.080,0),(.51,.090,.074,0)],'linen',28,.02))
-torso.append(loft('Neck tendon',[(.48,.069,.060,0),(.56,.062,.057,0),(.655,.064,.057,.007)],'skin',24))
-torso.append(loft('Double leather girdle',[(-.107,.211,.135,0),(-.074,.211,.135,0),(-.055,.205,.133,0)],'leather',36))
-torso.append(ellipsoid('Oval hammered buckle',(0,-.077,-.143),(.035,.022,.008),'bronze',20,10))
-torso.append(ellipsoid('Buckle inset',(0,-.077,-.151),(.023,.012,.002),'leather',18,8))
-torso.append(tube('Buckle tongue',[(-.023,-.077,-.154),(.020,-.077,-.154)],.0025,'bronze',6,1))
+torso.append(loft('Neck tendon',[(.48,.068,.059,.004),(.525,.061,.056,.004),(.58,.055,.054,.006),(.64,.064,.058,.008)],'skin',28))
+torso.append(loft('Double leather girdle',[(-.110,.224,.151,0),(-.075,.214,.140,0),(-.053,.210,.139,0)],'leather',36))
+torso.append(ellipsoid('Oval hammered buckle',(0,-.077,-.150),(.035,.022,.008),'bronze',20,10))
+torso.append(ellipsoid('Buckle inset',(0,-.077,-.158),(.023,.012,.002),'leather',18,8))
+torso.append(tube('Buckle tongue',[(-.023,-.077,-.161),(.020,-.077,-.161)],.0025,'bronze',6,1))
 for y in [-.28,.37,.42]:
-    torso.append(tube('Front woven border',[(-.213,y,-.108),(-.12,y-.007,-.145),(0,y,-.155),(.12,y-.007,-.145),(.213,y,-.108)],.0045,'thread',8,5))
-torso += embroidered_diamonds('Chest original seed motif',[-.15,-.10,-.05,0,.05,.10,.15],.393,-.153,'thread',.60)
-torso += embroidered_diamonds('Hem original salt lozenge',[-.175,-.105,-.035,.035,.105,.175],-.246,-.152,'thread',.9)
+    torso += fit_tunic_embroidery([tube('Front woven border',[(-.213,y,0),(-.12,y-.007,0),(0,y,0),(.12,y-.007,0),(.213,y,0)],.0023,'thread',6,4)])
+torso += fit_tunic_embroidery(embroidered_diamonds('Chest original seed motif',[-.15,-.10,-.05,0,.05,.10,.15],.393,0,'thread',.60))
+torso += fit_tunic_embroidery(embroidered_diamonds('Hem original salt lozenge',[-.175,-.105,-.035,.035,.105,.175],-.246,0,'thread',.9))
 # Draped short mantle with real folds and an irregular soft edge.
-verts=[];faces=[];nx=18;ny=17
+verts=[];faces=[];nx=18;ny=22
 for j in range(ny+1):
-    t=j/ny;y=.425-.88*t
-    width=.270*(1-.12*t)
+    t=j/ny;y=.441-.91*t
+    width=.270*(1-.18*math.sin(math.pi*t)+.015*t)
     for i in range(nx+1):
         s=(i/nx)*2-1
-        z=.145+.055*t+.022*math.cos(s*math.pi*5)*(t*.8+.2)+.035*s*s
-        verts.append((s*width,y-.016*math.cos(s*math.pi*5)*t,z))
+        z=.132+.065*t+.015*math.cos(s*math.pi*4.7+.7*t)*(t*.75+.20)
+        z+=-.036*s*s*(1-t)**4+.018*s*s*t+.009*math.sin(s*7+t*5)*t
+        hem=(.018*math.sin(s*7.3)+.014*s)*(t**7)
+        verts.append((s*width,y-.070*s*s*(1-t)**4-.015*math.cos(s*math.pi*4.7+.7*t)*t+hem,z))
 for j in range(ny):
     for i in range(nx):
         a=j*(nx+1)+i;faces.append((a,a+1,a+nx+2,a+nx+1))
-torso.append(mesh('Short wool mantle pleated panel',verts,faces,'cloak'))
+front_count=len(verts)
+verts += [(x,y,z+.0025) for x,y,z in verts]
+faces += [tuple(front_count+i for i in reversed(f)) for f in list(faces)]
+outline=list(range(nx+1))+[j*(nx+1)+nx for j in range(1,ny+1)]+[ny*(nx+1)+i for i in range(nx-1,-1,-1)]+[j*(nx+1) for j in range(ny-1,0,-1)]
+for i,a in enumerate(outline):
+    b=outline[(i+1)%len(outline)];faces.append((a,b,b+front_count,a+front_count))
+torso.append(mesh('Traveler gravity draped wool mantle with cloth thickness',verts,faces,'cloak'))
 torso.append(tube('Mantle hem',[verts[ny*(nx+1)+i] for i in range(nx+1)],.005,'thread',6,1))
 for side in [-1,1]:
     torso.append(tube('Mantle bound side',[verts[j*(nx+1)+(0 if side<0 else nx)] for j in range(ny+1)],.004,'leather',6,1))
     torso.append(ellipsoid('Shoulder clasp',(side*.181,.433,-.080),(.018,.014,.006),'bronze',16,8))
     # Soft body-side gussets close the armpit seam even with the existing
     # near-180-degree climbing shoulder pose. They remain under the sleeve head.
-    torso.append(ellipsoid('Tailored shoulder gusset',(side*.258,.400,0),(.071,.065,.093),'bluecloth',16,8))
+    torso.append(ellipsoid('Tailored shoulder gusset',(side*.256,.405,0),(.052,.049,.068),'bluecloth',16,8))
 torso.append(tube('Cross-body woven cord',[(-.181,.443,-.092),(-.08,.253,-.163),(.05,.056,-.149),(.18,-.096,-.099)],.014,'scarf',10,6,False,.40))
 torso.append(ellipsoid('Small belt pouch',(.184,-.150,.078),(.057,.073,.041),'leather',24,12))
 torso.append(tube('Pouch seam',[(.138,-.146,.106),(.160,-.210,.113),(.207,-.211,.110),(.230,-.144,.092)],.003,'thread',6,5))
@@ -438,20 +615,24 @@ join_part('Traveler_Head',face('Traveler','skin')+hair('Traveler'),traveler)
 
 for index,side in enumerate([-1,1]):
     arm=empty('Arm_%d'%index,(side*.3,.4,0),traveler)
-    upper=[loft('Linen upper sleeve',[(0,.077,.068,0),(-.09,.074,.064,0),(-.185,.068,.060,0)],'linen',28,.04),
-           loft('Upper arm', [(-.160,.052,.048,0),(-.245,.047,.041,0),(-.295,.043,.040,0)],'skin',24)]
-    upper.append(ellipsoid('Rounded sleeve head',(0,-.010,0),(.075,.067,.071),'linen',16,8))
-    upper.append(ellipsoid('Soft elbow contact',(0,-.281,0),(.043,.035,.040),'skin',16,8))
+    upper=[loft('Linen sleeve draping folds',[(.005,.073,.064,0),(-.027,.074,.065,0),(-.054,.072,.064,0),
+           (-.084,.077,.065,.001),(-.117,.072,.060,.002),(-.150,.068,.060,0),(-.182,.066,.058,0)],'linen',28,.055,.6),
+           loft('Upper arm', [(-.160,.049,.045,0),(-.205,.046,.043,.001),(-.246,.040,.037,.002),(-.302,.037,.035,0)],'skin',24)]
+    upper.append(ellipsoid('Rounded sleeve head',(0,-.018,0),(.073,.054,.068),'linen',16,8))
+    upper.append(ellipsoid('Soft elbow contact',(0,-.285,0),(.037,.035,.034),'skin',16,8))
     upper.append(loop('Sleeve cuff',(0,-.178,0),.070,.061,'thread',.004))
     upper += embroidered_diamonds('Sleeve stitch',[-.04,0,.04],-.150,-.063,'bluecloth',.45)
     join_part('Traveler_UpperArm_%d'%index,upper,arm)
     fore=empty('Forearm_%d'%index,(0,-.285,0),arm)
-    lower=[loft('Tapered forearm',[(0,.043,.040,0),(-.110,.048,.039,0),(-.228,.032,.029,0),(-.280,.027,.025,0)],'skin',24),
+    lower=[loft('Anatomical taper and forearm flexors',[(.023,.038,.036,0),(-.035,.043,.039,-.001),
+           (-.084,.047,.038,-.002),(-.135,.042,.034,-.002),(-.195,.034,.028,-.001),(-.230,.029,.025,0),(-.280,.026,.024,0)],'skin',28),
            loft('Bound wrist wrap',[(-.230,.035,.031,0),(-.250,.035,.031,0),(-.280,.031,.028,0)],'leather',24)]
     lower.append(ellipsoid('Wrist to palm tendon',(0,-.276,0),(.028,.032,.025),'skin',16,8))
     for y in [-.239,-.256,-.272]: lower.append(loop('Wrist linen stitch',(0,y,0),.036,.031,'thread',.0017))
-    lower += hand('Traveler hand %d'%index,side,'skin')
     join_part('Traveler_Forearm_%d'%index,lower,fore)
+    wrist=empty('Wrist_%d'%index,(0,-.276,0),fore)
+    join_part('Traveler_Hand_%d'%index,grip_hand('Traveler gripping hand %d'%index,side),wrist)
+    empty('HandGrip_%d'%index,(0,-.050,-.037),wrist)
     leg=empty('Leg_%d'%index,(side*.118,-.188,0),traveler)
     thigh=[loft('Tapered trouser thigh',[(.03,.095,.099,0),(-.05,.095,.088,0),(-.20,.076,.070,0),(-.324,.067,.061,0)],'linen',28,.025)]
     join_part('Traveler_Thigh_%d'%index,thigh,leg)
@@ -545,7 +726,9 @@ def export_character(root, identifier):
         bounds=[[min(p[i] for p in points) for i in range(3)],[max(p[i] for p in points) for i in range(3)]]
         records.append({'lod':level,'runtime':str(path.relative_to(ROOT)).replace('\\','/'),'triangles':triangles,'vertices':vertices,'bytes':path.stat().st_size,'bounds_godot':bounds})
         for cp in reversed(copies): bpy.data.objects.remove(cp,do_unlink=True)
-    return {'id':identifier,'lods':records,'material':mat.name,'colliders':'none; preserve existing gameplay capsule/anchors',
+    return {'id':identifier,'lods':records,'material':mat.name,
+            'materials':sorted({m.name for ob in base_meshes for m in ob.data.materials if m}),
+            'mesh_parts':len(base_meshes),'colliders':'none; preserve existing gameplay capsule/anchors',
             'parts':[ob.name for ob in base_objects],'original_design':True,'source':'art/source/travelers_v3.blend'}
 
 records=[export_character(traveler,'traveler'),export_character(mono,'mono_sleep')]
@@ -554,7 +737,10 @@ manifest={'pack':'Travelers v3 / original interpretation','seed':SEED,'unit':'me
           'texture_resolution':[1024,1024],'textures':[str(TEX.relative_to(ROOT)).replace('\\','/')+'/'+n+'.png' for n in ['travelers_v3_albedo','travelers_v3_normal','travelers_v3_orm']],
           'license':'CC0-1.0 for newly authored geometry and textures','provenance':'Original repository-authored parametric meshes; no imported third-party or game content',
           'traveler_contract':{'origin':'PlayerCharacter capsule centre','arm_pivots':[[-.3,.4,0],[.3,.4,0]],'rig':'rigid part hierarchy; existing PlayerVisual controls shoulder raise and orientation',
-                 'attachment_nodes':['Arm_0','Arm_1','Forearm_0','Forearm_1','Leg_0','Leg_1','Knee_0','Knee_1','Ankle_0','Ankle_1']},
+                 'attachment_nodes':['Arm_0','Arm_1','Forearm_0','Forearm_1','Wrist_0','Wrist_1','HandGrip_0','HandGrip_1','Leg_0','Leg_1','Knee_0','Knee_1','Ankle_0','Ankle_1'],
+                 'wrist_local':[0,-.276,0],'hand_grip_wrist_local':[0,-.050,-.037],
+                 'hand_grip_forearm_local':[0,-.326,-.037],'upper_arm_length':.285,'forearm_to_wrist_length':.276,'forearm_to_grip_length':math.sqrt(.326**2+.037**2),
+                 'weapon_axis':'local -Y, socket rotation identity','previous_lod0_triangles':35614},
           'mono_contract':{'pose':'supine; closed eyes; hands over gown','head':'+Z','face':'+Y','altar_contact_y':.014,'origin':'body centre projected to altar plane'},'assets':records}
 (ROOT/'assets/travelers_v3_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
 

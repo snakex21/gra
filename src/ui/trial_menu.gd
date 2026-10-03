@@ -24,6 +24,7 @@ func _ready() -> void:
 	_apply_to.call_deferred(get_parent())
 	if not OS.has_environment("NO_ART"):
 		_dress_trial.call_deferred(get_parent())
+	GraphicsQuality.apply.call_deferred(get_parent(), settings.graphics_profile)
 
 func _dress_trial(node: Node) -> void:
 	if node is Colossus:

@@ -112,6 +112,10 @@ func check_mono(altar: Node3D, mono: Node3D) -> void:
 func capture_temple(game: GameWorld, p: PlayerCharacter, art: TravelerArt, altar: Node3D) -> void:
 	p.set_physics_process(false)
 	art.set_process(false)
+	var gear := p.visual.get_node_or_null("WeaponArt") as Node3D
+	if gear:
+		gear.set_process(false)
+		gear.visible = false
 	art.set_lod(0)
 	p.global_position = altar.global_position + Vector3(-1.85, Valley.ground_height(altar.global_position.x - 1.85, altar.global_position.z - .65) - altar.global_position.y + .90, -.65)
 	p.visual.transform = Transform3D.IDENTITY

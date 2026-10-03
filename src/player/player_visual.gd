@@ -150,6 +150,7 @@ func _ready() -> void:
 	_lantern.visible = false
 	add_child(_lantern)
 	TravelerArt.attach(self, get_parent() as PlayerCharacter)
+	WeaponArt.attach(self, get_parent() as PlayerCharacter)
 
 
 func update_visual(player: PlayerCharacter, delta: float) -> void:

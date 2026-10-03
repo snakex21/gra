@@ -1,0 +1,504 @@
+{
+  "units": "metres",
+  "axes": "Godot Y up; forward -Z; Blender source uses Z up",
+  "source": "res://art/source/weapons_v4.blend",
+  "generator": "tools/art/generate_weapons_v4.py",
+  "original_designs": true,
+  "render_only": true,
+  "colliders": false,
+  "lod_ratios": [
+    1,
+    0.46,
+    0.18
+  ],
+  "sword_frame": "Grip origin; blade +Y starting .12, lower handle -Y, thickness Z",
+  "bow_frame": "Grip origin; limbs in YZ, aim -Z, string +Z; no static string mesh",
+  "arrow_frame": "Nock origin; tip -Z at .8m; three feather vanes",
+  "scabbard_frame": "Aligned to sword grip frame; open mouth at Y+.125; blade cavity extends +Y",
+  "quiver_frame": "Attachment origin midway on body; open sloped mouth around Y+.355",
+  "bow_draw": "BowDraw morph target per LOD, stationary grip. Move string marker nodes to draw_markers at full draw.",
+  "texture_sources": [
+    "res://textures/weapons_v4/V4_oiled_scabbard_leather_albedo.png",
+    "res://textures/weapons_v4/V4_oiled_scabbard_leather_normal.png",
+    "res://textures/weapons_v4/V4_oiled_scabbard_leather_roughness.png",
+    "res://textures/weapons_v4/V4_oxblood_grip_leather_albedo.png",
+    "res://textures/weapons_v4/V4_oxblood_grip_leather_normal.png",
+    "res://textures/weapons_v4/V4_oxblood_grip_leather_roughness.png",
+    "res://textures/weapons_v4/V4_pale_heartwood_laminate_albedo.png",
+    "res://textures/weapons_v4/V4_pale_heartwood_laminate_normal.png",
+    "res://textures/weapons_v4/V4_pale_heartwood_laminate_roughness.png",
+    "res://textures/weapons_v4/V4_satin_forged_steel_albedo.png",
+    "res://textures/weapons_v4/V4_satin_forged_steel_normal.png",
+    "res://textures/weapons_v4/V4_satin_forged_steel_roughness.png",
+    "res://textures/weapons_v4/V4_walnut_limb_grain_albedo.png",
+    "res://textures/weapons_v4/V4_walnut_limb_grain_normal.png",
+    "res://textures/weapons_v4/V4_walnut_limb_grain_roughness.png",
+    "res://textures/weapons_v4/V4_worn_bronze_albedo.png",
+    "res://textures/weapons_v4/V4_worn_bronze_normal.png",
+    "res://textures/weapons_v4/V4_worn_bronze_roughness.png"
+  ],
+  "items": [
+    {
+      "item": "sword",
+      "units": "metres",
+      "render_only": true,
+      "grip_origin": [
+        0,
+        0,
+        0
+      ],
+      "root": "Weapon_Sword_V4",
+      "model_paths": [
+        "res://models/weapons_v4/sword_lod0.glb",
+        "res://models/weapons_v4/sword_lod1.glb",
+        "res://models/weapons_v4/sword_lod2.glb"
+      ],
+      "triangle_counts": [
+        5998,
+        2758,
+        1067
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.123,
+            -0.239,
+            -0.0192
+          ],
+          "max": [
+            0.123,
+            1.09,
+            0.0192
+          ]
+        },
+        {
+          "min": [
+            -0.1230055,
+            -0.2390062,
+            -0.0192
+          ],
+          "max": [
+            0.1230044,
+            1.0900034,
+            0.0192
+          ]
+        },
+        {
+          "min": [
+            -0.1231234,
+            -0.2390179,
+            -0.0192
+          ],
+          "max": [
+            0.1230044,
+            1.090022,
+            0.0192
+          ]
+        }
+      ],
+      "markers": {
+        "Grip": [
+          0,
+          0,
+          0
+        ],
+        "BladeTip": [
+          0,
+          1.09,
+          0
+        ]
+      },
+      "morph_target": null,
+      "draw_aabb_per_lod": [],
+      "draw_markers": {},
+      "glb_bytes": 6671644
+    },
+    {
+      "item": "bow",
+      "units": "metres",
+      "render_only": true,
+      "grip_origin": [
+        0,
+        0,
+        0
+      ],
+      "root": "Weapon_Bow_V4",
+      "model_paths": [
+        "res://models/weapons_v4/bow_lod0.glb",
+        "res://models/weapons_v4/bow_lod1.glb",
+        "res://models/weapons_v4/bow_lod2.glb"
+      ],
+      "triangle_counts": [
+        7820,
+        3596,
+        1406
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.032,
+            -0.7380136,
+            -0.1888287
+          ],
+          "max": [
+            0.032,
+            0.7380136,
+            0.0839
+          ]
+        },
+        {
+          "min": [
+            -0.0320588,
+            -0.7379217,
+            -0.1888287
+          ],
+          "max": [
+            0.0320588,
+            0.7379218,
+            0.0838913
+          ]
+        },
+        {
+          "min": [
+            -0.0326916,
+            -0.7376826,
+            -0.1886579
+          ],
+          "max": [
+            0.0326916,
+            0.7376974,
+            0.0838712
+          ]
+        }
+      ],
+      "markers": {
+        "Grip": [
+          0,
+          0,
+          0
+        ],
+        "StringTop": [
+          0,
+          0.709,
+          0.084
+        ],
+        "StringBottom": [
+          0,
+          -0.709,
+          0.084
+        ],
+        "NockRest": [
+          0,
+          0.06,
+          0.2
+        ],
+        "ArrowRest": [
+          0,
+          0.06,
+          0.034
+        ]
+      },
+      "morph_target": "BowDraw",
+      "draw_aabb_per_lod": [
+        {
+          "min": [
+            -0.032,
+            -0.7230136,
+            -0.1586714
+          ],
+          "max": [
+            0.032,
+            0.7230136,
+            0.1545659
+          ]
+        },
+        {
+          "min": [
+            -0.0320588,
+            -0.7229217,
+            -0.1586714
+          ],
+          "max": [
+            0.0320588,
+            0.7229218,
+            0.1545499
+          ]
+        },
+        {
+          "min": [
+            -0.0326916,
+            -0.7226827,
+            -0.1587086
+          ],
+          "max": [
+            0.0326916,
+            0.7226974,
+            0.1547447
+          ]
+        }
+      ],
+      "draw_markers": {
+        "Grip": [
+          0,
+          0.0,
+          0.0
+        ],
+        "StringTop": [
+          0,
+          0.6949998352885363,
+          0.1540008235573184
+        ],
+        "StringBottom": [
+          0,
+          -0.6949998352885363,
+          0.1540008235573184
+        ],
+        "NockRest": [
+          0,
+          0.06,
+          0.2
+        ],
+        "ArrowRest": [
+          0,
+          0.06,
+          0.034
+        ]
+      },
+      "glb_bytes": 8954660
+    },
+    {
+      "item": "arrow",
+      "units": "metres",
+      "render_only": true,
+      "grip_origin": [
+        0,
+        0,
+        0
+      ],
+      "root": "Weapon_Arrow_V4",
+      "model_paths": [
+        "res://models/weapons_v4/arrow_lod0.glb",
+        "res://models/weapons_v4/arrow_lod1.glb",
+        "res://models/weapons_v4/arrow_lod2.glb"
+      ],
+      "triangle_counts": [
+        1224,
+        562,
+        199
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.013,
+            -0.0179285,
+            -0.8
+          ],
+          "max": [
+            0.0205,
+            0.0179285,
+            0.0001565
+          ]
+        },
+        {
+          "min": [
+            -0.013,
+            -0.0179285,
+            -0.8000075
+          ],
+          "max": [
+            0.0205,
+            0.0179285,
+            0.0001565
+          ]
+        },
+        {
+          "min": [
+            -0.013159,
+            -0.0179285,
+            -0.8000075
+          ],
+          "max": [
+            0.0205,
+            0.0179285,
+            6.46e-05
+          ]
+        }
+      ],
+      "markers": {
+        "Nock": [
+          0,
+          0,
+          0
+        ],
+        "ArrowTip": [
+          0,
+          0,
+          -0.8
+        ]
+      },
+      "morph_target": null,
+      "draw_aabb_per_lod": [],
+      "draw_markers": {},
+      "glb_bytes": 3721796
+    },
+    {
+      "item": "scabbard",
+      "units": "metres",
+      "render_only": true,
+      "grip_origin": [
+        0,
+        0,
+        0
+      ],
+      "root": "Weapon_Scabbard_V4",
+      "model_paths": [
+        "res://models/weapons_v4/scabbard_lod0.glb",
+        "res://models/weapons_v4/scabbard_lod1.glb",
+        "res://models/weapons_v4/scabbard_lod2.glb"
+      ],
+      "triangle_counts": [
+        3260,
+        1498,
+        569
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.039,
+            0.125,
+            -0.015
+          ],
+          "max": [
+            0.0541894,
+            1.124,
+            0.015
+          ]
+        },
+        {
+          "min": [
+            -0.0388822,
+            0.125,
+            -0.0149349
+          ],
+          "max": [
+            0.0541894,
+            1.1240016,
+            0.0149349
+          ]
+        },
+        {
+          "min": [
+            -0.0388696,
+            0.1250024,
+            -0.0149904
+          ],
+          "max": [
+            0.0546973,
+            1.1240489,
+            0.0149904
+          ]
+        }
+      ],
+      "markers": {
+        "Attachment": [
+          0,
+          0,
+          0
+        ],
+        "Mouth": [
+          0,
+          0.125,
+          0
+        ]
+      },
+      "morph_target": null,
+      "draw_aabb_per_lod": [],
+      "draw_markers": {},
+      "glb_bytes": 4612268
+    },
+    {
+      "item": "quiver",
+      "units": "metres",
+      "render_only": true,
+      "grip_origin": [
+        0,
+        0,
+        0
+      ],
+      "root": "Weapon_Quiver_V4",
+      "model_paths": [
+        "res://models/weapons_v4/quiver_lod0.glb",
+        "res://models/weapons_v4/quiver_lod1.glb",
+        "res://models/weapons_v4/quiver_lod2.glb"
+      ],
+      "triangle_counts": [
+        5972,
+        2746,
+        1074
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.0805,
+            -0.31,
+            -0.0605
+          ],
+          "max": [
+            0.0964908,
+            0.3885,
+            0.0605
+          ]
+        },
+        {
+          "min": [
+            -0.0805002,
+            -0.3100008,
+            -0.0604907
+          ],
+          "max": [
+            0.0964908,
+            0.3884673,
+            0.0604907
+          ]
+        },
+        {
+          "min": [
+            -0.080901,
+            -0.310005,
+            -0.0608258
+          ],
+          "max": [
+            0.0970595,
+            0.3882384,
+            0.060619
+          ]
+        }
+      ],
+      "markers": {
+        "Attachment": [
+          0,
+          0,
+          0
+        ],
+        "Mouth": [
+          0,
+          0.355,
+          0
+        ]
+      },
+      "morph_target": null,
+      "draw_aabb_per_lod": [],
+      "draw_markers": {},
+      "glb_bytes": 7233368
+    }
+  ],
+  "validation": "Actual GLB JSON and binary accessors: 15 GLB, one mesh each, named markers, exact indexed triangle counts, Y-up bounds, BowDraw POSITION/NORMAL streams, real +Z draw displacement and stationary physical grip",
+  "renders": [
+    "res://art/screenshots/weapons_v4/catalogue.png",
+    "res://art/screenshots/weapons_v4/sword_detail.png",
+    "res://art/screenshots/weapons_v4/blade_profile.png",
+    "res://art/screenshots/weapons_v4/bow_profile.png",
+    "res://art/screenshots/weapons_v4/bow_drawn.png",
+    "res://art/screenshots/weapons_v4/arrow_quiver.png"
+  ]
+}

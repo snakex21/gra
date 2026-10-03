@@ -13,6 +13,8 @@ var auto_lod := true
 var model: Node3D
 var _arms: Array[Node3D] = []
 var _forearms: Array[Node3D] = []
+var _wrists: Array[Node3D] = []
+var _grips: Array[Node3D] = []
 var _legs: Array[Node3D] = []
 var _knees: Array[Node3D] = []
 var _ankles: Array[Node3D] = []
@@ -71,6 +73,8 @@ func set_lod(level: int) -> void:
 	if is_instance_valid(model): model.queue_free()
 	_arms.clear()
 	_forearms.clear()
+	_wrists.clear()
+	_grips.clear()
 	_legs.clear()
 	_knees.clear()
 	_ankles.clear()
@@ -88,6 +92,8 @@ func set_lod(level: int) -> void:
 			return
 		_arms.append(arm)
 		_forearms.append(forearm)
+		_wrists.append(forearm.find_child("Wrist_%d*" % i, true, false) as Node3D)
+		_grips.append(forearm.find_child("HandGrip_%d*" % i, true, false) as Node3D)
 		_legs.append(leg)
 		_knees.append(knee)
 		_ankles.append(ankle)
@@ -159,9 +165,26 @@ func _apply_pose(mode: StringName, step: float, speed: float, delta: float) -> v
 				knee = -0.28
 		_legs[i].rotation = _legs[i].rotation.lerp(leg, blend)
 		_knees[i].rotation.x = lerpf(_knees[i].rotation.x, knee, blend)
-		_forearms[i].rotation.x = lerpf(_forearms[i].rotation.x, elbow, blend)
+		_forearms[i].rotation = _forearms[i].rotation.lerp(Vector3(elbow, 0, 0), blend)
+		if is_instance_valid(_wrists[i]):
+			_wrists[i].rotation = _wrists[i].rotation.lerp(Vector3.ZERO, blend)
 		_ankles[i].rotation.x = -0.04 if mode == &"ride" else 0.0
 		# Existing PlayerVisual owns grip/beam shoulder elevation. Other states
 		# get a cosmetic arm swing or reins pose after its physics update.
 		if mode != &"climb" and player.beam.raise <= 0.01:
 			visual._arms[i].rotation.x = lerpf(visual._arms[i].rotation.x, shoulder, blend)
+
+## Cosmetic IK for real imported grips; the gameplay grip and capsule never move.
+func pose_hand(side: int, goal: Transform3D) -> float:
+	if side < 0 or side >= _forearms.size() or not is_instance_valid(_wrists[side]) or not is_instance_valid(_grips[side]): return 0.0
+	var shoulder := visual._arms[side]
+	var forearm := _forearms[side]
+	var wrist := _wrists[side]
+	var grip := _grips[side]
+	var wrist_target := goal.origin - goal.basis * grip.position
+	var pole := visual.global_basis * Vector3(-0.8 if side == 0 else 0.8, -0.6, 0.3)
+	var solved := TwoBoneIK.solve(shoulder.global_position, wrist_target, forearm.position.length(), wrist.position.length(), pole)
+	shoulder.global_basis = solved.upper
+	forearm.global_basis = solved.lower
+	wrist.global_basis = goal.basis
+	return grip.global_position.distance_to(goal.origin)

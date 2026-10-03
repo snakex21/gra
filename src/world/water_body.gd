@@ -17,6 +17,8 @@ var ripple_events := PackedVector4Array()
 var _ripple_next := 0
 var _material: ShaderMaterial
 var splashes := 0
+static var _drop_mesh: SphereMesh
+static var _drop_material: StandardMaterial3D
 
 
 func _ready() -> void:
@@ -72,14 +74,19 @@ func splash(at: Vector3, impact_speed: float) -> void:
 	drops.gravity = Vector3.DOWN * 9.8
 	drops.scale_amount_min = 0.035
 	drops.scale_amount_max = 0.085
-	var mesh := SphereMesh.new()
-	mesh.radius = 0.5
-	mesh.height = 1.0
-	drops.mesh = mesh
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.6, 0.83, 0.9, 0.65)
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	drops.material_override = mat
+	# Tiny, short-lived drops share one mesh/material and never enter shadow passes.
+	if _drop_mesh == null:
+		_drop_mesh = SphereMesh.new()
+		_drop_mesh.radius = 0.5
+		_drop_mesh.height = 1.0
+		_drop_mesh.radial_segments = 8
+		_drop_mesh.rings = 4
+		_drop_material = StandardMaterial3D.new()
+		_drop_material.albedo_color = Color(0.6, 0.83, 0.9, 0.65)
+		_drop_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	drops.mesh = _drop_mesh
+	drops.material_override = _drop_material
+	drops.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(drops)
 	drops.global_position = Vector3(at.x, surface(), at.z)
 	drops.finished.connect(drops.queue_free)

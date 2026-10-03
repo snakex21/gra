@@ -18,12 +18,18 @@ jobs:
           echo "GODOT=$PWD/Godot_v${GODOT_VERSION}-stable_linux.x86_64" >> "$GITHUB_ENV"
       - name: Run headless gameplay tests
         run: tools/run_tests.sh
+      - name: Verify asset budgets and texture import settings
+        run: |
+          python3 tools/art/configure_texture_imports.py --check
+          python3 tools/art/audit_asset_budgets.py --check-budgets --output tests/output/asset_budgets_ci.json
       - name: Run portable saves and expanded encounters
         run: |
           export XDG_DATA_HOME="$PWD/tools/runtime/engine_data"
           export XDG_CACHE_HOME="$PWD/tools/runtime/engine_cache"
           export TMPDIR="$PWD/tools/runtime/tmp"
           mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$TMPDIR"
-          for scene in stage12 auto_save checkpoint_climb campaign_expansion colossi_v3 travelers_v3 temple_characters_v3 art_integration_v3 paired_arrival; do
-            "$GODOT" --headless --fixed-fps 60 --quit-after 200000 "res://tests/${scene}.tscn"
+          for scene in stage12 auto_save checkpoint_climb campaign_expansion colossi_v3 travelers_v3 temple_characters_v3 art_integration_v3 paired_arrival weapon_art graphics_quality texture_budgets main_layout forbidden_lands; do
+            limit=200000
+            if [ "$scene" = "forbidden_lands" ]; then limit=660000; fi
+            "$GODOT" --headless --fixed-fps 60 --quit-after "$limit" "res://tests/${scene}.tscn"
           done

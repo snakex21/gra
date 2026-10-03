@@ -238,6 +238,16 @@ func _ride(delta: float) -> void:
 		if wander <= 0.0:
 			_since_check = RIDE_CHECK + 0.01
 		return
+	if game.layout_version == 3 and game.region_kind == GameWorld.VALLEY and game.state.next_colossus() != &"":
+		var direction := ForbiddenLands.route_heading(game.state.next_colossus(), p.global_position)
+		p.riding.steer_relative = false
+		a.view_basis = Basis.looking_at(direction)
+		a.move = Vector2(0, 1)
+		a.beam_held = false
+		a.grab_held = false
+		if c.speed < 9.0 and int(phase_time * 60.0) % 45 == 0:
+			a.press_jump()
+		return
 	_since_check += delta
 	if _sweeping or _since_check > RIDE_CHECK:
 		# Beam check from the saddle: steer relative to the horse meanwhile (straight on).

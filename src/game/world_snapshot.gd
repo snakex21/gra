@@ -140,7 +140,7 @@ func _index_nodes(n: Node) -> void:
 
 func _capture_nodes(n: Node, records: Array) -> void:
 	var script := n.get_script() as Script
-	var simulation := script and script.resource_path.begins_with("res://src/") and not n is PlayerHud and not n is WaterCameraEffects and not n is FlatInputSource and not n is TravelerArt and not n is ColossusArtV3
+	var simulation := script and script.resource_path.begins_with("res://src/") and not n is PlayerHud and not n is WaterCameraEffects and not n is FlatInputSource and not n is TravelerArt and not n is ColossusArtV3 and not n is WeaponArt
 	if simulation or n is Skeleton3D or n is CollisionShape3D and n.get_parent() is BodySegment:
 		var record := {"key": _key(n), "fields": _fields(n) if simulation else {}}
 		_native_state(n, record)

@@ -66,6 +66,7 @@ func spawn(pos: Vector3, vel: Vector3, owner: Node = null) -> Dictionary:
 	mi.material_override = _mat
 	mi.top_level = true
 	add_child(mi)
+	WeaponArt.dress_arrow(mi)
 	mi.global_transform = _arrow_xf(pos, vel)
 	mi.reset_physics_interpolation()
 	a.node = mi

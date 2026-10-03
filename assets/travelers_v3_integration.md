@@ -20,6 +20,20 @@ TravelerArt.attach(player.visual, player)
 
 Model używa hierarchii sztywnych części, zgodnej z obecnym proceduralnym rigiem. To adapter do istniejących animacji, nie pełny rig skórzany z animacjami klatkowymi. Miękkie wstawki barkowe, zaokrąglone główki rękawów oraz kontaktowe powierzchnie łokci i nadgarstków zakrywają połączenia w pozycjach wspinaczki i jazdy.
 
+Wersja po dopracowaniu ma ciągły profil nosa, policzków i podbródka, osadzone oczy, powieki i usta przylegające do powierzchni, matowe włosy oraz fałdy tuniki i peleryny. Haft podąża za tkaniną. Dłonie mają przeciwstawny kciuk i cztery częściowo zagięte palce obejmujące uchwyt; nie są otwartą płetwą.
+
+Kontrakt dla kosmetycznego IK i broni jest taki sam we wszystkich LOD:
+
+| Węzeł | Rodzic | Pozycja lokalna (metry) |
+| --- | --- | --- |
+| `Arm_0/1` | korzeń postaci | `(±0.300, 0.400, 0)` |
+| `Forearm_0/1` | `Arm_i` | `(0, −0.285, 0)` |
+| `Wrist_0/1` | `Forearm_i` | `(0, −0.276, 0)` |
+| `Traveler_Hand_0/1` | `Wrist_i` | `(0, 0, 0)` |
+| `HandGrip_0/1` | `Wrist_i` | `(0, −0.050, −0.037)` |
+
+Wszystkie obroty tych węzłów w eksporcie są identity. Oś uchwytu to lokalne **−Y**. `HandGrip_i` względem `Forearm_i` jest dokładnie `(0, −0.326, −0.037)`. Bark→łokieć: 0.285 m; łokieć→nadgarstek: 0.276 m; łokieć→środek uchwytu: 0.328093 m. Nadgarstek i dłoń są osobnymi węzłami, więc można obrócić zamknięte palce wraz z bronią bez obracania całego przedramienia.
+
 Domyślna odległość przełączenia LOD to 12 m i 35 m, liczona względem aktywnej kamery. Do ujęć kontrolowanych można ustawić `art.auto_lod = false` i `art.set_lod(0)`. `pose_preview(&"climb")` lub `pose_preview(&"ride")` służy do inspekcji grafiki i nie przestawia stanu gameplayu.
 
 ## Mono na ołtarzu
@@ -36,14 +50,14 @@ Mono zawiera samą geometrię renderu, bez colliderów. Ma zamknięte oczy, dło
 
 | Model | LOD0 | LOD1 | LOD2 |
 | --- | ---: | ---: | ---: |
-| Wędrowiec | 35 614 | 18 512 | 4 236 |
+| Wędrowiec | 34 360 | 17 859 | 4 080 |
 | Mono | 28 576 | 14 858 | 3 414 |
 
-Wartości oznaczają trójkąty po eksporcie. Wędrowiec ma 12 części siatki, Mono jedną. Oba modele używają tego samego materiału PBR z atlasem 1024×1024: albedo, normal oraz ORM. Tekstury są osadzone w GLB; zewnętrzne PNG pozostają źródłami do edycji. Szczegółowe metryki, pochodzenie i granice wszystkich LOD zapisano w `assets/travelers_v3_manifest.json`.
+Wartości oznaczają trójkąty po eksporcie. Poprzedni Wędrowiec miał 35 614 trójkątów LOD0; nowy ma o 1 254 mniej (3.5%). Wędrowiec ma 14 części siatki, Mono jedną. Oba modele używają atlasu PBR 1024×1024: albedo, normal oraz ORM. Wędrowiec ma dodatkowy wariant materiału włosów z większą chropowatością i słabszą mapą normalną, korzystający z tego samego atlasu. Tekstury są osadzone w GLB; zewnętrzne PNG pozostają źródłami do edycji. Szczegółowe metryki, pochodzenie i granice wszystkich LOD zapisano w `assets/travelers_v3_manifest.json`.
 
 ## Edycja w Blenderze i eksport
 
-Zachowaj nazwy korzeni `Traveler_v3` i `Mono_v3_Sleep` oraz pivoty `Arm_*`, `Forearm_*`, `Leg_*`, `Knee_*`, `Ankle_*`. Układ źródła jest Blender Z-up, eksport do Godot jest Y-up. Po ręcznej edycji i zapisaniu pliku źródłowego:
+Zachowaj nazwy korzeni `Traveler_v3` i `Mono_v3_Sleep` oraz pivoty `Arm_*`, `Forearm_*`, `Wrist_*`, `HandGrip_*`, `Leg_*`, `Knee_*`, `Ankle_*`. Układ źródła jest Blender Z-up, eksport do Godot jest Y-up. Po ręcznej edycji i zapisaniu pliku źródłowego:
 
 ```bat
 python tools\run_local.py blender --python tools/art/generate_travelers_v3.py -- --export-source
@@ -59,7 +73,7 @@ Podgląd importu i wymagających pozycji:
 python tools\run_local.py godot --rendering-method forward_plus --resolution 1600x1050 --fixed-fps 60 --quit-after 1000 tests/travelers_v3.tscn
 ```
 
-Test sprawdza import sześciu GLB, zgodność liczby trójkątów, materiały, brak nowych colliderów, pivoty wszystkich LOD, mocowanie ramion, zachowanie broni i akcji, rzeczywisty chód przez `PlayerActions` oraz kosmetyczne pozycje jazdy i wspinania. Oba przebiegi, headless i Forward+, kończą się wynikiem 0 błędów. Capture zapisuje wspólne ujęcie, twarz, wspinaczkę i jazdę do `data/captures/*v3*.png`.
+Test sprawdza import sześciu GLB, zgodność liczby trójkątów, materiały, brak nowych colliderów, pivoty i sockety dłoni wszystkich LOD, mocowanie ramion, zachowanie broni i akcji, rzeczywisty chód przez `PlayerActions` oraz kosmetyczne pozycje jazdy i wspinania. Capture zapisuje wspólne ujęcie, twarz, profil, uchwyt dłoni, wspinaczkę i jazdę do `data/captures/*v3*.png`. W izolowanych pozach podglądu kosmetyczny proces `WeaponArt` i widoczność wyposażenia są wyłączone; testy broni sprawdzają rzeczywiste stany animacji z IK.
 
 Wszystkie komendy używają lokalnego launchera, który kieruje dane Blender/Godot i cache do folderu gry.
 

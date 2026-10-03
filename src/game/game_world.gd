@@ -120,6 +120,7 @@ func apply_settings(s: Settings) -> void:
 	if hud is PlayerHud:
 		(hud as PlayerHud).show_help = s.show_help
 		(hud as PlayerHud).show_debug = s.show_debug
+	GraphicsQuality.apply(self, s.graphics_profile)
 
 
 func _ready() -> void:
@@ -190,7 +191,7 @@ func _play(_delta: float) -> void:
 	var gates: Dictionary = refs.gates
 	if region_kind == VALLEY:
 		var next := state.next_colossus()
-		p.beam.target = (gates[next].trigger as Vector3) if next != &"" else Vector3.INF
+		p.beam.target = (ForbiddenLands.guide_target(next, p.global_position) if layout_version == 3 else (gates[next].trigger as Vector3)) if next != &"" else Vector3.INF
 		if p.beam.locked and refs.has("hud"):
 			# The hint has done its job once the beam gathered.
 			(refs.hud as PlayerHud).message = ""

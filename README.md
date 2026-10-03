@@ -10,7 +10,7 @@ zyskuje cykl dnia i nocy, pogodę, ekosystem oraz ukryte miejsca i zagadki; reag
 na śmierć kolosów i odzyskiwanie mocy przez Dormina. Kooperacja, kompan AI i VR
 mają zachować ten charakter. [Wizja i stan realizacji](docs/WIZJA_GRY.md).
 
-## Stan: Etap 13 — modele Blender i autozapis świata
+## Stan: Etap 14 — broń, geografia i profile grafiki
 
 - Milestone 1 (wspinanie po poruszającym się kolosie): [docs/MILESTONE_1.md](docs/MILESTONE_1.md)
 - Etap 2 (równowaga na kolosie, upadki, kamera, przejścia): [docs/ETAP_2.md](docs/ETAP_2.md)
@@ -25,12 +25,13 @@ mają zachować ten charakter. [Wizja i stan realizacji](docs/WIZJA_GRY.md).
 - Etap 11 (szósty kolos Avion: ptak nad jeziorem z wieżami, chwyt skrzydła przy pikowaniu; areny budowane po starcie; nurkowanie i oddech; znaczniki, skoki i wycinki w powtórkach): [docs/ETAP_11.md](docs/ETAP_11.md)
 - Etap 12 (jaskinia Hollowvault / Deeprelic i latarka miecza, planowany przelot Aviona, checkpointy świata, mniejsze kroki grafiki, fale i mgła pod wodą): [docs/ETAP_12.md](docs/ETAP_12.md)
 - Etap 13 (Wędrowiec, Mono, Agro, Dormin i wszystkie pozostałe kolosy z Blendera, bezpieczny autozapis i wejścia do aren): [docs/ETAP_13.md](docs/ETAP_13.md)
+- Etap 14 (modele broni, dłonie i naciąg łuku, poprawiony Wędrowiec, wspólne drogi Krainy, renderer Compatibility i profile kosztu grafiki): [docs/ETAP_14.md](docs/ETAP_14.md)
 - Architektura: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md)
 - Stan po sesji 3 października 2026 i dalsze zadania: [docs/STAN_SESJI_2026-10-03.md](docs/STAN_SESJI_2026-10-03.md)
 
 **Cała gra: `scenes/game.tscn`** (scena główna): menu (Kontynuuj / Nowa gra / Wczytaj / Próby kolosów / Ustawienia,
 trzy sloty zapisu), start w świątyni, promień miecza (V / lewy spust) wskazuje drogę. Jeden ciągły
-świat: brama w krawędzi doliny prowadzi korytarzem prosto do areny kolejnego kolosa, bez
+świat: wspólne drogi i rozgałęzienia prowadzą do regionów kolejnych kolosów, bez
 ekranu ładowania; po wygranej powrót do świątyni i zapis. Esc / P / Start = pauza.
 Bez menu: `-- --new-game` (albo `NEW_GAME=1`) lub `-- --continue`.
 
@@ -89,6 +90,9 @@ Co działa w sandboxie (`scenes/sandbox.tscn`):
 
 Windows: **`Uruchom-gre.bat`**, a do bezpośredniej próby jaskini **`Uruchom-jaskinie.bat`**.
 Lokalny Godot jest w `tools/runtime`; Python jest potrzebny tylko do tego launchera.
+Domyślny renderer to OpenGL Compatibility. Ustawienia → Jakość grafiki oferują
+profil niski dla starszych kart, zrównoważony i wysoki. Minimalne wymagania sprzętowe
+czekają na pomiary na starszym sprzęcie; sama obsługa OpenGL 3.3 nie gwarantuje FPS.
 Po świeżym klonowaniu uruchom `python tools/run_local.py install-godot`, żeby pobrać
 Godota do lokalnego folderu narzędzi. Cache, runtime i zapisy gracza są pomijane przez Git.
 Zapisy, ustawienia i powtórki są w `data/`, cache projektu w `.godot/`, dane narzędzi
@@ -127,6 +131,16 @@ python tools/run_local.py godot --editor
 | Nurkowanie (trzymaj w wodzie; oddech 14 s) | Ctrl / Z | B |
 
 ## Testy
+
+Etap 14 (broń, profile grafiki, importy tekstur i nowy układ świata):
+
+```bash
+python tools/run_local.py godot --fixed-fps 60 tests/weapon_art.tscn
+python tools/run_local.py godot --fixed-fps 60 tests/graphics_quality.tscn
+python tools/run_local.py godot --fixed-fps 60 tests/texture_budgets.tscn
+python tools/run_local.py godot --headless --fixed-fps 60 tests/main_layout.tscn
+python tools/run_local.py godot --headless --fixed-fps 60 tests/forbidden_lands.tscn
+```
 
 Etap 13 na Windows (sprawdzony lokalnie w Godot 4.6.3):
 

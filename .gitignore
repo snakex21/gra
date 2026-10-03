@@ -1,6 +1,8 @@
 # Godot
 .godot/
 *.import
+!/textures/**/*.png.import
+!/models/**/*.png.import
 export_presets.cfg
 /build/
 # Test output
@@ -13,6 +15,7 @@ export_presets.cfg
 !/data/captures/
 /data/captures/*
 !/data/captures/*_v3*.png
+/data/captures/*_before_refine.png
 __pycache__/
 *.pyc
 *.blend1

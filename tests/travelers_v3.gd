@@ -26,6 +26,14 @@ func _ready() -> void:
 				check(a0 != null and a1 != null, "Traveler shoulder joints missing at LOD%d" % lod.lod)
 				if a0 and a1:
 					check(a0.global_position.distance_to(Vector3(-.3,.4,0)) < .001 and a1.global_position.distance_to(Vector3(.3,.4,0)) < .001, "Traveler arm origin no longer matches PlayerVisual")
+				for i in 2:
+					var wrist := instance.find_child("Wrist_%d*" % i, true, false) as Node3D
+					var grip := instance.find_child("HandGrip_%d*" % i, true, false) as Node3D
+					var hand := instance.find_child("Traveler_Hand_%d*" % i, true, false) as MeshInstance3D
+					check(wrist != null and grip != null and hand != null, "Traveler wrist, grip or independent hand missing at LOD%d" % lod.lod)
+					if wrist and grip and hand:
+						check(wrist.position.distance_to(Vector3(0,-.276,0)) < .001 and grip.get_parent() == wrist and hand.get_parent() == wrist and grip.position.distance_to(Vector3(0,-.050,-.037)) < .001, "Traveler wrist/grip contract changed at LOD%d" % lod.lod)
+						check(grip.global_position.distance_to(Vector3(-.3 if i == 0 else .3, -.211, -.037)) < .001 and grip.basis.is_equal_approx(Basis.IDENTITY), "Traveler weapon socket no longer matches its metre-scale pose")
 			instance.free()
 	var floor_mat := StandardMaterial3D.new()
 	floor_mat.albedo_color = Color(.16,.19,.20)
@@ -56,6 +64,10 @@ func _ready() -> void:
 	p.actions.clear()
 	p.set_physics_process(false)
 	art.set_process(false)
+	var gear := p.visual.get_node_or_null("WeaponArt") as Node3D
+	if gear:
+		gear.set_process(false)
+		gear.visible = false
 	var fixed_position := p.global_position
 	art.pose_preview(&"ride", .4)
 	check(art._legs[0].rotation.x > 1.0 and art._knees[0].rotation.x < -1.0, "Traveler riding pose does not bend legs around saddle")
@@ -87,6 +99,22 @@ func _ready() -> void:
 		await RenderingServer.frame_post_draw
 		path = ProjectSettings.globalize_path("res://data/captures/traveler_v3_face.png")
 		get_viewport().get_texture().get_image().save_png(path)
+		print("Saved ", path)
+		cam.global_position = Vector3(.35,1.69,-.12)
+		cam.look_at(Vector3(-.65,1.66,0))
+		cam.fov = 28
+		for i in 3: await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		path = ProjectSettings.globalize_path("res://data/captures/traveler_v3_profile.png")
+		check(get_viewport().get_texture().get_image().save_png(path) == OK, "Traveler profile capture save failed")
+		print("Saved ", path)
+		cam.global_position = Vector3(.25,.82,-.55)
+		cam.look_at(Vector3(-.35,.68,-.025))
+		cam.fov = 24
+		for i in 3: await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		path = ProjectSettings.globalize_path("res://data/captures/traveler_v3_grip.png")
+		check(get_viewport().get_texture().get_image().save_png(path) == OK, "Traveler grip capture save failed")
 		print("Saved ", path)
 		# Render the most demanding rigid shoulder/wrist pose, then the saddle
 		# pose, so exposed seams can be reviewed without changing player state.

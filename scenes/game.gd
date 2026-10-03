@@ -25,6 +25,7 @@ func _ready() -> void:
 	with_art = not OS.has_environment("NO_ART")
 	settings.load_from()
 	settings.apply_engine()
+	GraphicsQuality.apply(self, settings.graphics_profile)
 	save_path = GameState.slot_path(settings.slot)
 	menu = GameMenu.new()
 	menu.settings = settings
@@ -67,6 +68,9 @@ func _ready() -> void:
 
 func _begin(new_game: bool) -> void:
 	get_tree().paused = false
+	# Fresh sessions use the geographical map. A saved binary checkpoint can
+	# restore its own older layout after start(), preserving recorded coordinates.
+	layout_version = 3
 	start(new_game)
 	_autosave_elapsed = 0.0
 	# A new game is saved at once (the slot shows it, Continue finds it).

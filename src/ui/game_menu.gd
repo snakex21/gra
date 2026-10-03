@@ -43,6 +43,7 @@ var _invert: CheckBox
 var _ride: CheckBox
 var _help: CheckBox
 var _debug: CheckBox
+var _graphics: OptionButton
 var _slot_buttons: Array[Button] = []
 var _slots_new := true
 var _bind_buttons := {}
@@ -76,7 +77,21 @@ func _ready() -> void:
 	_button(_pause, "Wznów", func() -> void: _close(); resume_chosen.emit())
 	_button(_pause, "Ustawienia", func() -> void: _open_options(&"pause"))
 	_button(_pause, "Wyjdź do menu", func() -> void: _close(); quit_to_title_chosen.emit())
-	_options = _panel("Ustawienia")
+	_options = _panel("Ustawienia", -280.0)
+	var graphics_row := HBoxContainer.new()
+	var graphics_label := Label.new()
+	graphics_label.text = "Jakość grafiki"
+	graphics_label.custom_minimum_size.x = 150
+	graphics_row.add_child(graphics_label)
+	_graphics = OptionButton.new()
+	for title in ["Niska — starsze karty", "Zrównoważona", "Wysoka"]:
+		_graphics.add_item(title)
+	_graphics.custom_minimum_size.x = 230
+	_graphics.item_selected.connect(func(index: int) -> void:
+		settings.graphics_profile = ["low", "balanced", "high"][index]
+		_changed())
+	graphics_row.add_child(_graphics)
+	_options.add_child(graphics_row)
 	_sens = _slider(_options, "Czułość myszy", 0.0005, 0.01, 0.0001, func(v: float) -> void: settings.mouse_sensitivity = v; _changed())
 	_volume = _slider(_options, "Głośność", 0.0, 1.0, 0.05, func(v: float) -> void: settings.volume = v; _changed())
 	_invert = _check(_options, "Odwróć oś Y", func(on: bool) -> void: settings.invert_y = on; _changed())
@@ -223,6 +238,7 @@ func _close() -> void:
 
 func _open_options(back: StringName) -> void:
 	_back_to = back
+	_graphics.select(["low", "balanced", "high"].find(settings.graphics_profile))
 	_sens.set_value_no_signal(settings.mouse_sensitivity)
 	_volume.set_value_no_signal(settings.volume)
 	_invert.set_pressed_no_signal(settings.invert_y)

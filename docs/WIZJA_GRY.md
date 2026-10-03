@@ -44,6 +44,14 @@ VR rozwija bezpośrednie odczuwanie skali, wspinaczki i obecności stworzenia.
 Dobór interfejsu, komunikacji partnerów i rozwiązań komfortu ma zachować ciszę
 oraz tajemniczy charakter krainy.
 
+## Dostępność sprzętowa
+
+Oprawa ma być skalowalna również dla starszych kart. Budżety siatek i tekstur,
+LOD-y, ograniczony koszt cieni oraz małe porcje budowy otoczenia są częścią projektu.
+Domyślny renderer Compatibility i trzy profile grafiki pozwalają ograniczyć koszt
+bez zmiany fizyki ani zagadek. Wymagania minimalne ustalimy na podstawie pomiarów
+na rzeczywistym starszym sprzęcie, a nie wieku karty ani wyników na mocnym komputerze.
+
 ## Stan realizacji
 
 Grywalne są prototypy 21 starć oraz dodatkowa próba jaskiniowa. Działają podstawy
@@ -52,6 +60,8 @@ powtórek i zachowania walki po utracie partnera. Etap 12 dodaje latarkę miecza
 planowanie lotu Aviona, mniejsze porcje budowy grafiki oraz efekty wody.
 Etap 13 dodaje własne modele Wędrowca, Mono, Agro i wszystkich kolosów z Blendera oraz przenośny autozapis
 bezpiecznego stanu świata. Mono leży na ołtarzu w świątyni; nie wprowadza tłumu NPC.
+Etap 14 dodaje modele broni z naciągiem łuku i dopasowaniem dłoni, poprawia Wędrowca,
+rozwija geografię Krainy i dodaje profile kosztu renderowania.
 
 Pełny cykl dnia i nocy, pogoda, ekosystem, eksploracyjne znajdźki i zagadki oraz
 reakcje regionów i świątyni na śmierć kolosów pozostają do wdrożenia. Pełne tryby

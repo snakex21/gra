@@ -1,7 +1,9 @@
 # Stan projektu po sesji — 3 października 2026
 
-Zamknięty zakres: grywalne prototypy 21 starć, integracja nowych modeli Blender
-oraz przenośny autozapis świata. Gra uruchamia się przez `Uruchom-gre.bat`.
+Pierwsza część sesji zakończyła Etap 13: grywalne prototypy 21 starć, integrację
+modeli Blender oraz przenośny autozapis świata. Kontynuacja rozwija broń, Wędrowca,
+geografię i wydajność — zakres oraz nowe testy opisuje `ETAP_14.md`.
+Gra uruchamia się przez `Uruchom-gre.bat`.
 Po świeżym klonowaniu należy najpierw wykonać
 `python tools/run_local.py install-godot`.
 
@@ -22,7 +24,7 @@ Po świeżym klonowaniu należy najpierw wykonać
 
 ## Potwierdzone sprawdzenia
 
-Pełny zestaw 197 testów regresji: 0 niepowodzeń. Testy etapu 12, autozapisu,
+W pierwszej części sesji pełny zestaw 197 testów regresji: 0 niepowodzeń. Testy etapu 12, autozapisu,
 postaci i checkpointów przechodzą lokalnie. Sprawdzono 20 pełnych walk
 z nowymi modelami w obróconych arenach oraz osobną pełną walkę Dormina.
 Test integracji sprawdził 21 kampanii, 21 scen prób i dwa checkpointy — 0 błędów.
