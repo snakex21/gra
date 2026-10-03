@@ -1,5 +1,8 @@
 # Etap 17 — osobny prototyp PCVR
 
+Ten dokument zachowuje pierwszy zakres i wyniki Etapu 17. Późniejszą próbę
+na Quest 2, poprawki wysokości, bliski start oraz ręczny chwyt opisuje [Etap 18](ETAP_18.md).
+
 Prototyp sprawdza skalę Zakazanej Krainy z perspektywy gogli: teren doliny
 i Valusa. Korzysta z wbudowanego OpenXR w Godot 4.6.3. Jest osobną sceną
 `scenes/pc_vr.tscn`, uruchamianą przez `Uruchom-VR.bat` lub `tools/run_vr.py`.

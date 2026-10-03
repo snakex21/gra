@@ -11,7 +11,7 @@ Ekosystem, ukryte miejsca i zagadki wymagają dalszej pracy. Opcjonalny kompan,
 docelowa kooperacja i VR mają zachować ten charakter.
 [Wizja i stan realizacji](docs/WIZJA_GRY.md).
 
-## Stan: Etap 17 — osobny prototyp PCVR
+## Stan: Etap 18 — wysokość i ręczny chwyt w PCVR
 
 - Milestone 1 (wspinanie po poruszającym się kolosie): [docs/MILESTONE_1.md](docs/MILESTONE_1.md)
 - Etap 2 (równowaga na kolosie, upadki, kamera, przejścia): [docs/ETAP_2.md](docs/ETAP_2.md)
@@ -30,6 +30,7 @@ docelowa kooperacja i VR mają zachować ten charakter.
 - Etap 15 (utrwalony cykl dnia i nocy, pogoda regionów, wpływ Dormina, nowe drzewa, skały i ruiny z Blendera): [docs/ETAP_15.md](docs/ETAP_15.md)
 - Etap 16 (opcjonalny kompan pieszy, bezpieczne dołączanie, wsparcie łukiem, zapis sesji i dwa strumienie powtórki): [docs/ETAP_16.md](docs/ETAP_16.md)
 - Etap 17 (osobna scena PCVR przez wbudowany OpenXR, dolina i Valus do sprawdzania skali): [docs/ETAP_17.md](docs/ETAP_17.md)
+- Etap 18 (kalibracja wysokości, start przy tylnej łydce Valusa, ręczny chwyt, dłonie i podnoszenie miecza): [docs/ETAP_18.md](docs/ETAP_18.md)
 - Architektura: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md)
 - Stan po sesji 3 października 2026 i dalsze zadania: [docs/STAN_SESJI_2026-10-03.md](docs/STAN_SESJI_2026-10-03.md)
 
@@ -87,8 +88,8 @@ Areny mają warstwę assetów (paczka Saltward, CC0); `NO_ART=1` wyłącza ich o
 Nowe mechaniki i modele są prototypami. To nie jest ukończone odtworzenie 1:1.
 Wycięte kolosy mają własne interpretacje projektu. Opcjonalny kompan AI działa
 w kampanii; sieciowy co-op i sterowanie drugim graczem pozostają do wdrożenia.
-VR ma osobny prototyp skali i ruchu; pełna kampania i wspinanie w goglach
-wymagają dalszej pracy oraz testów na urządzeniu.
+VR ma osobny prototyp skali, ruchu i ręcznego chwytu na zamrożonym Valusie;
+pełna walka i kampania w goglach wymagają dalszej pracy oraz testów na urządzeniu.
 
 Co działa w sandboxie (`scenes/sandbox.tscn`):
 
@@ -135,15 +136,22 @@ python tools/run_local.py godot --editor
 
 Osobny prototyp PCVR: **`Uruchom-VR.bat`** / `python tools/run_vr.py`.
 Uruchamia `scenes/pc_vr.tscn` przez Mobile/Vulkan i wbudowany OpenXR Godota 4.6.3.
-Startuje w arenie zamrożonego Valusa; A potwierdza gotowość, lewy drążek chodzi,
-prawy obraca skokowo, Y centruje położenie, X pauzuje, B wychodzi.
+Startuje około pięciu metrów od tylnej łydki zamrożonego Valusa. A potwierdza
+gotowość i wysokość oczu 1,70 m, lewy drążek chodzi, prawy obraca skokowo.
+Boczne przyciski chwytu pozwalają łapać futro i podciągać się rękami.
+Y centruje położenie i kierunek, X pauzuje, B wychodzi. W pauzie prawy drążek
+góra/dół reguluje wysokość 1,40–2,10 m. Miecz można podnieść i upuścić;
+odzyskiwanie odkłada go przy pasie. Nie zadaje jeszcze obrażeń.
 `python tools/run_vr.py --simulate` daje jawny podgląd klawiaturą/myszą bez gogli.
+F/G symulują chwyt, Page Up / Page Down regulują wysokość podczas pauzy.
 Potrzebne jest działające połączenie gogli z komputerem i zewnętrzny runtime;
 launcher nie instaluje go ani nie zmienia systemowego OpenXR. Prototyp nie
-zapisuje kampanii i nie potrzebuje modelu AI. Nie potwierdzono jeszcze działania
-ani wydajności w goglach. Aktualne Meta Link wymienia Quest 2; Quest 1 traktujemy
+zapisuje kampanii i nie potrzebuje modelu AI. Pierwsza próba na Quest 2, na stojąco,
+potwierdziła wejście do VR i subiektywnie dobrą wydajność; nowe interakcje wymagają
+ponownej oceny w goglach. Aktualne Meta Link wymienia Quest 2; Quest 1 traktujemy
 wyłącznie jako niegwarantowaną próbę zgodności ze starszym środowiskiem.
-[Uruchamianie, oficjalne źródła i ograniczenia PCVR](docs/ETAP_17.md).
+[Aktualne sterowanie i ograniczenia PCVR](docs/ETAP_18.md),
+[oficjalne źródła dotyczące runtime](docs/ETAP_17.md).
 
 Poniższa tabela dotyczy zwykłej gry na monitorze:
 
@@ -174,21 +182,34 @@ Poniższa tabela dotyczy zwykłej gry na monitorze:
 
 ## Testy
 
-Etap 17 — prototyp PCVR bez HMD oraz zintegrowana oprawa roślinności:
+Etap 18 — PCVR, ręczny chwyt i fizyczny miecz, bez HMD:
 
 ```bash
 python tools/run_vr_tests.py
 python tools/run_vr_tests.py --native
+```
+
+Mapa akcji: 165/165 kontroli przy odczycie; rig i scena — PASS.
+Wspinanie na rzeczywistej łydce Valusa: 40 kontroli w obu trybach;
+dłonie: 34 headless / 36 natywnych; miecz: 40 w obu — bez błędów.
+Ścisłe testy headless i natywne Compatibility zakończyły się bez błędów
+skryptów i zgłoszeń wycieków. Import oraz regresja Nowej Gry, Kontynuuj
+i starego checkpointu również przechodzą. Obejrzano cztery kadry natywne.
+To weryfikacja kodu, kolizji i renderowania na monitorze. Nowe interakcje,
+komfort oraz pomiary PCVR wymagają ponownej próby w Quest 2.
+[Wyniki i ograniczenia](docs/ETAP_18.md).
+
+Zintegrowana oprawa roślinności:
+
+```bash
 python tools/run_local.py godot --xr-mode off --headless tests/environment_dressing.tscn
 python tools/run_local.py godot --xr-mode off --rendering-method gl_compatibility tests/environment_dressing.tscn
 python tools/run_local.py godot --xr-mode off --rendering-method gl_compatibility tests/landscape_v5.tscn
 ```
 
-Mapa akcji: 147/147; rig: 6 grup i scena: 2 grupy — PASS. Obie sceny przechodzą
-także z natywnym Compatibility bez błędów i zgłoszeń wycieków. Sprawdzono kadry
-symulacji 1600×900 oraz lokalne testy i kadry roślinności. To testy kodu,
-kolizji i renderowania na monitorze; rzeczywiste gogle, tracking i FPS PCVR
-pozostają do sprawdzenia. [Dokładne wyniki i ograniczenia](docs/ETAP_17.md).
+Lokalne testy headless i natywnego Compatibility oraz kadry roślinności
+przechodzą. Liczby rozmieszczeń opisują zawartość świata i nie stanowią
+pomiaru FPS. [Zakres i koszt oprawy](docs/ENVIRONMENT_DRESSING.md).
 
 Etap 16 — ścisły zestaw kompana oraz granica lokalnych decyzji:
 

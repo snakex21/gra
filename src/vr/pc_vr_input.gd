@@ -10,9 +10,13 @@ static func read(left: XRController3D, right: XRController3D) -> Dictionary:
 	var right_tracked := _tracked(right)
 	var move := _finite_stick(left.get_vector2(&"move")) if left_tracked else Vector2.ZERO
 	var turn := _finite_stick(right.get_vector2(&"turn")).x if right_tracked else 0.0
+	var height := _finite_stick(right.get_vector2(&"turn")).y if right_tracked else 0.0
 	return {
 		"move": move,
 		"turn": turn,
+		"height": height,
+		"left_grip": _grip(left) if left_tracked else 0.0,
+		"right_grip": _grip(right) if right_tracked else 0.0,
 		"confirm": right_tracked and right.is_button_pressed(&"confirm"),
 		"back": right_tracked and right.is_button_pressed(&"back"),
 		"recenter": left_tracked and left.is_button_pressed(&"recenter"),
@@ -30,3 +34,8 @@ static func _finite_stick(value: Vector2) -> Vector2:
 	if not is_finite(value.x) or not is_finite(value.y):
 		return Vector2.ZERO
 	return value.limit_length(1.0)
+
+
+static func _grip(controller: XRController3D) -> float:
+	var value := controller.get_float(&"grab")
+	return clampf(value, 0.0, 1.0) if is_finite(value) else 0.0

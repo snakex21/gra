@@ -55,11 +55,22 @@ Etap 17 rozpoczyna od osobnej sceny PCVR z terenem doliny i zamrożonym Valusem,
 śledzeniem głowy oraz kontrolerów, ruchem po podłożu i skokowym obrotem.
 Start w arenie Valusa pozwala od razu oceniać skalę. Wykorzystuje wbudowany
 OpenXR; kampania nadal działa w dotychczasowym rendererze Compatibility.
-Wspinanie rękami, walka, Agro i połączenie VR z zapisami kampanii wymagają
-kolejnych prototypów. Działania i komfortu nie potwierdzono jeszcze w goglach.
+Ten pierwszy zakres nie zawierał chwytu rękami. Walka, Agro i połączenie VR
+z zapisami kampanii wymagają kolejnych prototypów.
 Testy mapy akcji, ruchu i sceny oraz natywny podgląd na monitorze przechodzą;
 nie zastępują walidacji urządzenia i obrazu stereoskopowego.
 [Zakres i wymagania PCVR](ETAP_17.md).
+
+Pierwsza próba na Quest 2, na stojąco, potwierdziła wejście do VR i jakościowo
+dobrą wydajność, lecz wykazała problem wysokości i brak bliskich interakcji.
+Etap 18 kalibruje punkt oczu, przesuwa start przy tylne futro łydki Valusa
+i dodaje chwyt oraz podciąganie obiema rękami z wytrzymałością. Dłonie,
+przedramiona i miecz do podnoszenia oraz upuszczania rozwijają obecność gracza.
+Kolos nadal jest zamrożony; pełna walka i komfort wspinania wymagają dalszej weryfikacji.
+Ścisłe testy chwytu, miecza i oprawy przechodzą headless oraz w natywnym
+Compatibility bez błędów i zgłoszeń wycieków. Nowe interakcje nadal wymagają
+ponownej próby w Quest 2; testy na monitorze nie potwierdzają komfortu w goglach.
+[Zakres Etapu 18](ETAP_18.md).
 
 ## Dostępność sprzętowa
 
@@ -92,6 +103,9 @@ odtwarzają dwa strumienie akcji, zmiany trybu i przegrupowania bez wywoływania
 Etap 17 dodaje osobny prototyp PCVR do oceny skali i podstaw ruchu. Jego launcher
 wybiera Mobile/Vulkan, a jawna symulacja klawiaturą/myszą działa w Compatibility.
 Nie zmienia normalnej gry ani systemowego runtime OpenXR.
+Etap 18 dodaje kalibrację wysokości, małe stanowisko przy chwytalnej łydce
+Valusa, ręczny chwyt i podciąganie, własną oprawę dłoni oraz fizyczne podnoszenie
+i upuszczanie miecza. Broń nie zadaje jeszcze obrażeń.
 
 Ekosystem, eksploracyjne znajdźki i zagadki oraz bardziej rozbudowane reakcje
 regionów i świątyni na śmierć kolosów pozostają do wdrożenia. Pogoda jest obecnie
@@ -99,5 +113,5 @@ kosmetyczna i nie zmienia fizyki walk. Sieciowa kooperacja, sterowanie drugim
 graczem i pełna kampania VR wymagają dalszej pracy. Kompan obecnie porusza się pieszo i stosuje
 lokalne omijanie; labirynty i głębokie przerwy w terenie wymagają rozbudowy nawigacji.
 Nie wybrano modelu decyzji do dystrybucji. Modele postaci i reżyseria obecnych
-starć mają oprawę prototypową. [Aktualny etap](ETAP_17.md),
+starć mają oprawę prototypową. [Aktualny etap](ETAP_18.md),
 [stan badań lokalnych modeli](LOCAL_DECISION_MODELS.md).

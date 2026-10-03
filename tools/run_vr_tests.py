@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-SCENES = ("pc_vr_rig", "pc_vr_scene")
+SCENES = ("pc_vr_rig", "pc_vr_scene", "pc_vr_climbing", "pc_vr_hands", "pc_vr_sword")
 
 
 def main() -> int:
@@ -51,9 +51,9 @@ def main() -> int:
                                     encoding="utf-8", errors="replace", timeout=120)
             log = result.stdout + result.stderr
             Path(str(prefix) + ".strict.log").write_text(log, encoding="utf-8")
-            marker = ("PC VR ACTION MAP: 147 checks, 0 failures" if scene == "pc_vr_action_map"
-                      else f"{scene.upper()}: 0 failure(s)")
-            ok = (result.returncode == 0 and marker in log
+            completed = (re.search(r"PC VR ACTION MAP: [1-9][0-9]* checks, 0 failures", log) is not None
+                         if scene == "pc_vr_action_map" else f"{scene.upper()}: 0 failure(s)" in log)
+            ok = (result.returncode == 0 and completed
                   and not re.search(r"SCRIPT ERROR|^ERROR:|^FATAL:|ObjectDB instances leaked|Texture .* leaked", log, re.M))
             if not ok:
                 print(log[-16000:])

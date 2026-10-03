@@ -48,95 +48,108 @@ localized_name = "Pause"
 action_type = 0
 toplevel_paths = PackedStringArray("/user/hand/left")
 
-[sub_resource type="OpenXRActionSet" id="OpenXRActionSet_jm73m"]
+[sub_resource type="OpenXRAction" id="OpenXRAction_jm73m"]
+resource_name = "grab"
+localized_name = "Hold fur with grip"
+toplevel_paths = PackedStringArray("/user/hand/left", "/user/hand/right")
+
+[sub_resource type="OpenXRActionSet" id="OpenXRActionSet_4vcgu"]
 resource_name = "pc_vr"
 localized_name = "PC VR controls"
-actions = [SubResource("OpenXRAction_8abnq"), SubResource("OpenXRAction_0v431"), SubResource("OpenXRAction_k7itm"), SubResource("OpenXRAction_wynie"), SubResource("OpenXRAction_66r02"), SubResource("OpenXRAction_jjtsd"), SubResource("OpenXRAction_kurxu"), SubResource("OpenXRAction_n77he")]
-
-[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_4vcgu"]
-action = SubResource("OpenXRAction_8abnq")
-binding_path = "/user/hand/left/input/grip/pose"
+actions = [SubResource("OpenXRAction_8abnq"), SubResource("OpenXRAction_0v431"), SubResource("OpenXRAction_k7itm"), SubResource("OpenXRAction_wynie"), SubResource("OpenXRAction_66r02"), SubResource("OpenXRAction_jjtsd"), SubResource("OpenXRAction_kurxu"), SubResource("OpenXRAction_n77he"), SubResource("OpenXRAction_jm73m")]
 
 [sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_tccpj"]
 action = SubResource("OpenXRAction_8abnq")
-binding_path = "/user/hand/right/input/grip/pose"
+binding_path = "/user/hand/left/input/grip/pose"
 
 [sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_fy6kt"]
-action = SubResource("OpenXRAction_0v431")
-binding_path = "/user/hand/left/input/aim/pose"
+action = SubResource("OpenXRAction_8abnq")
+binding_path = "/user/hand/right/input/grip/pose"
 
 [sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_otqkp"]
 action = SubResource("OpenXRAction_0v431")
-binding_path = "/user/hand/right/input/aim/pose"
+binding_path = "/user/hand/left/input/aim/pose"
 
 [sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_y5rhh"]
+action = SubResource("OpenXRAction_0v431")
+binding_path = "/user/hand/right/input/aim/pose"
+
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_7vil7"]
 action = SubResource("OpenXRAction_k7itm")
 binding_path = "/user/hand/left/input/thumbstick"
 
-[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_7vil7"]
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_rnsnc"]
 action = SubResource("OpenXRAction_wynie")
 binding_path = "/user/hand/right/input/thumbstick"
 
-[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_rnsnc"]
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_s4j41"]
 action = SubResource("OpenXRAction_66r02")
 binding_path = "/user/hand/right/input/a/click"
 
-[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_s4j41"]
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_6hhy5"]
 action = SubResource("OpenXRAction_jjtsd")
 binding_path = "/user/hand/right/input/b/click"
 
-[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_6hhy5"]
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_k5fnk"]
 action = SubResource("OpenXRAction_kurxu")
 binding_path = "/user/hand/left/input/y/click"
 
-[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_k5fnk"]
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_7m5yb"]
 action = SubResource("OpenXRAction_n77he")
 binding_path = "/user/hand/left/input/x/click"
 
-[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_7m5yb"]
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_esapc"]
 action = SubResource("OpenXRAction_n77he")
 binding_path = "/user/hand/left/input/menu/click"
 
-[sub_resource type="OpenXRInteractionProfile" id="OpenXRInteractionProfile_esapc"]
-interaction_profile_path = "/interaction_profiles/oculus/touch_controller"
-bindings = [SubResource("OpenXRIPBinding_4vcgu"), SubResource("OpenXRIPBinding_tccpj"), SubResource("OpenXRIPBinding_fy6kt"), SubResource("OpenXRIPBinding_otqkp"), SubResource("OpenXRIPBinding_y5rhh"), SubResource("OpenXRIPBinding_7vil7"), SubResource("OpenXRIPBinding_rnsnc"), SubResource("OpenXRIPBinding_s4j41"), SubResource("OpenXRIPBinding_6hhy5"), SubResource("OpenXRIPBinding_k5fnk"), SubResource("OpenXRIPBinding_7m5yb")]
-
 [sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_syf68"]
+action = SubResource("OpenXRAction_jm73m")
+binding_path = "/user/hand/left/input/squeeze/value"
+
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_3s6x8"]
+action = SubResource("OpenXRAction_jm73m")
+binding_path = "/user/hand/right/input/squeeze/value"
+
+[sub_resource type="OpenXRInteractionProfile" id="OpenXRInteractionProfile_61jyj"]
+interaction_profile_path = "/interaction_profiles/oculus/touch_controller"
+bindings = [SubResource("OpenXRIPBinding_tccpj"), SubResource("OpenXRIPBinding_fy6kt"), SubResource("OpenXRIPBinding_otqkp"), SubResource("OpenXRIPBinding_y5rhh"), SubResource("OpenXRIPBinding_7vil7"), SubResource("OpenXRIPBinding_rnsnc"), SubResource("OpenXRIPBinding_s4j41"), SubResource("OpenXRIPBinding_6hhy5"), SubResource("OpenXRIPBinding_k5fnk"), SubResource("OpenXRIPBinding_7m5yb"), SubResource("OpenXRIPBinding_esapc"), SubResource("OpenXRIPBinding_syf68"), SubResource("OpenXRIPBinding_3s6x8")]
+
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_l56jk"]
 action = SubResource("OpenXRAction_8abnq")
 binding_path = "/user/hand/left/input/grip/pose"
 
-[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_3s6x8"]
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_ubjiv"]
 action = SubResource("OpenXRAction_8abnq")
 binding_path = "/user/hand/right/input/grip/pose"
 
-[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_61jyj"]
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_r0gq1"]
 action = SubResource("OpenXRAction_0v431")
 binding_path = "/user/hand/left/input/aim/pose"
 
-[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_l56jk"]
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_opbwx"]
 action = SubResource("OpenXRAction_0v431")
 binding_path = "/user/hand/right/input/aim/pose"
 
-[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_ubjiv"]
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_xy7es"]
 action = SubResource("OpenXRAction_66r02")
 binding_path = "/user/hand/right/input/select/click"
 
-[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_r0gq1"]
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_rufaw"]
 action = SubResource("OpenXRAction_jjtsd")
 binding_path = "/user/hand/right/input/menu/click"
 
-[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_opbwx"]
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_jom3m"]
 action = SubResource("OpenXRAction_kurxu")
 binding_path = "/user/hand/left/input/select/click"
 
-[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_xy7es"]
+[sub_resource type="OpenXRIPBinding" id="OpenXRIPBinding_6gjlt"]
 action = SubResource("OpenXRAction_n77he")
 binding_path = "/user/hand/left/input/menu/click"
 
-[sub_resource type="OpenXRInteractionProfile" id="OpenXRInteractionProfile_rufaw"]
+[sub_resource type="OpenXRInteractionProfile" id="OpenXRInteractionProfile_p8rgy"]
 interaction_profile_path = "/interaction_profiles/khr/simple_controller"
-bindings = [SubResource("OpenXRIPBinding_syf68"), SubResource("OpenXRIPBinding_3s6x8"), SubResource("OpenXRIPBinding_61jyj"), SubResource("OpenXRIPBinding_l56jk"), SubResource("OpenXRIPBinding_ubjiv"), SubResource("OpenXRIPBinding_r0gq1"), SubResource("OpenXRIPBinding_opbwx"), SubResource("OpenXRIPBinding_xy7es")]
+bindings = [SubResource("OpenXRIPBinding_l56jk"), SubResource("OpenXRIPBinding_ubjiv"), SubResource("OpenXRIPBinding_r0gq1"), SubResource("OpenXRIPBinding_opbwx"), SubResource("OpenXRIPBinding_xy7es"), SubResource("OpenXRIPBinding_rufaw"), SubResource("OpenXRIPBinding_jom3m"), SubResource("OpenXRIPBinding_6gjlt")]
 
 [resource]
-action_sets = [SubResource("OpenXRActionSet_jm73m")]
-interaction_profiles = [SubResource("OpenXRInteractionProfile_esapc"), SubResource("OpenXRInteractionProfile_rufaw")]
+action_sets = [SubResource("OpenXRActionSet_4vcgu")]
+interaction_profiles = [SubResource("OpenXRInteractionProfile_61jyj"), SubResource("OpenXRInteractionProfile_p8rgy")]

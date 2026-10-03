@@ -4,6 +4,8 @@ extends Node3D
 
 const RigScript := preload("res://src/vr/pc_vr_rig.gd")
 const InputReader := preload("res://src/vr/pc_vr_input.gd")
+const ArtAsset := preload("res://art/scripts/art_asset.gd")
+const START := Vector3(-1.3, .95, -6.0)
 var simulated := false
 var with_art := true
 var world: GameWorld
@@ -31,6 +33,10 @@ func _ready() -> void:
 			startup_failed = true
 			_show_failure()
 			return
+		if not floor_reference_supported(interface.get_play_area_mode()):
+			startup_failed = true
+			_show_failure("Runtime nie udostępnił śledzenia względem podłogi.\nUstaw poziom podłogi/obszar w goglach i uruchom podgląd ponownie.")
+			return
 		get_viewport().use_xr = true
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 		Engine.physics_ticks_per_second = 90
@@ -41,6 +47,8 @@ func _ready() -> void:
 	_build_preview()
 	if simulated:
 		rig.head.position.y = 1.65
+		rig.left.position = Vector3(-.22, 1.2, -.35)
+		rig.right.position = Vector3(.22, 1.2, -.35)
 		if DisplayServer.get_name() != "headless":
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		_show_simulation_help()
@@ -65,7 +73,7 @@ func _build_preview() -> void:
 	var actor := world.player()
 	var arena: Dictionary = world.arenas[&"valus"]
 	var xf: Transform3D = arena.xf
-	actor.global_position = xf * ValusArena.PLAYER_START
+	actor.global_position = xf * START
 	actor.velocity = Vector3.ZERO
 	actor.visual.hide()
 	actor.reset_physics_interpolation()
@@ -81,13 +89,38 @@ func _build_preview() -> void:
 	rig.name = "PcVrRig"
 	rig.auto_step = false
 	add_child(rig)
-	rig.global_basis = xf.basis
+	rig.global_basis = xf.basis * Basis(Vector3.UP, PI)
 	rig.setup(actor)
 	rig.exit_requested.connect(func() -> void: get_tree().quit())
 	# Weather uses the actual headset observer, without the third-person camera.
 	world.refs.camera = rig.head
 	GraphicsQuality.apply(world, "low")
 	world.refresh_climate(true)
+	_build_approach(xf)
+
+
+static func floor_reference_supported(mode: int) -> bool:
+	return mode in [XRInterface.XR_PLAY_AREA_STAGE, XRInterface.XR_PLAY_AREA_ROOMSCALE]
+
+
+func _build_approach(xf: Transform3D) -> void:
+	# A few existing stones frame the approach while leaving the calf corridor clear.
+	if with_art:
+		for spec: Array in [["rock_03", Vector3(-5.3, 0, -5.0), .65], ["ruin_column", Vector3(3.7, 0, -5.5), .5], ["rock_01", Vector3(4.8, 0, -2.5), .45]]:
+			var art := ArtAsset.new()
+			art.model_id = spec[0]
+			art.collidable = false
+			world.region.add_child(art)
+			art.global_transform = xf * Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * float(spec[2])), spec[1])
+			for mesh: MeshInstance3D in art.find_children("*", "MeshInstance3D", true, false):
+				mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var sign := Label3D.new()
+	sign.text = "Futro na tylnej stronie łydki\nDotknij dłonią i przytrzymaj boczny przycisk.\nPociągnij dłoń w dół, aby się podciągnąć."
+	sign.font_size = 28
+	sign.pixel_size = .004
+	sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	world.region.add_child(sign)
+	sign.global_position = xf * Vector3(-3.5, 1.8, -2.0)
 
 
 func _physics_process(delta: float) -> void:
@@ -107,6 +140,9 @@ func _simulation_frame() -> Dictionary:
 	var move := Vector2(float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)), float(Input.is_physical_key_pressed(KEY_W)) - float(Input.is_physical_key_pressed(KEY_S)))
 	var turn := float(Input.is_physical_key_pressed(KEY_E)) - float(Input.is_physical_key_pressed(KEY_Q))
 	return {"move": move, "turn": turn, "confirm": Input.is_physical_key_pressed(KEY_SPACE), "back": false,
+		"height": float(Input.is_physical_key_pressed(KEY_PAGEUP)) - float(Input.is_physical_key_pressed(KEY_PAGEDOWN)),
+		"left_grip": 1.0 if Input.is_physical_key_pressed(KEY_F) else 0.0,
+		"right_grip": 1.0 if Input.is_physical_key_pressed(KEY_G) else 0.0,
 		"recenter": Input.is_physical_key_pressed(KEY_Y), "pause": Input.is_physical_key_pressed(KEY_X), "left_tracked": true, "right_tracked": true}
 
 
@@ -137,7 +173,7 @@ static func _freeze_physics(root: Node) -> void:
 		_freeze_physics(child)
 
 
-func _show_failure() -> void:
+func _show_failure(reason := "") -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	var panel := VBoxContainer.new()
@@ -147,6 +183,8 @@ func _show_failure() -> void:
 	layer.add_child(panel)
 	var label := Label.new()
 	label.text = "Nie uruchomiono OpenXR.\nPołącz gogle z komputerem i uruchom Uruchom-VR.bat.\nSprawdź aktywny runtime OpenXR w aplikacji gogli.\nGra nie zmienia sterowników ani ustawień systemu."
+	if not reason.is_empty():
+		label.text = reason
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	panel.add_child(label)
 	var button := Button.new()
@@ -162,7 +200,7 @@ func _show_simulation_help() -> void:
 	add_child(layer)
 	_desktop_status = Label.new()
 	_desktop_status.position = Vector2(16, 16)
-	_desktop_status.text = "SYMULACJA NA MONITORZE — BEZ GOGLI\nSpacja: gotowość   WASD: chód   Q/E: obrót\nMysz: widok   Y: wycentruj   X: pauza   Esc: wyjdź"
+	_desktop_status.text = "SYMULACJA NA MONITORZE — BEZ GOGLI\nSpacja: gotowość   WASD: chód   Q/E: obrót\nMysz: widok   Y: wycentruj   X: pauza\nPageUp/Down w pauzie: wysokość   F/G: chwyt   Esc: wyjdź"
 	layer.add_child(_desktop_status)
 
 

@@ -17,6 +17,7 @@ const SPECS := {
 	"back": [OpenXRAction.OPENXR_ACTION_BOOL, [RIGHT], "Back"],
 	"recenter": [OpenXRAction.OPENXR_ACTION_BOOL, [LEFT], "Recenter"],
 	"pause": [OpenXRAction.OPENXR_ACTION_BOOL, [LEFT], "Pause"],
+	"grab": [OpenXRAction.OPENXR_ACTION_FLOAT, [LEFT, RIGHT], "Hold fur with grip"],
 }
 const TOUCH_BINDINGS := [
 	["grip_pose", LEFT + "/input/grip/pose"], ["grip_pose", RIGHT + "/input/grip/pose"],
@@ -26,6 +27,7 @@ const TOUCH_BINDINGS := [
 	["recenter", LEFT + "/input/y/click"], ["pause", LEFT + "/input/x/click"],
 	# This is a legal core left-hand path. X remains available if runtime owns menu.
 	["pause", LEFT + "/input/menu/click"],
+	["grab", LEFT + "/input/squeeze/value"], ["grab", RIGHT + "/input/squeeze/value"],
 ]
 const SIMPLE_BINDINGS := [
 	["grip_pose", LEFT + "/input/grip/pose"], ["grip_pose", RIGHT + "/input/grip/pose"],
@@ -80,7 +82,7 @@ func _verify(action_map: OpenXRActionMap) -> void:
 	check(action_map.get_interaction_profile_count() == 2, "Touch plus simple fallback only")
 	var action_set := action_map.get_action_set(0)
 	check(action_set.resource_name == "pc_vr", "registered set name")
-	check(action_set.get_action_count() == 8, "eight contract actions")
+	check(action_set.get_action_count() == 9, "nine contract actions")
 	var actions := {}
 	for action: OpenXRAction in action_set.actions:
 		var name := action.resource_name
@@ -113,7 +115,7 @@ func _verify_input() -> void:
 	check(ClassDB.class_has_method("XRController3D", "get_is_active"), "engine active API")
 	check(ClassDB.class_has_method("XRController3D", "get_has_tracking_data"), "engine current tracking API")
 	var empty := InputReader.read(null, null)
-	check(empty.size() == 8 and empty.move == Vector2.ZERO and empty.turn == 0.0, "missing controllers neutral")
+	check(empty.size() == 11 and empty.move == Vector2.ZERO and empty.turn == 0.0 and empty.height == 0.0 and empty.left_grip == 0.0 and empty.right_grip == 0.0, "missing controllers neutral")
 	check(not empty.confirm and not empty.back and not empty.recenter and not empty.pause, "missing buttons neutral")
 	var origin := XROrigin3D.new()
 	root.add_child(origin)
@@ -145,25 +147,34 @@ func _verify_input() -> void:
 	left_tracker.set_input(&"pause", true)
 	right_tracker.set_input(&"confirm", true)
 	right_tracker.set_input(&"back", true)
+	left_tracker.set_input(&"grab", .8)
+	right_tracker.set_input(&"grab", .7)
 	var sample := InputReader.read(left, right)
 	check(sample.left_tracked and sample.right_tracked, "simulated engine trackers active/current")
 	check(sample.move.is_equal_approx(Vector2(0.25, 0.75)) and is_equal_approx(sample.turn, 0.6), "handed axes and positive forward")
 	check(sample.confirm and sample.back and sample.recenter and sample.pause, "button levels read")
+	check(is_equal_approx(sample.left_grip, .8) and is_equal_approx(sample.right_grip, .7) and is_equal_approx(sample.height, .2), "independent squeeze strengths and height axis")
 	check(InputReader.read(left, right) == sample, "reader does not latch button edges")
 	left_tracker.invalidate_pose(&"grip")
 	sample = InputReader.read(left, right)
 	check(not sample.left_tracked and sample.right_tracked, "pose invalidation is detected")
 	check(sample.move == Vector2.ZERO and not sample.recenter and not sample.pause, "stale left inputs zeroed")
+	check(sample.left_grip == 0.0 and is_equal_approx(sample.right_grip, .7), "lost left grip cleared, other retained")
 	check(sample.confirm and sample.back and sample.turn > 0.5, "other tracked hand retained")
 	left_tracker.set_pose(&"grip", Transform3D.IDENTITY, Vector3.ZERO, Vector3.ZERO, XRPose.XR_TRACKING_CONFIDENCE_HIGH)
 	right_tracker.invalidate_pose(&"grip")
 	sample = InputReader.read(left, right)
 	check(not sample.right_tracked and sample.left_tracked, "right tracking loss")
 	check(sample.turn == 0.0 and not sample.confirm and not sample.back, "stale right inputs zeroed")
+	check(sample.right_grip == 0.0 and sample.height == 0.0, "lost right grip and height axis cleared")
 	left_tracker.set_input(&"move", Vector2(NAN, INF))
 	check(InputReader.read(left, right).move == Vector2.ZERO, "non finite axis neutral")
 	left_tracker.set_input(&"move", Vector2(5.0, -5.0))
 	check(is_equal_approx(InputReader.read(left, right).move.length(), 1.0), "oversized axis bounded")
+	left_tracker.set_input(&"grab", NAN)
+	check(InputReader.read(left, right).left_grip == 0.0, "nonfinite grip neutral")
+	left_tracker.set_input(&"grab", 5.0)
+	check(InputReader.read(left, right).left_grip == 1.0, "oversized grip bounded")
 	XRServer.remove_tracker(left_tracker)
 	XRServer.remove_tracker(right_tracker)
 	origin.free()

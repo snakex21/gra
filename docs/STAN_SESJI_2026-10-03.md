@@ -1,9 +1,10 @@
 # Stan projektu po sesji — 3 października 2026
 
-Sesja obejmuje Etapy 13–17: modele Blendera i przenośny autozapis, broń,
+Sesja obejmuje Etapy 13–18: modele Blendera i przenośny autozapis, broń,
 geografię i wydajność, czas i pogodę, opcjonalnego kompana z zapisem
-sesji i powtórkami, osobny prototyp PCVR i kolejną oprawę roślinności.
-Zakres opisują `ETAP_13.md`–`ETAP_17.md` oraz `ENVIRONMENT_DRESSING.md`.
+sesji i powtórkami, osobny prototyp PCVR, kolejną oprawę roślinności
+oraz poprawki wysokości i ręczny chwyt w VR.
+Zakres opisują `ETAP_13.md`–`ETAP_18.md` oraz `ENVIRONMENT_DRESSING.md`.
 Gra uruchamia się przez `Uruchom-gre.bat`.
 Po świeżym klonowaniu należy najpierw wykonać
 `python tools/run_local.py install-godot`.
@@ -39,11 +40,15 @@ Po świeżym klonowaniu należy najpierw wykonać
   uczestnika zachowuje walkę, gdy drugi pozostaje żywy.
 - Prototyp PCVR ma osobną scenę terenu doliny z zamrożonym Valusem i launcher `Uruchom-VR.bat`.
   Wbudowany OpenXR obsługuje śledzenie głowy/kontrolerów oraz podstawy ruchu.
-  Startuje w arenie Valusa; bramka A, chód 1,5 m/s, obrót o 30°, wycentrowanie,
+  Startuje przy tylnym futrze łydki Valusa; bramka A, chód 1,5 m/s, obrót o 30°, wycentrowanie,
   pauza, blokada przy utracie śledzenia i winieta tworzą prototyp komfortu.
   Renderer VR to Mobile/Vulkan; zwykła gra pozostaje w Compatibility.
-  Nie potwierdzono działania ani wydajności w rzeczywistych goglach.
-  [Dokładny zakres i stan sprawdzeń](ETAP_17.md).
+  Pierwsza próba na Quest 2, na stojąco, potwierdziła wejście i subiektywnie
+  dobrą wydajność. Zgłoszone problemy wysokości, rąk i pustego startu prowadzą
+  do Etapu 18: punkt oczu 1,70 m z regulacją w pauzie, ręczny chwyt i podciąganie,
+  wytrzymałość oraz własne dłonie/przedramiona i miecz do podnoszenia oraz upuszczania.
+  Odzyskiwanie odkłada go przy pasie, a obrażenia broni nie są jeszcze częścią PCVR.
+  [Aktualny zakres i stan sprawdzeń](ETAP_18.md).
 
 ## Lokalny model — stan badawczy
 
@@ -86,8 +91,21 @@ Mapa akcji ma 147/147 poprawnych kontroli. Headless przechodzą 6 grup testów
 rigów oraz 2 grupy sceny; rig i scena przechodzą też z natywnym Compatibility
 bez błędów i zgłoszeń wycieków. Kadry gotowości i rozpoczętej symulacji 1600×900
 są czytelne. Zestaw uruchamia `python tools/run_vr_tests.py` oraz `--native`.
-Tracking, obraz obu oczu, Quest 2/Link, zgodność starszego Quest 1 oraz wydajność
-i komfort pozostają niesprawdzone w goglach. [Weryfikacja PCVR](ETAP_17.md).
+Późniejsza pierwsza próba użytkownika odbyła się rzeczywiście na Quest 2.
+Nie jest pomiarem czasu klatki ani potwierdzeniem komfortu nowego chwytu.
+
+Etap 18: import edytora oraz końcowa mapa dziewięciu akcji z 165 kontrolami
+odczytu przechodzą; wcześniejsza generacja z zapisem i odczytem miała 166.
+Rig i scena przechodzą ścisłe testy headless oraz natywnego Compatibility.
+Wspinanie ma 40 kontroli w każdym trybie: prawdziwa łydka Valusa, dwie ręce,
+integracja miecza, grawitacja po puszczeniu oraz brak zawisu i dryfu przy ścianie.
+Dłonie mają 34 kontrole headless i 36 natywnych; fizyczny miecz — 40 w obu,
+z rzeczywistą podłogą, ścianą i sprawdzeniem prędkości rzutu. Wszystkie te
+końcowe wyniki są bez błędów skryptów, `ERROR` i zgłoszeń wycieków.
+Regresja `main_layout` potwierdza Nową Grę, przenośne Kontynuuj i starszy checkpoint.
+Obejrzano dwa nowe kadry sceny oraz dwa dłoni. Nowych interakcji nie sprawdzono
+jeszcze ponownie w Quest 2. Quest 1 nie ma deklarowanego wsparcia.
+[Weryfikacja PCVR](ETAP_18.md).
 
 Lokalne testy roślinności `environment_dressing` i `landscape_v5` przechodzą
 headless oraz w natywnym Compatibility. Test GPU uwzględnia precyzję koloru
@@ -122,9 +140,9 @@ zakończeniu jego wykonania. Lokalne wyniki Windows nie potwierdzają wyniku Lin
 4. Rozwinąć nawigację kompana, sterowanie drugim graczem i synchronizację sieciową.
    Obecny kompan pieszy nie stanowi pełnego co-op. Badania modelu kontynuować na
    reprezentatywnych stanach z oceną jakości, kosztu i warunków dystrybucji.
-5. Zweryfikować prototyp PCVR na goglach i docelowym PC: runtime, oba oczy,
-   tracking, recenter, pauzę, komfort oraz czas klatki. Potem rozwinąć interakcje
-   rękami, ruch kolosa, walkę i Agro. Quest 1 nie ma deklarowanego bieżącego wsparcia.
+5. Powtórzyć próbę nowych interakcji PCVR na Quest 2 i docelowym PC: runtime, oba oczy,
+   wysokość, tracking, recenter, ręczny chwyt, pauzę, komfort oraz czas klatki.
+   Potem rozwinąć ruch kolosa, walkę i Agro. Quest 1 nie ma deklarowanego bieżącego wsparcia.
 
 Ekosystem, sieciowy co-op i pełna kampania VR pozostają do wdrożenia. Wymagania sprzętowe
 trzeba zmierzyć na rzeczywistym starszym sprzęcie; OpenGL 3.3 samo nie gwarantuje FPS.
