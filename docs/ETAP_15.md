@@ -185,6 +185,15 @@ danych gracza, przeszła od zera import oraz siedem scen: `texture_budgets`,
 `climate_shelter` i `landscape_v5`. Wszystkie zakończyły się kodem 0 bez błędów
 w logach. Kopia, cache i logi tej weryfikacji zostały w `tests/output/`.
 
+Pełny historyczny runner zgłosił przy zamykaniu ostrzeżenia `ObjectDB`, pięć
+zasobów nadal w użyciu oraz `PagedAllocator`, mimo wyniku 197 PASS i kodu 0.
+Pojedynczy test tego runnera uruchomiony z `--verbose` oraz nowe sceny klimatu
+zamykają się czysto. Nie ustalono źródła ostrzeżeń pełnego przebiegu; wymagają
+osobnej diagnozy sprzątania konkretnej próby. Raport historycznych metryk oznaczył
+też osiem różnic względem wzorców Etapu 2/4. Cały przebieg potwierdza zachowanie
+mechanik, ale nie jest dowodem braku wycieków we wszystkich starszych testach
+ani pomiarem wpływu nowej oprawy na FPS.
+
 ## Dalszy zakres
 
 Pogoda jest obecnie kosmetyczna. Deszcz nie ma fizycznej kolizji, osobnego
