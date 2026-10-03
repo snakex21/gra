@@ -2,7 +2,7 @@
 
 Open-source'owa reimplementacja/remake gry w duchu *Shadow of the Colossus*, która rozwija
 elementy ograniczone w oryginale sprzętem PS2, czasem produkcji albo wycięte z gry.
-Silnik: **Godot 4.4+** (GDScript, a Zig dopiero tam, gdzie profiler pokaże realną potrzebę).
+Silnik: **Godot 4.6.3** (GDScript, a Zig dopiero tam, gdzie profiler pokaże realną potrzebę).
 Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych assetów oryginału.
 
 Nadrzędny kierunek: samotność, ogrom i tajemnicza Zakazana Kraina. Świat ma cykl
@@ -11,7 +11,7 @@ Ekosystem, ukryte miejsca i zagadki wymagają dalszej pracy. Opcjonalny kompan,
 docelowa kooperacja i VR mają zachować ten charakter.
 [Wizja i stan realizacji](docs/WIZJA_GRY.md).
 
-## Stan: Etap 16 — opcjonalny kompan i jego powtórki
+## Stan: Etap 17 — osobny prototyp PCVR
 
 - Milestone 1 (wspinanie po poruszającym się kolosie): [docs/MILESTONE_1.md](docs/MILESTONE_1.md)
 - Etap 2 (równowaga na kolosie, upadki, kamera, przejścia): [docs/ETAP_2.md](docs/ETAP_2.md)
@@ -29,6 +29,7 @@ docelowa kooperacja i VR mają zachować ten charakter.
 - Etap 14 (modele broni, dłonie i naciąg łuku, poprawiony Wędrowiec, wspólne drogi Krainy, renderer Compatibility i profile kosztu grafiki): [docs/ETAP_14.md](docs/ETAP_14.md)
 - Etap 15 (utrwalony cykl dnia i nocy, pogoda regionów, wpływ Dormina, nowe drzewa, skały i ruiny z Blendera): [docs/ETAP_15.md](docs/ETAP_15.md)
 - Etap 16 (opcjonalny kompan pieszy, bezpieczne dołączanie, wsparcie łukiem, zapis sesji i dwa strumienie powtórki): [docs/ETAP_16.md](docs/ETAP_16.md)
+- Etap 17 (osobna scena PCVR przez wbudowany OpenXR, dolina i Valus do sprawdzania skali): [docs/ETAP_17.md](docs/ETAP_17.md)
 - Architektura: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md)
 - Stan po sesji 3 października 2026 i dalsze zadania: [docs/STAN_SESJI_2026-10-03.md](docs/STAN_SESJI_2026-10-03.md)
 
@@ -43,6 +44,10 @@ mgła i pustynny pył zmieniają się płynnie, a kolejne zwycięstwa wzmacniaj�
 atmosferyczną anomalię Dormina. Czas i pogoda przetrwają zapis świata oraz
 przewijanie powtórek. Pauza zatrzymuje zegar; noc zachowuje czytelność terenu.
 Nowa oprawa krajobrazu korzysta ze wspólnych atlasów, trzech LOD-ów i MultiMesh.
+Zintegrowana oprawa roślinna dodaje płynne granice biomów, gęstość lasów oraz
+kolonie istniejącej trawy i krzewów, z wyłączeniem dróg i aren. Profile grafiki
+ograniczają widoczność; kolizje i mechaniki pozostają takie same. Dodatkowe
+węzły i bufory nadal mają koszt pamięci. [Zakres i budżety](docs/ENVIRONMENT_DRESSING.md).
 
 Ustawienia oferują samotną podróż, zwykłego kompana AI oraz eksperymentalny
 tryb z lokalnym modelem. **Domyślnie kompan jest wyłączony.** Zwykły kompan
@@ -81,7 +86,9 @@ Areny mają warstwę assetów (paczka Saltward, CC0); `NO_ART=1` wyłącza ich o
 
 Nowe mechaniki i modele są prototypami. To nie jest ukończone odtworzenie 1:1.
 Wycięte kolosy mają własne interpretacje projektu. Opcjonalny kompan AI działa
-w kampanii; sieciowy co-op, sterowanie drugim graczem i VR pozostają do wdrożenia.
+w kampanii; sieciowy co-op i sterowanie drugim graczem pozostają do wdrożenia.
+VR ma osobny prototyp skali i ruchu; pełna kampania i wspinanie w goglach
+wymagają dalszej pracy oraz testów na urządzeniu.
 
 Co działa w sandboxie (`scenes/sandbox.tscn`):
 
@@ -126,6 +133,20 @@ python tools/run_local.py godot
 python tools/run_local.py godot --editor
 ```
 
+Osobny prototyp PCVR: **`Uruchom-VR.bat`** / `python tools/run_vr.py`.
+Uruchamia `scenes/pc_vr.tscn` przez Mobile/Vulkan i wbudowany OpenXR Godota 4.6.3.
+Startuje w arenie zamrożonego Valusa; A potwierdza gotowość, lewy drążek chodzi,
+prawy obraca skokowo, Y centruje położenie, X pauzuje, B wychodzi.
+`python tools/run_vr.py --simulate` daje jawny podgląd klawiaturą/myszą bez gogli.
+Potrzebne jest działające połączenie gogli z komputerem i zewnętrzny runtime;
+launcher nie instaluje go ani nie zmienia systemowego OpenXR. Prototyp nie
+zapisuje kampanii i nie potrzebuje modelu AI. Nie potwierdzono jeszcze działania
+ani wydajności w goglach. Aktualne Meta Link wymienia Quest 2; Quest 1 traktujemy
+wyłącznie jako niegwarantowaną próbę zgodności ze starszym środowiskiem.
+[Uruchamianie, oficjalne źródła i ograniczenia PCVR](docs/ETAP_17.md).
+
+Poniższa tabela dotyczy zwykłej gry na monitorze:
+
 | Akcja | Klawiatura / mysz | Pad |
 |---|---|---|
 | Ruch | WASD | lewy drążek |
@@ -152,6 +173,22 @@ python tools/run_local.py godot --editor
 | Nurkowanie (trzymaj w wodzie; oddech 14 s) | Ctrl / Z | B |
 
 ## Testy
+
+Etap 17 — prototyp PCVR bez HMD oraz zintegrowana oprawa roślinności:
+
+```bash
+python tools/run_vr_tests.py
+python tools/run_vr_tests.py --native
+python tools/run_local.py godot --xr-mode off --headless tests/environment_dressing.tscn
+python tools/run_local.py godot --xr-mode off --rendering-method gl_compatibility tests/environment_dressing.tscn
+python tools/run_local.py godot --xr-mode off --rendering-method gl_compatibility tests/landscape_v5.tscn
+```
+
+Mapa akcji: 147/147; rig: 6 grup i scena: 2 grupy — PASS. Obie sceny przechodzą
+także z natywnym Compatibility bez błędów i zgłoszeń wycieków. Sprawdzono kadry
+symulacji 1600×900 oraz lokalne testy i kadry roślinności. To testy kodu,
+kolizji i renderowania na monitorze; rzeczywiste gogle, tracking i FPS PCVR
+pozostają do sprawdzenia. [Dokładne wyniki i ograniczenia](docs/ETAP_17.md).
 
 Etap 16 — ścisły zestaw kompana oraz granica lokalnych decyzji:
 
@@ -248,6 +285,7 @@ src/core/       warstwy fizyki, liczniki wydajności (Perf)
 src/game/       GameWorld (ciągły świat, budzenie kolosów), GameState (postęp, sloty), Settings, ReplayViewer
 src/input/      PlayerActions (abstrakcyjne akcje), FlatInputSource, ActionReplay (nagrywanie / powtórki), domyślne bindy
 src/companion/  CompanionController, seeded CompanionPolicy, opcjonalny asynchroniczny LocalDecisionClient
+src/vr/         osobny PcVrScene/PcVrRig/PcVrInput, mapa akcji OpenXR; prototyp skali i ruchu
 src/player/     PlayerCharacter (lokomocja + wspinanie + stanie na kolosie), PlayerRiding, Stamina, Balance, FallImpact, PlayerVisual
 src/climb/      ClimbPatch (chwytalny kształt), SurfaceAnchor (punkt na ruchomym ciele), ClimbQuery
 src/colossus/   Colossus (baza), BodySegment (collider na kości), brain/ (Brain, Intent, Observation, UtilityBrain)
@@ -267,7 +305,7 @@ src/world/      TerrainKit, AgroArena, ValusArena, QuadratusArena, GaiusArena, P
                 ArenaArt — warstwa wizualna z assetów (bez wpływu na gameplay)
 src/camera/     PlayerCamera
 src/ui/         PlayerHud, GameMenu (tytuł, pauza, ustawienia)
-scenes/         game (cała gra), sandbox, agro_test, valus_arena, quadratus_arena, gaius_arena, phaedra_arena, hydrus_arena
+scenes/         game (cała gra), pc_vr (osobny prototyp), sandbox, agro_test, sceny prób kolosów
 models/ textures/ materials/ environment/ art/  assety (CC0) od agenta graficznego: Saltward, Ancient Valley, Sentinel v2, Stonewater, Saltwind, Mirewood
 tests/          testy headless + wizualny smoke test
 tools/ai/       eksperymentalny lokalny backend decyzji; pobrane wagi/runtime w pomijanym data/ai/

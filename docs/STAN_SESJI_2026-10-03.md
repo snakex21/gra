@@ -1,8 +1,9 @@
 # Stan projektu po sesji — 3 października 2026
 
-Sesja obejmuje Etapy 13–16: modele Blendera i przenośny autozapis, broń,
-geografię i wydajność, czas i pogodę oraz opcjonalnego kompana z zapisem
-sesji i powtórkami. Zakres opisują `ETAP_13.md`–`ETAP_16.md`.
+Sesja obejmuje Etapy 13–17: modele Blendera i przenośny autozapis, broń,
+geografię i wydajność, czas i pogodę, opcjonalnego kompana z zapisem
+sesji i powtórkami, osobny prototyp PCVR i kolejną oprawę roślinności.
+Zakres opisują `ETAP_13.md`–`ETAP_17.md` oraz `ENVIRONMENT_DRESSING.md`.
 Gra uruchamia się przez `Uruchom-gre.bat`.
 Po świeżym klonowaniu należy najpierw wykonać
 `python tools/run_local.py install-godot`.
@@ -24,6 +25,11 @@ Po świeżym klonowaniu należy najpierw wykonać
 - Cykl dobowy i regionalna pogoda działają w kampanii. Zegar, fronty oraz anomalia
   Dormina przetrwają zapis i przewijanie. Krajobraz ma nowe modele drzew,
   skał i ruin, wspólny atlas, MultiMesh i trzy LOD-y. Profile grafiki ograniczają koszt.
+- Zintegrowano oprawę roślinności z płynnymi granicami biomów i gęstością lasów
+  oraz koloniami istniejącej trawy i krzewów. Wspólne assety i LOD-y ograniczają
+  koszt widocznej grafiki; drogi, areny, kolizje i wysokości terenu pozostają
+  niezmienione. Profile jakości nie redukują przydzielonych wcześniej węzłów
+  i buforów. [Zakres oraz budżety](ENVIRONMENT_DRESSING.md).
 - Kompan AI jest opcjonalny, domyślnie wyłączony i pieszy. Podąża, omija ściany
   i przepaści, unika ataków oraz rzadko pomaga łukiem. Ziarno polityki daje
   różne, odtwarzalne decyzje bez modelu uczenia maszynowego.
@@ -31,6 +37,13 @@ Po świeżym klonowaniu należy najpierw wykonać
   strumienie akcji, zmiany trybu i przegrupowania. Odtwarzanie nie uruchamia modelu;
   stare checkpointy i nagrania pozostają solo. Śmierć lub odejście jednego
   uczestnika zachowuje walkę, gdy drugi pozostaje żywy.
+- Prototyp PCVR ma osobną scenę terenu doliny z zamrożonym Valusem i launcher `Uruchom-VR.bat`.
+  Wbudowany OpenXR obsługuje śledzenie głowy/kontrolerów oraz podstawy ruchu.
+  Startuje w arenie Valusa; bramka A, chód 1,5 m/s, obrót o 30°, wycentrowanie,
+  pauza, blokada przy utracie śledzenia i winieta tworzą prototyp komfortu.
+  Renderer VR to Mobile/Vulkan; zwykła gra pozostaje w Compatibility.
+  Nie potwierdzono działania ani wydajności w rzeczywistych goglach.
+  [Dokładny zakres i stan sprawdzeń](ETAP_17.md).
 
 ## Lokalny model — stan badawczy
 
@@ -66,6 +79,29 @@ barierze renderowania fixture. Ścisły zestaw uruchamia
 `python tools/run_companion_tests.py` i odrzuca błędy skryptów przy kodzie 0.
 Weryfikację klimatu i krajobrazu opisuje `ETAP_15.md`.
 
+Natywny start Etapu 17 w Mobile/Vulkan na RX 7900 XTX wykrył istniejący runtime
+Oculus 1.208.0. Brak HMD zwrócił `XR_ERROR_FORM_FACTOR_UNAVAILABLE`; scena
+pokazała komunikat braku gogli, bez błędów skryptów, a próba zakończyła się kodem 0.
+Mapa akcji ma 147/147 poprawnych kontroli. Headless przechodzą 6 grup testów
+rigów oraz 2 grupy sceny; rig i scena przechodzą też z natywnym Compatibility
+bez błędów i zgłoszeń wycieków. Kadry gotowości i rozpoczętej symulacji 1600×900
+są czytelne. Zestaw uruchamia `python tools/run_vr_tests.py` oraz `--native`.
+Tracking, obraz obu oczu, Quest 2/Link, zgodność starszego Quest 1 oraz wydajność
+i komfort pozostają niesprawdzone w goglach. [Weryfikacja PCVR](ETAP_17.md).
+
+Lokalne testy roślinności `environment_dressing` i `landscape_v5` przechodzą
+headless oraz w natywnym Compatibility. Test GPU uwzględnia precyzję koloru
+half-float, tolerancję 1/1024 i identyczność LOD. Trzy kadry odświeżono;
+`art/screenshots/landscape_v5/understory_close.png` pokazuje rzeczywiste kępy.
+Świat ma 7 531 rozmieszczeń w 2 454 batchach pokrywy roślinnej, 3 663 węzły
+MultiMesh całego krajobrazu, 36 wspólnych siatek i 266 zadań budowy.
+Low/balanced/high udostępniają 2 982 / 5 362 / 7 531 widocznych rozmieszczeń
+w skali całego świata; to nie pomiar FPS ani jednoczesnych draw calli.
+Regresje `main_layout`, `climate_persistence` i `graphics_quality` przechodzą;
+checkpoint profili pozostaje identyczny (29 060 bajtów). Geometria 21 tras:
+4 269 próbek, 0 brakujących podłóg. Test geometrii nie jest przejściem kampanii.
+[Lokalne i historyczne wyniki oprawy](ENVIRONMENT_DRESSING.md).
+
 Kadry nowych modeli: `art/screenshots/colossi_v3/` i `data/captures/*_v3*.png`.
 Surowe logi, wyniki prób, zapisy gracza, cache i silnik są lokalne, poza Git.
 Workflow GitHub uruchamia regresję i nowe testy; wynik CI należy odczytać po
@@ -86,8 +122,10 @@ zakończeniu jego wykonania. Lokalne wyniki Windows nie potwierdzają wyniku Lin
 4. Rozwinąć nawigację kompana, sterowanie drugim graczem i synchronizację sieciową.
    Obecny kompan pieszy nie stanowi pełnego co-op. Badania modelu kontynuować na
    reprezentatywnych stanach z oceną jakości, kosztu i warunków dystrybucji.
-5. VR rozwijać osobno po ustabilizowaniu interakcji, kamery i komfortu ruchu.
+5. Zweryfikować prototyp PCVR na goglach i docelowym PC: runtime, oba oczy,
+   tracking, recenter, pauzę, komfort oraz czas klatki. Potem rozwinąć interakcje
+   rękami, ruch kolosa, walkę i Agro. Quest 1 nie ma deklarowanego bieżącego wsparcia.
 
-Ekosystem, sieciowy co-op i VR pozostają do wdrożenia. Wymagania sprzętowe
+Ekosystem, sieciowy co-op i pełna kampania VR pozostają do wdrożenia. Wymagania sprzętowe
 trzeba zmierzyć na rzeczywistym starszym sprzęcie; OpenGL 3.3 samo nie gwarantuje FPS.
 Nadrzędny kierunek pozostaje zapisany w `WIZJA_GRY.md`.

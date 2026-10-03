@@ -51,6 +51,16 @@ VR rozwija bezpośrednie odczuwanie skali, wspinaczki i obecności stworzenia.
 Dobór interfejsu, komunikacji partnerów i rozwiązań komfortu ma zachować ciszę
 oraz tajemniczy charakter krainy.
 
+Etap 17 rozpoczyna od osobnej sceny PCVR z terenem doliny i zamrożonym Valusem,
+śledzeniem głowy oraz kontrolerów, ruchem po podłożu i skokowym obrotem.
+Start w arenie Valusa pozwala od razu oceniać skalę. Wykorzystuje wbudowany
+OpenXR; kampania nadal działa w dotychczasowym rendererze Compatibility.
+Wspinanie rękami, walka, Agro i połączenie VR z zapisami kampanii wymagają
+kolejnych prototypów. Działania i komfortu nie potwierdzono jeszcze w goglach.
+Testy mapy akcji, ruchu i sceny oraz natywny podgląd na monitorze przechodzą;
+nie zastępują walidacji urządzenia i obrazu stereoskopowego.
+[Zakres i wymagania PCVR](ETAP_17.md).
+
 ## Dostępność sprzętowa
 
 Oprawa ma być skalowalna również dla starszych kart. Budżety siatek i tekstur,
@@ -72,15 +82,22 @@ rozwija geografię Krainy i dodaje profile kosztu renderowania.
 Etap 15 wprowadza pełny cykl dnia i nocy, płynną pogodę regionów oraz atmosferyczny
 wpływ kolejnych zwycięstw i Dormina. Zegar i warunki są częścią zapisów oraz powtórek.
 Krajobraz zyskuje modele drzew, skał i ruin ze wspólnym atlasem i trzema LOD-ami.
+W bieżącej sesji zintegrowano także płynne przejścia biomów, regionalną gęstość
+lasów i kolonie istniejącej trawy oraz krzewów. Oprawa omija drogi i areny,
+korzysta z LOD-ów i profili jakości oraz nie zmienia terenu ani kolizji.
+[Zakres i koszt roślinności](ENVIRONMENT_DRESSING.md).
 Etap 16 dodaje wybór kompana, bezpieczne dołączanie i odejście, niezależne odrodzenie
 uczestnika oraz zapis jego trybu, RNG i timerów w checkpointach świata. Powtórki
 odtwarzają dwa strumienie akcji, zmiany trybu i przegrupowania bez wywoływania modelu.
+Etap 17 dodaje osobny prototyp PCVR do oceny skali i podstaw ruchu. Jego launcher
+wybiera Mobile/Vulkan, a jawna symulacja klawiaturą/myszą działa w Compatibility.
+Nie zmienia normalnej gry ani systemowego runtime OpenXR.
 
 Ekosystem, eksploracyjne znajdźki i zagadki oraz bardziej rozbudowane reakcje
 regionów i świątyni na śmierć kolosów pozostają do wdrożenia. Pogoda jest obecnie
 kosmetyczna i nie zmienia fizyki walk. Sieciowa kooperacja, sterowanie drugim
-graczem i VR wymagają dalszej pracy. Kompan obecnie porusza się pieszo i stosuje
+graczem i pełna kampania VR wymagają dalszej pracy. Kompan obecnie porusza się pieszo i stosuje
 lokalne omijanie; labirynty i głębokie przerwy w terenie wymagają rozbudowy nawigacji.
 Nie wybrano modelu decyzji do dystrybucji. Modele postaci i reżyseria obecnych
-starć mają oprawę prototypową. [Aktualny etap](ETAP_16.md),
+starć mają oprawę prototypową. [Aktualny etap](ETAP_17.md),
 [stan badań lokalnych modeli](LOCAL_DECISION_MODELS.md).

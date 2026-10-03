@@ -29,7 +29,7 @@ jobs:
           export XDG_CACHE_HOME="$PWD/tools/runtime/engine_cache"
           export TMPDIR="$PWD/tools/runtime/tmp"
           mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$TMPDIR"
-          for scene in stage12 auto_save checkpoint_climb campaign_expansion colossi_v3 travelers_v3 temple_characters_v3 art_integration_v3 paired_arrival weapon_art graphics_quality texture_budgets main_layout forbidden_lands world_climate climate_view climate_persistence climate_shelter landscape_v5; do
+          for scene in stage12 auto_save checkpoint_climb campaign_expansion colossi_v3 travelers_v3 temple_characters_v3 art_integration_v3 paired_arrival weapon_art graphics_quality texture_budgets main_layout forbidden_lands world_climate climate_view climate_persistence climate_shelter; do
             limit=200000
             if [ "$scene" = "forbidden_lands" ]; then limit=660000; fi
             "$GODOT" --headless --fixed-fps 60 --quit-after "$limit" "res://tests/${scene}.tscn"
@@ -39,3 +39,7 @@ jobs:
           python3 tools/run_companion_tests.py --godot "$GODOT"
           python3 tests/test_local_decision.py
           python3 tests/test_local_decision_http.py
+      - name: Verify core PCVR without a headset
+        run: python3 tools/run_vr_tests.py --godot "$GODOT"
+      - name: Verify biome blending and groundcover
+        run: python3 tools/run_environment_tests.py --godot "$GODOT"

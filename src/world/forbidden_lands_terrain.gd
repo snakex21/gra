@@ -63,24 +63,31 @@ static func height_at(x: float, z: float) -> float:
 		return Valley.ground_height(x, z) - .05
 	return natural
 
+static func biome_weights(x: float, z: float) -> Dictionary:
+	# Visual weights only: do not move terrain, routes, collision or arenas.
+	var wx := x + 48.0 * sin(z * .007) + 22.0 * sin((x + z) * .017)
+	var wz := z + 42.0 * sin(x * .006) + 19.0 * cos((z - x) * .015)
+	return {
+		"highland": maxf(1.0 - smoothstep(-770, -530, wx), smoothstep(630, 870, wz)) * smoothstep(-420, -180, wz),
+		"forest": (1.0 - smoothstep(-470, -230, wx)) * (1.0 - smoothstep(-420, -180, wz)) * smoothstep(-1170, -930, wz),
+		"desert": maxf(1.0 - smoothstep(-1170, -930, wz), (1.0 - smoothstep(-1220, -980, wx)) * (1.0 - smoothstep(-1070, -830, wz))),
+		"eastern": smoothstep(580, 820, wx),
+		"volcanic": smoothstep(980, 1220, wx) * (1.0 - smoothstep(180, 420, absf(wz)))
+	}
+
 static func biome_color(x: float, z: float, known_height: float = NAN) -> Color:
-	var variation := .035 * sin(x * .023 + z * .018)
+	var weights := biome_weights(x, z)
+	var variation := .018 * sin(x * .023 + z * .018) + .012 * cos(x * .009 - z * .014)
 	var color := Color(.30, .36, .25)
-	if x < -650 and z > -300 or z > 750:
-		color = Color(.42, .40, .30)
-	if x < -350 and z < -300 and z > -1050:
-		color = Color(.19, .27, .20)
-	if z < -1050 or x < -1100 and z < -950:
-		color = Color(.42, .34, .27)
-	if x > 700:
-		color = Color(.29, .36, .35)
-	if x > 1100 and absf(z) < 300:
-		color = Color(.35, .28, .24)
+	color = color.lerp(Color(.42, .40, .30), weights.highland)
+	color = color.lerp(Color(.19, .27, .20), weights.forest)
+	color = color.lerp(Color(.42, .34, .27), weights.desert)
+	color = color.lerp(Color(.29, .36, .35), weights.eastern)
+	color = color.lerp(Color(.35, .28, .24), weights.volcanic)
 	# Chunk vertices already have a cached height; avoid repeating road/arena
 	# searches for every copy of a triangle corner during world construction.
 	var height := height_at(x, z) if is_nan(known_height) else known_height
-	if height > 38:
-		color = Color(.34, .35, .33)
+	color = color.lerp(Color(.34, .35, .33), smoothstep(30, 58, height))
 	return color + Color(variation, variation, variation, 0)
 
 static func _materials() -> void:
@@ -377,8 +384,7 @@ static func _detail_chunk(root: Node3D, origin: Vector2i) -> void:
 		return
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 330721 + origin.x * 13 + origin.y * 29
-	var forest := origin.x < -350 and origin.y < -300 and origin.y > -1100
-	var count := 24 if forest else 4
+	var count := 32
 	var details := Node3D.new()
 	details.name = "BiomeDetail_%d_%d" % [origin.x, origin.y]
 	root.add_child(details)
@@ -394,6 +400,11 @@ static func _detail_chunk(root: Node3D, origin: Vector2i) -> void:
 			continue
 		p.y = surface_height(p.x, p.z)
 		if p.y < -8:
+			continue
+		var forest_weight: float = biome_weights(p.x, p.z).forest
+		var forest := rng.randf() < forest_weight
+		# Keep open country spacious, feather woodland density across its ecotone.
+		if not forest and rng.randf() > .22:
 			continue
 		var kind: String = ["oak", "wind_tree", "pine", "dead_tree"][rng.randi_range(0, 3)] if forest else ["rock_shelf", "rock_split"][rng.randi_range(0, 1)]
 		var size := rng.randf_range(.8, 1.3) if forest else rng.randf_range(1.3, 2.7)
@@ -413,3 +424,5 @@ static func _detail_chunk(root: Node3D, origin: Vector2i) -> void:
 		var transforms: Array[Transform3D] = []
 		transforms.assign(groups[kind])
 		_landscape_batch(details, kind, Vector3(origin.x + CHUNK * .5, 0, origin.y + CHUNK * .5), transforms)
+
+	EnvironmentGroundcover.append_chunk(details, origin, groups)

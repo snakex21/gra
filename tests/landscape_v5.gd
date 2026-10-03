@@ -66,14 +66,25 @@ func _ready() -> void:
 	var batches := terrain.find_children("*", "MultiMeshInstance3D", true, false)
 	var meshes := {}
 	var instances := 0
+	var groundcover_batches := 0
+	var groundcover_placements := 0
+	var groundcover_visible := {"low": 0, "balanced": 0, "high": 0}
 	for batch: MultiMeshInstance3D in batches:
-		check(batch.material_override == material, "Landscape batch duplicated its shared material")
+		if batch.has_meta(&"groundcover_kind"):
+			groundcover_batches += 1
+			if batch.get_meta(&"groundcover_lod") == 0:
+				groundcover_placements += batch.multimesh.instance_count
+				groundcover_visible.low += maxi(1, ceili(batch.multimesh.instance_count * .35))
+				groundcover_visible.balanced += maxi(1, ceili(batch.multimesh.instance_count * .65))
+				groundcover_visible.high += batch.multimesh.instance_count
+		check(batch.material_override == material or batch.material_override == EnvironmentGroundcover.MATERIAL, "Landscape batch duplicated its shared material")
 		check(batch.visibility_range_end > 0 and batch.visibility_range_end <= 550, "Landscape batch has unbounded visibility")
 		check(batch.multimesh.instance_count > 0, "Landscape batch is empty")
 		check(batch.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "Landscape batch unexpectedly adds shadow draw cost")
 		meshes[batch.multimesh.mesh.get_instance_id()] = true
 		instances += batch.multimesh.instance_count
-	check(batches.size() > 100 and meshes.size() <= 27, "Landscape cache/chunk batching was not used")
+	check(groundcover_placements <= 8840 and groundcover_batches <= 2988, "Contextual groundcover exceeds first-pass population/node budgets")
+	check(batches.size() > 100 and meshes.size() <= 36, "Landscape cache/chunk batching was not used")
 	check(job.jobs.size() == 266 and job.cursor == 266, "Landscape lost its 256 bounded terrain jobs and 10 cache/bridge jobs")
 	var env := WorldEnvironment.new()
 	var environment := Environment.new()
@@ -105,7 +116,18 @@ func _ready() -> void:
 		captures.append(await capture("northern_bridge.png"))
 		camera.look_at_from_position(Vector3(-797, 11, -317), Vector3(-780, 7, -345))
 		captures.append(await capture("forest_ruin.png"))
-	var report := {"failures": failures, "renderer": RenderingServer.get_current_rendering_method(), "atlas_payload_bytes": atlas_payload_bytes, "physical_shape_bytes": physical_before.size(), "terrain_vertex_bytes": surface_before.size(), "unchanged_physics": true, "unchanged_terrain": true, "unique_meshes": meshes.size(), "batches": batches.size(), "lod_instances": instances, "detail_jobs": job.jobs.size(), "max_detail_job_usec": job.max_step_usec, "fixture_build_and_dress_usec": Time.get_ticks_usec() - began, "captures": captures}
+		# Inspect an actual authored colony at close range, rather than accepting
+		# distant terrain shots that can contain no visible groundcover at all.
+		for batch: MultiMeshInstance3D in batches:
+			if batch.has_meta(&"groundcover_kind") and batch.get_meta(&"groundcover_kind") == "grass_tuft" and batch.get_meta(&"groundcover_lod") == 0:
+				var p: Vector3 = batch.global_transform * batch.multimesh.get_instance_transform(0).origin
+				camera.look_at_from_position(p + Vector3(4, 3, 5), p + Vector3(0, .5, 0))
+				captures.append(await capture("understory_close.png"))
+				break
+	var groundcover_visible_all_lods := {}
+	for profile: String in groundcover_visible:
+		groundcover_visible_all_lods[profile] = groundcover_visible[profile] * 3
+	var report := {"groundcover_visible_placements_by_profile": groundcover_visible, "groundcover_visible_all_lods_by_profile": groundcover_visible_all_lods, "groundcover_estimated_transform_color_payload_bytes": groundcover_placements * 3 * 64, "groundcover_batches": groundcover_batches, "groundcover_placements": groundcover_placements, "failures": failures, "renderer": RenderingServer.get_current_rendering_method(), "atlas_payload_bytes": atlas_payload_bytes, "physical_shape_bytes": physical_before.size(), "terrain_vertex_bytes": surface_before.size(), "unchanged_physics": true, "unchanged_terrain": true, "unique_meshes": meshes.size(), "batches": batches.size(), "lod_instances": instances, "detail_jobs": job.jobs.size(), "max_detail_job_usec": job.max_step_usec, "fixture_build_and_dress_usec": Time.get_ticks_usec() - began, "captures": captures}
 	var output := FileAccess.open("res://tests/output/landscape_v5.json", FileAccess.WRITE)
 	output.store_string(JSON.stringify(report, "  ")); output.close()
 	print("LANDSCAPE_V5: ", JSON.stringify(report))

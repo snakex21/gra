@@ -46,6 +46,7 @@ static func parameters(profile: String = DEFAULT_PROFILE) -> Dictionary:
 
 static func apply(world: Node, profile: String = DEFAULT_PROFILE) -> void:
 	if not is_instance_valid(world): return
+	world.set_meta(&"environment_groundcover_profile", normalize(profile))
 	var config := parameters(profile)
 	var size := int(config.directional_atlas)
 	var depth_16 := bool(config.depth_16_bits)
@@ -70,6 +71,8 @@ static func apply(world: Node, profile: String = DEFAULT_PROFILE) -> void:
 			sun.directional_shadow_split_1 = float(config.split_1)
 			sun.directional_shadow_split_2 = 0.30
 			sun.directional_shadow_split_3 = 0.60
+		elif node is MultiMeshInstance3D and node.has_meta(&"groundcover_kind"):
+			EnvironmentGroundcover.apply_quality(node as MultiMeshInstance3D, normalize(profile))
 		elif node is OmniLight3D or node is SpotLight3D:
 			var light := node as Light3D
 			# Shadow-only cutoff for lights with authored distance fade. Keep the
