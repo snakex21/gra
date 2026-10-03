@@ -21,6 +21,9 @@ signal game_completed
 enum Phase { PLAYING, FADE_OUT, LOADING, FADE_IN }
 
 const VALLEY := &"valley"
+const ClimateView := preload("res://src/world/world_climate_view.gd")
+const CLIMATE_INTERVAL := 0.1
+const CAVE_CLIMATES := [&"cave", &"devil", &"eastern_cave"]
 ## Brain seeds of the arenas (each fight is the same fight every time).
 const SEEDS := {&"valus": 7, &"quadratus": 11, &"gaius": 13, &"phaedra": 17, &"hydrus": 29, &"avion": 41, &"cave": 53, &"barba": 61, &"kuromori": 67, &"basaran": 61, &"dirge": 67, &"celosia_cenobia": 89, &"pelagia": 71, &"phalanx": 101, &"argus": 79, &"malus": 107, &"devil": 109, &"phoenix": 113, &"spider": 97, &"worm": 113, &"saru": 101, &"dormin": 127}
 
@@ -64,6 +67,9 @@ var _pending: Array = []
 var _art_jobs := {}
 var _fade: ColorRect
 var _sun: DirectionalLight3D
+## Cosmetic renderer stays outside region, the snapshot's simulation root.
+var climate_view: ClimateView
+var _climate_t := 0.0
 
 
 ## Starts the game: loads the save (unless ``new_game``) and builds the temple.
@@ -101,6 +107,9 @@ func stop() -> void:
 	region_kind = &""
 	phase = Phase.PLAYING
 	_fade.color.a = 0.0
+	_climate_t = 0.0
+	if is_instance_valid(climate_view):
+		climate_view.clear()
 
 
 func has_save() -> bool:
@@ -121,6 +130,7 @@ func apply_settings(s: Settings) -> void:
 		(hud as PlayerHud).show_help = s.show_help
 		(hud as PlayerHud).show_debug = s.show_debug
 	GraphicsQuality.apply(self, s.graphics_profile)
+	refresh_climate(true)
 
 
 func _ready() -> void:
@@ -138,6 +148,10 @@ func _ready() -> void:
 	env.environment.sky.sky_material = ProceduralSkyMaterial.new()
 	add_child(env)
 	ArenaArt._daylight(self)
+	climate_view = ClimateView.new()
+	climate_view.name = "WorldClimateView"
+	add_child(climate_view)
+	climate_view.setup(self, _sun, env)
 	var layer := CanvasLayer.new()
 	layer.layer = 10
 	_fade = ColorRect.new()
@@ -162,7 +176,12 @@ func _physics_process(delta: float) -> void:
 	if region_kind == &"":
 		return   # at the title: nothing loaded
 	state.play_time += delta
+	state.climate.advance(delta)
 	region_time += delta
+	_climate_t += delta
+	if _climate_t >= CLIMATE_INTERVAL:
+		_climate_t = fmod(_climate_t, CLIMATE_INTERVAL)
+		refresh_climate()
 	_build_step()
 	match phase:
 		Phase.PLAYING:
@@ -610,4 +629,66 @@ func _change_region(kind: StringName) -> void:
 	region_time = 0.0
 	_resets_seen = 0
 	transitions += 1
+	refresh_climate(true)
 	region_loaded.emit(kind)
+
+
+## Climate uses the observer's location, rather than treating a whole cave approach
+## as indoors. One cheap roof query per refresh also keeps rain out of the temple.
+func refresh_climate(force := false) -> void:
+	if force:
+		_climate_t = 0.0
+	if not is_instance_valid(climate_view) or region_kind == &"" or not is_instance_valid(player()):
+		return
+	var p := player()
+	var observer: Vector3 = p.global_position
+	var cam := refs.get("camera") as PlayerCamera
+	var water_effects: WaterCameraEffects
+	if is_instance_valid(cam):
+		observer = cam.global_position
+		water_effects = cam.get_node_or_null("WaterCameraEffects") as WaterCameraEffects
+	var ceiling := _climate_roof(p.global_position + Vector3.UP * 0.8)
+	var roof := not ceiling.is_empty()
+	var cavern := roof and (ceiling.collider as Node).has_meta(&"cave_shell")
+	var kind := climate_region_at(p.global_position, cavern)
+	var sample: Dictionary = state.climate.sample(kind, state.defeated.size(), state.is_complete())
+	# A roof over an outdoor path only blocks precipitation; it leaves the sky visible.
+	if not CAVE_CLIMATES.has(kind) and kind not in [&"cavern", &"hollowvault", &"deeprelic"]:
+		sample.exposure = 1.0
+	var submerged := WaterCameraEffects.is_submerged(observer, get_tree(), water_effects.underwater if water_effects else false)
+	sample["sheltered"] = roof or submerged
+	climate_view.refresh(sample, observer, String(kind), settings.graphics_profile, force)
+	if water_effects:
+		water_effects.apply_climate(climate_view.dry_environment_state())
+
+
+func climate_region_at(pos: Vector3, cavern := false) -> StringName:
+	var kind: StringName = region_kind
+	if region_kind == VALLEY and layout_version >= 3:
+		var distance := 320.0 * 320.0
+		for boss: StringName in ForbiddenLands.REGIONS:
+			var data: Array = ForbiddenLands.REGIONS[boss]
+			var centre: Vector2 = data[0]
+			var d := Vector2(pos.x, pos.z).distance_squared_to(centre)
+			if d < distance:
+				distance = d
+				kind = StringName(data[2])
+	# These current arenas are open courtyards/basins. Their low cover roofs must
+	# not be mistaken for the closed CaveShell that actually blocks the sky.
+	if kind in [&"barba", &"forest_tomb"]:
+		kind = &"forest"
+	elif kind in [&"dirge", &"western_cavern"]:
+		kind = &"desert"
+	if cavern:
+		return kind if CAVE_CLIMATES.has(kind) else &"cave"
+	if CAVE_CLIMATES.has(kind):
+		return VALLEY
+	return kind
+
+
+func _climate_roof(head: Vector3) -> Dictionary:
+	if not is_inside_tree():
+		return {}
+	var query := PhysicsRayQueryParameters3D.create(head, head + Vector3.UP * 180.0, Layers.WORLD)
+	query.hit_back_faces = true
+	return get_world_3d().direct_space_state.intersect_ray(query)

@@ -17,6 +17,8 @@ ROOT = Path(__file__).resolve().parents[2]
 TRAVELER_LIMITS = {0: 40000, 1: 22000, 2: 5000}
 WEAPON_LIMITS = {0: 10000, 1: 5000, 2: 1800}
 WEAPON_IDS = ["sword", "bow", "arrow", "scabbard", "quiver"]
+LANDSCAPE_LIMITS = {0: 3000, 1: 1000, 2: 200}
+LANDSCAPE_IDS = ["oak", "wind_tree", "pine", "dead_tree", "rock_shelf", "rock_split", "ruin_arch", "ruin_support", "ruin_parapet"]
 
 def image_size(raw):
     if raw[:8] == b"\x89PNG\r\n\x1a\n" and len(raw) >= 26:
@@ -139,23 +141,30 @@ def check_budgets(records, texture_imports):
     indexed={r["path"]:r for r in records}
     expected={"models/characters/travelers_v3/traveler_lod%d.glb"%lod:limit for lod,limit in TRAVELER_LIMITS.items()}
     expected.update({"models/weapons_v4/%s_lod%d.glb"%(name,lod):limit for name in WEAPON_IDS for lod,limit in WEAPON_LIMITS.items()})
+    expected.update({"models/landscape_v5/%s_lod%d.glb"%(name,lod):limit for name in LANDSCAPE_IDS for lod,limit in LANDSCAPE_LIMITS.items()})
     for path,limit in expected.items():
         record=indexed.get(path)
         if record is None:
             violations.append({"path":path,"rule":"required_model","actual":"missing"})
         elif record["triangles_node_instances"]>limit:
             violations.append({"path":path,"rule":"triangle_budget","actual":record["triangles_node_instances"],"maximum":limit})
+        if record is not None and "/landscape_v5/" in path:
+            if record["images"]:
+                violations.append({"path":path,"rule":"shared_atlas_only","actual":len(record["images"]),"maximum":0})
+            if record.get("material_surfaces_node_instances", 1)>1 or record.get("transparent_materials", 0)>0:
+                violations.append({"path":path,"rule":"single_opaque_surface","actual":record.get("material_surfaces_node_instances", 1)})
     image_entries=[{"path":r["path"]+"#image"+str(i["index"]),**i} for r in records for i in r["images"]]
     image_entries+=texture_imports
     for image in image_entries:
         path=image["path"]
-        limit=512 if "/weapons_v4/" in path else 2048
+        limit=512 if "/weapons_v4/" in path else 1024 if "/landscape_v5/" in path else 2048
         w,h=image.get("width"),image.get("height")
         if w is None or h is None:
             violations.append({"path":path,"rule":"known_texture_dimensions","actual":"unknown"})
         elif w>limit or h>limit:
             violations.append({"path":path,"rule":"texture_dimension_budget","actual":[w,h],"maximum":limit})
     return {"traveler_triangles_by_lod":TRAVELER_LIMITS,"weapon_triangles_per_model_by_lod":WEAPON_LIMITS,
+        "landscape_triangles_per_model_by_lod":LANDSCAPE_LIMITS,"landscape_texture_maximum_dimension":1024,
         "texture_maximum_dimension":2048,"weapon_texture_maximum_dimension":512,"violations":violations}
 
 def runtime_summary():
@@ -172,7 +181,7 @@ def runtime_summary():
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output",default="assets/asset_budgets.json")
-    parser.add_argument("--check-budgets",action="store_true",help="Exit nonzero for missing/over-budget traveler, weapons or textures")
+    parser.add_argument("--check-budgets",action="store_true",help="Exit nonzero for missing/over-budget traveler, weapons, landscape or textures")
     args=parser.parse_args()
     destination=(ROOT/args.output).resolve()
     if ROOT not in destination.parents:raise SystemExit("Output must remain in the game folder")

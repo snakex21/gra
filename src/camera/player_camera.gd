@@ -83,6 +83,7 @@ func _ready() -> void:
 	fov = 70.0
 	_params.shape = _sphere
 	var water_view := WaterCameraEffects.new()
+	water_view.name = "WaterCameraEffects"
 	water_view.camera = self
 	water_view.player = player
 	add_child(water_view)

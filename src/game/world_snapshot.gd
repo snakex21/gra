@@ -131,6 +131,7 @@ static func restore(game: GameWorld, data: Dictionary) -> bool:
 		water._sync_visual()
 	if game.colossus() and game.colossus().has_method(&"encounter_hint"):
 		(game.refs.hud as PlayerHud).message = game.colossus().call(&"encounter_hint")
+	game.refresh_climate(true)
 	return true
 
 func _index_nodes(n: Node) -> void:

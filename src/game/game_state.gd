@@ -9,6 +9,7 @@ const ORDER: Array[StringName] = BossRoster.PLAYABLE
 const DEFAULT_PATH := "res://data/save.json"
 ## Save slots (slot 1 is the save file of the earlier versions).
 const SLOTS := 3
+const Climate := preload("res://src/world/world_climate.gd")
 
 var defeated: Array[StringName] = []
 ## Old recordings retain their six-boss sequence and geography.
@@ -17,6 +18,8 @@ var legacy_replay := false
 var play_time := 0.0
 ## Number of deaths (encounter resets) over the whole game.
 var deaths := 0
+## Simulation clock and weather seed travel with progress, world checkpoints and replays.
+var climate = Climate.new()
 
 
 static func slot_path(slot: int) -> String:
@@ -57,7 +60,7 @@ func to_dict() -> Dictionary:
 	var names: Array[String] = []
 	for c in defeated:
 		names.append(String(c))
-	return {"version": VERSION, "defeated": names, "play_time": play_time, "deaths": deaths}
+	return {"version": VERSION, "defeated": names, "play_time": play_time, "deaths": deaths, "climate": climate.to_dict()}
 
 
 ## Fills this state from a saved dictionary. Unknown names and broken values are ignored;
@@ -66,6 +69,7 @@ func from_dict(d: Dictionary) -> bool:
 	defeated.clear()
 	play_time = 0.0
 	deaths = 0
+	climate = Climate.new()
 	var version := int(d.get("version", -1))
 	if version not in [1, VERSION] or not (d.get("defeated") is Array):
 		return false
@@ -84,6 +88,8 @@ func from_dict(d: Dictionary) -> bool:
 			defeated.append(c)
 	play_time = maxf(0.0, float(d.get("play_time", 0.0)))
 	deaths = maxi(0, int(d.get("deaths", 0)))
+	var saved_climate: Variant = d.get("climate", {})
+	climate.from_dict(saved_climate if saved_climate is Dictionary else {}, play_time)
 	return true
 
 

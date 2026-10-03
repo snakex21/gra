@@ -62,8 +62,12 @@ Etap 13 dodaje własne modele Wędrowca, Mono, Agro i wszystkich kolosów z Blen
 bezpiecznego stanu świata. Mono leży na ołtarzu w świątyni; nie wprowadza tłumu NPC.
 Etap 14 dodaje modele broni z naciągiem łuku i dopasowaniem dłoni, poprawia Wędrowca,
 rozwija geografię Krainy i dodaje profile kosztu renderowania.
+Etap 15 wprowadza pełny cykl dnia i nocy, płynną pogodę regionów oraz atmosferyczny
+wpływ kolejnych zwycięstw i Dormina. Zegar i warunki są częścią zapisów oraz powtórek.
+Krajobraz zyskuje modele drzew, skał i ruin ze wspólnym atlasem i trzema LOD-ami.
 
-Pełny cykl dnia i nocy, pogoda, ekosystem, eksploracyjne znajdźki i zagadki oraz
-reakcje regionów i świątyni na śmierć kolosów pozostają do wdrożenia. Pełne tryby
+Ekosystem, eksploracyjne znajdźki i zagadki oraz bardziej rozbudowane reakcje
+regionów i świątyni na śmierć kolosów pozostają do wdrożenia. Pogoda jest obecnie
+kosmetyczna i nie zmienia fizyki walk. Pełne tryby
 kooperacji, kompan AI i VR również wymagają dalszej pracy. Modele i reżyseria
 obecnych starć mają oprawę prototypową.

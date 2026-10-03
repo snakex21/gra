@@ -8,8 +8,11 @@ const MINIMUM := Vector2i(-2304, -2304)
 const MAXIMUM := Vector2i(1792, 1792)
 static var _grid := {}
 static var _height_cache := {}
-static var _terrain_mat: StandardMaterial3D
+static var _terrain_mat: Material
 static var _road_mat: StandardMaterial3D
+static var _landscape_mat: StandardMaterial3D
+static var _landscape_meshes := {}
+const LANDSCAPE_KINDS := ["oak", "wind_tree", "pine", "dead_tree", "rock_shelf", "rock_split", "ruin_arch", "ruin_support", "ruin_parapet"]
 
 static func _index_roads() -> void:
 	if not _grid.is_empty():
@@ -62,36 +65,31 @@ static func height_at(x: float, z: float) -> float:
 
 static func biome_color(x: float, z: float, known_height: float = NAN) -> Color:
 	var variation := .035 * sin(x * .023 + z * .018)
-	var color := Color(.42, .48, .30)
+	var color := Color(.30, .36, .25)
 	if x < -650 and z > -300 or z > 750:
-		color = Color(.63, .55, .36)
+		color = Color(.42, .40, .30)
 	if x < -350 and z < -300 and z > -1050:
-		color = Color(.25, .34, .22)
+		color = Color(.19, .27, .20)
 	if z < -1050 or x < -1100 and z < -950:
-		color = Color(.56, .43, .29)
+		color = Color(.42, .34, .27)
 	if x > 700:
-		color = Color(.35, .44, .42)
+		color = Color(.29, .36, .35)
 	if x > 1100 and absf(z) < 300:
-		color = Color(.46, .32, .23)
+		color = Color(.35, .28, .24)
 	# Chunk vertices already have a cached height; avoid repeating road/arena
 	# searches for every copy of a triangle corner during world construction.
 	var height := height_at(x, z) if is_nan(known_height) else known_height
 	if height > 38:
-		color = Color(.40, .40, .36)
+		color = Color(.34, .35, .33)
 	return color + Color(variation, variation, variation, 0)
 
 static func _materials() -> void:
 	if _terrain_mat:
 		return
-	_terrain_mat = StandardMaterial3D.new()
-	_terrain_mat.vertex_color_use_as_albedo = true
-	_terrain_mat.roughness = 1
-	_terrain_mat.disable_receive_shadows = true
-	_terrain_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	# Vertex colours keep the large biomes readable without multiplying them by
-	# the dark close-up rock texture, and save a texture fetch on old GPUs.
+	# One atlas sample adds local grain while retaining the authored biome colours.
+	_terrain_mat = load("res://materials/landscape_v5/terrain.tres")
 	_road_mat = StandardMaterial3D.new()
-	_road_mat.albedo_color = Color(.58, .56, .44)
+	_road_mat.albedo_color = Color(.43, .43, .37)
 	_road_mat.roughness = 1
 	_road_mat.disable_receive_shadows = true
 	_road_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
@@ -105,6 +103,12 @@ static func build(parent: Node3D, with_art := true) -> void:
 	root.name = "ForbiddenLandsTerrain"
 	parent.add_child(root)
 	var job := ArenaArtBuild.new()
+	if with_art:
+		# One asset (three small geometry-only files) per bounded cache warmup job.
+		# The 256 chunk jobs remain independent; no all-world batch is assembled.
+		for kind: String in LANDSCAPE_KINDS:
+			job.add(func() -> void: _prime_landscape(kind))
+		job.add(func() -> void: _bridge_art(root))
 	for z in range(MINIMUM.y, MAXIMUM.y, CHUNK):
 		for x in range(MINIMUM.x, MAXIMUM.x, CHUNK):
 			var origin := Vector2i(x, z)
@@ -280,8 +284,93 @@ static func _bridge_details(root: Node3D) -> void:
 	for z in range(280, 600, 64):
 		for side: float in [-1.0, 1.0]:
 			# Supports below the deck and side parapets keep the 28m lane clear.
-			TerrainKit.box(root, Vector3(-233 + side * 17, -17, z), Vector3(4, 34, 5), stone)
-			TerrainKit.box(root, Vector3(-233 + side * 17, 1.2, z), Vector3(2, 2.4, 52), stone)
+			var pier := TerrainKit.box(root, Vector3(-233 + side * 17, -17, z), Vector3(4, 34, 5), stone)
+			pier.set_meta(&"landscape_bridge_part", &"pier")
+			var parapet := TerrainKit.box(root, Vector3(-233 + side * 17, 1.2, z), Vector3(2, 2.4, 52), stone)
+			parapet.set_meta(&"landscape_bridge_part", &"parapet")
+
+static func _prime_landscape(kind: String) -> void:
+	if _landscape_meshes.has(kind):
+		return
+	if not _landscape_mat:
+		_landscape_mat = load("res://materials/landscape_v5/atlas.tres")
+	var meshes: Array[Mesh] = []
+	for lod in 3:
+		var scene: PackedScene = load("res://models/landscape_v5/%s_lod%d.glb" % [kind, lod])
+		if not scene:
+			push_error("Landscape model missing: " + kind)
+			return
+		var instance := scene.instantiate()
+		var visual := instance as MeshInstance3D
+		if not visual:
+			visual = instance.find_child("*", true, false) as MeshInstance3D
+		if not visual or not visual.mesh:
+			push_error("Landscape model has no mesh: " + kind)
+			instance.free()
+			return
+		meshes.append(visual.mesh)
+		instance.free()
+	_landscape_meshes[kind] = meshes
+
+static func _landscape_batch(parent: Node3D, kind: String, origin: Vector3, transforms: Array[Transform3D]) -> void:
+	if transforms.is_empty():
+		return
+	_prime_landscape(kind)
+	if not _landscape_meshes.has(kind):
+		return
+	for lod in 3:
+		var batch := MultiMeshInstance3D.new()
+		batch.name = "%s_LOD%d" % [kind, lod]
+		batch.position = origin
+		var multi := MultiMesh.new()
+		multi.transform_format = MultiMesh.TRANSFORM_3D
+		multi.mesh = _landscape_meshes[kind][lod]
+		multi.instance_count = transforms.size()
+		for index in transforms.size():
+			var local := transforms[index]
+			local.origin -= origin
+			multi.set_instance_transform(index, local)
+		batch.multimesh = multi
+		batch.material_override = _landscape_mat
+		batch.visibility_range_begin = [0.0, 110.0, 230.0][lod]
+		batch.visibility_range_end = [110.0, 230.0, 550.0][lod]
+		batch.visibility_range_begin_margin = 8
+		batch.visibility_range_end_margin = 8
+		batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		parent.add_child(batch)
+
+static func _bridge_art(root: Node3D) -> void:
+	if not is_instance_valid(root):
+		return
+	var cells := {}
+	for body: Node3D in root.get_children():
+		if not body.has_meta(&"landscape_bridge_part"):
+			continue
+		# Only replace the render child. The original solid bridge collider stays
+		# exactly where it was; the crafted masonry covers the same dimensions.
+		for child in body.get_children():
+			if child is MeshInstance3D:
+				child.visible = false
+		# A long bridge uses tighter 64m batches, so near parapets do not select the
+		# LOD of a centre hundreds of metres farther down the span.
+		var cell := Vector2i(floori(body.position.x / 64), floori(body.position.z / 64))
+		if not cells.has(cell):
+			cells[cell] = {"ruin_support": [], "ruin_parapet": []}
+		if body.get_meta(&"landscape_bridge_part") == &"pier":
+			var xf := Transform3D(Basis.IDENTITY.scaled(Vector3(4.0 / 3.5, 34.0 / 6.26, 5.0 / 3.1)), body.position - Vector3(0, 17, 0))
+			cells[cell]["ruin_support"].append(xf)
+		else:
+			for segment in 13:
+				var xf := Transform3D(Basis.IDENTITY.scaled(Vector3(2.0 / 2.13, 2.4 / 2.26, 1)), body.position + Vector3(0, -1.2, -24 + segment * 4))
+				cells[cell]["ruin_parapet"].append(xf)
+	for cell: Vector2i in cells:
+		var details := Node3D.new()
+		details.name = "BridgeArt_%d_%d" % [cell.x, cell.y]
+		root.add_child(details)
+		for kind: String in cells[cell]:
+			var transforms: Array[Transform3D] = []
+			transforms.assign(cells[cell][kind])
+			_landscape_batch(details, kind, Vector3((cell.x + .5) * 64, 0, (cell.y + .5) * 64), transforms)
 
 static func _detail_chunk(root: Node3D, origin: Vector2i) -> void:
 	if not is_instance_valid(root):
@@ -289,10 +378,11 @@ static func _detail_chunk(root: Node3D, origin: Vector2i) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 330721 + origin.x * 13 + origin.y * 29
 	var forest := origin.x < -350 and origin.y < -300 and origin.y > -1100
-	var count := 18 if forest else 4
+	var count := 24 if forest else 4
 	var details := Node3D.new()
 	details.name = "BiomeDetail_%d_%d" % [origin.x, origin.y]
 	root.add_child(details)
+	var groups := {}
 	for i in count:
 		var p := Vector3(origin.x + rng.randf_range(0, CHUNK), 0, origin.y + rng.randf_range(0, CHUNK))
 		if maxf(absf(p.x), absf(p.z)) < 210 or road_distance(Vector2(p.x, p.z)) < 34:
@@ -305,48 +395,21 @@ static func _detail_chunk(root: Node3D, origin: Vector2i) -> void:
 		p.y = surface_height(p.x, p.z)
 		if p.y < -8:
 			continue
-		if forest:
-			var height := rng.randf_range(10, 19)
-			var trunk := MeshInstance3D.new()
-			var cylinder := CylinderMesh.new()
-			cylinder.top_radius = .4
-			cylinder.bottom_radius = .8
-			cylinder.height = height
-			cylinder.radial_segments = 7
-			trunk.mesh = cylinder
-			trunk.position = p + Vector3.UP * height * .5
-			var bark := StandardMaterial3D.new()
-			bark.albedo_color = Color(.24, .20, .14)
-			trunk.material_override = bark
-			trunk.visibility_range_end = 360
-			trunk.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			details.add_child(trunk)
-			var crown := MeshInstance3D.new()
-			var sphere := SphereMesh.new()
-			sphere.radius = height * .32
-			sphere.height = height * .55
-			sphere.radial_segments = 10
-			sphere.rings = 5
-			crown.mesh = sphere
-			crown.position = p + Vector3.UP * height * .87
-			var leaf := StandardMaterial3D.new()
-			leaf.albedo_color = Color(.24, .32 + rng.randf_range(0, .08), .16)
-			crown.material_override = leaf
-			crown.visibility_range_end = 360
-			crown.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			details.add_child(crown)
-		else:
-			var rock := MeshInstance3D.new()
-			var stone := SphereMesh.new()
-			stone.radius = rng.randf_range(3, 7)
-			stone.height = stone.radius * 1.4
-			stone.radial_segments = 8
-			stone.rings = 4
-			rock.mesh = stone
-			rock.position = p + Vector3.UP * stone.radius * .4
-			rock.scale = Vector3(1.2, 1, .7)
-			rock.rotation.y = rng.randf_range(-PI, PI)
-			rock.material_override = ArenaArt.material(ArenaArt.Kind.STONE)
-			rock.visibility_range_end = 450
-			rock.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			details.add_child(rock)
+		var kind: String = ["oak", "wind_tree", "pine", "dead_tree"][rng.randi_range(0, 3)] if forest else ["rock_shelf", "rock_split"][rng.randi_range(0, 1)]
+		var size := rng.randf_range(.8, 1.3) if forest else rng.randf_range(1.3, 2.7)
+		if not groups.has(kind):
+			groups[kind] = []
+		groups[kind].append(Transform3D(Basis(Vector3.UP, rng.randf_range(-PI, PI)).scaled(Vector3.ONE * size), p - Vector3.UP * .08))
+	# Three deliberate remnants beside the old forest route. The empty grassland
+	# stays empty; these are visual landmarks, without colliders or map markers.
+	for ruin: Vector3 in [Vector3(-780, 0, -345), Vector3(-706, 0, -545), Vector3(-1110, 0, -370)]:
+		if floori(ruin.x / CHUNK) * CHUNK != origin.x or floori(ruin.z / CHUNK) * CHUNK != origin.y:
+			continue
+		if not groups.has("ruin_arch"):
+			groups["ruin_arch"] = []
+		ruin.y = surface_height(ruin.x, ruin.z) - .15
+		groups["ruin_arch"].append(Transform3D(Basis(Vector3.UP, .6), ruin))
+	for kind: String in groups:
+		var transforms: Array[Transform3D] = []
+		transforms.assign(groups[kind])
+		_landscape_batch(details, kind, Vector3(origin.x + CHUNK * .5, 0, origin.y + CHUNK * .5), transforms)

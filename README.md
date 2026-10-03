@@ -10,7 +10,7 @@ zyskuje cykl dnia i nocy, pogodę, ekosystem oraz ukryte miejsca i zagadki; reag
 na śmierć kolosów i odzyskiwanie mocy przez Dormina. Kooperacja, kompan AI i VR
 mają zachować ten charakter. [Wizja i stan realizacji](docs/WIZJA_GRY.md).
 
-## Stan: Etap 14 — broń, geografia i profile grafiki
+## Stan: Etap 15 — czas, pogoda i krajobraz
 
 - Milestone 1 (wspinanie po poruszającym się kolosie): [docs/MILESTONE_1.md](docs/MILESTONE_1.md)
 - Etap 2 (równowaga na kolosie, upadki, kamera, przejścia): [docs/ETAP_2.md](docs/ETAP_2.md)
@@ -26,6 +26,7 @@ mają zachować ten charakter. [Wizja i stan realizacji](docs/WIZJA_GRY.md).
 - Etap 12 (jaskinia Hollowvault / Deeprelic i latarka miecza, planowany przelot Aviona, checkpointy świata, mniejsze kroki grafiki, fale i mgła pod wodą): [docs/ETAP_12.md](docs/ETAP_12.md)
 - Etap 13 (Wędrowiec, Mono, Agro, Dormin i wszystkie pozostałe kolosy z Blendera, bezpieczny autozapis i wejścia do aren): [docs/ETAP_13.md](docs/ETAP_13.md)
 - Etap 14 (modele broni, dłonie i naciąg łuku, poprawiony Wędrowiec, wspólne drogi Krainy, renderer Compatibility i profile kosztu grafiki): [docs/ETAP_14.md](docs/ETAP_14.md)
+- Etap 15 (utrwalony cykl dnia i nocy, pogoda regionów, wpływ Dormina, nowe drzewa, skały i ruiny z Blendera): [docs/ETAP_15.md](docs/ETAP_15.md)
 - Architektura: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md)
 - Stan po sesji 3 października 2026 i dalsze zadania: [docs/STAN_SESJI_2026-10-03.md](docs/STAN_SESJI_2026-10-03.md)
 
@@ -34,6 +35,12 @@ trzy sloty zapisu), start w świątyni, promień miecza (V / lewy spust) wskazuj
 świat: wspólne drogi i rozgałęzienia prowadzą do regionów kolejnych kolosów, bez
 ekranu ładowania; po wygranej powrót do świątyni i zapis. Esc / P / Start = pauza.
 Bez menu: `-- --new-game` (albo `NEW_GAME=1`) lub `-- --continue`.
+
+Kampania zaczyna o 08:00; pełna doba trwa 30 minut symulacji. Chmury, deszcz,
+mgła i pustynny pył zmieniają się płynnie, a kolejne zwycięstwa wzmacniają
+atmosferyczną anomalię Dormina. Czas i pogoda przetrwają zapis świata oraz
+przewijanie powtórek. Pauza zatrzymuje zegar; noc zachowuje czytelność terenu.
+Nowa oprawa krajobrazu korzysta ze wspólnych atlasów, trzech LOD-ów i MultiMesh.
 
 Autozapis co minutę, przy wyjściu i po zwycięstwach pozostaje w `data/`.
 „Kontynuuj” wznawia ostatni bezpieczny checkpoint świata, także na Agro.
@@ -131,6 +138,17 @@ python tools/run_local.py godot --editor
 | Nurkowanie (trzymaj w wodzie; oddech 14 s) | Ctrl / Z | B |
 
 ## Testy
+
+Etap 15 (czas, pogoda, trwałość świata, dachy/woda i krajobraz):
+
+```bash
+python tools/run_local.py godot --headless tests/world_climate.tscn
+python tools/run_local.py godot --headless --fixed-fps 60 tests/climate_persistence.tscn
+python tools/run_local.py godot --headless tests/climate_shelter.tscn
+python tools/run_local.py godot --fixed-fps 60 tests/climate_view.tscn
+python tools/run_local.py godot --fixed-fps 60 tests/landscape_v5.tscn
+python tools/run_local.py godot --resolution 1280x800 --fixed-fps 60 tests/world_climate_capture.tscn
+```
 
 Etap 14 (broń, profile grafiki, importy tekstur i nowy układ świata):
 

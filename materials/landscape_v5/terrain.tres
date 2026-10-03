@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=3]
+
+[ext_resource type="Shader" path="res://materials/landscape_v5/terrain.gdshader" id="1"]
+[ext_resource type="Texture2D" path="res://textures/landscape_v5/landscape_atlas_albedo.png" id="2"]
+
+[resource]
+resource_name = "Landscape V5 biome ground / single atlas fetch"
+shader = ExtResource("1")
+shader_parameter/atlas = ExtResource("2")

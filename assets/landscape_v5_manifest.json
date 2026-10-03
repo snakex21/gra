@@ -1,0 +1,222 @@
+{
+  "source": "res://art/source/landscape_v5.blend",
+  "source_sha256": "9f94a05a2e0cafa4f3144987c07395533982f34be31308bcca6f2a360ca629db",
+  "units": "metres",
+  "generator": "tools/art/generate_landscape_v5.py",
+  "original_designs": true,
+  "render_only": true,
+  "atlas_size": 1024,
+  "atlas_images": [
+    "res://textures/landscape_v5/landscape_atlas_albedo.png",
+    "res://textures/landscape_v5/landscape_atlas_normal.png",
+    "res://textures/landscape_v5/landscape_atlas_roughness.png"
+  ],
+  "material": "res://materials/landscape_v5/atlas.tres",
+  "opacity": "Opaque closed geometry; no alpha foliage cards",
+  "triangle_limits": [
+    3000,
+    1000,
+    200
+  ],
+  "items": [
+    {
+      "kind": "oak",
+      "model_paths": [
+        "res://models/landscape_v5/oak_lod0.glb",
+        "res://models/landscape_v5/oak_lod1.glb",
+        "res://models/landscape_v5/oak_lod2.glb"
+      ],
+      "triangle_counts": [
+        2622,
+        974,
+        162
+      ],
+      "surfaces": 1,
+      "glb_bytes": 172216,
+      "foot_origin": [
+        0,
+        0,
+        0
+      ],
+      "colliders": false,
+      "embedded_images": 0
+    },
+    {
+      "kind": "wind_tree",
+      "model_paths": [
+        "res://models/landscape_v5/wind_tree_lod0.glb",
+        "res://models/landscape_v5/wind_tree_lod1.glb",
+        "res://models/landscape_v5/wind_tree_lod2.glb"
+      ],
+      "triangle_counts": [
+        2622,
+        974,
+        162
+      ],
+      "surfaces": 1,
+      "glb_bytes": 171648,
+      "foot_origin": [
+        0,
+        0,
+        0
+      ],
+      "colliders": false,
+      "embedded_images": 0
+    },
+    {
+      "kind": "pine",
+      "model_paths": [
+        "res://models/landscape_v5/pine_lod0.glb",
+        "res://models/landscape_v5/pine_lod1.glb",
+        "res://models/landscape_v5/pine_lod2.glb"
+      ],
+      "triangle_counts": [
+        1856,
+        742,
+        168
+      ],
+      "surfaces": 1,
+      "glb_bytes": 249944,
+      "foot_origin": [
+        0,
+        0,
+        0
+      ],
+      "colliders": false,
+      "embedded_images": 0
+    },
+    {
+      "kind": "dead_tree",
+      "model_paths": [
+        "res://models/landscape_v5/dead_tree_lod0.glb",
+        "res://models/landscape_v5/dead_tree_lod1.glb",
+        "res://models/landscape_v5/dead_tree_lod2.glb"
+      ],
+      "triangle_counts": [
+        1130,
+        446,
+        113
+      ],
+      "surfaces": 1,
+      "glb_bytes": 90360,
+      "foot_origin": [
+        0,
+        0,
+        0
+      ],
+      "colliders": false,
+      "embedded_images": 0
+    },
+    {
+      "kind": "rock_shelf",
+      "model_paths": [
+        "res://models/landscape_v5/rock_shelf_lod0.glb",
+        "res://models/landscape_v5/rock_shelf_lod1.glb",
+        "res://models/landscape_v5/rock_shelf_lod2.glb"
+      ],
+      "triangle_counts": [
+        172,
+        68,
+        48
+      ],
+      "surfaces": 1,
+      "glb_bytes": 26508,
+      "foot_origin": [
+        0,
+        0,
+        0
+      ],
+      "colliders": false,
+      "embedded_images": 0
+    },
+    {
+      "kind": "rock_split",
+      "model_paths": [
+        "res://models/landscape_v5/rock_split_lod0.glb",
+        "res://models/landscape_v5/rock_split_lod1.glb",
+        "res://models/landscape_v5/rock_split_lod2.glb"
+      ],
+      "triangle_counts": [
+        344,
+        136,
+        46
+      ],
+      "surfaces": 1,
+      "glb_bytes": 45092,
+      "foot_origin": [
+        0,
+        0,
+        0
+      ],
+      "colliders": false,
+      "embedded_images": 0
+    },
+    {
+      "kind": "ruin_arch",
+      "model_paths": [
+        "res://models/landscape_v5/ruin_arch_lod0.glb",
+        "res://models/landscape_v5/ruin_arch_lod1.glb",
+        "res://models/landscape_v5/ruin_arch_lod2.glb"
+      ],
+      "triangle_counts": [
+        772,
+        132,
+        100
+      ],
+      "surfaces": 1,
+      "glb_bytes": 91216,
+      "foot_origin": [
+        0,
+        0,
+        0
+      ],
+      "colliders": false,
+      "embedded_images": 0
+    },
+    {
+      "kind": "ruin_support",
+      "model_paths": [
+        "res://models/landscape_v5/ruin_support_lod0.glb",
+        "res://models/landscape_v5/ruin_support_lod1.glb",
+        "res://models/landscape_v5/ruin_support_lod2.glb"
+      ],
+      "triangle_counts": [
+        352,
+        44,
+        28
+      ],
+      "surfaces": 1,
+      "glb_bytes": 44228,
+      "foot_origin": [
+        0,
+        0,
+        0
+      ],
+      "colliders": false,
+      "embedded_images": 0
+    },
+    {
+      "kind": "ruin_parapet",
+      "model_paths": [
+        "res://models/landscape_v5/ruin_parapet_lod0.glb",
+        "res://models/landscape_v5/ruin_parapet_lod1.glb",
+        "res://models/landscape_v5/ruin_parapet_lod2.glb"
+      ],
+      "triangle_counts": [
+        308,
+        28,
+        12
+      ],
+      "surfaces": 1,
+      "glb_bytes": 37744,
+      "foot_origin": [
+        0,
+        0,
+        0
+      ],
+      "colliders": false,
+      "embedded_images": 0
+    }
+  ],
+  "validation": "Actual indexed GLB triangles, one mesh/surface, UV stream, no embedded image, source SHA unchanged on export"
+}

@@ -7,9 +7,32 @@ var _source: Environment
 var _cave: Environment
 var _underwater: Environment
 var underwater := false
+var _climate_active := false
+var _cave_active := true
+var _dry_state := {}
+
+
+## Called by GameWorld at the climate refresh rate. The underwater fog always keeps
+## its own density and color; only its ambient illumination follows day and night.
+func apply_climate(dry_state: Dictionary) -> void:
+	_climate_active = true
+	_dry_state = dry_state
+	_cave_active = float(dry_state.get("exposure", 1.0)) < 0.05
+	if _cave != null and _cave_active:
+		for property in ["ambient_light_color", "ambient_light_energy", "fog_enabled", "fog_mode", "fog_density", "fog_height_density", "fog_light_color", "fog_sky_affect", "background_mode", "background_color"]:
+			if dry_state.has(property):
+				_cave.set(property, dry_state[property])
+	if _underwater != null:
+		_underwater.ambient_light_energy = maxf(0.16, float(dry_state.get("ambient_light_energy", 0.3)) * 0.65)
 
 func _ready() -> void:
 	process_priority = 11
+
+
+## Shared hysteresis for the camera environment and weather precipitation.
+static func is_submerged(at: Vector3, tree: SceneTree, was_underwater := false) -> bool:
+	var height := WaterBody.surface_at(tree, at)
+	return not is_nan(height) and at.y < height + (0.08 if was_underwater else -0.08)
 
 func _process(_delta: float) -> void:
 	if not is_instance_valid(camera) or not is_instance_valid(player):
@@ -34,10 +57,8 @@ func _process(_delta: float) -> void:
 		_underwater.fog_light_color = Color(0.06, 0.23, 0.27)
 		_underwater.fog_density = 0.12
 		_underwater.fog_height_density = 0.0
-	var y := WaterBody.surface_at(get_tree(), camera.global_position)
+		if _climate_active:
+			apply_climate(_dry_state)
 	# Small hysteresis avoids flicker as a wave passes the near plane.
-	if is_nan(y):
-		underwater = false
-	else:
-		underwater = camera.global_position.y < y + (0.08 if underwater else -0.08)
-	camera.environment = _underwater if underwater else (_cave if player.beam.lantern else null)
+	underwater = is_submerged(camera.global_position, get_tree(), underwater)
+	camera.environment = _underwater if underwater else (_cave if player.beam.lantern and _cave_active else null)

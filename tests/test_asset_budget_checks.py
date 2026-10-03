@@ -18,6 +18,10 @@ def allowed_records():
         for lod, limit in AUDIT.WEAPON_LIMITS.items():
             records.append({"path": "models/weapons_v4/%s_lod%d.glb" % (name, lod),
                             "triangles_node_instances": limit, "images": []})
+    for name in AUDIT.LANDSCAPE_IDS:
+        for lod, limit in AUDIT.LANDSCAPE_LIMITS.items():
+            records.append({"path": "models/landscape_v5/%s_lod%d.glb" % (name, lod),
+                            "triangles_node_instances": limit, "images": []})
     return records
 
 
@@ -45,6 +49,17 @@ class BudgetChecks(unittest.TestCase):
         records = allowed_records()[1:]
         violations = AUDIT.check_budgets(records, [{"path": "textures/test.png", "width": None, "height": None}])["violations"]
         self.assertEqual({v["rule"] for v in violations}, {"required_model", "known_texture_dimensions"})
+
+    def test_landscape_rejects_embedded_texture_and_alpha_surface(self):
+        records = allowed_records()
+        records[-1]["images"] = [{"index": 0, "width": 1024, "height": 1024}]
+        records[-1]["transparent_materials"] = 1
+        violations = AUDIT.check_budgets(records, [])["violations"]
+        self.assertEqual({v["rule"] for v in violations}, {"shared_atlas_only", "single_opaque_surface"})
+
+    def test_landscape_rejects_large_atlas(self):
+        textures = [{"path": "textures/landscape_v5/atlas.png", "width": 2048, "height": 1024}]
+        self.assertEqual(AUDIT.check_budgets(allowed_records(), textures)["violations"][0]["rule"], "texture_dimension_budget")
 
 
 if __name__ == "__main__":
