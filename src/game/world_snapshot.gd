@@ -29,7 +29,8 @@ static func capture(game: GameWorld) -> Dictionary:
 			codec._native_state(node, record)
 			nodes.append(record)
 	return {"version": VERSION, "progress": game.state.to_dict(), "region": String(game.region_kind),
-		"world_layout": game.layout_version,
+		"world_layout": game.layout_version, "companion_mode": String(game.companion_mode),
+		"companion_regroup_t": game._regroup_t,
 		"seed_offset": game.seed_offset, "phase": game.phase, "phase_t": game._phase_t,
 		"region_time": game.region_time, "transitions": game.transitions, "resets_seen": game._resets_seen,
 		"nodes": nodes, "objects": codec.objects}
@@ -39,7 +40,8 @@ static func restore(game: GameWorld, data: Dictionary) -> bool:
 		return false
 	game.seed_offset = int(data.get("seed_offset", 0))
 	game.layout_version = int(data.get("world_layout", 1))
-	game.start_from(data.get("progress", {}))
+	game.cancel_companion_decision()
+	game.start_from(data.get("progress", {}), GameWorld.normalize_companion_mode(data.get("companion_mode", "off")))
 	# Water and static anchor references may belong to any arena. Build their gameplay
 	# ground now; leave render dressing in its incremental queue.
 	for arena_kind: StringName in game.arenas:
@@ -124,6 +126,7 @@ static func restore(game: GameWorld, data: Dictionary) -> bool:
 	game.region_time = float(data.get("region_time", 0.0))
 	game.transitions = int(data.get("transitions", 0))
 	game._resets_seen = int(data.get("resets_seen", 0))
+	game._regroup_t = float(data.get("companion_regroup_t", 0.0))
 	game._fade.color.a = clampf(game._phase_t / game.fade_time, 0.0, 1.0) if game.phase == GameWorld.Phase.FADE_OUT else 0.0
 	for horse in game.region.find_children("*", "Horse", true, false):
 		(horse as Horse)._refresh_terrain()
@@ -132,6 +135,8 @@ static func restore(game: GameWorld, data: Dictionary) -> bool:
 	if game.colossus() and game.colossus().has_method(&"encounter_hint"):
 		(game.refs.hud as PlayerHud).message = game.colossus().call(&"encounter_hint")
 	game.refresh_climate(true)
+	# Transport and playback flags belong to the live session, outside the codec.
+	game._sync_companion()
 	return true
 
 func _index_nodes(n: Node) -> void:

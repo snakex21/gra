@@ -1,8 +1,8 @@
 # Stan projektu po sesji — 3 października 2026
 
-Pierwsza część sesji zakończyła Etap 13: grywalne prototypy 21 starć, integrację
-modeli Blender oraz przenośny autozapis świata. Kontynuacja rozwija broń, Wędrowca,
-geografię i wydajność — zakres oraz nowe testy opisuje `ETAP_14.md`.
+Sesja obejmuje Etapy 13–16: modele Blendera i przenośny autozapis, broń,
+geografię i wydajność, czas i pogodę oraz opcjonalnego kompana z zapisem
+sesji i powtórkami. Zakres opisują `ETAP_13.md`–`ETAP_16.md`.
 Gra uruchamia się przez `Uruchom-gre.bat`.
 Po świeżym klonowaniu należy najpierw wykonać
 `python tools/run_local.py install-godot`.
@@ -21,6 +21,26 @@ Po świeżym klonowaniu należy najpierw wykonać
   krokami, a woda ma fale, efekty pod wodą i plusk. Powtórki korzystają z checkpointów.
 - Łagodne wejścia do wszystkich aren i otwarte wejście Basarana usuwają wykryte
   sztuczne progi. Para strażników daje się pokonać także po rzeczywistym dojeździe.
+- Cykl dobowy i regionalna pogoda działają w kampanii. Zegar, fronty oraz anomalia
+  Dormina przetrwają zapis i przewijanie. Krajobraz ma nowe modele drzew,
+  skał i ruin, wspólny atlas, MultiMesh i trzy LOD-y. Profile grafiki ograniczają koszt.
+- Kompan AI jest opcjonalny, domyślnie wyłączony i pieszy. Podąża, omija ściany
+  i przepaści, unika ataków oraz rzadko pomaga łukiem. Ziarno polityki daje
+  różne, odtwarzalne decyzje bez modelu uczenia maszynowego.
+- Tryb sesji, aktor, RNG i timery są w checkpointach. Nagrania zawierają dwa
+  strumienie akcji, zmiany trybu i przegrupowania. Odtwarzanie nie uruchamia modelu;
+  stare checkpointy i nagrania pozostają solo. Śmierć lub odejście jednego
+  uczestnika zachowuje walkę, gdy drugi pozostaje żywy.
+
+## Lokalny model — stan badawczy
+
+Opcja modelu ma działający asynchroniczny klient, ograniczone dane, timeout
+i fallback zwykłego kompana. Ręcznie uruchamiany adapter ONNX bada rzeczywiste
+głowice decyzji na CPU, ale ocenione modele zbyt słabo adaptują stan gry,
+aby zalecać je w produkcji. Nie wybrano modelu docelowego ani nie wykazano
+przewagi jakości nad zwykłą polityką. Bekko nie przypisuje jeszcze licencji wag;
+pobrane wagi i runtime pozostają lokalnym materiałem badawczym w pomijanym
+`data/ai/`. [Wyniki i polecenia](LOCAL_DECISION_MODELS.md).
 
 ## Potwierdzone sprawdzenia
 
@@ -31,6 +51,21 @@ Test integracji sprawdził 21 kampanii, 21 scen prób i dwa checkpointy — 0 b�
 Rzeczywisty dojazd do Celosii i Cenobii zakończył się zwycięstwem bez śmierci.
 Szczegółowe zakresy i liczby: `ETAP_12.md`, `ETAP_13.md`.
 
+Po Etapie 16 ponowny pełny zestaw 197 testów zakończył się kodem 0 i bez
+niepowodzeń ani błędów skryptów. Stare testy powtórek i ustawień przechodzą.
+Zamknięcie historycznego runnera nadal zgłasza `ObjectDB`, pięć zasobów w użyciu
+i komunikat `ERROR` z `PagedAllocator`; raport oznaczył siedem różnic starszych metryk Etapu 2/4.
+Te wyniki nie dowodzą braku wycieków każdej starszej fixture ani płynności modeli.
+
+Nowy kontroler ma 25 sprawdzeń i 0 błędów; polityka, ustawienia, świat
+i ścisła regresja lifecycle przechodzą. Test powtórek ma 37 sprawdzeń;
+dodatkowo sprawdzono replay od tick 0 przez odejście, ponowne dołączenie
+i przegrupowanie. Harness HTTP ma 40 sprawdzeń Godota, protokół Python — 8 testów.
+Nowe natywne sceny kompana zamykają Compatibility bez wycieków tekstur po
+barierze renderowania fixture. Ścisły zestaw uruchamia
+`python tools/run_companion_tests.py` i odrzuca błędy skryptów przy kodzie 0.
+Weryfikację klimatu i krajobrazu opisuje `ETAP_15.md`.
+
 Kadry nowych modeli: `art/screenshots/colossi_v3/` i `data/captures/*_v3*.png`.
 Surowe logi, wyniki prób, zapisy gracza, cache i silnik są lokalne, poza Git.
 Workflow GitHub uruchamia regresję i nowe testy; wynik CI należy odczytać po
@@ -40,18 +75,19 @@ zakończeniu jego wykonania. Lokalne wyniki Windows nie potwierdzają wyniku Lin
 
 1. Sprawdzić pełne przejścia całej kampanii z różnymi startami. Losowy kierunek
    Agro potrafił zatrzymać bota podróży w dolinie; nie jest to jeszcze zamknięty
-   wielokrotny soak od pierwszego kolosa do Dormina. Boty testowe nie są gotowym
-   kompanem AI dla gracza. Przy zakończeniu dużego testu 197 przypadków Godot
+   wielokrotny soak od pierwszego kolosa do Dormina. Kompan ma osobny kontroler;
+   boty testowe całych walk nadal służą weryfikacji. Przy zakończeniu 197 testów Godot
    zgłasza zasoby pozostawione przez fixture — trzeba dopracować ich sprzątanie.
 2. Dopracować sylwetki, materiały, animacje oraz czytelność dróg wspinania.
    To stylizowane, własne modele prototypowe; odtworzenie gry 1:1 nie jest ukończone.
-3. Rozwinąć jeden fragment krainy: pora dnia, pogoda, roślinność, fauna,
-   ukryte miejsce i reakcja regionu na pokonanie kolosa. Zachować samotność
-   i eksplorację bez mapy pełnej znaczników.
-4. Zbudować dyskretnego kompana AI, następnie wejście i wyjście drugiego gracza
-   oraz synchronizację sieciową. Istniejący fundament wielu uczestników pozwala
-   kontynuować walkę, gdy żywy partner pozostaje; nie stanowi pełnego trybu co-op.
+3. Rozwinąć faunę, ukryte miejsca, zagadki i konkretne reakcje regionów na
+   pokonanie kolosa. Czas i pogoda już działają; pogoda pozostaje kosmetyczna.
+   Zachować samotność i eksplorację bez mapy pełnej znaczników.
+4. Rozwinąć nawigację kompana, sterowanie drugim graczem i synchronizację sieciową.
+   Obecny kompan pieszy nie stanowi pełnego co-op. Badania modelu kontynuować na
+   reprezentatywnych stanach z oceną jakości, kosztu i warunków dystrybucji.
 5. VR rozwijać osobno po ustabilizowaniu interakcji, kamery i komfortu ruchu.
 
-Nie rozpoczynano dziś pełnej pogody, ekosystemu, sieciowego co-op ani trybu VR.
+Ekosystem, sieciowy co-op i VR pozostają do wdrożenia. Wymagania sprzętowe
+trzeba zmierzyć na rzeczywistym starszym sprzęcie; OpenGL 3.3 samo nie gwarantuje FPS.
 Nadrzędny kierunek pozostaje zapisany w `WIZJA_GRY.md`.

@@ -40,6 +40,13 @@ Docelowo dostępne są samotna gra, gra z kompanem AI oraz współpraca z drugim
 graczem. Obecność partnera ma być dyskretna. Jego śmierć lub odejście nie odbiera
 żywemu graczowi postępu walki. Zagadki muszą pozostawać możliwe do rozwiązania solo.
 
+Etap 16 udostępnia opcjonalnego kompana pieszego w kampanii. Domyślna pozostaje
+samotna podróż. Kompan podąża, sprawdza przeszkody i przepaści, unika ostrzeganych
+ataków i rzadko pomaga łukiem. Nie przejmuje Agro ani głównej drogi wspinania.
+Zmienność jego zachowania wynika z utrwalonego ziarna polityki decyzji. Model
+uczenia maszynowego nie jest potrzebny do działania tej funkcji. Eksperymentalny
+lokalny backend nadal wymaga oceny jakości i kosztu na docelowym sprzęcie.
+
 VR rozwija bezpośrednie odczuwanie skali, wspinaczki i obecności stworzenia.
 Dobór interfejsu, komunikacji partnerów i rozwiązań komfortu ma zachować ciszę
 oraz tajemniczy charakter krainy.
@@ -65,9 +72,15 @@ rozwija geografię Krainy i dodaje profile kosztu renderowania.
 Etap 15 wprowadza pełny cykl dnia i nocy, płynną pogodę regionów oraz atmosferyczny
 wpływ kolejnych zwycięstw i Dormina. Zegar i warunki są częścią zapisów oraz powtórek.
 Krajobraz zyskuje modele drzew, skał i ruin ze wspólnym atlasem i trzema LOD-ami.
+Etap 16 dodaje wybór kompana, bezpieczne dołączanie i odejście, niezależne odrodzenie
+uczestnika oraz zapis jego trybu, RNG i timerów w checkpointach świata. Powtórki
+odtwarzają dwa strumienie akcji, zmiany trybu i przegrupowania bez wywoływania modelu.
 
 Ekosystem, eksploracyjne znajdźki i zagadki oraz bardziej rozbudowane reakcje
 regionów i świątyni na śmierć kolosów pozostają do wdrożenia. Pogoda jest obecnie
-kosmetyczna i nie zmienia fizyki walk. Pełne tryby
-kooperacji, kompan AI i VR również wymagają dalszej pracy. Modele i reżyseria
-obecnych starć mają oprawę prototypową.
+kosmetyczna i nie zmienia fizyki walk. Sieciowa kooperacja, sterowanie drugim
+graczem i VR wymagają dalszej pracy. Kompan obecnie porusza się pieszo i stosuje
+lokalne omijanie; labirynty i głębokie przerwy w terenie wymagają rozbudowy nawigacji.
+Nie wybrano modelu decyzji do dystrybucji. Modele postaci i reżyseria obecnych
+starć mają oprawę prototypową. [Aktualny etap](ETAP_16.md),
+[stan badań lokalnych modeli](LOCAL_DECISION_MODELS.md).

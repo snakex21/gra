@@ -67,7 +67,7 @@ static func restore(game: GameWorld, slot_path: String) -> bool:
 		return false
 	game.state.play_time = maxf(game.state.play_time, current.play_time)
 	game.state.deaths = maxi(game.state.deaths, current.deaths)
-	game.apply_settings(game.settings)
+	game.apply_settings(game.settings, false)
 	return true
 
 static func clear(slot_path: String) -> void:

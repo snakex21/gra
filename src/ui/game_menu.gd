@@ -7,7 +7,7 @@ extends CanvasLayer
 ##   title    : Continue (when the last slot has a save) / New game / Load / Settings / Quit
 ##   slots    : the save slots with what is in them (new game: any, load: the used ones)
 ##   pause    : Resume / Settings / Quit to title
-##   settings : mouse sensitivity, volume, invert Y, Agro steering, help, debug text,
+##   settings : optional companion, graphics, sensitivity, volume, invert Y, Agro, help,
 ##              Controls / Back
 ##   controls : each rebindable action and its keys; click, then press the new key
 ##              (Esc cancels); back to the defaults
@@ -44,6 +44,8 @@ var _ride: CheckBox
 var _help: CheckBox
 var _debug: CheckBox
 var _graphics: OptionButton
+var _companion: OptionButton
+var _companion_hint: Label
 var _slot_buttons: Array[Button] = []
 var _slots_new := true
 var _bind_buttons := {}
@@ -78,6 +80,30 @@ func _ready() -> void:
 	_button(_pause, "Ustawienia", func() -> void: _open_options(&"pause"))
 	_button(_pause, "Wyjdź do menu", func() -> void: _close(); quit_to_title_chosen.emit())
 	_options = _panel("Ustawienia", -280.0)
+	_options.custom_minimum_size.x = 480
+	_options.offset_left = -240
+	_options.offset_right = 240
+	var companion_row := HBoxContainer.new()
+	var companion_label := Label.new()
+	companion_label.text = "Podróż"
+	companion_label.custom_minimum_size.x = 150
+	companion_row.add_child(companion_label)
+	_companion = OptionButton.new()
+	for title in ["Samotna podróż", "Kompan AI", "Kompan AI z lokalnym modelem"]:
+		_companion.add_item(title)
+	_companion.custom_minimum_size.x = 230
+	_companion.item_selected.connect(func(index: int) -> void:
+		settings.companion_mode = Settings.COMPANION_MODES[index]
+		_refresh_companion_hint()
+		_changed())
+	companion_row.add_child(_companion)
+	_options.add_child(companion_row)
+	_companion_hint = Label.new()
+	_companion_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_companion_hint.custom_minimum_size = Vector2(0, 48)
+	_companion_hint.add_theme_font_size_override(&"font_size", 14)
+	_companion_hint.modulate = Color(.78, .81, .79)
+	_options.add_child(_companion_hint)
 	var graphics_row := HBoxContainer.new()
 	var graphics_label := Label.new()
 	graphics_label.text = "Jakość grafiki"
@@ -222,6 +248,9 @@ func _show(s: StringName) -> void:
 	if s == &"trials" and _trial_first:
 		_trial_first.grab_focus.call_deferred()
 		return
+	if s == &"options":
+		_companion.grab_focus.call_deferred()
+		return
 	for c in panel.get_children():
 		if c is Button and c.visible and not (c as Button).disabled:
 			(c as Button).grab_focus.call_deferred()
@@ -238,6 +267,9 @@ func _close() -> void:
 
 func _open_options(back: StringName) -> void:
 	_back_to = back
+	settings.companion_mode = Settings.normalize_companion_mode(settings.companion_mode)
+	_companion.select(Settings.COMPANION_MODES.find(settings.companion_mode))
+	_refresh_companion_hint()
 	_graphics.select(["low", "balanced", "high"].find(settings.graphics_profile))
 	_sens.set_value_no_signal(settings.mouse_sensitivity)
 	_volume.set_value_no_signal(settings.volume)
@@ -246,6 +278,16 @@ func _open_options(back: StringName) -> void:
 	_help.set_pressed_no_signal(settings.show_help)
 	_debug.set_pressed_no_signal(settings.show_debug)
 	_show(&"options")
+
+
+func _refresh_companion_hint() -> void:
+	match settings.companion_mode:
+		&"programmed":
+			_companion_hint.text = "Dyskretny kompan podąża za Tobą i pomaga w podróży."
+		&"local_model":
+			_companion_hint.text = "Model jest eksperymentalny. Gdy jest niedostępny, towarzyszy Ci zwykły kompan AI."
+		_:
+			_companion_hint.text = "Samotna podróż przez Zakazaną Krainę."
 
 
 func _changed() -> void:

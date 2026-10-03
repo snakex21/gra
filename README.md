@@ -5,12 +5,13 @@ elementy ograniczone w oryginale sprzętem PS2, czasem produkcji albo wycięte z
 Silnik: **Godot 4.4+** (GDScript, a Zig dopiero tam, gdzie profiler pokaże realną potrzebę).
 Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych assetów oryginału.
 
-Nadrzędny kierunek: samotność, ogrom i tajemnicza Zakazana Kraina. Docelowo świat
-zyskuje cykl dnia i nocy, pogodę, ekosystem oraz ukryte miejsca i zagadki; reaguje
-na śmierć kolosów i odzyskiwanie mocy przez Dormina. Kooperacja, kompan AI i VR
-mają zachować ten charakter. [Wizja i stan realizacji](docs/WIZJA_GRY.md).
+Nadrzędny kierunek: samotność, ogrom i tajemnicza Zakazana Kraina. Świat ma cykl
+dnia i nocy, pogodę oraz atmosferę reagującą na zwycięstwa i moc Dormina.
+Ekosystem, ukryte miejsca i zagadki wymagają dalszej pracy. Opcjonalny kompan,
+docelowa kooperacja i VR mają zachować ten charakter.
+[Wizja i stan realizacji](docs/WIZJA_GRY.md).
 
-## Stan: Etap 15 — czas, pogoda i krajobraz
+## Stan: Etap 16 — opcjonalny kompan i jego powtórki
 
 - Milestone 1 (wspinanie po poruszającym się kolosie): [docs/MILESTONE_1.md](docs/MILESTONE_1.md)
 - Etap 2 (równowaga na kolosie, upadki, kamera, przejścia): [docs/ETAP_2.md](docs/ETAP_2.md)
@@ -27,6 +28,7 @@ mają zachować ten charakter. [Wizja i stan realizacji](docs/WIZJA_GRY.md).
 - Etap 13 (Wędrowiec, Mono, Agro, Dormin i wszystkie pozostałe kolosy z Blendera, bezpieczny autozapis i wejścia do aren): [docs/ETAP_13.md](docs/ETAP_13.md)
 - Etap 14 (modele broni, dłonie i naciąg łuku, poprawiony Wędrowiec, wspólne drogi Krainy, renderer Compatibility i profile kosztu grafiki): [docs/ETAP_14.md](docs/ETAP_14.md)
 - Etap 15 (utrwalony cykl dnia i nocy, pogoda regionów, wpływ Dormina, nowe drzewa, skały i ruiny z Blendera): [docs/ETAP_15.md](docs/ETAP_15.md)
+- Etap 16 (opcjonalny kompan pieszy, bezpieczne dołączanie, wsparcie łukiem, zapis sesji i dwa strumienie powtórki): [docs/ETAP_16.md](docs/ETAP_16.md)
 - Architektura: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md)
 - Stan po sesji 3 października 2026 i dalsze zadania: [docs/STAN_SESJI_2026-10-03.md](docs/STAN_SESJI_2026-10-03.md)
 
@@ -42,6 +44,16 @@ atmosferyczną anomalię Dormina. Czas i pogoda przetrwają zapis świata oraz
 przewijanie powtórek. Pauza zatrzymuje zegar; noc zachowuje czytelność terenu.
 Nowa oprawa krajobrazu korzysta ze wspólnych atlasów, trzech LOD-ów i MultiMesh.
 
+Ustawienia oferują samotną podróż, zwykłego kompana AI oraz eksperymentalny
+tryb z lokalnym modelem. **Domyślnie kompan jest wyłączony.** Zwykły kompan
+działa całkowicie offline: podąża pieszo, omija przeszkody i przepaści, unika
+ostrzeganych ataków i rzadko wspiera walkę naładowanym strzałem z łuku.
+Nie przejmuje Agro ani wspinaczki gracza. Dołączenie, odejście lub śmierć jednego
+uczestnika zachowują postęp walki, gdy drugi pozostaje żywy.
+Lokalny backend decyzji jest nadal eksperymentem; bez niego działa zwykła polityka
+kompana. Nie wybrano modelu gotowego do dystrybucji. [Zakres i ograniczenia](docs/ETAP_16.md),
+[badania modeli](docs/LOCAL_DECISION_MODELS.md).
+
 Autozapis co minutę, przy wyjściu i po zwycięstwach pozostaje w `data/`.
 „Kontynuuj” wznawia ostatni bezpieczny checkpoint świata, także na Agro.
 Podczas wspinaczki zachowany jest wcześniejszy bezpieczny punkt; późniejsze
@@ -52,6 +64,9 @@ zgłoszenie błędu (nagranie + podsumowanie). Odtworzenie tick w tick z przewij
 `python tools/run_local.py godot -- --replay=res://data/replays/last.replay [--seek=<s>]` (K pauza, J/L ±10 s, [ ] prędkość,
 `,` / `.` poprzedni / następny znacznik — śmierć, trafienie, upadek, pokonanie, zgłoszenie —, C wycinek
 do zgłoszenia, F7 kamera).
+Nagrania z kompanem zachowują także jego akcje, zmiany trybu i przegrupowania.
+Odtwarzanie korzysta z zapisanych akcji i nigdy nie uruchamia modelu AI.
+Checkpoint przechowuje tryb sesji; stare checkpointy i nagrania pozostają solo.
 
 **Próby kolosów** w menu uruchamiają gotowe prototypy bez przechodzenia całej kampanii.
 Grywalna lista ma 21 starć, z równoczesną parą Celosia + Cenobia i finałem z Dorminem,
@@ -65,9 +80,8 @@ migracji zapisu; starsze nagrania korzystają ze swojego wcześniejszego układu
 Areny mają warstwę assetów (paczka Saltward, CC0); `NO_ART=1` wyłącza ich oprawę.
 
 Nowe mechaniki i modele są prototypami. To nie jest ukończone odtworzenie 1:1.
-Wycięte kolosy mają własne interpretacje projektu. Fundament wielu uczestników
-zachowuje walkę po śmierci lub odejściu kompana; pełny wybór co-op / sieć / VR jest
-jeszcze do wdrożenia.
+Wycięte kolosy mają własne interpretacje projektu. Opcjonalny kompan AI działa
+w kampanii; sieciowy co-op, sterowanie drugim graczem i VR pozostają do wdrożenia.
 
 Co działa w sandboxie (`scenes/sandbox.tscn`):
 
@@ -138,6 +152,22 @@ python tools/run_local.py godot --editor
 | Nurkowanie (trzymaj w wodzie; oddech 14 s) | Ctrl / Z | B |
 
 ## Testy
+
+Etap 16 — ścisły zestaw kompana oraz granica lokalnych decyzji:
+
+```bash
+python tools/run_companion_tests.py
+python tests/test_local_decision.py
+python tests/test_local_decision_http.py
+python tools/run_local.py godot --rendering-method gl_compatibility tests/test_companion_controller.tscn
+python tools/run_local.py godot --rendering-method gl_compatibility tests/test_companion_controller_review.tscn
+```
+
+Runner sprawdza kod wyjścia, błędy skryptów i limit czasu każdej sceny; obejmuje
+politykę, kontroler, ustawienia, świat, powtórki oraz integrację autozapisu i klimatu.
+Harness HTTP sam uruchamia testowy serwer; nie uruchamiaj jego sceny Godota bez
+tego harnessu. CI ma osobny krok tych sprawdzeń. Wynik lokalny nie potwierdza
+jeszcze wyniku CI na Linuxie. Eksperymentalne wagi nie są wymagane do testów gry.
 
 Etap 15 (czas, pogoda, trwałość świata, dachy/woda i krajobraz):
 
@@ -217,6 +247,7 @@ fizyki (benchmark regresji).
 src/core/       warstwy fizyki, liczniki wydajności (Perf)
 src/game/       GameWorld (ciągły świat, budzenie kolosów), GameState (postęp, sloty), Settings, ReplayViewer
 src/input/      PlayerActions (abstrakcyjne akcje), FlatInputSource, ActionReplay (nagrywanie / powtórki), domyślne bindy
+src/companion/  CompanionController, seeded CompanionPolicy, opcjonalny asynchroniczny LocalDecisionClient
 src/player/     PlayerCharacter (lokomocja + wspinanie + stanie na kolosie), PlayerRiding, Stamina, Balance, FallImpact, PlayerVisual
 src/climb/      ClimbPatch (chwytalny kształt), SurfaceAnchor (punkt na ruchomym ciele), ClimbQuery
 src/colossus/   Colossus (baza), BodySegment (collider na kości), brain/ (Brain, Intent, Observation, UtilityBrain)
@@ -239,6 +270,7 @@ src/ui/         PlayerHud, GameMenu (tytuł, pauza, ustawienia)
 scenes/         game (cała gra), sandbox, agro_test, valus_arena, quadratus_arena, gaius_arena, phaedra_arena, hydrus_arena
 models/ textures/ materials/ environment/ art/  assety (CC0) od agenta graficznego: Saltward, Ancient Valley, Sentinel v2, Stonewater, Saltwind, Mirewood
 tests/          testy headless + wizualny smoke test
+tools/ai/       eksperymentalny lokalny backend decyzji; pobrane wagi/runtime w pomijanym data/ai/
 docs/           dokumentacja projektu
 ```
 

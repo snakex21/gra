@@ -17,11 +17,14 @@ extends Node3D
 signal region_loaded(kind: StringName)
 signal colossus_defeated(colossus: StringName)
 signal game_completed
+signal companion_regrouped(position: Vector3)
 
 enum Phase { PLAYING, FADE_OUT, LOADING, FADE_IN }
 
 const VALLEY := &"valley"
 const ClimateView := preload("res://src/world/world_climate_view.gd")
+const CompanionDriver := preload("res://src/companion/companion_controller.gd")
+const DecisionClient := preload("res://src/companion/local_decision_client.gd")
 const CLIMATE_INTERVAL := 0.1
 const CAVE_CLIMATES := [&"cave", &"devil", &"eastern_cave"]
 ## Brain seeds of the arenas (each fight is the same fight every time).
@@ -70,10 +73,19 @@ var _sun: DirectionalLight3D
 ## Cosmetic renderer stays outside region, the snapshot's simulation root.
 var climate_view: ClimateView
 var _climate_t := 0.0
+## Session state belongs to checkpoints/replays; settings choose new sessions.
+var companion_mode: StringName = &"off"
+var replay_driven := false
+var decision_client: Node
+var _decision_generation := 0
+var _decision_t := 0.0
+var _regroup_t := 0.0
 
 
 ## Starts the game: loads the save (unless ``new_game``) and builds the temple.
 func start(new_game := false) -> void:
+	replay_driven = false
+	companion_mode = normalize_companion_mode(settings.companion_mode)
 	state = GameState.new()
 	if not new_game and save_path != "":
 		state.load_from(save_path)
@@ -84,7 +96,8 @@ func start(new_game := false) -> void:
 
 
 ## Starts from a given progress (a replay's start), without touching the save file.
-func start_from(progress: Dictionary) -> void:
+func start_from(progress: Dictionary, companion_override: StringName = &"") -> void:
+	companion_mode = normalize_companion_mode(settings.companion_mode if companion_override == &"" else companion_override)
 	state = GameState.new()
 	state.from_dict(progress)
 	state.legacy_replay = layout_version == 1
@@ -95,6 +108,9 @@ func start_from(progress: Dictionary) -> void:
 
 ## Back to the title: the world goes, the progress stays saved.
 func stop() -> void:
+	cancel_companion_decision()
+	if is_instance_valid(decision_client):
+		decision_client.enabled = false
 	if is_instance_valid(region):
 		remove_child(region)
 		region.free()
@@ -117,8 +133,10 @@ func has_save() -> bool:
 
 
 ## Settings onto the current region (and every later one).
-func apply_settings(s: Settings) -> void:
+func apply_settings(s: Settings, sync_companion := true) -> void:
 	settings = s
+	if sync_companion and not replay_driven:
+		set_companion_mode(s.companion_mode)
 	var input: Variant = refs.get("input")
 	if input is FlatInputSource:
 		(input as FlatInputSource).mouse_sensitivity = s.mouse_sensitivity
@@ -152,6 +170,10 @@ func _ready() -> void:
 	climate_view.name = "WorldClimateView"
 	add_child(climate_view)
 	climate_view.setup(self, _sun, env)
+	decision_client = DecisionClient.new()
+	decision_client.name = "LocalDecisionClient"
+	add_child(decision_client)
+	decision_client.decision_ready.connect(_on_companion_decision)
 	var layer := CanvasLayer.new()
 	layer.layer = 10
 	_fade = ColorRect.new()
@@ -172,6 +194,168 @@ func colossus() -> Colossus:
 	return refs.get("colossus")
 
 
+func companion() -> PlayerCharacter:
+	return refs.get("companion")
+
+
+static func normalize_companion_mode(value: Variant) -> StringName:
+	return Settings.normalize_companion_mode(value)
+
+
+func set_companion_mode(value: Variant) -> void:
+	var next := normalize_companion_mode(value)
+	if next != companion_mode:
+		cancel_companion_decision()
+	companion_mode = next
+	_sync_companion()
+
+
+## Joining/leaving does not recreate the host, Agro or the encounter.
+func _sync_companion() -> void:
+	if is_instance_valid(decision_client):
+		decision_client.enabled = companion_mode == &"local_model" and not replay_driven and region_kind != &""
+	if not is_instance_valid(region) or not player():
+		return
+	var actor := companion()
+	var controller: Node = refs.get("companion_controller")
+	if companion_mode == &"off":
+		if is_instance_valid(actor):
+			var encounter: BossEncounter = refs.get("encounter")
+			if encounter:
+				encounter.remove_participant(actor)
+			# In-flight arrows may retain the departed actor as their owner.
+			for arrow in ArrowSystem.of(player()).arrows:
+				if arrow.owner == actor:
+					arrow.owner = null
+			actor.get_parent().remove_child(actor)
+			actor.free()
+		if is_instance_valid(controller):
+			controller.free()
+		refs.erase("companion")
+		refs.erase("companion_controller")
+		return
+	if not is_instance_valid(actor):
+		actor = PlayerCharacter.new()
+		actor.name = "Player2"
+		actor.player_index = 1
+		region.add_child(actor)
+		var join_at := _companion_join_position(player().global_position, true)
+		if join_at == Vector3.INF:
+			join_at = _companion_join_position(player().spawn_transform.origin, true)
+		# Construction can precede physics synchronization. The authored host spawn
+		# is the same safe fallback the player uses, including when joining mid-climb.
+		actor.global_position = player().spawn_transform.origin if join_at == Vector3.INF else join_at
+		actor.facing = player().facing
+		actor.actions.view_basis = player().actions.view_basis
+		actor.spawn_transform = actor.global_transform
+		actor.reset_physics_interpolation()
+		actor.died.connect(cancel_companion_decision)
+		refs.companion = actor
+		controller = CompanionDriver.new()
+		controller.name = "CompanionController"
+		region.add_child(controller)
+		controller.setup(self, actor, 1709 + seed_offset)
+		refs.companion_controller = controller
+		var encounter: BossEncounter = refs.get("encounter")
+		if encounter:
+			encounter.add_participant(actor)
+	controller.mode = companion_mode
+	controller.external_drive = replay_driven
+	actor.set_physics_process(phase == Phase.PLAYING)
+	actor.beam.lantern = region_kind in [&"cave", &"devil"]
+	var light_layer := 2 if actor.beam.lantern else 1
+	for mesh in actor.find_children("*", "GeometryInstance3D", true, false):
+		(mesh as GeometryInstance3D).layers = light_layer
+
+
+func cancel_companion_decision() -> void:
+	_decision_generation += 1
+	_decision_t = 0.0
+	_regroup_t = 0.0
+	if is_instance_valid(decision_client):
+		decision_client.cancel()
+
+
+func _on_companion_decision(intent: StringName, generation: int) -> void:
+	if generation != _decision_generation or replay_driven or get_tree().paused or companion_mode != &"local_model" or phase != Phase.PLAYING or not is_instance_valid(player()) or player().dead:
+		return
+	var controller: Node = refs.get("companion_controller")
+	if is_instance_valid(controller) and is_instance_valid(companion()) and not companion().dead:
+		controller.accept_decision(intent)
+
+
+func _companion_tick(delta: float) -> void:
+	if replay_driven or phase != Phase.PLAYING or not is_instance_valid(companion()) or companion().dead or not is_instance_valid(player()) or player().dead:
+		return
+	_decision_t += delta
+	if companion_mode == &"local_model" and _decision_t >= 6.0:
+		_decision_t = 0.0
+		var controller: Node = refs.get("companion_controller")
+		decision_client.enabled = true
+		decision_client.request(controller.observation(), controller.allowed_intents(), _decision_generation)
+	# Agro can outrun a companion on foot. Regroup only out of sight, on dry,
+	# walkable terrain in the valley; never shortcut an active fight or a fall.
+	_regroup_t += delta
+	if _regroup_t < 5.0:
+		return
+	_regroup_t = 0.0
+	var actor := companion()
+	var host := player()
+	if region_kind != VALLEY or host.dead or actor.state != PlayerCharacter.State.GROUND or host.state not in [PlayerCharacter.State.GROUND, PlayerCharacter.State.RIDE] or actor.global_position.distance_to(host.global_position) < 75.0:
+		return
+	var camera: Camera3D = refs.get("camera")
+	if camera and camera.is_position_in_frustum(actor.global_position):
+		return
+	var position := _companion_join_position(host.global_position, true, camera)
+	if position == Vector3.INF:
+		return
+	regroup_companion(position)
+	companion_regrouped.emit(position)
+
+
+## Replay applies the sparse regroup event after the same completed physics tick.
+func regroup_companion(position: Vector3) -> void:
+	var actor := companion()
+	if not is_instance_valid(actor):
+		return
+	actor.global_position = position
+	actor.velocity = Vector3.ZERO
+	actor.spawn_transform = actor.global_transform
+	actor.reset_physics_interpolation()
+
+
+func _companion_join_position(near: Vector3, require_ground := false, avoid_camera: Camera3D = null) -> Vector3:
+	var forward := player().facing.normalized() if player() else Vector3.FORWARD
+	var side := forward.cross(Vector3.UP).normalized()
+	for offset in [-forward * 7.0 + side * 3.0, -forward * 9.0 - side * 3.0, side * 4.0]:
+		var candidate: Vector3 = near + offset
+		var query := PhysicsRayQueryParameters3D.create(candidate + Vector3.UP * 3.0, candidate - Vector3.UP * 10.0, Layers.WORLD)
+		var hit := get_world_3d().direct_space_state.intersect_ray(query)
+		if hit.is_empty() or (hit.normal as Vector3).dot(Vector3.UP) < 0.8:
+			continue
+		candidate = (hit.position as Vector3) + Vector3.UP * 0.95
+		if avoid_camera and avoid_camera.is_position_in_frustum(candidate):
+			continue
+		var capsule := CapsuleShape3D.new()
+		capsule.radius = 0.35
+		capsule.height = 1.8
+		var clearance := PhysicsShapeQueryParameters3D.new()
+		clearance.shape = capsule
+		clearance.transform = Transform3D(Basis.IDENTITY, candidate)
+		clearance.collision_mask = Layers.SOLID
+		clearance.margin = 0.02
+		if not get_world_3d().direct_space_state.intersect_shape(clearance, 1).is_empty():
+			continue
+		var wet := false
+		for water in WaterBody.all(get_tree()):
+			if water.contains_xz(candidate) and water.surface() > candidate.y - 0.2:
+				wet = true
+		if not wet:
+			return candidate
+	# Newly built terrain might not have reached the physics server yet.
+	return Vector3.INF if require_ground else near + side * 1.4
+
+
 func _physics_process(delta: float) -> void:
 	if region_kind == &"":
 		return   # at the title: nothing loaded
@@ -183,6 +367,7 @@ func _physics_process(delta: float) -> void:
 		_climate_t = fmod(_climate_t, CLIMATE_INTERVAL)
 		refresh_climate()
 	_build_step()
+	_companion_tick(delta)
 	match phase:
 		Phase.PLAYING:
 			_play(delta)
@@ -201,6 +386,8 @@ func _physics_process(delta: float) -> void:
 			_fade.color.a = 1.0 - clampf(_phase_t / fade_time, 0.0, 1.0)
 			if _phase_t >= fade_time:
 				phase = Phase.PLAYING
+				if is_instance_valid(companion()):
+					companion().set_physics_process(true)
 
 
 func _play(_delta: float) -> void:
@@ -240,6 +427,11 @@ func _play(_delta: float) -> void:
 
 ## Fade to the temple (after a victory). ``riding`` is kept for old callers.
 func _go(_kind: StringName, _riding: bool) -> void:
+	cancel_companion_decision()
+	if is_instance_valid(companion()):
+		companion().bow.reset()
+		companion().actions.clear()
+		companion().set_physics_process(false)
 	phase = Phase.FADE_OUT
 	_phase_t = 0.0
 	transitions += 1
@@ -261,6 +453,7 @@ static func _back_in_valley(gate: Dictionary, p: Vector3) -> bool:
 
 ## The whole world, the player and Agro at the temple.
 func _build_world() -> void:
+	cancel_companion_decision()
 	if is_instance_valid(region):
 		remove_child(region)
 		region.free()
@@ -280,7 +473,8 @@ func _build_world() -> void:
 	region_kind = VALLEY
 	region_time = 0.0
 	_resets_seen = 0
-	apply_settings(settings)
+	_sync_companion()
+	apply_settings(settings, false)
 	region_loaded.emit(VALLEY)
 	if state.is_complete():
 		game_completed.emit()
@@ -441,6 +635,9 @@ func _spawn_actors(spawn: Vector3, yaw: float, horse_at: Vector3) -> void:
 	p.actions.view_basis = Basis(Vector3.UP, yaw)
 	p.beam.sun_direction = Valley.SUN_DIRECTION.normalized()
 	p.reset_physics_interpolation()
+	p.died.connect(cancel_companion_decision)
+	# A stable empty system must also exist after restoring a zero-arrow checkpoint.
+	ArrowSystem.of(p)
 	var cam := PlayerCamera.new()
 	cam.name = "Camera1"
 	cam.player = p
@@ -546,13 +743,18 @@ func _wake(kind: StringName) -> void:
 	e.name = "Encounter"
 	root.add_child(e)
 	var players: Array[PlayerCharacter] = [p]
+	if is_instance_valid(companion()):
+		players.append(companion())
 	e.setup(c, players, horse)
 	# A death puts the player (and Agro) back at the arena's way in.
 	var starts := arena_starts(kind)
 	e.horse_start = Transform3D(xf.basis, xf * (starts[1] as Vector3))
 	p.spawn_transform = Transform3D(xf.basis, xf * (starts[0] as Vector3))
+	if is_instance_valid(companion()):
+		companion().spawn_transform = Transform3D(xf.basis, p.spawn_transform.origin + xf.basis.x * 2.0)
 	var arrows := ArrowSystem.of(p)
 	e.encounter_reset.connect(func(_n: int) -> void: arrows.clear())
+	e.encounter_reset.connect(func(_n: int) -> void: cancel_companion_decision())
 	_awake = [c, e]
 	if c is HumanoidBoss:
 		var draw := CombatDebugDraw.new()
@@ -577,7 +779,9 @@ func _wake(kind: StringName) -> void:
 	refs[kind] = c
 	p.beam.lantern = kind in [&"cave", &"devil"]
 	if kind in [&"cave", &"devil"]:
-		for actor in [p, c]:
+		for actor in [p, c, companion()]:
+			if not is_instance_valid(actor):
+				continue
 			for mesh in actor.find_children("*", "GeometryInstance3D", true, false):
 				(mesh as GeometryInstance3D).layers = 2
 		if kind == &"cave":
@@ -613,8 +817,15 @@ func _sleep() -> void:
 	hud.colossus = null
 	hud.encounter = null
 	p.auto_respawn = true
+	if is_instance_valid(companion()):
+		companion().auto_respawn = true
+		companion().beam.lantern = false
+		for mesh in companion().find_children("*", "GeometryInstance3D", true, false):
+			(mesh as GeometryInstance3D).layers = 1
 	var g: Dictionary = refs.gates[kind]
 	p.spawn_transform = Transform3D(Basis(Vector3.UP, atan2((g.out as Vector3).x, (g.out as Vector3).z)), Valley.on_ground((g.pos as Vector3) - (g.out as Vector3) * 10.0, 0.95))
+	if is_instance_valid(companion()):
+		companion().spawn_transform = Transform3D(p.spawn_transform.basis, p.spawn_transform.origin + p.spawn_transform.basis.x * 2.0)
 	for n in _awake:
 		if is_instance_valid(n):
 			n.queue_free()
@@ -625,12 +836,19 @@ func _sleep() -> void:
 
 
 func _change_region(kind: StringName) -> void:
+	cancel_companion_decision()
 	region_kind = kind
 	region_time = 0.0
 	_resets_seen = 0
 	transitions += 1
 	refresh_climate(true)
 	region_loaded.emit(kind)
+	_sync_companion()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PAUSED:
+		cancel_companion_decision()
 
 
 ## Climate uses the observer's location, rather than treating a whole cave approach

@@ -1,0 +1,61 @@
+{
+  "repo": "hotchpotch/bekko-system-one-v0-68m",
+  "revision": "ab7685f23e5edbc1acb12ced4f2c4e12591efa69",
+  "license": "UNASSIGNED: author has not finalized released-weight license",
+  "reference_code_revision": "0fccbb8568b67d47745d820319fe9a4a04e7fa95",
+  "files": [
+    {
+      "file": "manifest.json",
+      "url": "https://huggingface.co/hotchpotch/bekko-system-one-v0-68m/resolve/ab7685f23e5edbc1acb12ced4f2c4e12591efa69/onnx_browser/manifest.json",
+      "bytes": 881,
+      "sha256": "4889c2b2ffea857ad33d7577473cdb8ea82495a5d08c9ed3afe6b9cfa96f8759"
+    },
+    {
+      "file": "tokenizer.json",
+      "url": "https://huggingface.co/hotchpotch/bekko-system-one-v0-68m/resolve/ab7685f23e5edbc1acb12ced4f2c4e12591efa69/onnx_browser/tokenizer.json",
+      "bytes": 3583327,
+      "sha256": "dd8374bb8bd74c2112989a24697e0ba494c6258ed758c0701a62957e67d38cea"
+    },
+    {
+      "file": "tokenizer_config.json",
+      "url": "https://huggingface.co/hotchpotch/bekko-system-one-v0-68m/resolve/ab7685f23e5edbc1acb12ced4f2c4e12591efa69/onnx_browser/tokenizer_config.json",
+      "bytes": 124,
+      "sha256": "6459575245dbb8f85afefb89547b4a0c88b45934810483c806f885b1a5ad801d"
+    },
+    {
+      "file": "model.onnx",
+      "url": "https://huggingface.co/hotchpotch/bekko-system-one-v0-68m/resolve/ab7685f23e5edbc1acb12ced4f2c4e12591efa69/onnx_browser/model.onnx",
+      "bytes": 196342909,
+      "sha256": "3b121d68a67f9678a1272a08f24dd2ccffb276f92f39a3f77953b30290cbc3e1"
+    }
+  ],
+  "wheels": [
+    {
+      "package": "onnxruntime",
+      "version": "1.30.0",
+      "file": "onnxruntime-1.30.0-cp313-cp313-win_amd64.whl",
+      "url": "https://files.pythonhosted.org/packages/3c/dd/c57c529dbc6dd55eca24b12cfbeab1b6a690de72083824eca689085f55b0/onnxruntime-1.30.0-cp313-cp313-win_amd64.whl",
+      "bytes": 14311378,
+      "sha256": "4b63041bd623a9a9ac5e353948436c6fa7f43edd12d6b4a4ebc340bca959ba93",
+      "license": "MIT"
+    },
+    {
+      "package": "tokenizers",
+      "version": "0.22.2",
+      "file": "tokenizers-0.22.2-cp39-abi3-win_amd64.whl",
+      "url": "https://files.pythonhosted.org/packages/65/71/0670843133a43d43070abeb1949abfdef12a86d490bea9cd9e18e37c5ff7/tokenizers-0.22.2-cp39-abi3-win_amd64.whl",
+      "bytes": 2747786,
+      "sha256": "c9ea31edff2968b44a88f97d784c2f16dc0729b8b143ed004699ebca91f05c48",
+      "license": "Apache-2.0"
+    },
+    {
+      "package": "numpy",
+      "version": "2.3.3",
+      "file": "numpy-2.3.3-cp313-cp313-win_amd64.whl",
+      "url": "https://files.pythonhosted.org/packages/1b/b5/263ebbbbcede85028f30047eab3d58028d7ebe389d6493fc95ae66c636ab/numpy-2.3.3-cp313-cp313-win_amd64.whl",
+      "bytes": 12783269,
+      "sha256": "f0dadeb302887f07431910f67a14d57209ed91130be0adea2f9793f1a4f817cf",
+      "license": "BSD-3-Clause; bundled notices retained"
+    }
+  ]
+}

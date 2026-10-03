@@ -47,6 +47,19 @@ func setup(p_boss: Colossus, p_players: Array[PlayerCharacter], p_horse: Horse) 
 	boss.defeated.connect(_on_defeated)
 
 
+func add_participant(player: PlayerCharacter) -> void:
+	if is_instance_valid(player) and not players.has(player):
+		players.append(player)
+		player.auto_respawn = false
+
+
+func remove_participant(player: PlayerCharacter) -> void:
+	players.erase(player)
+	if is_instance_valid(player):
+		_revive_wait.erase(player.get_instance_id())
+		player.auto_respawn = true
+
+
 func _physics_process(delta: float) -> void:
 	time += delta
 	# A participant may leave the session; preserve the living player's encounter.

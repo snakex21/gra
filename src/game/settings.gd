@@ -5,6 +5,7 @@ extends RefCounted
 
 const VERSION := 1
 const DEFAULT_PATH := "res://data/settings.json"
+const COMPANION_MODES: Array[StringName] = [&"off", &"programmed", &"local_model"]
 
 var mouse_sensitivity := 0.0025
 var invert_y := false
@@ -14,6 +15,8 @@ var show_help := true
 var show_debug := false
 ## Rendering cost only; older settings files retain the balanced default.
 var graphics_profile := "balanced"
+## Optional companion; older files and malformed values preserve a solitary game.
+var companion_mode: StringName = &"off"
 ## Master volume 0..1.
 var volume := 0.8
 ## The player's own keys: {action: [{"key": code} | {"mouse": button}, ...]} (InputSetup).
@@ -25,7 +28,15 @@ var slot := 1
 func to_dict() -> Dictionary:
 	return {"version": VERSION, "mouse_sensitivity": mouse_sensitivity, "invert_y": invert_y,
 		"ride_relative": ride_relative, "show_help": show_help, "show_debug": show_debug,
-		"volume": volume, "bindings": bindings, "slot": slot, "graphics_profile": graphics_profile}
+		"volume": volume, "bindings": bindings, "slot": slot, "graphics_profile": graphics_profile,
+		"companion_mode": String(normalize_companion_mode(companion_mode))}
+
+
+static func normalize_companion_mode(value: Variant) -> StringName:
+	if not (value is String or value is StringName):
+		return &"off"
+	var mode := StringName(value)
+	return mode if mode in COMPANION_MODES else &"off"
 
 
 ## Fills from a saved dictionary; unknown or broken values keep their defaults.
@@ -40,6 +51,7 @@ func from_dict(d: Dictionary) -> void:
 	var profile := String(d.get("graphics_profile", graphics_profile))
 	if profile in ["low", "balanced", "high"]:
 		graphics_profile = profile
+	companion_mode = normalize_companion_mode(d.get("companion_mode", &"off"))
 	volume = clampf(float(d.get("volume", volume)), 0.0, 1.0)
 	# Keys as whole numbers again (JSON reads every number as a float).
 	bindings = {}

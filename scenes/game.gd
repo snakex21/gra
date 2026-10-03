@@ -78,6 +78,9 @@ func _begin(new_game: bool) -> void:
 		AutoSave.clear(save_path)
 		state.save(save_path)
 	elif not new_game and AutoSave.restore(self, save_path):
+		# Display the restored session choice; a volume/graphics edit must not
+		# accidentally replace it with an older preference from settings.json.
+		settings.companion_mode = companion_mode
 		(refs.hud as PlayerHud).message = "Wczytano ostatni bezpieczny zapis"
 	_record({"start": "new" if new_game else "continue", "progress": state.to_dict(), "seed_offset": seed_offset})
 	_capture_mouse(true)
@@ -174,6 +177,7 @@ func _quit_game() -> void:
 	get_tree().quit()
 
 func _notification(what: int) -> void:
+	super(what)
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		_quit_game()
 

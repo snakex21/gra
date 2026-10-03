@@ -29,6 +29,10 @@ var player_source: Callable
 var header := {}
 var tick := 0
 var frames: Array = []
+## Optional second actor stream. Absent in historical solo recordings.
+var companion_frames: Array = []
+var companion_events: Array = []
+var companion_regroups: Array = []
 var markers: Array = []
 var checkpoints: Array = []
 ## Simulation checkpoints every 10 seconds, captured after the complete physics tick.
@@ -40,6 +44,16 @@ var _last: Array = []
 var _next := 0
 var _player_id := 0
 var _segment := -1
+var _companion_last: Array = []
+var _companion_next := 0
+var _companion_id := 0
+var _companion_segment := -1
+var _event_next := 0
+var _regroup_next := 0
+var _companion_last_mode := "off"
+var _join_actor: PlayerCharacter
+var _join_actor_tick := 0
+var _join_tick := -1
 
 
 static func recorder(p: PlayerCharacter, p_header := {}) -> ActionReplay:
@@ -57,6 +71,9 @@ static func player_for(p: PlayerCharacter, data: Dictionary) -> ActionReplay:
 	r.player = p
 	r.header = data.get("header", {})
 	r.frames = data.get("frames", [])
+	r.companion_frames = data.get("companion_frames", [])
+	r.companion_events = data.get("companion_events", [])
+	r.companion_regroups = data.get("companion_regroups", [])
 	r.markers = data.get("markers", [])
 	r.checkpoints = data.get("checkpoints", [])
 	r.name = "ActionReplay"
@@ -66,17 +83,29 @@ static func player_for(p: PlayerCharacter, data: Dictionary) -> ActionReplay:
 func _ready() -> void:
 	# Early, to hand the hook to a new player before it runs its first tick.
 	process_physics_priority = -100
-	_bind()
 	var g := get_parent() as GameWorld
-	if mode == Mode.RECORD and g:
-		header["world_layout"] = g.layout_version
-		checkpoint(g)
+	if g and mode == Mode.PLAY:
+		g.replay_driven = true
+		g.cancel_companion_decision()
+		g._sync_companion()
+	_bind()
+	_bind_companion()
+	if g:
+		var first_tick := CompanionFirstTick.new()
+		first_tick.recorder = self
+		add_child(first_tick)
 		var tap := CheckpointTap.new()
 		tap.recorder = self
 		tap.game = g
 		add_child(tap)
+	if mode == Mode.RECORD and g:
+		header["world_layout"] = g.layout_version
+		header["companion_mode"] = String(g.companion_mode)
+		_companion_last_mode = String(g.companion_mode)
+		checkpoint(g)
 		g.region_loaded.connect(func(kind: StringName) -> void: mark(&"region", String(kind)))
 		g.colossus_defeated.connect(func(kind: StringName) -> void: mark(&"defeat", String(kind)))
+		g.companion_regrouped.connect(func(position: Vector3) -> void: companion_regroups.append([tick, position]))
 
 
 ## Notes ``kind`` (death, hit, fall, region, defeat, report) at this tick. Hits close
@@ -90,8 +119,61 @@ func mark(kind: StringName, text := "") -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	_bind()
 	tick += 1
+	var game := get_parent() as GameWorld
+	if game:
+		if mode == Mode.RECORD:
+			if String(game.companion_mode) != _companion_last_mode:
+				_companion_last_mode = String(game.companion_mode)
+				companion_events.append([tick, _companion_last_mode])
+		else:
+			while _event_next < companion_events.size() and int(companion_events[_event_next][0]) <= tick:
+				game.set_companion_mode(companion_events[_event_next][1])
+				_event_next += 1
+	_bind()
+	_bind_companion()
+
+
+func _bind_companion() -> void:
+	var game := get_parent() as GameWorld
+	if not game:
+		return
+	var actor := game.companion()
+	if not is_instance_valid(actor):
+		_companion_id = 0
+		return
+	if actor.get_instance_id() == _companion_id:
+		return
+	_companion_id = actor.get_instance_id()
+	_companion_segment += 1
+	_companion_last = []
+	actor.action_hook = _on_companion_tick
+	if mode == Mode.PLAY:
+		# SceneTree may defer newly inserted physics nodes to the following tick.
+		# A recording joined between ticks, so replay owes this actor its first frame.
+		_join_actor = actor
+		_join_actor_tick = actor.ticks
+		_join_tick = tick
+
+
+func _on_companion_tick(actor: PlayerCharacter) -> void:
+	var key := [_companion_segment, actor.ticks]
+	if mode == Mode.RECORD:
+		var snapshot := actor.actions.snapshot()
+		var state := [snapshot, actor.riding.steer_relative]
+		if state != _companion_last or snapshot[7] or snapshot[8] or snapshot[9] or snapshot[10]:
+			companion_frames.append([key, snapshot, actor.riding.steer_relative, tick])
+			_companion_last = state
+		return
+	var applied := false
+	while _companion_next < companion_frames.size() and _before_or_at(companion_frames[_companion_next][0], key):
+		var frame: Array = companion_frames[_companion_next]
+		actor.actions.restore(frame[1])
+		actor.riding.steer_relative = frame[2]
+		_companion_next += 1
+		applied = true
+	if not applied:
+		actor.actions.restore(_without_presses(actor.actions.snapshot()))
 
 
 ## The hook goes onto the current player (a new one per region in GameWorld).
@@ -149,12 +231,16 @@ static func _without_presses(s: Array) -> Array:
 
 
 func to_dict() -> Dictionary:
-	return {"version": VERSION, "header": header, "frames": frames, "ticks": tick, "markers": markers, "checkpoints": checkpoints}
+	return {"version": VERSION, "header": header, "frames": frames, "companion_frames": companion_frames,
+		"companion_events": companion_events, "companion_regroups": companion_regroups,
+		"ticks": tick, "markers": markers, "checkpoints": checkpoints}
 
 func checkpoint(game: GameWorld) -> void:
 	var world := WorldSnapshot.capture(game)
 	if not world.is_empty():
-		checkpoints.append({"tick": tick, "world": world, "cursor": frames.size(), "segment": _segment})
+		checkpoints.append({"tick": tick, "world": world, "cursor": frames.size(), "segment": _segment,
+			"companion_cursor": companion_frames.size(), "companion_segment": _companion_segment,
+			"companion_event_cursor": companion_events.size(), "companion_regroup_cursor": companion_regroups.size()})
 
 func resume_checkpoint(saved: Dictionary) -> void:
 	tick = int(saved.tick)
@@ -164,6 +250,32 @@ func resume_checkpoint(saved: Dictionary) -> void:
 	_player_id = player.get_instance_id()
 	player.action_hook = _on_player_tick
 	finished = false
+	_join_actor = null
+	_join_tick = -1
+	_companion_next = int(saved.get("companion_cursor", 0))
+	_companion_segment = int(saved.get("companion_segment", -1))
+	_event_next = int(saved.get("companion_event_cursor", 0))
+	_regroup_next = int(saved.get("companion_regroup_cursor", 0))
+	var game := get_parent() as GameWorld
+	if game and is_instance_valid(game.companion()):
+		_companion_id = game.companion().get_instance_id()
+		game.companion().action_hook = _on_companion_tick
+	else:
+		_companion_id = 0
+
+class CompanionFirstTick extends Node:
+	var recorder: ActionReplay
+	func _ready() -> void:
+		# After ordinary PlayerCharacter(0), before projectiles(20) and encounter(50).
+		process_physics_priority = 1
+	func _physics_process(delta: float) -> void:
+		if recorder.mode != Mode.PLAY or recorder._join_tick != recorder.tick:
+			return
+		var actor := recorder._join_actor
+		if is_instance_valid(actor) and actor.is_physics_processing() and actor.ticks == recorder._join_actor_tick:
+			actor._physics_process(delta)
+		recorder._join_actor = null
+		recorder._join_tick = -1
 
 class CheckpointTap extends Node:
 	var recorder: ActionReplay
@@ -171,7 +283,11 @@ class CheckpointTap extends Node:
 	func _ready() -> void:
 		process_physics_priority = 900
 	func _physics_process(_delta: float) -> void:
-		if recorder.tick > 0 and recorder.tick % recorder.checkpoint_every == 0:
+		if recorder.mode == Mode.PLAY:
+			while recorder._regroup_next < recorder.companion_regroups.size() and int(recorder.companion_regroups[recorder._regroup_next][0]) <= recorder.tick:
+				game.regroup_companion(recorder.companion_regroups[recorder._regroup_next][1])
+				recorder._regroup_next += 1
+		elif recorder.tick > 0 and recorder.tick % recorder.checkpoint_every == 0:
 			recorder.checkpoint(game)
 
 

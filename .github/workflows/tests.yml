@@ -34,3 +34,8 @@ jobs:
             if [ "$scene" = "forbidden_lands" ]; then limit=660000; fi
             "$GODOT" --headless --fixed-fps 60 --quit-after "$limit" "res://tests/${scene}.tscn"
           done
+      - name: Verify optional companion and decision boundary
+        run: |
+          python3 tools/run_companion_tests.py --godot "$GODOT"
+          python3 tests/test_local_decision.py
+          python3 tests/test_local_decision_http.py

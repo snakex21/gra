@@ -82,13 +82,15 @@ func restart(checkpoint := {}) -> void:
 	var h: Dictionary = data.get("header", {})
 	game.with_input = false
 	game.save_path = ""
+	game.replay_driven = true
+	game.cancel_companion_decision()
 	game.seed_offset = int(h.get("seed_offset", 0))
 	game.layout_version = int(h.get("world_layout", 1))
 	if is_instance_valid(replay):
 		replay.free()
 	if checkpoint.is_empty() or not WorldSnapshot.restore(game, checkpoint.get("world", {})):
 		checkpoint = {}
-		game.start_from(h.get("progress", {}))
+		game.start_from(h.get("progress", {}), GameWorld.normalize_companion_mode(h.get("companion_mode", "off")))
 	replay = ActionReplay.player_for(null, data)
 	replay.player_source = game.player
 	game.add_child(replay)
@@ -153,11 +155,27 @@ func save_clip(at := -1, path := "") -> String:
 			if f.size() < 4 or int(f[3]) <= to:
 				kept.append(f)
 		clip.frames = kept
+		# Trim the companion stream against the same world checkpoint and end tick.
+		var companion_cursor := int(checkpoint.get("companion_cursor", 0))
+		var companion_kept := []
+		var original_companion: Array = clip.get("companion_frames", [])
+		for i in range(companion_cursor, original_companion.size()):
+			var frame: Array = original_companion[i]
+			if frame.size() < 4 or int(frame[3]) <= to:
+				companion_kept.append(frame)
+		clip.companion_frames = companion_kept
+		var event_cursor := int(checkpoint.get("companion_event_cursor", 0))
+		clip.companion_events = (clip.get("companion_events", []) as Array).slice(event_cursor).filter(func(event: Array) -> bool: return int(event[0]) <= to)
+		var regroup_cursor := int(checkpoint.get("companion_regroup_cursor", 0))
+		clip.companion_regroups = (clip.get("companion_regroups", []) as Array).slice(regroup_cursor).filter(func(event: Array) -> bool: return int(event[0]) <= to)
 		clip.checkpoints = []
 		for c: Dictionary in data.get("checkpoints", []):
 			if int(c.tick) >= int(checkpoint.tick) and int(c.tick) <= to:
 				var adjusted := c.duplicate(true)
 				adjusted.cursor = int(c.cursor) - cursor
+				adjusted.companion_cursor = int(c.get("companion_cursor", 0)) - companion_cursor
+				adjusted.companion_event_cursor = int(c.get("companion_event_cursor", 0)) - event_cursor
+				adjusted.companion_regroup_cursor = int(c.get("companion_regroup_cursor", 0)) - regroup_cursor
 				clip.checkpoints.append(adjusted)
 		clip.markers = (data.get("markers", []) as Array).filter(func(m: Array) -> bool: return int(m[0]) >= from and int(m[0]) <= to)
 	var h: Dictionary = clip.get("header", {})
