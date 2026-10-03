@@ -14,7 +14,7 @@ signal finished(result: Dictionary)
 
 enum Phase { FIND, TO_HORSE, MOUNT, RIDE, ARENA, DONE }
 
-const TIMEOUTS := {Phase.FIND: 20.0, Phase.TO_HORSE: 40.0, Phase.MOUNT: 10.0, Phase.RIDE: 150.0, Phase.ARENA: 720.0}
+const TIMEOUTS := {Phase.FIND: 20.0, Phase.TO_HORSE: 40.0, Phase.MOUNT: 10.0, Phase.RIDE: 360.0, Phase.ARENA: 720.0}
 ## Seconds between beam checks while riding.
 const RIDE_CHECK := 7.0
 
@@ -307,20 +307,21 @@ func _arena(delta: float) -> void:
 	var a := p.actions
 	var root: Node3D = game.refs.get("arena")
 	if root and (root.global_transform.affine_inverse() * p.global_position).z > (GameWorld.arena_starts(kind)[0] as Vector3).z + 4.0:
-		# Still in the corridor: on along the beam (it now leads to the colossus).
+		# The beam found the gate. Its shadowed passage is straight but may turn
+		# away from the approach through the valley; follow its axis to the arena.
+		var local := root.global_transform.affine_inverse() * p.global_position
+		var direction := -root.global_basis.z - root.global_basis.x * clampf(local.x * 0.08, -0.45, 0.45)
+		a.view_basis = Basis.looking_at(direction.normalized())
+		a.move = Vector2(0, 0.6 if game.region_time < 1.0 else 1.0)
+		a.grab_held = false
+		a.beam_held = kind in [&"cave", &"devil"] and not p.is_riding()
 		if p.is_riding():
-			_ride(delta)
-		else:
-			if _sweeping or _since_check > RIDE_CHECK:
-				a.move = Vector2.ZERO
-				if _sweep(delta):
-					_since_check = 0.0
-				return
-			_since_check += delta
-			a.view_basis = Basis.looking_at(_heading)
-			a.move = Vector2(0, 1)
+			stats.ride_time += delta
+			p.riding.steer_relative = false
+			if game.region_time > 1.0 and _horse().controller.speed < 9.0 and int(phase_time * 60.0) % 45 == 0:
+				a.press_jump()
 		return
-	if p.is_riding() and kind != &"quadratus":
+	if p.is_riding() and kind not in [&"quadratus", &"basaran", &"dirge", &"phalanx"]:
 		# Valus and Gaius are fought on foot: off the horse first.
 		a.move = Vector2.ZERO
 		a.grab_held = true
@@ -334,6 +335,13 @@ func _arena(delta: float) -> void:
 	a.grab_held = false
 	var e: BossEncounter = game.refs.encounter
 	match kind:
+		&"cave":
+			var b := CaveBot.new()
+			b.verbose = verbose
+			game.region.add_child(b)
+			b.setup(p, game.refs.colossus, e)
+			b.finished.connect(_on_boss_finished.bind(kind))
+			boss_bot = b
 		&"valus":
 			var b := ValusBot.new()
 			b.verbose = verbose
@@ -376,6 +384,16 @@ func _arena(delta: float) -> void:
 			game.region.add_child(b)
 			b.setup(p, game.refs.colossus, e, game.refs.horse)
 			b.finished.connect(_on_boss_finished.bind(kind))
+			boss_bot = b
+		_:
+			var bot_script: Script = load("res://src/combat/%s_bot.gd" % kind)
+			var b: Node = bot_script.new()
+			game.region.add_child(b)
+			if kind in [&"basaran", &"dirge", &"phalanx"]:
+				b.call(&"setup", p, game.refs.colossus, e, game.refs.horse)
+			else:
+				b.call(&"setup", p, game.refs.colossus, e)
+			b.connect(&"finished", _on_boss_finished.bind(kind))
 			boss_bot = b
 	_log("fight %s (%s)" % [kind, "riding" if p.is_riding() else "on foot"])
 

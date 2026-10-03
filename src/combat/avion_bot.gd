@@ -266,8 +266,14 @@ func _hang() -> void:
 		a.move = Vector2(0, 1)
 		return
 	dir = dir.normalized()
-	var right := player.climb_up.cross(n)
-	a.move = Vector2(dir.dot(right), dir.dot(player.climb_up)).normalized()
+	# PlayerCharacter changes to camera-relative crawling on upward surfaces. Using
+	# the wall frame here makes the same input walk away from the body after a turn.
+	if n.y > 0.55:
+		_look(dir)
+		a.move = Vector2(0, 1)
+	else:
+		var right := player.climb_up.cross(n)
+		a.move = Vector2(dir.dot(right), dir.dot(player.climb_up)).normalized()
 
 
 func _on_back() -> void:
@@ -325,7 +331,9 @@ func _strike() -> void:
 
 ## Hold the grip: it shakes, we stumble, or it banks too steeply.
 func _hold_on() -> bool:
-	return avion.intent.kind == Avion.SHAKE_BODY or player.balance.state >= Balance.State.STUMBLE or absf(avion.roll) > 0.3
+	# The carrying turn converges to 0.3 rad from above. A threshold at that exact
+	# limit keeps the bot gripping forever until its stamina expires.
+	return avion.intent.kind == Avion.SHAKE_BODY or player.balance.state >= Balance.State.STUMBLE or absf(avion.roll) > 0.35
 
 
 ## Too steep to let go and stand: it climbs or dives (a swoop).

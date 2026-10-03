@@ -47,6 +47,7 @@ func _ready() -> void:
 	_banner.add_theme_color_override(&"font_shadow_color", Color.BLACK)
 	_banner.add_theme_font_size_override(&"font_size", 44)
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_banner.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(_banner)
 
 
@@ -62,9 +63,12 @@ func _process(delta: float) -> void:
 		show_help = not show_help
 	# The help never covers the debug text: it only shows below it.
 	_help.visible = show_help and (not show_debug or _label.position.y + _label.size.y < size.y - _help.size.y - 16.0)
-	_banner.text = encounter.banner if encounter and encounter.banner != "" else message
-	_banner.size = Vector2(size.x, 60)
-	_banner.position = Vector2(0, size.y * 0.3)
+	var event_banner := encounter != null and encounter.banner != ""
+	_banner.text = encounter.banner if event_banner else message
+	_banner.add_theme_font_size_override(&"font_size", 44 if event_banner else 24)
+	var text_width := minf(size.x - 48.0, 900.0)
+	_banner.size = Vector2(text_width, 120 if event_banner else 90)
+	_banner.position = Vector2((size.x - text_width) * 0.5, size.y * 0.3 if event_banner else 96.0)
 	_help.position = Vector2(16, size.y - _help.size.y - 16)
 	_label.visible = show_debug
 	_perf_timer += delta
@@ -150,10 +154,13 @@ func _draw() -> void:
 			draw_arc(c, 18.0, -PI / 2.0, -PI / 2.0 + TAU * player.bow.draw, 48, Color(1.0, 0.85, 0.4) if player.bow.draw >= 1.0 else Color(0.9, 0.9, 0.9), 3.0, true)
 	# Boss weak points (one bar each).
 	var wps: Array = []
-	if colossus is HumanoidBoss:
+	var multiple: Variant = colossus.get(&"weak_points") if is_instance_valid(colossus) else null
+	if multiple is Array:
+		wps = multiple
+	elif colossus is HumanoidBoss:
 		wps = [(colossus as HumanoidBoss).weak_point]
-	elif colossus is Quadratus:
-		wps = (colossus as Quadratus).weak_points
+	elif is_instance_valid(colossus) and colossus.beam_weak_point():
+		wps = [colossus.beam_weak_point()]
 	# Gaius: the helmet's cracks as a grey bar under the weak point.
 	if colossus is Gaius:
 		var h := (colossus as Gaius).helmet

@@ -1,4 +1,6 @@
 class_name ArenaArt
+## Planning records individual props and grass chunks rather than building a whole arena.
+static var _planner: ArenaArtBuild
 ## Render-only art layer over the greybox arenas and colossi (assets from the art branch:
 ## Saltward pack, CC0). Gameplay never depends on it: collision shapes, climb patches,
 ## bones, segments and AI stay exactly as they are, the tests run without it, and every
@@ -13,6 +15,7 @@ class_name ArenaArt
 ##                  has no model yet)
 
 const Asset = preload("res://art/scripts/art_asset.gd")
+const EncounterProp = preload("res://art/scripts/encounter_prop.gd")
 const ATLAS := preload("res://materials/environment/shared_atlas.tres")
 const FOLIAGE := preload("res://materials/environment/foliage_atlas.tres")
 const TERRAIN := preload("res://materials/environment/terrain.tres")
@@ -23,6 +26,15 @@ const VALUS_SEGMENTS := ["hips", "spine", "chest", "neck", "head", "upper_arm_l"
 enum Kind { FUR, STONE, ARMOR }
 
 static var _materials := {}
+
+## Shared final layer for the campaign and standalone trials.
+static func dress_colossus_v3(c: Colossus, kind: StringName = &"") -> void:
+	if c is Dormin:
+		DorminArt.dress(c)
+		return
+	if kind == &"":
+		kind = StringName((c.get_script() as Script).resource_path.get_file().get_basename())
+	ColossusArtV3.dress(c, kind)
 
 
 ## Textured materials per part kind (object-space triplanar: they stick to moving bodies).
@@ -58,6 +70,9 @@ static func material(kind: int) -> StandardMaterial3D:
 ## Greybox colossus parts -> textured materials by what they are made of.
 static func skin_colossus(c: Colossus) -> int:
 	var n := 0
+	for child in c.get_children():
+		if child is Colossus:
+			n += skin_colossus(child)
 	for seg in c.segments:
 		for child in seg.get_children():
 			if child is MeshInstance3D and child.has_meta(&"kind"):
@@ -242,6 +257,9 @@ static func _box_of(body: Node) -> Dictionary:
 
 ## Visual-only art standing on the bottom of a greybox box (its collision stays).
 static func _visual(parent: Node3D, id: String, xf: Transform3D, scale: Vector3, height: float) -> void:
+	if _planner:
+		_planner.add(func() -> void: _visual(parent, id, xf, scale, height))
+		return
 	var node := Node3D.new()
 	node.name = "Art_" + id
 	parent.add_child(node)
@@ -258,6 +276,9 @@ static func _visual(parent: Node3D, id: String, xf: Transform3D, scale: Vector3,
 
 ## A full art prop (visual + its own coarse collision, or none).
 static func _prop(parent: Node3D, id: String, pos: Vector3, yaw: float, size: float, collision: String, lods := Vector3(35, 90, 260)) -> void:
+	if _planner:
+		_planner.add(func() -> void: _prop(parent, id, pos, yaw, size, collision, lods))
+		return
 	var p := Node3D.new()
 	p.set_script(Asset)
 	p.model_id = id
@@ -272,6 +293,13 @@ static func _prop(parent: Node3D, id: String, pos: Vector3, yaw: float, size: fl
 
 ## Grass tufts in chunked multimeshes (two LODs), no collision.
 static func _grass(parent: Node3D, rng: RandomNumberGenerator, radius: float, keep_clear := 0.0) -> int:
+	if _planner:
+		var state := {"candidate": 0, "chunks": {}, "keys": [], "chunk": 0}
+		var grass_rng := RandomNumberGenerator.new()
+		grass_rng.seed = rng.seed
+		grass_rng.state = rng.state
+		_planner.jobs.append(func() -> bool: return _grass_step(parent, grass_rng, radius, keep_clear, state))
+		return 0
 	var chunks := {}
 	var n := 0
 	for i in 3200:
@@ -368,6 +396,9 @@ static func dress_fen(parent: Node3D, tunnels: Array, fight_radius := 70.0, seed
 
 
 static func _mire(parent: Node3D, id: String, pos: Vector3, yaw: float, scale: Vector3) -> void:
+	if _planner:
+		_planner.add(func() -> void: _mire(parent, id, pos, yaw, scale))
+		return
 	var n := Node3D.new()
 	n.set_script(load("res://art/scripts/mirewood_asset.gd"))
 	n.set(&"model_id", id)
@@ -378,3 +409,101 @@ static func _mire(parent: Node3D, id: String, pos: Vector3, yaw: float, scale: V
 	n.rotation.y = yaw
 	n.scale = scale
 	parent.add_child(n)
+
+
+static func plan(builder: Callable) -> ArenaArtBuild:
+	var queue := ArenaArtBuild.new()
+	_planner = queue
+	builder.call()
+	_planner = null
+	return queue
+
+
+## One authored render prop per work unit; arena physics remain the source of truth.
+static func encounter_prop(parent: Node3D, id: String, pos: Vector3, yaw := 0.0, layers := 1) -> void:
+	if _planner:
+		_planner.add(func() -> void: encounter_prop(parent, id, pos, yaw, layers))
+		return
+	var prop := Node3D.new()
+	prop.set_script(EncounterProp)
+	prop.name = "EncounterArt_" + id
+	prop.model_id = id
+	prop.render_layers = layers
+	prop.position = pos
+	prop.rotation.y = yaw
+	parent.add_child(prop)
+	# Distant LODs share a position: only the near mesh contributes to shadows.
+	for mesh in prop.get_children():
+		if mesh is GeometryInstance3D:
+			mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if mesh.name == "LOD0" else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+static func dress_cave_colossus(c: CaveColossus) -> void:
+	skin_colossus(c)
+	for bone in ["head", "chest"]:
+		var segment: BodySegment = c._seg_by_bone[StringName(bone)]
+		var art := Node3D.new()
+		art.name = "CaveGuardianStone"
+		segment.add_child(art)
+		for level in 3:
+			var scene := load("res://models/cave_colossus/cave_%s_lod%d.glb" % [bone, level]) as PackedScene
+			if scene == null:
+				continue
+			var root := scene.instantiate()
+			for source in root.find_children("*", "MeshInstance3D", true, false):
+				var visual := MeshInstance3D.new()
+				visual.mesh = (source as MeshInstance3D).mesh
+				visual.material_override = material(Kind.STONE)
+				visual.layers = 2
+				visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if level == 0 else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+				visual.visibility_range_begin = [0.0, 45.0, 110.0][level]
+				visual.visibility_range_end = [45.0, 110.0, 800.0][level]
+				visual.lod_bias = 100.0
+				art.add_child(visual)
+			root.free()
+
+
+## 128 grass candidates OR one chunk per work unit; both LODs use the same placement.
+static func _grass_step(parent: Node3D, rng: RandomNumberGenerator, radius: float, keep_clear: float, state: Dictionary) -> bool:
+	if not is_instance_valid(parent):
+		return true
+	if int(state.candidate) < 3200:
+		var end := mini(int(state.candidate) + 128, 3200)
+		for i in range(int(state.candidate), end):
+			var a := rng.randf() * TAU
+			var r := sqrt(rng.randf()) * radius
+			var p := Vector3(cos(a) * r, 0, sin(a) * r)
+			if sin(p.x * 0.11) * cos(p.z * 0.09) < -0.35 and i % 4 != 0 or r < keep_clear:
+				continue
+			var key := Vector3i(floori(p.x / 20.0), floori(p.z / 20.0), i % 3)
+			if not state.chunks.has(key):
+				state.chunks[key] = []
+			state.chunks[key].append(Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * rng.randf_range(0.7, 1.4)), p))
+		state.candidate = end
+		if end == 3200:
+			state.keys = state.chunks.keys()
+		return false
+	if int(state.chunk) >= state.keys.size():
+		return true
+	var key: Vector3i = state.keys[int(state.chunk)]
+	var center := Vector3(key.x * 20 + 10, 0, key.y * 20 + 10)
+	var xfs: Array = state.chunks[key]
+	for level in 2:
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.mesh = Asset.mesh_for(["grass_tuft", "grass_dry", "grass_low"][key.z], level * 2)
+		mm.instance_count = xfs.size()
+		for j in xfs.size():
+			var xf: Transform3D = xfs[j]
+			xf.origin -= center
+			mm.set_instance_transform(j, xf)
+		var n := MultiMeshInstance3D.new()
+		n.multimesh = mm
+		n.lod_bias = 100.0
+		n.position = center
+		n.material_override = FOLIAGE
+		n.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		n.visibility_range_begin = 0.0 if level == 0 else 30.0
+		n.visibility_range_end = 30.0 if level == 0 else 80.0
+		parent.add_child(n)
+	state.chunk = int(state.chunk) + 1
+	return int(state.chunk) >= state.keys.size()

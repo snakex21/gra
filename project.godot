@@ -10,6 +10,10 @@ config/description="Open-source Shadow of the Colossus style remake. Milestone 1
 run/main_scene="res://scenes/game.tscn"
 config/features=PackedStringArray("4.4", "Forward Plus")
 
+[debug]
+
+file_logging/log_path="res://data/logs/godot.log"
+
 [display]
 
 window/size/viewport_width=1600

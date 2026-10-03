@@ -30,6 +30,9 @@ var header := {}
 var tick := 0
 var frames: Array = []
 var markers: Array = []
+var checkpoints: Array = []
+## Simulation checkpoints every 10 seconds, captured after the complete physics tick.
+var checkpoint_every := 600
 ## Playback: the recording ran out.
 var finished := false
 
@@ -55,6 +58,7 @@ static func player_for(p: PlayerCharacter, data: Dictionary) -> ActionReplay:
 	r.header = data.get("header", {})
 	r.frames = data.get("frames", [])
 	r.markers = data.get("markers", [])
+	r.checkpoints = data.get("checkpoints", [])
 	r.name = "ActionReplay"
 	return r
 
@@ -65,6 +69,12 @@ func _ready() -> void:
 	_bind()
 	var g := get_parent() as GameWorld
 	if mode == Mode.RECORD and g:
+		header["world_layout"] = g.layout_version
+		checkpoint(g)
+		var tap := CheckpointTap.new()
+		tap.recorder = self
+		tap.game = g
+		add_child(tap)
 		g.region_loaded.connect(func(kind: StringName) -> void: mark(&"region", String(kind)))
 		g.colossus_defeated.connect(func(kind: StringName) -> void: mark(&"defeat", String(kind)))
 
@@ -111,7 +121,7 @@ func _on_player_tick(p: PlayerCharacter) -> void:
 		var state := [s, ride]
 		# One-tick presses always count as a change.
 		if state != _last or s[7] or s[8] or s[9] or s[10]:
-			frames.append([key, s, ride])
+			frames.append([key, s, ride, tick])
 			_last = state
 		return
 	var applied := false
@@ -139,10 +149,36 @@ static func _without_presses(s: Array) -> Array:
 
 
 func to_dict() -> Dictionary:
-	return {"version": VERSION, "header": header, "frames": frames, "ticks": tick, "markers": markers}
+	return {"version": VERSION, "header": header, "frames": frames, "ticks": tick, "markers": markers, "checkpoints": checkpoints}
+
+func checkpoint(game: GameWorld) -> void:
+	var world := WorldSnapshot.capture(game)
+	if not world.is_empty():
+		checkpoints.append({"tick": tick, "world": world, "cursor": frames.size(), "segment": _segment})
+
+func resume_checkpoint(saved: Dictionary) -> void:
+	tick = int(saved.tick)
+	_next = int(saved.cursor)
+	_segment = int(saved.segment)
+	player = player_source.call() if player_source.is_valid() else player
+	_player_id = player.get_instance_id()
+	player.action_hook = _on_player_tick
+	finished = false
+
+class CheckpointTap extends Node:
+	var recorder: ActionReplay
+	var game: GameWorld
+	func _ready() -> void:
+		process_physics_priority = 900
+	func _physics_process(_delta: float) -> void:
+		if recorder.tick > 0 and recorder.tick % recorder.checkpoint_every == 0:
+			recorder.checkpoint(game)
 
 
 func save(path: String) -> bool:
+	path = PortablePaths.prepare(path)
+	if path == "":
+		return false
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	var f := FileAccess.open_compressed(path, FileAccess.WRITE, FileAccess.COMPRESSION_ZSTD)
 	if f == null:
@@ -153,6 +189,7 @@ func save(path: String) -> bool:
 
 
 static func load_file(path: String) -> Dictionary:
+	path = PortablePaths.resolve(path)
 	var f := FileAccess.open_compressed(path, FileAccess.READ, FileAccess.COMPRESSION_ZSTD)
 	if f == null:
 		return {}

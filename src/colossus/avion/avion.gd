@@ -111,6 +111,9 @@ var _swoop_dir := Vector3.FORWARD
 var _swoop_target: Node3D
 var _flinch_t := 999.0
 var _shake := 0.0
+## Locked cubic route: position and end tangent are planned before the dive starts.
+var _swoop_path := PackedVector3Array()
+var _swoop_duration := 0.0
 
 
 func _init() -> void:
@@ -219,6 +222,7 @@ func reset_encounter(xf := Transform3D.IDENTITY, use_xf := false) -> void:
 		wp.reset()
 	swoop = Swoop.NONE
 	swoop_t = 0.0
+	_swoop_path.clear()
 	_swoop_cooldown_left = 0.0
 	_flinch_t = 999.0
 	_shake_cooldown_left = 0.0
@@ -351,7 +355,10 @@ func _execute_intent(it: ColossusIntent, delta: float) -> void:
 			want = carry_speed
 			beat = 0.0
 			_shake = clampf(it.strength, 0.4, 1.0)
-	_fly(goal, want, delta)
+	if swoop == Swoop.DIVE and _swoop_path.size() == 4:
+		_fly_swoop_path(delta)
+	else:
+		_fly(goal, want, delta)
 	# Wing beats: strong when climbing or slow, none while gliding with a rider.
 	var climbing := clampf(pitch / 0.4, 0.0, 1.0)
 	var amp := maxf(beat, 0.4 * climbing) if it.kind != CARRY and it.kind != SHAKE_BODY else 0.0
@@ -421,25 +428,18 @@ func _update_swoop(it: ColossusIntent, delta: float) -> Array:
 			if target:
 				_aim_low_point(target)
 			if swoop_t >= swoop_telegraph:
+				_plan_swoop()
 				swoop = Swoop.DIVE
 				swoop_t = 0.0
 			return [_circle_point(circle_radius, circle_height, 0.45), cruise_speed, 0.2]
 		Swoop.DIVE:
-			if target and swoop_t < 1.0:
-				_aim_low_point(target)
-			# Line up with the pass direction a little before the low point.
-			var entry := low_point - _swoop_dir * 24.0 + Vector3.UP * 4.0
-			var d := global_position.distance_to(low_point)
-			var goal := entry if global_position.distance_to(entry) > 6.0 and d > 20.0 else low_point
-			if d < 3.5 or (global_position - low_point).dot(_swoop_dir) > 0.0 and d < 12.0:
+			# The target and approach line stay fixed throughout the dive: a player can
+			# prepare for the wing or dodge it, without last-second homing corrections.
+			if swoop_t >= _swoop_duration:
+				global_position = low_point
 				swoop = Swoop.PASS
 				swoop_t = 0.0
-			elif swoop_t > swoop_dive_limit:
-				# Could not line up (the target moved, a tight turn): pull up, try later.
-				swoop = Swoop.CLIMB
-				swoop_t = 0.0
-				stats.swoops_aborted = int(stats.get("swoops_aborted", 0)) + 1
-			return [goal, lerpf(pass_speed, swoop_speed, clampf((d - 6.0) / 24.0, 0.0, 1.0)), 0.0]
+			return [low_point + _swoop_dir * 30.0, pass_speed, 0.0]
 		Swoop.PASS:
 			# Slow and level past the low point, the wing over the target.
 			if swoop_t > 2.2:
@@ -473,6 +473,36 @@ func _aim_low_point(target: Node3D) -> void:
 	var feet := target.global_position.y - 0.9
 	low_point = target.global_position + side * WING_REACH
 	low_point.y = feet + 2.0 - WING_UNDER
+
+
+func _plan_swoop() -> void:
+	var start := global_position
+	var distance := start.distance_to(low_point)
+	_swoop_duration = clampf(distance / maxf((cruise_speed + pass_speed) * 0.5, 1.0), 3.0, 14.0)
+	var forward := Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, pitch) * Vector3.FORWARD
+	var first := start + forward * speed * _swoop_duration / 3.0
+	var last := low_point - _swoop_dir * pass_speed * _swoop_duration / 3.0
+	_swoop_path = PackedVector3Array([start, first, last, low_point])
+
+
+## Exact route endpoint and horizontal end tangent. No chasing a moving low point.
+func _fly_swoop_path(delta: float) -> void:
+	var u := clampf(swoop_t / _swoop_duration, 0.0, 1.0)
+	var v := 1.0 - u
+	var a := _swoop_path[0]
+	var b := _swoop_path[1]
+	var c := _swoop_path[2]
+	var d := _swoop_path[3]
+	var pos := v * v * v * a + 3.0 * v * v * u * b + 3.0 * v * u * u * c + u * u * u * d
+	var tangent := 3.0 * v * v * (b - a) + 6.0 * v * u * (c - b) + 3.0 * u * u * (d - c)
+	var horizontal := Vector2(tangent.x, tangent.z).length()
+	var next_yaw := atan2(-tangent.x, -tangent.z) if horizontal > 0.001 else yaw
+	_yaw_rate = angle_difference(yaw, next_yaw) / maxf(delta, 0.001)
+	yaw = next_yaw
+	pitch = atan2(tangent.y, maxf(horizontal, 0.001))
+	speed = tangent.length() / _swoop_duration
+	roll = lerpf(roll, clampf(-_yaw_rate * speed * 0.09, -0.5, 0.5), 1.0 - exp(-3.0 * delta))
+	global_transform = Transform3D(_flight_basis(), pos)
 
 
 func _glide_down(delta: float) -> void:

@@ -8,7 +8,7 @@ extends Node3D
 ##   through the open gate -> the corridor: that colossus wakes up (built, simulated)
 ##   back through the gate into the valley -> it goes again (the fight starts over)
 ##   defeated -> (the fall of the colossus) -> fade -> the temple, saved, the next gate open
-##   all four defeated -> the temple, every gate closed, the end
+##   Dormin defeated -> the temple, Wander alive, every gate closed, the end
 ##
 ## Only one colossus exists at a time. ``region_kind`` is where the game is: VALLEY, or
 ## the colossus that is awake. Everything runs in physics ticks (bots, tests and the
@@ -22,17 +22,18 @@ enum Phase { PLAYING, FADE_OUT, LOADING, FADE_IN }
 
 const VALLEY := &"valley"
 ## Brain seeds of the arenas (each fight is the same fight every time).
-const SEEDS := {&"valus": 7, &"quadratus": 11, &"gaius": 13, &"phaedra": 17, &"hydrus": 29, &"avion": 41}
+const SEEDS := {&"valus": 7, &"quadratus": 11, &"gaius": 13, &"phaedra": 17, &"hydrus": 29, &"avion": 41, &"cave": 53, &"barba": 61, &"kuromori": 67, &"basaran": 61, &"dirge": 67, &"celosia_cenobia": 89, &"pelagia": 71, &"phalanx": 101, &"argus": 79, &"malus": 107, &"devil": 109, &"phoenix": 113, &"spider": 97, &"worm": 113, &"saru": 101, &"dormin": 127}
 
 @export var with_input := true
 @export var with_art := true
-## Save file ("" = never save, e.g. tests that do not want to touch user://).
+## Save file ("" = never save, e.g. tests).
 @export var save_path := GameState.DEFAULT_PATH
 @export var fade_time := 0.6
 ## Seconds the fall of a defeated colossus is shown before going back to the temple.
 @export var outro_time := 12.0
 ## Added to the arenas' brain seeds (soaks play other fights; 0 in the game).
 @export var seed_offset := 0
+@export var layout_version := 2
 ## Build the arenas over the first ticks (one step per tick, the next colossus' arena
 ## first) instead of all at once at the start: the game starts sooner, the arenas fill in
 ## while the player is still in the temple. An arena is always complete when its colossus
@@ -60,6 +61,7 @@ var _resets_seen := 0
 var _awake: Array[Node] = []
 ## Arena building still to do: [[kind, root, stage]] (stage 0 ground and layout, 1 art).
 var _pending: Array = []
+var _art_jobs := {}
 var _fade: ColorRect
 var _sun: DirectionalLight3D
 
@@ -69,6 +71,7 @@ func start(new_game := false) -> void:
 	state = GameState.new()
 	if not new_game and save_path != "":
 		state.load_from(save_path)
+	state.legacy_replay = layout_version == 1
 	phase = Phase.PLAYING
 	_fade.color.a = 0.0
 	_build_world()
@@ -78,6 +81,7 @@ func start(new_game := false) -> void:
 func start_from(progress: Dictionary) -> void:
 	state = GameState.new()
 	state.from_dict(progress)
+	state.legacy_replay = layout_version == 1
 	phase = Phase.PLAYING
 	_fade.color.a = 0.0
 	_build_world()
@@ -92,6 +96,7 @@ func stop() -> void:
 	refs = {}
 	arenas = {}
 	_pending.clear()
+	_art_jobs.clear()
 	_awake.clear()
 	region_kind = &""
 	phase = Phase.PLAYING
@@ -99,7 +104,7 @@ func stop() -> void:
 
 
 func has_save() -> bool:
-	return save_path != "" and FileAccess.file_exists(save_path)
+	return save_path != "" and FileAccess.file_exists(PortablePaths.resolve(save_path))
 
 
 ## Settings onto the current region (and every later one).
@@ -121,6 +126,7 @@ func _ready() -> void:
 	_sun = DirectionalLight3D.new()
 	_sun.name = "Sun"
 	_sun.shadow_enabled = true
+	_sun.light_cull_mask = 1
 	_sun.directional_shadow_max_distance = 160.0
 	add_child(_sun)
 	_sun.look_at_from_position(Vector3.ZERO, -Valley.SUN_DIRECTION.normalized(), Vector3.UP)
@@ -243,9 +249,10 @@ func _build_world() -> void:
 	region = Node3D.new()
 	region.name = "World"
 	add_child(region)
-	var v := Valley.build(region, state.next_colossus(), with_art, true)
+	var v := Valley.build(region, state.next_colossus(), with_art, true, layout_version)
 	_pending.clear()
-	arenas = WorldMap.build(region, _queue_arena if lazy_arenas else _build_arena, with_art)
+	_art_jobs.clear()
+	arenas = WorldMap.build(region, _queue_arena if lazy_arenas else _build_arena, with_art, layout_version)
 	_order_pending()
 	_spawn_actors(v.spawn, v.spawn_yaw, v.horse)
 	refs.gates = v.gates
@@ -290,13 +297,19 @@ func _build_stage(kind: StringName, root: Node3D, stage: int) -> void:
 		if with_art:
 			_pending.push_front([kind, root, 1])
 	else:
-		_dress_arena(kind, root, arenas[kind].points)
+		if not _art_jobs.has(kind):
+			_art_jobs[kind] = ArenaArt.plan(func() -> void: _dress_arena(kind, root, arenas[kind].points))
+		var job: ArenaArtBuild = _art_jobs[kind]
+		if job.step():
+			_art_jobs.erase(kind)
+		else:
+			_pending.push_front([kind, root, 1])
 
 
 ## Builds what is left of ``kind``'s arena now (its colossus is waking up).
 func ensure_arena(kind: StringName) -> void:
 	for item in _pending.duplicate():
-		if item[0] == kind:
+		if item[0] == kind and int(item[2]) == 0:
 			_pending.erase(item)
 			_build_stage(item[0], item[1], item[2])
 
@@ -332,6 +345,15 @@ func _build_arena_ground(kind: StringName, root: Node3D) -> Dictionary:
 			points = HydrusArena.build(root)
 		&"avion":
 			points = AvionArena.build(root)
+		&"cave":
+			points = CaveArena.build(root)
+		_:
+			var arena: Script = load("res://src/world/%s_arena.gd" % kind)
+			points = arena.call(&"build", root)
+			# The shared corridor enters at z=170; small standalone courtyards need
+			# a foundation up to that entrance, below their authored gameplay floor.
+			if root.get_node_or_null("Ground") == null:
+				TerrainKit.box(root, Vector3(0, -1.04, 0), Vector3(350, 2, 350), ArenaArt.material(ArenaArt.Kind.STONE)).name = "Ground"
 	_disc_ground(root)
 	return points
 
@@ -350,6 +372,12 @@ func _dress_arena(kind: StringName, root: Node3D, points: Dictionary) -> void:
 			ArenaArt.dress_arena(root, Vector3(0, 0, 1), 80.0, 7129, HydrusArena.WATER_RADIUS + 4.0)
 		&"avion":
 			ArenaArt.dress_arena(root, Vector3(0, 0, 1), 105.0, 8231, AvionArena.WATER_RADIUS + 6.0)
+		&"cave":
+			CaveArena.dress(root)
+		_:
+			var arena: Script = load("res://src/world/%s_arena.gd" % kind)
+			if arena.has_method(&"dress"):
+				arena.call(&"dress", root)
 
 
 ## The arenas' square test ground becomes a disc (they sit side by side in the world).
@@ -357,6 +385,9 @@ static func _disc_ground(root: Node3D) -> void:
 	var ground := root.get_node_or_null("Ground")
 	if ground == null:
 		return
+	var shapes := ground.find_children("*", "CollisionShape3D", false, false)
+	if shapes.size() != 1:
+		return   # authored islands or a chasm must keep their topology
 	for c in ground.get_children():
 		if c is CollisionShape3D and not ((c as CollisionShape3D).shape is BoxShape3D):
 			return   # an arena with its own shaped ground (the lake's basin)
@@ -373,7 +404,7 @@ static func _disc_ground(root: Node3D) -> void:
 			m.height = 2.0
 			m.radial_segments = 48
 			(c as MeshInstance3D).mesh = m
-			(c as MeshInstance3D).position = Vector3(0, -1, 0)
+			(c as MeshInstance3D).position = Vector3.ZERO
 
 
 func _spawn_actors(spawn: Vector3, yaw: float, horse_at: Vector3) -> void:
@@ -415,6 +446,8 @@ func _spawn_actors(spawn: Vector3, yaw: float, horse_at: Vector3) -> void:
 
 func _valley_message() -> String:
 	if state.is_complete():
+		if state.defeated.has(&"dormin"):
+			return "Dormin pokonany. Wędrowiec ocalał."
 		return "Wszystkie kolosy pokonane"
 	if state.defeated.is_empty():
 		return "Unieś miecz do słońca (V), światło wskaże drogę"
@@ -436,9 +469,28 @@ func _wake(kind: StringName) -> void:
 	elif kind == &"avion":
 		c = AvionArena.spawn(root, SEEDS[kind] + seed_offset)
 		refs.towers = a.points.towers
+	elif kind not in [&"valus", &"quadratus", &"gaius", &"phaedra", &"cave"]:
+		var arena: Script = load("res://src/world/%s_arena.gd" % kind)
+		if arena.has_method(&"spawn"):
+			c = arena.call(&"spawn", root, SEEDS.get(kind, 61) + seed_offset)
+		else:
+			var script: Script = load("res://src/colossus/%s/%s.gd" % [kind, kind])
+			c = script.new()
+			c.name = BossRoster.label(kind)
+			c.set(&"brain_seed", SEEDS.get(kind, 61) + seed_offset)
+			var start: Array = a.points[kind]
+			c.position = start[0]
+			c.rotation.y = float(start[1])
+			root.add_child(c)
+			var start_xf := xf * Transform3D(Basis(Vector3.UP, float(start[1])), start[0])
+			if c.has_method(&"teleport"):
+				c.call(&"teleport", start_xf.origin, start_xf.basis.get_euler().y)
+			c.call(&"reset_encounter", start_xf, true)
 	match kind:
 		&"valus":
 			c = Valus.new()
+		&"cave":
+			c = CaveColossus.new()
 		&"quadratus":
 			c = Quadratus.new()
 		&"gaius":
@@ -458,10 +510,18 @@ func _wake(kind: StringName) -> void:
 		c.call(&"teleport", xf.origin, yaw + PI)
 		c.call(&"reset_encounter", c.global_transform, true)
 	if with_art:
-		if c is Valus:
+		if c is CaveColossus:
+			ArenaArt.dress_cave_colossus(c)
+		elif kind in [&"devil", &"phoenix"]:
+			var visuals: Script = load("res://src/colossus/devil/guardian_visuals.gd")
+			visuals.call(&"dress", c, String(kind))
+		elif kind == &"barba":
+			ArenaArt.skin_colossus(c)
+		elif c is Valus:
 			ArenaArt.dress_valus(c)
 		else:
 			ArenaArt.skin_colossus(c)
+		ArenaArt.dress_colossus_v3(c, kind)
 	var e := BossEncounter.new()
 	e.name = "Encounter"
 	root.add_child(e)
@@ -481,21 +541,38 @@ func _wake(kind: StringName) -> void:
 		_awake.append(draw)
 		refs.debug_draw = draw
 	else:
-		refs.debug_draw = c.debug_draw
+		refs.debug_draw = c.get(&"debug_draw")
 	(refs.camera as PlayerCamera).focus_target = c
 	var hud: PlayerHud = refs.hud
 	hud.colossus = c
 	hud.encounter = e
-	hud.message = ""
+	hud.message = BossRoster.HINTS.get(kind, "")
+	if c.has_method(&"encounter_hint"):
+		hud.message = c.call(&"encounter_hint")
+		if c.has_signal(&"phase_changed"):
+			c.connect(&"phase_changed", func(_next: int) -> void: hud.message = c.call(&"encounter_hint"))
 	refs.colossus = c
 	refs.encounter = e
 	refs.arena = root
 	refs[kind] = c
+	p.beam.lantern = kind in [&"cave", &"devil"]
+	if kind in [&"cave", &"devil"]:
+		for actor in [p, c]:
+			for mesh in actor.find_children("*", "GeometryInstance3D", true, false):
+				(mesh as GeometryInstance3D).layers = 2
+		if kind == &"cave":
+			hud.message = "V — światło miecza. Wywab kolosa ze szczeliny."
 	_change_region(kind)
 
 
 ## Where a fight starts in an arena (local): [player, Agro].
 static func arena_starts(kind: StringName) -> Array:
+	if kind not in [&"valus", &"quadratus", &"gaius", &"phaedra", &"hydrus", &"avion", &"cave"]:
+		var arena: Script = load("res://src/world/%s_arena.gd" % kind)
+		var constants := (arena as GDScript).get_script_constant_map()
+		return [constants["PLAYER_START"], constants["HORSE_START"]]
+	if kind == &"cave":
+		return [CaveArena.PLAYER_START, CaveArena.HORSE_START]
 	if kind == &"hydrus":
 		return [HydrusArena.PLAYER_START, HydrusArena.HORSE_START]
 	if kind == &"avion":
@@ -506,6 +583,9 @@ static func arena_starts(kind: StringName) -> Array:
 ## The awake colossus goes (the player went back into the valley).
 func _sleep() -> void:
 	var p := player()
+	p.beam.lantern = false
+	for mesh in p.find_children("*", "GeometryInstance3D", true, false):
+		(mesh as GeometryInstance3D).layers = 1
 	var kind := region_kind
 	ArrowSystem.of(p).clear()
 	(refs.camera as PlayerCamera).focus_target = null

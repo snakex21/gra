@@ -5,7 +5,12 @@ elementy ograniczone w oryginale sprzętem PS2, czasem produkcji albo wycięte z
 Silnik: **Godot 4.4+** (GDScript, a Zig dopiero tam, gdzie profiler pokaże realną potrzebę).
 Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych assetów oryginału.
 
-## Stan: Etap 11 — Avion (latający kolos), nurkowanie, znaczniki w powtórkach
+Nadrzędny kierunek: samotność, ogrom i tajemnicza Zakazana Kraina. Docelowo świat
+zyskuje cykl dnia i nocy, pogodę, ekosystem oraz ukryte miejsca i zagadki; reaguje
+na śmierć kolosów i odzyskiwanie mocy przez Dormina. Kooperacja, kompan AI i VR
+mają zachować ten charakter. [Wizja i stan realizacji](docs/WIZJA_GRY.md).
+
+## Stan: Etap 13 — modele Blender i autozapis świata
 
 - Milestone 1 (wspinanie po poruszającym się kolosie): [docs/MILESTONE_1.md](docs/MILESTONE_1.md)
 - Etap 2 (równowaga na kolosie, upadki, kamera, przejścia): [docs/ETAP_2.md](docs/ETAP_2.md)
@@ -18,24 +23,43 @@ Gra ma działać w pełni offline. Repozytorium nie zawiera żadnych chronionych
 - Etap 9 (Phaedra: płochliwy kolos z długą szyją, zwabienie do tunelu; menu i ustawienia; nagrywanie i deterministyczne powtórki; tańszy Agro w dolinie; tekstury Agro i Wędrowca): [docs/ETAP_9.md](docs/ETAP_9.md)
 - Etap 10 (ciągły świat bez wygaszeń, wspólna baza czworonogów, piąty kolos Hydrus w jeziorze i pływanie, przewijanie powtórek, F9, sloty zapisu, zmiana klawiszy, głośność): [docs/ETAP_10.md](docs/ETAP_10.md)
 - Etap 11 (szósty kolos Avion: ptak nad jeziorem z wieżami, chwyt skrzydła przy pikowaniu; areny budowane po starcie; nurkowanie i oddech; znaczniki, skoki i wycinki w powtórkach): [docs/ETAP_11.md](docs/ETAP_11.md)
+- Etap 12 (jaskinia Hollowvault / Deeprelic i latarka miecza, planowany przelot Aviona, checkpointy świata, mniejsze kroki grafiki, fale i mgła pod wodą): [docs/ETAP_12.md](docs/ETAP_12.md)
+- Etap 13 (Wędrowiec, Mono, Agro, Dormin i wszystkie pozostałe kolosy z Blendera, bezpieczny autozapis i wejścia do aren): [docs/ETAP_13.md](docs/ETAP_13.md)
 - Architektura: [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md)
+- Stan po sesji 3 października 2026 i dalsze zadania: [docs/STAN_SESJI_2026-10-03.md](docs/STAN_SESJI_2026-10-03.md)
 
-**Cała gra: `scenes/game.tscn`** (scena główna): menu (Kontynuuj / Nowa gra / Wczytaj / Ustawienia,
+**Cała gra: `scenes/game.tscn`** (scena główna): menu (Kontynuuj / Nowa gra / Wczytaj / Próby kolosów / Ustawienia,
 trzy sloty zapisu), start w świątyni, promień miecza (V / lewy spust) wskazuje drogę. Jeden ciągły
-świat: brama w krawędzi doliny prowadzi korytarzem prosto do areny kolejnego z sześciu kolosów, bez
+świat: brama w krawędzi doliny prowadzi korytarzem prosto do areny kolejnego kolosa, bez
 ekranu ładowania; po wygranej powrót do świątyni i zapis. Esc / P / Start = pauza.
 Bez menu: `-- --new-game` (albo `NEW_GAME=1`) lub `-- --continue`.
 
-Każda gra jest nagrywana (`user://replays/last.replay`, akcje gracza tick po ticku), F9 zapisuje
+Autozapis co minutę, przy wyjściu i po zwycięstwach pozostaje w `data/`.
+„Kontynuuj” wznawia ostatni bezpieczny checkpoint świata, także na Agro.
+Podczas wspinaczki zachowany jest wcześniejszy bezpieczny punkt; późniejsze
+zwycięstwo ma pierwszeństwo nad starszym checkpointem. Szczegóły w [Etapie 13](docs/ETAP_13.md).
+
+Każda gra jest nagrywana (`data/replays/last.replay`, akcje gracza tick po ticku i checkpoint co 10 s), F9 zapisuje
 zgłoszenie błędu (nagranie + podsumowanie). Odtworzenie tick w tick z przewijaniem:
-`godot --path . -- --replay=user://replays/last.replay [--seek=<s>]` (K pauza, J/L ±10 s, [ ] prędkość,
+`python tools/run_local.py godot -- --replay=res://data/replays/last.replay [--seek=<s>]` (K pauza, J/L ±10 s, [ ] prędkość,
 `,` / `.` poprzedni / następny znacznik — śmierć, trafienie, upadek, pokonanie, zgłoszenie —, C wycinek
 do zgłoszenia, F7 kamera).
 
-Pojedyncze walki z bossami: `scenes/valus_arena.tscn` (Valus), `scenes/quadratus_arena.tscn` (Quadratus),
-`scenes/gaius_arena.tscn` (Gaius), `scenes/phaedra_arena.tscn` (Phaedra), `scenes/hydrus_arena.tscn` (Hydrus, jezioro)
-i `scenes/avion_arena.tscn` (Avion, jezioro z wieżami); we wszystkich jest Agro, F5 resetuje walkę, Tab przełącza miecz / łuk.
-Areny mają warstwę assetów (paczka Saltward, CC0); `NO_ART=1` pokazuje czysty greybox.
+**Próby kolosów** w menu uruchamiają gotowe prototypy bez przechodzenia całej kampanii.
+Grywalna lista ma 21 starć, z równoczesną parą Celosia + Cenobia i finałem z Dorminem,
+po którym Wędrowiec pozostaje żywy. Mechaniki nowych prób opisuje [Etap 12](docs/ETAP_12.md).
+Kolejność i dostępność określa `src/game/boss_roster.gd`; każda próba ma scenę
+`scenes/<nazwa>_arena.tscn`. Celosia i Cenobia tworzą jedno równoczesne starcie.
+Jaskinia z testowym humanoidem pozostaje osobną próbą `scenes/cave_arena.tscn`;
+Devil jest odrębnym strażnikiem jaskini w kampanii. Esc / Start wraca do listy prób,
+F5 resetuje walkę, Tab przełącza miecz / łuk. Stare zwycięstwa zachowują się przy
+migracji zapisu; starsze nagrania korzystają ze swojego wcześniejszego układu świata.
+Areny mają warstwę assetów (paczka Saltward, CC0); `NO_ART=1` wyłącza ich oprawę.
+
+Nowe mechaniki i modele są prototypami. To nie jest ukończone odtworzenie 1:1.
+Wycięte kolosy mają własne interpretacje projektu. Fundament wielu uczestników
+zachowuje walkę po śmierci lub odejściu kompana; pełny wybór co-op / sieć / VR jest
+jeszcze do wdrożenia.
 
 Co działa w sandboxie (`scenes/sandbox.tscn`):
 
@@ -63,8 +87,18 @@ Co działa w sandboxie (`scenes/sandbox.tscn`):
 
 ## Uruchomienie
 
+Windows: **`Uruchom-gre.bat`**, a do bezpośredniej próby jaskini **`Uruchom-jaskinie.bat`**.
+Lokalny Godot jest w `tools/runtime`; Python jest potrzebny tylko do tego launchera.
+Po świeżym klonowaniu uruchom `python tools/run_local.py install-godot`, żeby pobrać
+Godota do lokalnego folderu narzędzi. Cache, runtime i zapisy gracza są pomijane przez Git.
+Zapisy, ustawienia i powtórki są w `data/`, cache projektu w `.godot/`, dane narzędzi
+w `tools/runtime/`. Launcher kieruje również wewnętrzne dane silnika do tego folderu.
+Przeniesienie całego folderu przenosi te dane. Brak prawa zapisu nie powoduje przejścia
+do profilu użytkownika. Uruchamiaj przez launcher, żeby zachować również przenośne cache silnika.
+
 ```bash
-godot --path . # albo otwórz project.godot w edytorze Godot 4.4+
+python tools/run_local.py godot
+python tools/run_local.py godot --editor
 ```
 
 | Akcja | Klawiatura / mysz | Pad |
@@ -94,6 +128,26 @@ godot --path . # albo otwórz project.godot w edytorze Godot 4.4+
 
 ## Testy
 
+Etap 13 na Windows (sprawdzony lokalnie w Godot 4.6.3):
+
+```bash
+python tools/run_local.py godot --headless --fixed-fps 60 tests/auto_save.tscn
+python tools/run_local.py godot --headless --fixed-fps 60 tests/art_integration_v3.tscn
+python tools/run_local.py godot --headless --fixed-fps 60 tests/colossi_v3.tscn
+python tools/run_local.py godot --headless --fixed-fps 60 tests/temple_characters_v3.tscn
+python tools/run_local.py godot --headless --fixed-fps 60 tests/paired_arrival.tscn
+python tools/run_local.py godot --headless --fixed-fps 60 tests/test_runner.tscn
+```
+
+Etap 12 na Windows:
+
+```bash
+python tools/run_local.py godot --headless --fixed-fps 60 tests/stage12.tscn
+python tools/run_local.py godot --headless --fixed-fps 60 tests/campaign_expansion.tscn
+python tools/run_local.py godot --headless --fixed-fps 60 tests/checkpoint_climb.tscn
+python tools/run_local.py godot --rendering-method forward_plus --resolution 1280x720 --fixed-fps 60 tests/capture_stage12.tscn
+```
+
 ```bash
 tools/run_tests.sh                 # 197 testów + A/B + porównanie z zamrożonymi wzorcami, headless, ~15 min
 tools/run_tests.sh --save-baseline # zamraża nowy wzorzec regresji Etapu 2/3 (tylko świadomie)
@@ -108,7 +162,7 @@ tools/run_boss_soak.sh 50 1 quadratus    # 50 walk z Quadratusem (na zmianę pie
 tools/run_boss_soak.sh 50 1 gaius        # 50 walk z Gaiusem
 tools/run_boss_soak.sh 50 1 phaedra      # 50 walk z Phaedrą
 tools/run_boss_soak.sh 50 1 hydrus       # 50 walk z Hydrusem
-tools/run_game_soak.sh 20                # 20 całych gier: świątynia -> promień -> jazda -> korytarz -> pięć walk
+tools/run_game_soak.sh 20                # 20 całych kampanii: świątynia -> promień -> jazda -> wszystkie starcia
 tools/capture_screenshots.sh gaius  # walka z Gaiusem grana przez bota -> tests/output/gaius_*.png
 tools/capture_screenshots.sh art    # statyczne widoki aren z assetami -> tests/output/art_*.png
 tools/capture_screenshots.sh game   # dolina, promień, jazda, brama -> tests/output/game_*.png

@@ -4,5 +4,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 GODOT="${GODOT:-godot}"
-"$GODOT" --headless --import >/dev/null 2>&1 || true
+export XDG_DATA_HOME="$PWD/tools/runtime/engine_data"
+export XDG_CACHE_HOME="$PWD/tools/runtime/engine_cache"
+export TMPDIR="$PWD/tools/runtime/tmp"
+mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$TMPDIR" tests/output
+"$GODOT" --headless --editor --import >tests/output/import.log 2>&1
 exec "$GODOT" --headless --fixed-fps 60 --quit-after 400000 res://tests/test_runner.tscn -- "$@"

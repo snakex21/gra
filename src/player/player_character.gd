@@ -154,6 +154,9 @@ var _dead_time := 0.0
 var _invulnerable := 0.0
 var _hang_body: Node3D
 var _hang_local := Vector3.ZERO
+var _water_contact := false
+var _last_water_position := Vector3.INF
+var _splash_cooldown := 0.0
 
 
 func _ready() -> void:
@@ -184,6 +187,7 @@ func _physics_process(delta: float) -> void:
 		action_hook.call(self)
 	ticks += 1
 	var t0 := Perf.begin()
+	_update_water_fx(delta)
 	_regrab_timer -= delta
 	if not actions.grab_held:
 		_grab_needs_release = false
@@ -227,6 +231,22 @@ func _physics_process(delta: float) -> void:
 	if global_position.y < -60.0:
 		respawn()
 	Perf.end(&"player", t0)
+
+func _update_water_fx(delta: float) -> void:
+	_splash_cooldown = maxf(0.0, _splash_cooldown - delta)
+	var contact := false
+	for w in WaterBody.all(get_tree()):
+		if not w.contains_xz(global_position):
+			continue
+		var d := global_position.y - w.surface()
+		contact = d < 0.9 and d > -1.5
+		var crossed := _last_water_position != Vector3.INF and w.contains_xz(_last_water_position) and (_last_water_position.y - w.surface()) * d < 0.0
+		if _splash_cooldown <= 0.0 and ((contact and not _water_contact) or crossed):
+			w.splash(global_position, maxf(absf(velocity.y), velocity.length() * 0.4))
+			_splash_cooldown = 0.4
+		break
+	_water_contact = contact
+	_last_water_position = global_position
 
 
 ## Collision object the player is gripping or standing on (null in the air).

@@ -1,0 +1,449 @@
+{
+  "body_profiles": 21,
+  "contracts": [
+    {
+      "kind": "valus",
+      "lod_nodes": 51,
+      "physics_unchanged": true,
+      "segments": 17
+    },
+    {
+      "kind": "quadratus",
+      "lod_nodes": 45,
+      "physics_unchanged": true,
+      "segments": 15
+    },
+    {
+      "kind": "gaius",
+      "lod_nodes": 54,
+      "physics_unchanged": true,
+      "segments": 18
+    },
+    {
+      "kind": "phaedra",
+      "lod_nodes": 51,
+      "physics_unchanged": true,
+      "segments": 17
+    },
+    {
+      "kind": "avion",
+      "lod_nodes": 24,
+      "physics_unchanged": true,
+      "segments": 8
+    },
+    {
+      "kind": "barba",
+      "lod_nodes": 51,
+      "physics_unchanged": true,
+      "segments": 17
+    },
+    {
+      "kind": "hydrus",
+      "lod_nodes": 30,
+      "physics_unchanged": true,
+      "segments": 10
+    },
+    {
+      "kind": "kuromori",
+      "lod_nodes": 3,
+      "physics_unchanged": true,
+      "segments": 1
+    },
+    {
+      "kind": "basaran",
+      "lod_nodes": 45,
+      "physics_unchanged": true,
+      "segments": 15
+    },
+    {
+      "kind": "dirge",
+      "lod_nodes": 30,
+      "physics_unchanged": true,
+      "segments": 10
+    },
+    {
+      "kind": "celosia_cenobia",
+      "lod_nodes": 12,
+      "physics_unchanged": true,
+      "segments": 2
+    },
+    {
+      "kind": "pelagia",
+      "lod_nodes": 3,
+      "physics_unchanged": true,
+      "segments": 1
+    },
+    {
+      "kind": "phalanx",
+      "lod_nodes": 15,
+      "physics_unchanged": true,
+      "segments": 5
+    },
+    {
+      "kind": "argus",
+      "lod_nodes": 51,
+      "physics_unchanged": true,
+      "segments": 17
+    },
+    {
+      "kind": "malus",
+      "lod_nodes": 12,
+      "physics_unchanged": true,
+      "segments": 4
+    },
+    {
+      "kind": "devil",
+      "lod_nodes": 12,
+      "physics_unchanged": true,
+      "segments": 3
+    },
+    {
+      "kind": "phoenix",
+      "lod_nodes": 12,
+      "physics_unchanged": true,
+      "segments": 3
+    },
+    {
+      "kind": "spider",
+      "lod_nodes": 33,
+      "physics_unchanged": true,
+      "segments": 9
+    },
+    {
+      "kind": "worm",
+      "lod_nodes": 9,
+      "physics_unchanged": true,
+      "segments": 3
+    },
+    {
+      "kind": "saru",
+      "lod_nodes": 18,
+      "physics_unchanged": true,
+      "segments": 6
+    }
+  ],
+  "failures": 0,
+  "fights": [
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "valus",
+          "resets": 0,
+          "time": 44.5833333333321,
+          "why": "defeated",
+          "won": true
+        }
+      ],
+      "kind": "valus",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "quadratus",
+          "resets": 0,
+          "time": 156.000000000016,
+          "why": "defeated",
+          "won": true
+        }
+      ],
+      "kind": "quadratus",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "gaius",
+          "resets": 0,
+          "time": 54.1666666666649,
+          "why": "defeated",
+          "won": true
+        }
+      ],
+      "kind": "gaius",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "phaedra",
+          "resets": 0,
+          "time": 61.4333333333311,
+          "why": "defeated",
+          "won": true
+        }
+      ],
+      "kind": "phaedra",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "avion",
+          "resets": 0,
+          "time": 106.299999999995,
+          "why": "defeated",
+          "won": true
+        }
+      ],
+      "kind": "avion",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "barba",
+          "resets": 0,
+          "time": 38.9333333333324,
+          "why": "defeated",
+          "won": true
+        }
+      ],
+      "kind": "barba",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "hydrus",
+          "resets": 0,
+          "time": 70.5999999999973,
+          "why": "defeated",
+          "won": true
+        }
+      ],
+      "kind": "hydrus",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "kuromori",
+          "resets": 0,
+          "time": 24.0833333333332,
+          "why": "",
+          "won": true
+        }
+      ],
+      "kind": "kuromori",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "basaran",
+          "resets": 0,
+          "time": 32.7666666666661,
+          "why": "defeated",
+          "won": true
+        }
+      ],
+      "kind": "basaran",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "dirge",
+          "resets": 0,
+          "time": 44.5166666666654,
+          "why": "defeated",
+          "won": true
+        }
+      ],
+      "kind": "dirge",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "celosia_cenobia",
+          "resets": 0,
+          "time": 33.4833333333327,
+          "why": "defeated",
+          "won": true
+        }
+      ],
+      "kind": "celosia_cenobia",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "pelagia",
+          "resets": 0,
+          "time": 81.8166666666633,
+          "why": "",
+          "won": true
+        }
+      ],
+      "kind": "pelagia",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "phalanx",
+          "resets": 0,
+          "time": 59.6666666666646,
+          "why": "",
+          "won": true
+        }
+      ],
+      "kind": "phalanx",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "argus",
+          "resets": 0,
+          "time": 48.4499999999985,
+          "why": "defeated",
+          "won": true
+        }
+      ],
+      "kind": "argus",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "malus",
+          "resets": 0,
+          "time": 75.9166666666636,
+          "why": "",
+          "won": true
+        }
+      ],
+      "kind": "malus",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "devil",
+          "resets": 0,
+          "time": 46.283333333332,
+          "why": "",
+          "won": true
+        }
+      ],
+      "kind": "devil",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "phoenix",
+          "resets": 0,
+          "time": 38.9166666666657,
+          "why": "",
+          "won": true
+        }
+      ],
+      "kind": "phoenix",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "spider",
+          "resets": 0,
+          "time": 71.3999999999972,
+          "why": "",
+          "won": true
+        }
+      ],
+      "kind": "spider",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "worm",
+          "resets": 0,
+          "time": 131.149999999997,
+          "why": "",
+          "won": true
+        }
+      ],
+      "kind": "worm",
+      "model_art": "Colossi V3",
+      "won": true
+    },
+    {
+      "arena_art": false,
+      "deaths": 0,
+      "fights": [
+        {
+          "boss": "saru",
+          "resets": 0,
+          "time": 75.799999999997,
+          "why": "",
+          "won": true
+        }
+      ],
+      "kind": "saru",
+      "model_art": "Colossi V3",
+      "won": true
+    }
+  ],
+  "geometry_assets": 187
+}

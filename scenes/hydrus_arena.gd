@@ -9,6 +9,7 @@ var refs := {}
 
 func _ready() -> void:
 	InputSetup.ensure_defaults()
+	TrialMenu.attach(self)
 	refs = HydrusArena.build_encounter(self, true, 29, not OS.has_environment("NO_ART"))
 	players.append(refs.player)
 	if DisplayServer.get_name() != "headless":

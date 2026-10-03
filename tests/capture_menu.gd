@@ -41,6 +41,14 @@ func _physics_process(_delta: float) -> void:
 			menu._open_slots(true)
 		80:
 			await _shot("menu_05_slots")
+			menu._show(&"trials")
+		84:
+			await _shot("menu_06_trials")
+			for button in menu._trials.find_children("*", "Button", true, false):
+				if button.text == "Dormin":
+					button.grab_focus()
+		88:
+			await _shot("menu_07_trials_finale")
 			get_tree().quit()
 
 

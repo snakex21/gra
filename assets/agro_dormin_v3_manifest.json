@@ -1,0 +1,1958 @@
+{
+  "units": "metres",
+  "axes": "Godot Y up; forward -Z",
+  "source": "res://art/source/agro_dormin_v3.blend",
+  "generator": "tools/art/generate_agro_dormin_v3.py",
+  "original_designs": true,
+  "lod_ratios": [
+    1,
+    0.46,
+    0.18
+  ],
+  "render_only": true,
+  "agro_saddle_top_local": [
+    0,
+    0.43,
+    -0.05
+  ],
+  "dormin_sigil_clearance": {
+    "crown_max_y": 2.46,
+    "crown_sigil_y": 2.52,
+    "back_max_z": 1.22,
+    "back_sigil_z": 1.31,
+    "neighbouring_chest_recess_z": 1.15
+  },
+  "totals": {
+    "agro": {
+      "bone_pieces": 15,
+      "triangle_counts": [
+        9482,
+        4347,
+        1676
+      ],
+      "glb_bytes": 8945276
+    },
+    "dormin": {
+      "bone_pieces": 17,
+      "triangle_counts": [
+        17810,
+        8146,
+        3012
+      ],
+      "glb_bytes": 15713232
+    }
+  },
+  "materials": "PBR roughness/metallic, baked 256px albedo and tangent normal PNG inputs, embedded in GLB and packed in Blender source",
+  "texture_sources": [
+    "res://textures/agro_dormin_v3/agro_black_points_albedo.png",
+    "res://textures/agro_dormin_v3/agro_black_points_normal.png",
+    "res://textures/agro_dormin_v3/agro_dark_bay_albedo.png",
+    "res://textures/agro_dormin_v3/agro_dark_bay_normal.png",
+    "res://textures/agro_dormin_v3/agro_soft_muzzle_albedo.png",
+    "res://textures/agro_dormin_v3/agro_soft_muzzle_normal.png",
+    "res://textures/agro_dormin_v3/agro_worn_leather_albedo.png",
+    "res://textures/agro_dormin_v3/agro_worn_leather_normal.png",
+    "res://textures/agro_dormin_v3/agro_woven_blanket_albedo.png",
+    "res://textures/agro_dormin_v3/agro_woven_blanket_normal.png",
+    "res://textures/agro_dormin_v3/dormin_ancient_horn_albedo.png",
+    "res://textures/agro_dormin_v3/dormin_ancient_horn_normal.png",
+    "res://textures/agro_dormin_v3/dormin_dense_obsidian_albedo.png",
+    "res://textures/agro_dormin_v3/dormin_dense_obsidian_normal.png",
+    "res://textures/agro_dormin_v3/dormin_fracture_edges_albedo.png",
+    "res://textures/agro_dormin_v3/dormin_fracture_edges_normal.png",
+    "res://textures/agro_dormin_v3/dormin_shadow_fibre_albedo.png",
+    "res://textures/agro_dormin_v3/dormin_shadow_fibre_normal.png",
+    "res://textures/agro_dormin_v3/dormin_weathered_stone_albedo.png",
+    "res://textures/agro_dormin_v3/dormin_weathered_stone_normal.png"
+  ],
+  "items": [
+    {
+      "actor": "agro",
+      "bone": "body",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        2618,
+        1204,
+        470
+      ],
+      "model_paths": [
+        "res://models/agro_v3/body_lod0.glb",
+        "res://models/agro_v3/body_lod1.glb",
+        "res://models/agro_v3/body_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.49979,
+            -0.8326,
+            -1.05
+          ],
+          "max": [
+            0.49973,
+            0.613,
+            1.31581
+          ]
+        },
+        {
+          "min": [
+            -0.50155,
+            -0.83315,
+            -1.05019
+          ],
+          "max": [
+            0.49683,
+            0.613,
+            1.31581
+          ]
+        },
+        {
+          "min": [
+            -0.50561,
+            -0.83219,
+            -1.05279
+          ],
+          "max": [
+            0.4991,
+            0.60564,
+            1.31386
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        0,
+        1.27,
+        0
+      ]
+    },
+    {
+      "actor": "agro",
+      "bone": "neck",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        1532,
+        704,
+        274
+      ],
+      "model_paths": [
+        "res://models/agro_v3/neck_lod0.glb",
+        "res://models/agro_v3/neck_lod1.glb",
+        "res://models/agro_v3/neck_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.215,
+            -0.25245,
+            -0.215
+          ],
+          "max": [
+            0.215,
+            0.98,
+            0.28145
+          ]
+        },
+        {
+          "min": [
+            -0.215,
+            -0.2522,
+            -0.2173
+          ],
+          "max": [
+            0.215,
+            0.98001,
+            0.28071
+          ]
+        },
+        {
+          "min": [
+            -0.21582,
+            -0.25234,
+            -0.21758
+          ],
+          "max": [
+            0.21582,
+            0.98007,
+            0.28189
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        0,
+        1.49,
+        -0.95
+      ]
+    },
+    {
+      "actor": "agro",
+      "bone": "head",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        2884,
+        1319,
+        508
+      ],
+      "model_paths": [
+        "res://models/agro_v3/head_lod0.glb",
+        "res://models/agro_v3/head_lod1.glb",
+        "res://models/agro_v3/head_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.205,
+            -0.235,
+            -0.7216
+          ],
+          "max": [
+            0.205,
+            0.41085,
+            0.0792
+          ]
+        },
+        {
+          "min": [
+            -0.205,
+            -0.23496,
+            -0.72173
+          ],
+          "max": [
+            0.205,
+            0.4112,
+            0.07923
+          ]
+        },
+        {
+          "min": [
+            -0.20385,
+            -0.23471,
+            -0.72319
+          ],
+          "max": [
+            0.20385,
+            0.41122,
+            0.07932
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        0,
+        2.39,
+        -0.95
+      ]
+    },
+    {
+      "actor": "agro",
+      "bone": "fl_up",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        196,
+        90,
+        34
+      ],
+      "model_paths": [
+        "res://models/agro_v3/fl_up_lod0.glb",
+        "res://models/agro_v3/fl_up_lod1.glb",
+        "res://models/agro_v3/fl_up_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.12,
+            -0.62,
+            -0.135
+          ],
+          "max": [
+            0.12,
+            0.075,
+            0.165
+          ]
+        },
+        {
+          "min": [
+            -0.12051,
+            -0.62002,
+            -0.13564
+          ],
+          "max": [
+            0.12051,
+            0.07506,
+            0.16422
+          ]
+        },
+        {
+          "min": [
+            -0.12035,
+            -0.6202,
+            -0.1336
+          ],
+          "max": [
+            0.12035,
+            0.07527,
+            0.16962
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        -0.24,
+        1.17,
+        -0.78
+      ]
+    },
+    {
+      "actor": "agro",
+      "bone": "fl_low",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        220,
+        100,
+        38
+      ],
+      "model_paths": [
+        "res://models/agro_v3/fl_low_lod0.glb",
+        "res://models/agro_v3/fl_low_lod1.glb",
+        "res://models/agro_v3/fl_low_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.063,
+            -0.58,
+            -0.076
+          ],
+          "max": [
+            0.063,
+            0.035,
+            0.076
+          ]
+        },
+        {
+          "min": [
+            -0.06249,
+            -0.58,
+            -0.07829
+          ],
+          "max": [
+            0.06249,
+            0.03501,
+            0.07776
+          ]
+        },
+        {
+          "min": [
+            -0.06893,
+            -0.57992,
+            -0.08066
+          ],
+          "max": [
+            0.05843,
+            0.03481,
+            0.0744
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        -0.24,
+        0.55,
+        -0.78
+      ]
+    },
+    {
+      "actor": "agro",
+      "bone": "fl_hoof",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        196,
+        90,
+        34
+      ],
+      "model_paths": [
+        "res://models/agro_v3/fl_hoof_lod0.glb",
+        "res://models/agro_v3/fl_hoof_lod1.glb",
+        "res://models/agro_v3/fl_hoof_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.086,
+            -0.10493,
+            -0.145
+          ],
+          "max": [
+            0.086,
+            0.014,
+            0.082
+          ]
+        },
+        {
+          "min": [
+            -0.08637,
+            -0.10619,
+            -0.14448
+          ],
+          "max": [
+            0.08637,
+            0.01406,
+            0.08089
+          ]
+        },
+        {
+          "min": [
+            -0.0914,
+            -0.10594,
+            -0.14448
+          ],
+          "max": [
+            0.08672,
+            0.01458,
+            0.08106
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        -0.24,
+        -0.03,
+        -0.78
+      ]
+    },
+    {
+      "actor": "agro",
+      "bone": "fr_up",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        196,
+        90,
+        34
+      ],
+      "model_paths": [
+        "res://models/agro_v3/fr_up_lod0.glb",
+        "res://models/agro_v3/fr_up_lod1.glb",
+        "res://models/agro_v3/fr_up_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.12,
+            -0.62,
+            -0.135
+          ],
+          "max": [
+            0.12,
+            0.075,
+            0.165
+          ]
+        },
+        {
+          "min": [
+            -0.12051,
+            -0.62002,
+            -0.13564
+          ],
+          "max": [
+            0.12051,
+            0.07506,
+            0.16422
+          ]
+        },
+        {
+          "min": [
+            -0.12035,
+            -0.6202,
+            -0.1336
+          ],
+          "max": [
+            0.12035,
+            0.07527,
+            0.16962
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        0.24,
+        1.17,
+        -0.78
+      ]
+    },
+    {
+      "actor": "agro",
+      "bone": "fr_low",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        220,
+        100,
+        38
+      ],
+      "model_paths": [
+        "res://models/agro_v3/fr_low_lod0.glb",
+        "res://models/agro_v3/fr_low_lod1.glb",
+        "res://models/agro_v3/fr_low_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.063,
+            -0.58,
+            -0.076
+          ],
+          "max": [
+            0.063,
+            0.035,
+            0.076
+          ]
+        },
+        {
+          "min": [
+            -0.06249,
+            -0.58,
+            -0.07829
+          ],
+          "max": [
+            0.06249,
+            0.03501,
+            0.07776
+          ]
+        },
+        {
+          "min": [
+            -0.06893,
+            -0.57992,
+            -0.08066
+          ],
+          "max": [
+            0.05843,
+            0.03481,
+            0.0744
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        0.24,
+        0.55,
+        -0.78
+      ]
+    },
+    {
+      "actor": "agro",
+      "bone": "fr_hoof",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        196,
+        90,
+        34
+      ],
+      "model_paths": [
+        "res://models/agro_v3/fr_hoof_lod0.glb",
+        "res://models/agro_v3/fr_hoof_lod1.glb",
+        "res://models/agro_v3/fr_hoof_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.086,
+            -0.10493,
+            -0.145
+          ],
+          "max": [
+            0.086,
+            0.014,
+            0.082
+          ]
+        },
+        {
+          "min": [
+            -0.08637,
+            -0.10619,
+            -0.14448
+          ],
+          "max": [
+            0.08637,
+            0.01406,
+            0.08089
+          ]
+        },
+        {
+          "min": [
+            -0.0914,
+            -0.10594,
+            -0.14448
+          ],
+          "max": [
+            0.08672,
+            0.01458,
+            0.08106
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        0.24,
+        -0.03,
+        -0.78
+      ]
+    },
+    {
+      "actor": "agro",
+      "bone": "rl_up",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        196,
+        90,
+        34
+      ],
+      "model_paths": [
+        "res://models/agro_v3/rl_up_lod0.glb",
+        "res://models/agro_v3/rl_up_lod1.glb",
+        "res://models/agro_v3/rl_up_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.15,
+            -0.62,
+            -0.18
+          ],
+          "max": [
+            0.15,
+            0.075,
+            0.21
+          ]
+        },
+        {
+          "min": [
+            -0.15055,
+            -0.62006,
+            -0.18006
+          ],
+          "max": [
+            0.15055,
+            0.07508,
+            0.20898
+          ]
+        },
+        {
+          "min": [
+            -0.15468,
+            -0.6209,
+            -0.17956
+          ],
+          "max": [
+            0.15468,
+            0.0758,
+            0.20537
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        -0.24,
+        1.17,
+        0.78
+      ]
+    },
+    {
+      "actor": "agro",
+      "bone": "rl_low",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        220,
+        100,
+        38
+      ],
+      "model_paths": [
+        "res://models/agro_v3/rl_low_lod0.glb",
+        "res://models/agro_v3/rl_low_lod1.glb",
+        "res://models/agro_v3/rl_low_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.063,
+            -0.58,
+            -0.076
+          ],
+          "max": [
+            0.063,
+            0.035,
+            0.076
+          ]
+        },
+        {
+          "min": [
+            -0.06249,
+            -0.58,
+            -0.07829
+          ],
+          "max": [
+            0.06249,
+            0.03501,
+            0.07776
+          ]
+        },
+        {
+          "min": [
+            -0.06893,
+            -0.57992,
+            -0.08066
+          ],
+          "max": [
+            0.05843,
+            0.03481,
+            0.0744
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        -0.24,
+        0.55,
+        0.78
+      ]
+    },
+    {
+      "actor": "agro",
+      "bone": "rl_hoof",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        196,
+        90,
+        34
+      ],
+      "model_paths": [
+        "res://models/agro_v3/rl_hoof_lod0.glb",
+        "res://models/agro_v3/rl_hoof_lod1.glb",
+        "res://models/agro_v3/rl_hoof_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.086,
+            -0.10493,
+            -0.145
+          ],
+          "max": [
+            0.086,
+            0.014,
+            0.082
+          ]
+        },
+        {
+          "min": [
+            -0.08637,
+            -0.10619,
+            -0.14448
+          ],
+          "max": [
+            0.08637,
+            0.01406,
+            0.08089
+          ]
+        },
+        {
+          "min": [
+            -0.0914,
+            -0.10594,
+            -0.14448
+          ],
+          "max": [
+            0.08672,
+            0.01458,
+            0.08106
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        -0.24,
+        -0.03,
+        0.78
+      ]
+    },
+    {
+      "actor": "agro",
+      "bone": "rr_up",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        196,
+        90,
+        34
+      ],
+      "model_paths": [
+        "res://models/agro_v3/rr_up_lod0.glb",
+        "res://models/agro_v3/rr_up_lod1.glb",
+        "res://models/agro_v3/rr_up_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.15,
+            -0.62,
+            -0.18
+          ],
+          "max": [
+            0.15,
+            0.075,
+            0.21
+          ]
+        },
+        {
+          "min": [
+            -0.15055,
+            -0.62006,
+            -0.18006
+          ],
+          "max": [
+            0.15055,
+            0.07508,
+            0.20898
+          ]
+        },
+        {
+          "min": [
+            -0.15468,
+            -0.6209,
+            -0.17956
+          ],
+          "max": [
+            0.15468,
+            0.0758,
+            0.20537
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        0.24,
+        1.17,
+        0.78
+      ]
+    },
+    {
+      "actor": "agro",
+      "bone": "rr_low",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        220,
+        100,
+        38
+      ],
+      "model_paths": [
+        "res://models/agro_v3/rr_low_lod0.glb",
+        "res://models/agro_v3/rr_low_lod1.glb",
+        "res://models/agro_v3/rr_low_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.063,
+            -0.58,
+            -0.076
+          ],
+          "max": [
+            0.063,
+            0.035,
+            0.076
+          ]
+        },
+        {
+          "min": [
+            -0.06249,
+            -0.58,
+            -0.07829
+          ],
+          "max": [
+            0.06249,
+            0.03501,
+            0.07776
+          ]
+        },
+        {
+          "min": [
+            -0.06893,
+            -0.57992,
+            -0.08066
+          ],
+          "max": [
+            0.05843,
+            0.03481,
+            0.0744
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        0.24,
+        0.55,
+        0.78
+      ]
+    },
+    {
+      "actor": "agro",
+      "bone": "rr_hoof",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        196,
+        90,
+        34
+      ],
+      "model_paths": [
+        "res://models/agro_v3/rr_hoof_lod0.glb",
+        "res://models/agro_v3/rr_hoof_lod1.glb",
+        "res://models/agro_v3/rr_hoof_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.086,
+            -0.10493,
+            -0.145
+          ],
+          "max": [
+            0.086,
+            0.014,
+            0.082
+          ]
+        },
+        {
+          "min": [
+            -0.08637,
+            -0.10619,
+            -0.14448
+          ],
+          "max": [
+            0.08637,
+            0.01406,
+            0.08089
+          ]
+        },
+        {
+          "min": [
+            -0.0914,
+            -0.10594,
+            -0.14448
+          ],
+          "max": [
+            0.08672,
+            0.01458,
+            0.08106
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        0.24,
+        -0.03,
+        0.78
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "hips",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        428,
+        182,
+        62
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/hips_lod0.glb",
+        "res://models/dormin_v3/hips_lod1.glb",
+        "res://models/dormin_v3/hips_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -2.04,
+            -1.14,
+            -1.27
+          ],
+          "max": [
+            2.04,
+            0.97,
+            1.27
+          ]
+        },
+        {
+          "min": [
+            -2.04,
+            -1.13277,
+            -1.27
+          ],
+          "max": [
+            2.04,
+            0.97008,
+            1.27
+          ]
+        },
+        {
+          "min": [
+            -1.99505,
+            -1.13277,
+            -1.2208
+          ],
+          "max": [
+            1.99505,
+            0.97391,
+            1.2208
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        0,
+        8,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "spine",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        394,
+        180,
+        70
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/spine_lod0.glb",
+        "res://models/dormin_v3/spine_lod1.glb",
+        "res://models/dormin_v3/spine_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -1.7,
+            -0.1,
+            -1.2347
+          ],
+          "max": [
+            1.7,
+            2.28,
+            1.19
+          ]
+        },
+        {
+          "min": [
+            -1.69839,
+            -0.10012,
+            -1.23169
+          ],
+          "max": [
+            1.69839,
+            2.28002,
+            1.18439
+          ]
+        },
+        {
+          "min": [
+            -1.6853,
+            -0.09797,
+            -1.23169
+          ],
+          "max": [
+            1.68496,
+            2.27906,
+            1.15653
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        0,
+        9,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "chest",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        3642,
+        1674,
+        654
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/chest_lod0.glb",
+        "res://models/dormin_v3/chest_lod1.glb",
+        "res://models/dormin_v3/chest_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -2.74,
+            -0.23,
+            -1.651
+          ],
+          "max": [
+            2.74,
+            2.76,
+            1.96099
+          ]
+        },
+        {
+          "min": [
+            -2.74,
+            -0.23063,
+            -1.64846
+          ],
+          "max": [
+            2.74,
+            2.76004,
+            1.95914
+          ]
+        },
+        {
+          "min": [
+            -2.75918,
+            -0.23042,
+            -1.64846
+          ],
+          "max": [
+            2.7312,
+            2.76042,
+            1.98031
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        0,
+        11.2,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "neck",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        716,
+        328,
+        128
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/neck_lod0.glb",
+        "res://models/dormin_v3/neck_lod1.glb",
+        "res://models/dormin_v3/neck_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.98,
+            -0.57,
+            -0.68
+          ],
+          "max": [
+            0.98,
+            1.96,
+            1.36
+          ]
+        },
+        {
+          "min": [
+            -0.97431,
+            -0.57011,
+            -0.67708
+          ],
+          "max": [
+            0.97431,
+            1.96005,
+            1.35838
+          ]
+        },
+        {
+          "min": [
+            -0.99676,
+            -0.57053,
+            -0.68982
+          ],
+          "max": [
+            0.9606,
+            1.96031,
+            1.34278
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        0,
+        14,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "head",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        2342,
+        1076,
+        420
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/head_lod0.glb",
+        "res://models/dormin_v3/head_lod1.glb",
+        "res://models/dormin_v3/head_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -2.13923,
+            0.02272,
+            -1.2425
+          ],
+          "max": [
+            2.13923,
+            4.13463,
+            1.32
+          ]
+        },
+        {
+          "min": [
+            -2.13923,
+            0.02272,
+            -1.2425
+          ],
+          "max": [
+            2.13923,
+            4.13427,
+            1.31811
+          ]
+        },
+        {
+          "min": [
+            -2.12291,
+            0.02218,
+            -1.23031
+          ],
+          "max": [
+            2.13857,
+            4.13134,
+            1.30756
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        0,
+        15,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "upper_arm_l",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        396,
+        173,
+        56
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/upper_arm_l_lod0.glb",
+        "res://models/dormin_v3/upper_arm_l_lod1.glb",
+        "res://models/dormin_v3/upper_arm_l_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.78,
+            -4.15,
+            -0.75
+          ],
+          "max": [
+            0.86,
+            0.11,
+            0.75
+          ]
+        },
+        {
+          "min": [
+            -0.77662,
+            -4.15012,
+            -0.75667
+          ],
+          "max": [
+            0.84795,
+            0.11019,
+            0.75667
+          ]
+        },
+        {
+          "min": [
+            -0.76746,
+            -4.14578,
+            -0.72793
+          ],
+          "max": [
+            0.84795,
+            0.11336,
+            0.72793
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        2.9,
+        13.5,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "forearm_l",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        332,
+        152,
+        58
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/forearm_l_lod0.glb",
+        "res://models/dormin_v3/forearm_l_lod1.glb",
+        "res://models/dormin_v3/forearm_l_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.7,
+            -4.15,
+            -0.7509
+          ],
+          "max": [
+            0.71831,
+            0.1,
+            0.69
+          ]
+        },
+        {
+          "min": [
+            -0.7,
+            -4.15012,
+            -0.74427
+          ],
+          "max": [
+            0.71831,
+            0.10014,
+            0.69682
+          ]
+        },
+        {
+          "min": [
+            -0.6884,
+            -4.15076,
+            -0.72822
+          ],
+          "max": [
+            0.70593,
+            0.10059,
+            0.67625
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        2.9,
+        9.3,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "hand_l",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        818,
+        376,
+        146
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/hand_l_lod0.glb",
+        "res://models/dormin_v3/hand_l_lod1.glb",
+        "res://models/dormin_v3/hand_l_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.64,
+            -1.74149,
+            -0.54378
+          ],
+          "max": [
+            0.93739,
+            0.18,
+            0.54
+          ]
+        },
+        {
+          "min": [
+            -0.63764,
+            -1.74024,
+            -0.54159
+          ],
+          "max": [
+            0.93739,
+            0.18,
+            0.53905
+          ]
+        },
+        {
+          "min": [
+            -0.66271,
+            -1.72928,
+            -0.55558
+          ],
+          "max": [
+            0.93847,
+            0.17948,
+            0.54223
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        2.9,
+        5.1,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "thigh_l",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        1228,
+        564,
+        189
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/thigh_l_lod0.glb",
+        "res://models/dormin_v3/thigh_l_lod1.glb",
+        "res://models/dormin_v3/thigh_l_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.95,
+            -3.82,
+            -1.0509
+          ],
+          "max": [
+            0.95,
+            0.04,
+            0.95228
+          ]
+        },
+        {
+          "min": [
+            -0.95,
+            -3.82004,
+            -1.0509
+          ],
+          "max": [
+            0.95,
+            0.0401,
+            0.95481
+          ]
+        },
+        {
+          "min": [
+            -0.93732,
+            -3.82037,
+            -1.04592
+          ],
+          "max": [
+            0.93732,
+            0.04099,
+            0.94812
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        1.3,
+        7.6,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "shin_l",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        1286,
+        590,
+        196
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/shin_l_lod0.glb",
+        "res://models/dormin_v3/shin_l_lod1.glb",
+        "res://models/dormin_v3/shin_l_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.82,
+            -3.48,
+            -0.9109
+          ],
+          "max": [
+            0.82,
+            0.1,
+            0.85249
+          ]
+        },
+        {
+          "min": [
+            -0.82,
+            -3.48001,
+            -0.9109
+          ],
+          "max": [
+            0.82,
+            0.10009,
+            0.85249
+          ]
+        },
+        {
+          "min": [
+            -0.81798,
+            -3.48015,
+            -0.90526
+          ],
+          "max": [
+            0.81798,
+            0.10029,
+            0.84832
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        1.3,
+        3.8,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "foot_l",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        1084,
+        498,
+        194
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/foot_l_lod0.glb",
+        "res://models/dormin_v3/foot_l_lod1.glb",
+        "res://models/dormin_v3/foot_l_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.81,
+            -0.38,
+            -2.58
+          ],
+          "max": [
+            0.81,
+            0.31,
+            0.87
+          ]
+        },
+        {
+          "min": [
+            -0.80765,
+            -0.38022,
+            -2.58
+          ],
+          "max": [
+            0.80765,
+            0.31016,
+            0.87
+          ]
+        },
+        {
+          "min": [
+            -0.7815,
+            -0.38099,
+            -2.59526
+          ],
+          "max": [
+            0.7815,
+            0.31146,
+            0.85827
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        1.3,
+        0.4,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "upper_arm_r",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        396,
+        173,
+        56
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/upper_arm_r_lod0.glb",
+        "res://models/dormin_v3/upper_arm_r_lod1.glb",
+        "res://models/dormin_v3/upper_arm_r_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.86,
+            -4.15,
+            -0.75
+          ],
+          "max": [
+            0.78,
+            0.11,
+            0.75
+          ]
+        },
+        {
+          "min": [
+            -0.86665,
+            -4.15012,
+            -0.75667
+          ],
+          "max": [
+            0.77662,
+            0.11019,
+            0.75667
+          ]
+        },
+        {
+          "min": [
+            -0.86665,
+            -4.14578,
+            -0.72793
+          ],
+          "max": [
+            0.82776,
+            0.11336,
+            0.72793
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        -2.9,
+        13.5,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "forearm_r",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        332,
+        152,
+        58
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/forearm_r_lod0.glb",
+        "res://models/dormin_v3/forearm_r_lod1.glb",
+        "res://models/dormin_v3/forearm_r_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.77706,
+            -4.15,
+            -0.7509
+          ],
+          "max": [
+            0.7,
+            0.1,
+            0.69
+          ]
+        },
+        {
+          "min": [
+            -0.77706,
+            -4.15012,
+            -0.74427
+          ],
+          "max": [
+            0.7,
+            0.10014,
+            0.69682
+          ]
+        },
+        {
+          "min": [
+            -0.77829,
+            -4.15076,
+            -0.72822
+          ],
+          "max": [
+            0.6884,
+            0.10059,
+            0.67625
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        -2.9,
+        9.3,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "hand_r",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        818,
+        376,
+        146
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/hand_r_lod0.glb",
+        "res://models/dormin_v3/hand_r_lod1.glb",
+        "res://models/dormin_v3/hand_r_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.92888,
+            -1.74149,
+            -0.54378
+          ],
+          "max": [
+            0.64,
+            0.18,
+            0.54
+          ]
+        },
+        {
+          "min": [
+            -0.92888,
+            -1.74024,
+            -0.54159
+          ],
+          "max": [
+            0.63764,
+            0.18,
+            0.53905
+          ]
+        },
+        {
+          "min": [
+            -0.9417,
+            -1.72928,
+            -0.55558
+          ],
+          "max": [
+            0.6377,
+            0.17948,
+            0.54223
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        -2.9,
+        5.1,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "thigh_r",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        1228,
+        564,
+        189
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/thigh_r_lod0.glb",
+        "res://models/dormin_v3/thigh_r_lod1.glb",
+        "res://models/dormin_v3/thigh_r_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.95,
+            -3.82979,
+            -1.0509
+          ],
+          "max": [
+            0.95,
+            0.04,
+            0.95526
+          ]
+        },
+        {
+          "min": [
+            -0.95,
+            -3.82954,
+            -1.0509
+          ],
+          "max": [
+            0.95,
+            0.0401,
+            0.95717
+          ]
+        },
+        {
+          "min": [
+            -0.93732,
+            -3.82954,
+            -1.04592
+          ],
+          "max": [
+            0.93732,
+            0.04099,
+            0.95083
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        -1.3,
+        7.6,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "shin_r",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        1286,
+        590,
+        196
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/shin_r_lod0.glb",
+        "res://models/dormin_v3/shin_r_lod1.glb",
+        "res://models/dormin_v3/shin_r_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.82,
+            -3.48724,
+            -0.9109
+          ],
+          "max": [
+            0.82,
+            0.1,
+            0.84451
+          ]
+        },
+        {
+          "min": [
+            -0.82,
+            -3.48716,
+            -0.9109
+          ],
+          "max": [
+            0.82,
+            0.10009,
+            0.8461
+          ]
+        },
+        {
+          "min": [
+            -0.81798,
+            -3.48716,
+            -0.90526
+          ],
+          "max": [
+            0.81798,
+            0.10029,
+            0.83389
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        -1.3,
+        3.8,
+        0
+      ]
+    },
+    {
+      "actor": "dormin",
+      "bone": "foot_r",
+      "units": "metres",
+      "render_only": true,
+      "triangle_counts": [
+        1084,
+        498,
+        194
+      ],
+      "model_paths": [
+        "res://models/dormin_v3/foot_r_lod0.glb",
+        "res://models/dormin_v3/foot_r_lod1.glb",
+        "res://models/dormin_v3/foot_r_lod2.glb"
+      ],
+      "aabb_per_lod": [
+        {
+          "min": [
+            -0.81,
+            -0.38,
+            -2.58
+          ],
+          "max": [
+            0.81,
+            0.31,
+            0.87
+          ]
+        },
+        {
+          "min": [
+            -0.80765,
+            -0.38022,
+            -2.58
+          ],
+          "max": [
+            0.80765,
+            0.31016,
+            0.87
+          ]
+        },
+        {
+          "min": [
+            -0.7815,
+            -0.38099,
+            -2.59526
+          ],
+          "max": [
+            0.7815,
+            0.31146,
+            0.85827
+          ]
+        }
+      ],
+      "bone_rest_origin": [
+        -1.3,
+        0.4,
+        0
+      ]
+    }
+  ]
+}

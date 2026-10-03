@@ -9,6 +9,7 @@ var refs := {}
 
 func _ready() -> void:
 	InputSetup.ensure_defaults()
+	TrialMenu.attach(self)
 	refs = AvionArena.build_encounter(self, true, 41, not OS.has_environment("NO_ART"))
 	players.append(refs.player)
 	if DisplayServer.get_name() != "headless":

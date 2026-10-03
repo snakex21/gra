@@ -19,6 +19,7 @@ var _blade: MeshInstance3D
 var _flare: MeshInstance3D
 var _beam: MeshInstance3D
 var _beam_mat: StandardMaterial3D
+var _lantern: SpotLight3D
 
 
 func _ready() -> void:
@@ -118,6 +119,7 @@ func _ready() -> void:
 	_flare.mesh = flare_mesh
 	_flare.material_override = _beam_mat
 	_flare.top_level = true
+	_flare.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_flare.visible = false
 	add_child(_flare)
 	_beam = MeshInstance3D.new()
@@ -133,6 +135,21 @@ func _ready() -> void:
 	_beam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_beam.visible = false
 	add_child(_beam)
+	_lantern = SpotLight3D.new()
+	_lantern.name = "SwordLantern"
+	_lantern.top_level = true
+	_lantern.light_color = Color(0.75, 0.9, 1.0)
+	_lantern.light_energy = 16.0
+	_lantern.light_cull_mask = 3
+	_lantern.spot_range = 42.0
+	_lantern.spot_attenuation = 0.25
+	_lantern.spot_angle = 32.0
+	_lantern.shadow_normal_bias = 0.3
+	_lantern.shadow_reverse_cull_face = true
+	_lantern.shadow_enabled = true
+	_lantern.visible = false
+	add_child(_lantern)
+	TravelerArt.attach(self, get_parent() as PlayerCharacter)
 
 
 func update_visual(player: PlayerCharacter, delta: float) -> void:
@@ -203,10 +220,15 @@ func update_visual(player: PlayerCharacter, delta: float) -> void:
 
 func _update_beam(player: PlayerCharacter) -> void:
 	var b := player.beam
+	_lantern.visible = b.lantern and b.raise > 0.01
+	if _lantern.visible:
+		_lantern.light_energy = 16.0 * b.raise
+		var tip := SwordBeam.tip(player)
+		_lantern.global_transform = Transform3D(Basis.looking_at(b.direction, Vector3.RIGHT if absf(b.direction.y) > 0.95 else Vector3.UP), tip)
 	_blade.visible = b.raise > 0.0
 	var shine := b.raise >= 1.0 and b.lit
 	_flare.visible = shine
-	_beam.visible = shine and b.focus > 0.02
+	_beam.visible = shine and b.focus > 0.02 and not b.lantern
 	if not shine:
 		return
 	var from := SwordBeam.tip(player)

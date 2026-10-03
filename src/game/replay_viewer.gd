@@ -7,12 +7,10 @@ extends Node
 ##   , / .    previous / next marker (a death, a hit, a fall, a defeat, a report...)
 ##   C        save a clip: the 15 s before here and 5 s after
 ##
-## The timeline at the bottom shows where the markers are. A clip is the same recording
-## (it still starts from the beginning: the world can only be recreated from there) with a
-## window: opened, it runs to the window's start and plays only the window.
+## The timeline shows markers. New clips start from the nearest world checkpoint and
+## keep only the required input suffix; legacy recordings can still replay from zero.
 ##
-## The recording is deterministic, so going back means starting the world again from
-## the recording's start and running forward to that tick, fast. Running faster (or
+## Going back restores a checkpoint and runs its remaining input to the target. Running faster (or
 ## slower) changes how many ticks run per rendered frame, never the tick: the engine's
 ## time scale and its tick rate change together by a power of two, so each tick's step
 ## stays exactly 1/60 s and the run is bit for bit the one recorded.
@@ -28,7 +26,7 @@ const BASE_TICKS := 60
 const MARKER_LEAD := 3 * 60
 const CLIP_BEFORE := 15 * 60
 const CLIP_AFTER := 5 * 60
-const CLIPS := "user://replays/"
+const CLIPS := "res://data/replays/"
 
 var game: GameWorld
 var data: Dictionary
@@ -79,18 +77,30 @@ func _ready() -> void:
 		seek(int(_clip[0]))
 
 
-## The world again from the recording's start, with a fresh playback.
-func restart() -> void:
+## Rebuild the world from a checkpoint, or the original header for older recordings.
+func restart(checkpoint := {}) -> void:
 	var h: Dictionary = data.get("header", {})
 	game.with_input = false
 	game.save_path = ""
 	game.seed_offset = int(h.get("seed_offset", 0))
+	game.layout_version = int(h.get("world_layout", 1))
 	if is_instance_valid(replay):
 		replay.free()
-	game.start_from(h.get("progress", {}))
+	if checkpoint.is_empty() or not WorldSnapshot.restore(game, checkpoint.get("world", {})):
+		checkpoint = {}
+		game.start_from(h.get("progress", {}))
 	replay = ActionReplay.player_for(null, data)
 	replay.player_source = game.player
 	game.add_child(replay)
+	if not checkpoint.is_empty():
+		replay.resume_checkpoint(checkpoint)
+
+func checkpoint_before(at: int) -> Dictionary:
+	var best := {}
+	for c: Dictionary in data.get("checkpoints", []):
+		if int(c.tick) <= at and (best.is_empty() or int(c.tick) > int(best.tick)):
+			best = c
+	return best
 
 
 func tick() -> int:
@@ -126,7 +136,7 @@ func jump_marker(dir: int) -> Array:
 	return best
 
 
-## Saves a clip around ``at`` (default: here): the same recording with a window. Returns
+## Saves a checkpoint and trimmed input around ``at`` (default: here). Returns
 ## its path ("" when it could not be written).
 func save_clip(at := -1, path := "") -> String:
 	if at < 0:
@@ -134,12 +144,31 @@ func save_clip(at := -1, path := "") -> String:
 	var from := maxi(0, at - CLIP_BEFORE)
 	var to := mini(int(data.get("ticks", 0)), at + CLIP_AFTER)
 	var clip := data.duplicate(true)
+	var checkpoint := checkpoint_before(from)
+	if not checkpoint.is_empty():
+		var cursor := int(checkpoint.cursor)
+		var kept := []
+		for i in range(cursor, clip.frames.size()):
+			var f: Array = clip.frames[i]
+			if f.size() < 4 or int(f[3]) <= to:
+				kept.append(f)
+		clip.frames = kept
+		clip.checkpoints = []
+		for c: Dictionary in data.get("checkpoints", []):
+			if int(c.tick) >= int(checkpoint.tick) and int(c.tick) <= to:
+				var adjusted := c.duplicate(true)
+				adjusted.cursor = int(c.cursor) - cursor
+				clip.checkpoints.append(adjusted)
+		clip.markers = (data.get("markers", []) as Array).filter(func(m: Array) -> bool: return int(m[0]) >= from and int(m[0]) <= to)
 	var h: Dictionary = clip.get("header", {})
 	h["clip"] = [from, to]
 	clip["header"] = h
+	clip.ticks = to
 	if path == "":
 		path = CLIPS + "clip_%s.replay" % Time.get_datetime_string_from_system().replace(":", "-")
-	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	path = PortablePaths.prepare(path)
+	if path == "":
+		return ""
 	var f := FileAccess.open_compressed(path, FileAccess.WRITE, FileAccess.COMPRESSION_ZSTD)
 	if f == null:
 		return ""
@@ -152,8 +181,9 @@ func save_clip(at := -1, path := "") -> String:
 func seek(t: int) -> void:
 	t = clampi(t, 0, maxi(length(), 0))
 	_was_paused = paused
-	if t < tick():
-		restart()
+	var checkpoint := checkpoint_before(t)
+	if t < tick() or (not checkpoint.is_empty() and int(checkpoint.tick) > tick()):
+		restart(checkpoint)
 	if t == tick():
 		reached.emit(t)
 		return

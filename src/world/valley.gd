@@ -34,6 +34,7 @@ const GATES := {
 	&"phaedra": {"pos": Vector3(172, 0, -100), "out": Vector3(1, 0, 0)},
 	&"hydrus": {"pos": Vector3(-172, 0, -120), "out": Vector3(-1, 0, 0)},
 	&"avion": {"pos": Vector3(-150, 0, -172), "out": Vector3(-0.544, 0, -0.839)},
+	&"cave": {"pos": Vector3(172, 0, 80), "out": Vector3(1, 0, 0)},
 }
 const GATE_WIDTH := 12.0
 const GATE_TRIGGER := 6.0
@@ -57,7 +58,7 @@ static func on_ground(p: Vector3, lift := 0.0) -> Vector3:
 ## the grass is left out (tests). ``world``: the valley is part of the continuous world
 ## (WorldMap): the world's edge has openings where the corridors leave, and the kit's
 ## own horizon gives way to the world's.
-static func build(parent: Node3D, open_gate: StringName, with_art := true, world := false) -> Dictionary:
+static func build(parent: Node3D, open_gate: StringName, with_art := true, world := false, layout := 2) -> Dictionary:
 	var kit := Node3D.new()
 	kit.name = "AncientValley"
 	kit.set_script(ValleyArt)
@@ -77,6 +78,23 @@ static func build(parent: Node3D, open_gate: StringName, with_art := true, world
 	lake.show_surface = false
 	lake.position = LAKE_CENTER
 	parent.add_child(lake)
+	if world and layout >= 2:
+		# Authored edge cliffs must leave the new gate approaches open. Remove whole
+		# decorative props, including their collision, rather than a hidden passage.
+		for prop in kit.get_children():
+			if not prop is Node3D or prop.find_children("*", "CollisionObject3D", true, false).is_empty():
+				continue
+			for kind: StringName in WorldMap.gates(layout):
+				var gate_data := WorldMap.gate(kind, layout)
+				var dir: Vector3 = gate_data.out
+				var off: Vector3 = (prop as Node3D).position - (gate_data.pos as Vector3)
+				var along := off.dot(dir)
+				var across := off - dir * along
+				across.y = 0.0
+				if along > -30.0 and along < 35.0 and across.length() < 24.0:
+					kit.remove_child(prop)
+					prop.free()
+					break
 	if world:
 		for c in kit.get_children():
 			if String(c.name).begins_with("DistantTerrain"):
@@ -87,10 +105,19 @@ static func build(parent: Node3D, open_gate: StringName, with_art := true, world
 	# middle of the way out); the terrain under them is already the gentle way down, so
 	# the stairs are only seen.
 	for c in kit.get_children():
+		if c is Node3D and String(c.name).begins_with("floor_"):
+			# These render-only tiles have a .192m cap above their authored origin.
+			(c as Node3D).position.y -= 0.207 # Keep the cap .005m above the terrain.
 		if String(c.name).begins_with("stairs"):
 			for b in c.find_children("*", "CollisionObject3D", true, false):
 				(b as CollisionObject3D).collision_layer = 0
 				(b as CollisionObject3D).collision_mask = 0
+	if with_art:
+		for prop in kit.get_children():
+			if prop is Node3D and String(prop.name).begins_with("altar_"):
+				# The altar is 2.7m along X; her head points along its long axis.
+				TravelerArt.create_mono(prop, Vector3(0, 1.64, 0), PI * 0.5)
+				break
 
 	var stone := ArenaArt.material(ArenaArt.Kind.STONE) if with_art else _plain(Color(0.6, 0.58, 0.53))
 	var dark := _plain(Color(0.45, 0.44, 0.41))
@@ -100,7 +127,7 @@ static func build(parent: Node3D, open_gate: StringName, with_art := true, world
 	mist.cull_mode = BaseMaterial3D.CULL_DISABLED
 
 	# The edge of the world: tall invisible walls (the horizon mesh shows what lies beyond).
-	for w in _edge_walls(world):
+	for w in _edge_walls(world, layout):
 		var wall := TerrainKit.box(parent, w[0], w[1], dark)
 		wall.name = "WorldEdge"
 		for c in wall.get_children():
@@ -108,8 +135,8 @@ static func build(parent: Node3D, open_gate: StringName, with_art := true, world
 				c.visible = false
 
 	var gates := {}
-	for c: StringName in GATES:
-		var g: Dictionary = GATES[c]
+	for c: StringName in WorldMap.gates(layout):
+		var g: Dictionary = WorldMap.gate(c, layout)
 		var out: Vector3 = (g.out as Vector3).normalized()
 		var pos := on_ground(g.pos)
 		var root := Node3D.new()
@@ -118,7 +145,7 @@ static func build(parent: Node3D, open_gate: StringName, with_art := true, world
 		# The opening is where the corridor's walls meet the edge: pillars there, the lintel
 		# and (closed) the mist between them, along the edge line (also for a gate at an
 		# angle to the edge).
-		var ends := gate_opening(c, EDGE)
+		var ends := gate_opening(c, EDGE, layout)
 		var a: Vector3 = ends[0]
 		var b: Vector3 = ends[1]
 		var mid := on_ground((a + b) * 0.5)
@@ -141,8 +168,8 @@ static func build(parent: Node3D, open_gate: StringName, with_art := true, world
 
 ## Where the two walls of ``c``'s corridor cross the edge line at ``at`` (|x| or |z|):
 ## the ends of the gate's opening (XZ, y = 0).
-static func gate_opening(c: StringName, at: float) -> Array[Vector3]:
-	var g: Dictionary = GATES[c]
+static func gate_opening(c: StringName, at: float, layout := 2) -> Array[Vector3]:
+	var g: Dictionary = WorldMap.gate(c, layout)
 	var pos: Vector3 = g.pos
 	var out: Vector3 = (g.out as Vector3).normalized()
 	var side := out.cross(Vector3.UP).normalized()
@@ -159,7 +186,7 @@ static func gate_opening(c: StringName, at: float) -> Array[Vector3]:
 
 
 ## The edge walls ([centre, size]); in the world they leave an opening for each corridor.
-static func _edge_walls(world: bool) -> Array:
+static func _edge_walls(world: bool, layout := 2) -> Array:
 	var out := []
 	var e := EDGE + 2.0
 	var span := EDGE + 4.0
@@ -169,13 +196,13 @@ static func _edge_walls(world: bool) -> Array:
 		var fixed: float = side[1]
 		var gaps := []
 		if world:
-			for c: StringName in GATES:
-				var g: Vector3 = GATES[c].pos
+			for c: StringName in WorldMap.gates(layout):
+				var g: Vector3 = WorldMap.gate(c, layout).pos
 				var on_z := absf(absf(g.z) - EDGE) < 0.5
 				if on_z != along_x or signf(g.z if on_z else g.x) != signf(fixed):
 					continue
 				# Between the corridor's walls where they cross this wall's middle.
-				var ends := gate_opening(c, absf(fixed))
+				var ends := gate_opening(c, absf(fixed), layout)
 				var u0: float = ends[0].x if along_x else ends[0].z
 				var u1: float = ends[1].x if along_x else ends[1].z
 				gaps.append([minf(u0, u1), maxf(u0, u1)])

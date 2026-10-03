@@ -8,6 +8,7 @@ var refs := {}
 
 func _ready() -> void:
 	InputSetup.ensure_defaults()
+	TrialMenu.attach(self)
 	refs = QuadratusArena.build_encounter(self, true, 11, not OS.has_environment("NO_ART"))
 	players.append(refs.player)
 	if DisplayServer.get_name() != "headless":

@@ -8,13 +8,22 @@ jobs:
   gameplay-tests:
     runs-on: ubuntu-latest
     env:
-      GODOT_VERSION: 4.4.1
+      GODOT_VERSION: 4.6.3
     steps:
       - uses: actions/checkout@v4
       - name: Download Godot
         run: |
-          curl -sSL -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          curl -fsSL -o godot.zip "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
           unzip -q godot.zip
           echo "GODOT=$PWD/Godot_v${GODOT_VERSION}-stable_linux.x86_64" >> "$GITHUB_ENV"
       - name: Run headless gameplay tests
         run: tools/run_tests.sh
+      - name: Run portable saves and expanded encounters
+        run: |
+          export XDG_DATA_HOME="$PWD/tools/runtime/engine_data"
+          export XDG_CACHE_HOME="$PWD/tools/runtime/engine_cache"
+          export TMPDIR="$PWD/tools/runtime/tmp"
+          mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$TMPDIR"
+          for scene in stage12 auto_save checkpoint_climb campaign_expansion colossi_v3 travelers_v3 temple_characters_v3 art_integration_v3 paired_arrival; do
+            "$GODOT" --headless --fixed-fps 60 --quit-after 200000 "res://tests/${scene}.tscn"
+          done

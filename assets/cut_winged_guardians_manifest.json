@@ -1,0 +1,195 @@
+{
+  "units": "metres",
+  "axes": "Godot Y up, local -Z toward head",
+  "original_designs": true,
+  "source": "res://art/source/cut_winged_guardians.blend",
+  "generator": "tools/art/generate_cut_guardians.py",
+  "items": [
+    {
+      "guardian": "devil",
+      "bone": "body",
+      "render_only": true,
+      "model_paths": [
+        "res://models/devil/body_lod0.glb",
+        "res://models/devil/body_lod1.glb",
+        "res://models/devil/body_lod2.glb"
+      ],
+      "triangle_counts": [
+        680,
+        372,
+        184
+      ],
+      "aabb_min": [
+        -1.75,
+        -1.19,
+        -3.7
+      ],
+      "aabb_max": [
+        1.75,
+        2.05,
+        2.49
+      ],
+      "lod_distances_m": [
+        45,
+        100,
+        800
+      ],
+      "placement": "Attach at identity transform to the named WingedGuardian BodySegment; gameplay shapes belong to the rig."
+    },
+    {
+      "guardian": "devil",
+      "bone": "wing_l",
+      "render_only": true,
+      "model_paths": [
+        "res://models/devil/wing_l_lod0.glb",
+        "res://models/devil/wing_l_lod1.glb",
+        "res://models/devil/wing_l_lod2.glb"
+      ],
+      "triangle_counts": [
+        152,
+        82,
+        42
+      ],
+      "aabb_min": [
+        -6.42535,
+        -0.16497,
+        -3.21749
+      ],
+      "aabb_max": [
+        0.05777,
+        0.185,
+        2.27603
+      ],
+      "lod_distances_m": [
+        45,
+        100,
+        800
+      ],
+      "placement": "Attach at identity transform to the named WingedGuardian BodySegment; gameplay shapes belong to the rig."
+    },
+    {
+      "guardian": "devil",
+      "bone": "wing_r",
+      "render_only": true,
+      "model_paths": [
+        "res://models/devil/wing_r_lod0.glb",
+        "res://models/devil/wing_r_lod1.glb",
+        "res://models/devil/wing_r_lod2.glb"
+      ],
+      "triangle_counts": [
+        152,
+        82,
+        42
+      ],
+      "aabb_min": [
+        -0.05777,
+        -0.16497,
+        -3.21749
+      ],
+      "aabb_max": [
+        6.42535,
+        0.185,
+        2.27603
+      ],
+      "lod_distances_m": [
+        45,
+        100,
+        800
+      ],
+      "placement": "Attach at identity transform to the named WingedGuardian BodySegment; gameplay shapes belong to the rig."
+    },
+    {
+      "guardian": "phoenix",
+      "bone": "body",
+      "render_only": true,
+      "model_paths": [
+        "res://models/phoenix/body_lod0.glb",
+        "res://models/phoenix/body_lod1.glb",
+        "res://models/phoenix/body_lod2.glb"
+      ],
+      "triangle_counts": [
+        552,
+        299,
+        146
+      ],
+      "aabb_min": [
+        -1.84,
+        -1.19,
+        -3.7
+      ],
+      "aabb_max": [
+        1.84,
+        2.15,
+        4.7
+      ],
+      "lod_distances_m": [
+        45,
+        100,
+        800
+      ],
+      "placement": "Attach at identity transform to the named WingedGuardian BodySegment; gameplay shapes belong to the rig."
+    },
+    {
+      "guardian": "phoenix",
+      "bone": "wing_l",
+      "render_only": true,
+      "model_paths": [
+        "res://models/phoenix/wing_l_lod0.glb",
+        "res://models/phoenix/wing_l_lod1.glb",
+        "res://models/phoenix/wing_l_lod2.glb"
+      ],
+      "triangle_counts": [
+        108,
+        58,
+        20
+      ],
+      "aabb_min": [
+        -5.72938,
+        -0.17,
+        -1.86744
+      ],
+      "aabb_max": [
+        0.02938,
+        0.21,
+        2.35
+      ],
+      "lod_distances_m": [
+        45,
+        100,
+        800
+      ],
+      "placement": "Attach at identity transform to the named WingedGuardian BodySegment; gameplay shapes belong to the rig."
+    },
+    {
+      "guardian": "phoenix",
+      "bone": "wing_r",
+      "render_only": true,
+      "model_paths": [
+        "res://models/phoenix/wing_r_lod0.glb",
+        "res://models/phoenix/wing_r_lod1.glb",
+        "res://models/phoenix/wing_r_lod2.glb"
+      ],
+      "triangle_counts": [
+        108,
+        58,
+        20
+      ],
+      "aabb_min": [
+        -0.02938,
+        -0.17,
+        -1.86744
+      ],
+      "aabb_max": [
+        5.72938,
+        0.21,
+        2.35
+      ],
+      "lod_distances_m": [
+        45,
+        100,
+        800
+      ],
+      "placement": "Attach at identity transform to the named WingedGuardian BodySegment; gameplay shapes belong to the rig."
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 extends Node
 ## Long regression run of the whole game: N new games played start to finish by GameBot
-## (temple -> beam -> ride -> corridor -> Valus -> temple -> ... -> Hydrus -> the end).
+## (temple -> beam -> ride -> corridor -> Valus -> temple -> ... -> Dormin -> the end).
 ## Each run uses other brain seeds in the arenas, another first guess of the way, Agro
 ## waiting somewhere else and a random first ride before the beam is checked again.
 ##
@@ -8,8 +8,8 @@ extends Node
 ##     [--defeated=N]   start from a save with the first N colossi already defeated
 ## Writes tests/output/game_soak.json and prints a summary. Nothing is retried.
 
-## Simulation limit per game (s).
-const LIMIT := 60.0 * 45.0
+## Long corridors plus a full fight, per remaining encounter (simulation seconds).
+const LIMIT_PER_BOSS := 600.0
 
 var runs := 10
 var first := 1
@@ -34,7 +34,7 @@ func _ready() -> void:
 		print("game %3d: %s in %6.1f s  deaths %d  fights %s  valley %.0f s (ride %.0f)  beam sweeps %d locks %d unlit %d  detours %d  stalls %s" % [
 			i, r.outcome, r.time, r.deaths, r.fights_line, r.valley_time, r.ride_time, r.beam_sweeps, r.beam_locks, r.beam_unlit, r.detours, str(r.stalls)])
 	_summary()
-	get_tree().quit(0)
+	get_tree().quit(0 if results.all(func(r: Dictionary) -> bool: return r.outcome == "WIN") else 1)
 
 
 func _run(i: int) -> Dictionary:
@@ -63,7 +63,8 @@ func _run(i: int) -> Dictionary:
 	h.teleport(Valley.on_ground(Valley.HORSE_SPAWN + Vector3(rng.randf_range(-14.0, 14.0), 0, rng.randf_range(-12.0, 6.0))), rng.randf() * TAU)
 	bot.setup(g)
 	var t := 0
-	while bot.phase != GameBot.Phase.DONE and t < LIMIT * 60.0:
+	var limit := maxf(600.0, (GameState.ORDER.size() - clampi(defeated, 0, GameState.ORDER.size())) * LIMIT_PER_BOSS)
+	while bot.phase != GameBot.Phase.DONE and t < limit * 60.0:
 		await get_tree().physics_frame
 		t += 1
 	var r := bot.result
@@ -80,6 +81,21 @@ func _run(i: int) -> Dictionary:
 		"transitions": g.transitions,
 		"last_events": bot.events.slice(-14) if not r.get("won", false) else [],
 	}
+	if not r.get("won", false):
+		# Final diagnostics only; never sample a running external process for progress.
+		out["region"] = String(g.region_kind)
+		out["player_state"] = g.player().get_display_state()
+		out["player_world"] = str(g.player().global_position)
+		if g.arenas.has(g.region_kind):
+			out["player_arena"] = str((g.arenas[g.region_kind].xf as Transform3D).affine_inverse() * g.player().global_position)
+		if g.colossus():
+			out["boss_state"] = g.colossus().debug_text()
+		if is_instance_valid(bot.boss_bot):
+			out["boss_bot_phase"] = bot.boss_bot.get(&"phase")
+			out["boss_bot_stats"] = bot.boss_bot.get(&"stats")
+			var events: Variant = bot.boss_bot.get(&"events")
+			if events is Array:
+				out["boss_bot_events"] = events.slice(-20)
 	bot.queue_free()
 	g.queue_free()
 	await get_tree().physics_frame

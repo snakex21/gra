@@ -122,6 +122,7 @@ func _ready() -> void:
 	debug_draw = HorseDebugDraw.new()
 	debug_draw.horse = self
 	add_child(debug_draw)
+	AgroArt.dress(self)
 
 
 ## Places the horse (feet re-planted on the ground there).

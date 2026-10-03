@@ -82,6 +82,10 @@ func _ready() -> void:
 	far = 4000.0
 	fov = 70.0
 	_params.shape = _sphere
+	var water_view := WaterCameraEffects.new()
+	water_view.camera = self
+	water_view.player = player
+	add_child(water_view)
 
 
 func _process(delta: float) -> void:

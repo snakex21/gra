@@ -167,14 +167,15 @@ static func build_encounter(parent: Node3D, with_input := false, brain_seed := 4
 	var horse := Horse.new()
 	horse.name = "Agro"
 	parent.add_child(horse)
-	horse.teleport(HORSE_START, 0.0)
+	var yaw := parent.global_basis.get_euler().y
+	horse.teleport(parent.global_transform * HORSE_START, yaw)
 	var p := PlayerCharacter.new()
 	p.name = "Player1"
 	parent.add_child(p)
-	p.global_position = PLAYER_START
-	p.facing = Vector3.FORWARD
+	p.global_position = parent.global_transform * PLAYER_START
+	p.facing = parent.global_basis * Vector3.FORWARD
 	p.spawn_transform = p.global_transform
-	p.actions.view_basis = Basis.IDENTITY
+	p.actions.view_basis = parent.global_basis.orthonormalized()
 	p.reset_physics_interpolation()
 	var cam := PlayerCamera.new()
 	cam.name = "Camera1"

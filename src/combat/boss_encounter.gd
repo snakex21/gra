@@ -27,6 +27,7 @@ var time := 0.0
 var defeat_time := -1.0
 
 var _dead_time := 0.0
+var _revive_wait := {}
 
 
 func _ready() -> void:
@@ -48,14 +49,33 @@ func setup(p_boss: Colossus, p_players: Array[PlayerCharacter], p_horse: Horse) 
 
 func _physics_process(delta: float) -> void:
 	time += delta
+	# A participant may leave the session; preserve the living player's encounter.
+	for index in range(players.size() - 1, -1, -1):
+		if not is_instance_valid(players[index]):
+			players.remove_at(index)
 	match state:
 		State.RUNNING:
+			var alive := 0
 			for p in players:
-				if p.dead:
-					state = State.PLAYER_DEAD
-					_dead_time = 0.0
-					banner = "YOU DIED"
-					break
+				if is_instance_valid(p) and not p.dead:
+					alive += 1
+			if alive == 0 and not players.is_empty():
+				state = State.PLAYER_DEAD
+				_dead_time = 0.0
+				banner = "YOU DIED"
+			else:
+				# A companion falling does not reset the host's fight or the boss' health.
+				for p in players:
+					if not is_instance_valid(p):
+						continue
+					var id := p.get_instance_id()
+					if p.dead:
+						_revive_wait[id] = float(_revive_wait.get(id, 0.0)) + delta
+						if float(_revive_wait[id]) >= death_pause:
+							p.respawn()
+							_revive_wait.erase(id)
+					else:
+						_revive_wait.erase(id)
 		State.PLAYER_DEAD:
 			_dead_time += delta
 			if _dead_time >= death_pause:
@@ -65,10 +85,12 @@ func _physics_process(delta: float) -> void:
 
 
 func reset_encounter() -> void:
+	_revive_wait.clear()
 	resets += 1
 	boss.reset_encounter()
 	for p in players:
-		p.respawn()
+		if is_instance_valid(p):
+			p.respawn()
 	if horse:
 		horse.set_rider(null)
 		horse.command_stop()

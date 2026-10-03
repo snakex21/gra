@@ -24,6 +24,8 @@ var sun_test_every := 6
 var sun_direction := Vector3(0.35, 0.85, 0.4).normalized()
 ## World point the beam leads to (INF: nothing to find).
 var target := Vector3.INF
+## Underground: a local sword flashlight, independent of sunlight and target guidance.
+var lantern := false
 
 var raised := false
 ## 0 lowered .. 1 sword up.
@@ -74,6 +76,11 @@ func update(p: PlayerCharacter, delta: float) -> void:
 	var view := -p.actions.view_basis.z
 	direction = view.normalized() if view.length() > 0.01 else Vector3.FORWARD
 	_tick += 1
+	if lantern:
+		lit = true
+		focus = 0.0
+		locked = false
+		return
 	if raise >= 1.0 and (_tick % sun_test_every == 1 or sun_test_every <= 1):
 		lit = _sunlit(p)
 	var want := 0.0
@@ -83,7 +90,8 @@ func update(p: PlayerCharacter, delta: float) -> void:
 		want = 1.0 - smoothstep(lock_angle, gather_angle, a)
 		if want > 0.0:
 			# The gathered beam bends from the view towards the target.
-			direction = direction.slerp(to.normalized(), want * 0.85).normalized()
+			var from_blade := target - tip(p)
+			direction = direction.slerp(from_blade.normalized(), want * 0.85).normalized()
 	focus = move_toward(focus, want, delta * 4.0)
 	locked = focus > 0.97
 

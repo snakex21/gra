@@ -7,3 +7,16 @@ export_presets.cfg
 /tests/output/*
 !/tests/output/.gdignore
 /tests/tmp/
+# Portable local runtime, player data and developer caches
+/tools/runtime/
+/data/*
+!/data/captures/
+/data/captures/*
+!/data/captures/*_v3*.png
+__pycache__/
+*.pyc
+*.blend1
+*.blend2
+*.blend@
+*.tmp
+/art/reports/**/*.log

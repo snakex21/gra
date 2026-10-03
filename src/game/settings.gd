@@ -1,10 +1,10 @@
 class_name Settings
 extends RefCounted
-## Player settings (offline JSON in user://, separate from the save game). Applied by the
+## Player settings (offline JSON beside the game, separate from the save). Applied by the
 ## game to its input source, rider and HUD; gameplay itself never reads them.
 
 const VERSION := 1
-const DEFAULT_PATH := "user://settings.json"
+const DEFAULT_PATH := "res://data/settings.json"
 
 var mouse_sensitivity := 0.0025
 var invert_y := false
@@ -61,6 +61,9 @@ func apply_engine() -> void:
 
 
 func save(path := DEFAULT_PATH) -> bool:
+	path = PortablePaths.prepare(path)
+	if path == "":
+		return false
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f == null:
 		return false
@@ -70,6 +73,7 @@ func save(path := DEFAULT_PATH) -> bool:
 
 
 func load_from(path := DEFAULT_PATH) -> bool:
+	path = PortablePaths.resolve(path)
 	if not FileAccess.file_exists(path):
 		return false
 	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))

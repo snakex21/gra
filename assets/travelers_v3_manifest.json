@@ -1,0 +1,219 @@
+{
+  "pack": "Travelers v3 / original interpretation",
+  "seed": 31907,
+  "unit": "metre",
+  "up": "+Y",
+  "forward": "-Z",
+  "source": "art/source/travelers_v3.blend",
+  "generator": "tools/art/generate_travelers_v3.py",
+  "texture_resolution": [
+    1024,
+    1024
+  ],
+  "textures": [
+    "textures/characters/travelers_v3/travelers_v3_albedo.png",
+    "textures/characters/travelers_v3/travelers_v3_normal.png",
+    "textures/characters/travelers_v3/travelers_v3_orm.png"
+  ],
+  "license": "CC0-1.0 for newly authored geometry and textures",
+  "provenance": "Original repository-authored parametric meshes; no imported third-party or game content",
+  "traveler_contract": {
+    "origin": "PlayerCharacter capsule centre",
+    "arm_pivots": [
+      [
+        -0.3,
+        0.4,
+        0
+      ],
+      [
+        0.3,
+        0.4,
+        0
+      ]
+    ],
+    "rig": "rigid part hierarchy; existing PlayerVisual controls shoulder raise and orientation",
+    "attachment_nodes": [
+      "Arm_0",
+      "Arm_1",
+      "Forearm_0",
+      "Forearm_1",
+      "Leg_0",
+      "Leg_1",
+      "Knee_0",
+      "Knee_1",
+      "Ankle_0",
+      "Ankle_1"
+    ]
+  },
+  "mono_contract": {
+    "pose": "supine; closed eyes; hands over gown",
+    "head": "+Z",
+    "face": "+Y",
+    "altar_contact_y": 0.014,
+    "origin": "body centre projected to altar plane"
+  },
+  "assets": [
+    {
+      "id": "traveler",
+      "lods": [
+        {
+          "lod": 0,
+          "runtime": "models/characters/travelers_v3/traveler_lod0.glb",
+          "triangles": 35614,
+          "vertices": 18315,
+          "bytes": 4482532,
+          "bounds_godot": [
+            [
+              -0.37799695134162903,
+              -0.8990000486373901,
+              -0.20900000631809235
+            ],
+            [
+              0.37799695134162903,
+              0.9280939102172852,
+              0.2457198053598404
+            ]
+          ]
+        },
+        {
+          "lod": 1,
+          "runtime": "models/characters/travelers_v3/traveler_lod1.glb",
+          "triangles": 18512,
+          "vertices": 9755,
+          "bytes": 3979008,
+          "bounds_godot": [
+            [
+              -0.3790033757686615,
+              -0.8990000486373901,
+              -0.20900000631809235
+            ],
+            [
+              0.3790033757686615,
+              0.9280939102172852,
+              0.2457198053598404
+            ]
+          ]
+        },
+        {
+          "lod": 2,
+          "runtime": "models/characters/travelers_v3/traveler_lod2.glb",
+          "triangles": 4236,
+          "vertices": 2592,
+          "bytes": 3541596,
+          "bounds_godot": [
+            [
+              -0.379258394241333,
+              -0.8984189033508301,
+              -0.20726080238819122
+            ],
+            [
+              0.379258394241333,
+              0.9280572533607483,
+              0.2470734864473343
+            ]
+          ]
+        }
+      ],
+      "material": "Travelers_v3_Woven_PBR_Atlas",
+      "colliders": "none; preserve existing gameplay capsule/anchors",
+      "parts": [
+        "Traveler_v3",
+        "Arm_0",
+        "Forearm_0",
+        "Traveler_Forearm_0",
+        "Traveler_UpperArm_0",
+        "Arm_1",
+        "Forearm_1",
+        "Traveler_Forearm_1",
+        "Traveler_UpperArm_1",
+        "Leg_0",
+        "Knee_0",
+        "Ankle_0",
+        "Traveler_Foot_0",
+        "Traveler_Shin_0",
+        "Traveler_Thigh_0",
+        "Leg_1",
+        "Knee_1",
+        "Ankle_1",
+        "Traveler_Foot_1",
+        "Traveler_Shin_1",
+        "Traveler_Thigh_1",
+        "Traveler_Head",
+        "Traveler_Torso"
+      ],
+      "original_design": true,
+      "source": "art/source/travelers_v3.blend"
+    },
+    {
+      "id": "mono_sleep",
+      "lods": [
+        {
+          "lod": 0,
+          "runtime": "models/characters/travelers_v3/mono_sleep_lod0.glb",
+          "triangles": 28576,
+          "vertices": 14656,
+          "bytes": 4246096,
+          "bounds_godot": [
+            [
+              -0.30786556005477905,
+              0.014000000432133675,
+              -0.9879999756813049
+            ],
+            [
+              0.30786556005477905,
+              0.37151309847831726,
+              0.9280939102172852
+            ]
+          ]
+        },
+        {
+          "lod": 1,
+          "runtime": "models/characters/travelers_v3/mono_sleep_lod1.glb",
+          "triangles": 14858,
+          "vertices": 7797,
+          "bytes": 3833868,
+          "bounds_godot": [
+            [
+              -0.30786556005477905,
+              0.013988306745886803,
+              -0.9879999756813049
+            ],
+            [
+              0.30786556005477905,
+              0.37158283591270447,
+              0.9280939102172852
+            ]
+          ]
+        },
+        {
+          "lod": 2,
+          "runtime": "models/characters/travelers_v3/mono_sleep_lod2.glb",
+          "triangles": 3414,
+          "vertices": 2051,
+          "bytes": 3479784,
+          "bounds_godot": [
+            [
+              -0.3091265559196472,
+              0.0138355428352952,
+              -0.9879157543182373
+            ],
+            [
+              0.3091265559196472,
+              0.3700341582298279,
+              0.9280301928520203
+            ]
+          ]
+        }
+      ],
+      "material": "Travelers_v3_Woven_PBR_Atlas",
+      "colliders": "none; preserve existing gameplay capsule/anchors",
+      "parts": [
+        "Mono_v3_Sleep",
+        "Mono_Sleep_Detailed"
+      ],
+      "original_design": true,
+      "source": "art/source/travelers_v3.blend"
+    }
+  ],
+  "last_export": "from edited source; .blend left untouched"
+}

@@ -14,6 +14,7 @@ extends CanvasLayer
 
 signal continue_chosen
 signal new_game_chosen
+signal trial_chosen(kind: StringName)
 ## A slot picked on the slots screen: a new game in it, or load it.
 signal slot_chosen(slot: int, new_game: bool)
 signal resume_chosen
@@ -32,6 +33,8 @@ var _pause: VBoxContainer
 var _options: VBoxContainer
 var _slots: VBoxContainer
 var _controls: VBoxContainer
+var _trials: VBoxContainer
+var _trial_first: Button
 var _continue: Button
 var _back_to := &""
 var _sens: HSlider
@@ -61,6 +64,7 @@ func _ready() -> void:
 	_continue = _button(_title, "Kontynuuj", func() -> void: _close(); continue_chosen.emit())
 	_button(_title, "Nowa gra", func() -> void: _open_slots(true))
 	_button(_title, "Wczytaj", func() -> void: _open_slots(false))
+	_button(_title, "Próby kolosów", func() -> void: _show(&"trials"))
 	_button(_title, "Ustawienia", func() -> void: _open_options(&"title"))
 	_button(_title, "Wyjście", func() -> void: quit_chosen.emit())
 	_slots = _panel("Zapis")
@@ -101,6 +105,22 @@ func _ready() -> void:
 		_changed()
 		_refresh_bindings())
 	_button(_controls, "Wróć", func() -> void: _open_options(_back_to))
+	_trials = _panel("Próby kolosów", -330.0)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(400, 500)
+	scroll.follow_focus = true
+	_trials.add_child(scroll)
+	var list := VBoxContainer.new()
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(list)
+	for kind: StringName in BossRoster.ORDER:
+		var available := kind in BossRoster.PLAYABLE
+		var button := _button(list, BossRoster.label(kind) + ("" if available else " — w przygotowaniu"), func() -> void: _close(); trial_chosen.emit(kind))
+		button.disabled = not available
+		if available and _trial_first == null:
+			_trial_first = button
+	_button(list, "Próba jaskini — światło miecza", func() -> void: _close(); trial_chosen.emit(&"cave"))
+	_button(_trials, "Wróć", func() -> void: _show(&"title"))
 	_close()
 
 
@@ -180,10 +200,13 @@ func _show(s: StringName) -> void:
 		open_changed.emit(true)
 	screen = s
 	_root.visible = true
-	var panels := {&"title": _title, &"pause": _pause, &"options": _options, &"slots": _slots, &"controls": _controls}
+	var panels := {&"title": _title, &"pause": _pause, &"options": _options, &"slots": _slots, &"controls": _controls, &"trials": _trials}
 	for k in panels:
 		(panels[k] as Control).visible = k == s
 	var panel: VBoxContainer = panels[s]
+	if s == &"trials" and _trial_first:
+		_trial_first.grab_focus.call_deferred()
+		return
 	for c in panel.get_children():
 		if c is Button and c.visible and not (c as Button).disabled:
 			(c as Button).grab_focus.call_deferred()

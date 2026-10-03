@@ -1,0 +1,257 @@
+{
+  "pack": "Encounter Props / original procedural geometry",
+  "source": "art/source/encounter_props.blend",
+  "generator": "tools/art/generate_encounter_props.py",
+  "seed": 12093,
+  "units": "metres",
+  "up": "+Y",
+  "forward": "-Z",
+  "collision": "none",
+  "material": "materials/encounter_props/atlas.tres",
+  "assets": [
+    {
+      "id": "barba_shelter",
+      "units": "metres",
+      "aabb": {
+        "min": [
+          -7.416095733642578,
+          -0.019129455089569092,
+          -4.71999979019165
+        ],
+        "max": [
+          7.410526275634766,
+          6.900141716003418,
+          4.71999979019165
+        ]
+      },
+      "model_paths": [
+        "models/encounter_props/barba_shelter_lod0.glb",
+        "models/encounter_props/barba_shelter_lod1.glb",
+        "models/encounter_props/barba_shelter_lod2.glb"
+      ],
+      "triangle_counts": [
+        4092,
+        2126,
+        960
+      ],
+      "collision": "none",
+      "placement": {
+        "origin": "floor centre of shelter",
+        "recommended_position": [
+          0,
+          0,
+          -27
+        ],
+        "roof_gameplay_center_y": 4.6,
+        "clear_passage": {
+          "min_x": -4.45,
+          "max_x": 4.45,
+          "min_y": 0,
+          "max_y": 4.09
+        },
+        "notes": "Visual wrapper only. Existing shelter supports and roof supply all collision."
+      },
+      "details": "Weathered long piers, segmented roof, arched carved fascia and exterior rubble."
+    },
+    {
+      "id": "basaran_vent_ring",
+      "units": "metres",
+      "aabb": {
+        "min": [
+          -4.447018623352051,
+          -0.054999999701976776,
+          -4.330626964569092
+        ],
+        "max": [
+          4.347715854644775,
+          0.5717631578445435,
+          4.3843889236450195
+        ]
+      },
+      "model_paths": [
+        "models/encounter_props/basaran_vent_ring_lod0.glb",
+        "models/encounter_props/basaran_vent_ring_lod1.glb",
+        "models/encounter_props/basaran_vent_ring_lod2.glb"
+      ],
+      "triangle_counts": [
+        448,
+        232,
+        92
+      ],
+      "collision": "none",
+      "placement": {
+        "origin": "ground centre of geyser",
+        "minimum_inner_radius": 3.05,
+        "notes": "Minimum clear radius includes LOD simplification. Keep existing warning, water jet and triggers. This ring has no collision or lights."
+      },
+      "details": "Low fractured basalt crust with pale hydrothermal deposits and a completely open centre."
+    },
+    {
+      "id": "kuromori_gallery_fragment",
+      "units": "metres",
+      "aabb": {
+        "min": [
+          -4.007572174072266,
+          -1.2075769901275635,
+          -0.6796122193336487
+        ],
+        "max": [
+          4.1971845626831055,
+          2.889801502227783,
+          0.48182088136672974
+        ]
+      },
+      "model_paths": [
+        "models/encounter_props/kuromori_gallery_fragment_lod0.glb",
+        "models/encounter_props/kuromori_gallery_fragment_lod1.glb",
+        "models/encounter_props/kuromori_gallery_fragment_lod2.glb"
+      ],
+      "triangle_counts": [
+        1624,
+        844,
+        388
+      ],
+      "collision": "none",
+      "placement": {
+        "origin": "existing gallery outer edge at walkable height",
+        "facing": "+Z points away from the gallery wall",
+        "notes": "Only cornice, broken balustrade, corbels and column trim. Never replace the walkable gallery or attach a collider."
+      },
+      "details": "Open broken gallery silhouette with separated rail sections, octagonal balusters and chipped corbels."
+    },
+    {
+      "id": "dirge_porous_rock",
+      "units": "metres",
+      "aabb": {
+        "min": [
+          -3.423006772994995,
+          0.0,
+          -2.165602684020996
+        ],
+        "max": [
+          3.4240360260009766,
+          3.9636425971984863,
+          2.1362364292144775
+        ]
+      },
+      "model_paths": [
+        "models/encounter_props/dirge_porous_rock_lod0.glb",
+        "models/encounter_props/dirge_porous_rock_lod1.glb",
+        "models/encounter_props/dirge_porous_rock_lod2.glb"
+      ],
+      "triangle_counts": [
+        1304,
+        678,
+        312
+      ],
+      "collision": "none",
+      "placement": {
+        "origin": "ground at boulder centre",
+        "notes": "Use outside the main chase lane. Decorative cavities and boulder are render-only; retain independent gameplay obstacles if needed."
+      },
+      "details": "Wide wind-eroded sandstone with eight boolean-cut pores, a rough flat base and scattered scree."
+    },
+    {
+      "id": "cave_relic_lamp",
+      "units": "metres",
+      "aabb": {
+        "min": [
+          -0.3799999952316284,
+          0.0,
+          -0.3614014685153961
+        ],
+        "max": [
+          0.3799999952316284,
+          1.7599999904632568,
+          0.3614014685153961
+        ]
+      },
+      "model_paths": [
+        "models/encounter_props/cave_relic_lamp_lod0.glb",
+        "models/encounter_props/cave_relic_lamp_lod1.glb",
+        "models/encounter_props/cave_relic_lamp_lod2.glb"
+      ],
+      "triangle_counts": [
+        848,
+        440,
+        202
+      ],
+      "collision": "none",
+      "placement": {
+        "origin": "floor at lamp socket",
+        "emission": "Only amber atlas tile glows; no automatic light or collider",
+        "notes": "Optional small OmniLight3D may be supplied separately by the arena. Sword light remains the primary visibility mechanic."
+      },
+      "details": "Bronze cage, verdigris collars, stone socket and contained amber vessel."
+    },
+    {
+      "id": "cave_offering_marker",
+      "units": "metres",
+      "aabb": {
+        "min": [
+          -0.4686676561832428,
+          -0.006640873849391937,
+          -0.42496970295906067
+        ],
+        "max": [
+          0.5456178784370422,
+          0.8028331995010376,
+          0.44628608226776123
+        ]
+      },
+      "model_paths": [
+        "models/encounter_props/cave_offering_marker_lod0.glb",
+        "models/encounter_props/cave_offering_marker_lod1.glb",
+        "models/encounter_props/cave_offering_marker_lod2.glb"
+      ],
+      "triangle_counts": [
+        144,
+        71,
+        31
+      ],
+      "collision": "none",
+      "placement": {
+        "origin": "floor beside cave paths",
+        "notes": "Small render-only relic. Keep clear of the climbing and traversal route."
+      },
+      "details": "Damaged squat stele with three original inlay cuts and a fallen corner."
+    },
+    {
+      "id": "pelagia_shrine_cap",
+      "units": "metres",
+      "aabb": {
+        "min": [
+          -4.139999866485596,
+          0.0,
+          -4.139999866485596
+        ],
+        "max": [
+          4.139999866485596,
+          1.8899999856948853,
+          4.139999866485596
+        ]
+      },
+      "model_paths": [
+        "models/encounter_props/pelagia_shrine_cap_lod0.glb",
+        "models/encounter_props/pelagia_shrine_cap_lod1.glb",
+        "models/encounter_props/pelagia_shrine_cap_lod2.glb"
+      ],
+      "triangle_counts": [
+        660,
+        342,
+        158
+      ],
+      "collision": "none",
+      "placement": {
+        "origin": "base of decorative ruin crown",
+        "recommended_offset_from_RUINS_LOCAL": [
+          0,
+          6.85,
+          0
+        ],
+        "notes": "Decorative cap only. Existing pillars retain collision and ruin-impact metadata; do not attach the cap to the boss skeleton."
+      },
+      "details": "Octagonal shrine cap, mineral tide stains, stepped lip and broken corner finials with a clear centre."
+    }
+  ]
+}
