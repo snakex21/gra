@@ -1,0 +1,2 @@
+This pack contains original procedurally authored geometry and a generated color palette.
+You may use, modify and redistribute these delivered assets and source in personal or commercial projects. No attribution is required. Provided as-is, without warranty.

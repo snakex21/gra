@@ -47,6 +47,7 @@ static func parameters(profile: String = DEFAULT_PROFILE) -> Dictionary:
 static func apply(world: Node, profile: String = DEFAULT_PROFILE) -> void:
 	if not is_instance_valid(world): return
 	world.set_meta(&"environment_groundcover_profile", normalize(profile))
+	ForbiddenLandsTerrain.set_ground_quality(normalize(profile))
 	var config := parameters(profile)
 	var size := int(config.directional_atlas)
 	var depth_16 := bool(config.depth_16_bits)

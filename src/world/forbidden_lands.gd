@@ -35,29 +35,68 @@ const REGIONS := {
 	&"saru": [Vector2(0, 1320), "own F1 ruined span", "northern_bridges", NORTH, 5, [Vector2(-20, 695), Vector2(90, 880), Vector2(-100, 1040)]],
 	&"dormin": [Vector2(440, 440), "own G3 chapel", "temple_annex", EAST, 2, [Vector2(240, 100), Vector2(190, 280), Vector2(250, 310)]]
 }
-static var _routes := {}
-static var _edges: Array[Array] = []
+## Layout 4 is an opt-in geography for new games. Layout 3 remains immutable for
+## checkpoints/replays. Only selected crowded northern/southern clusters move.
+const EXPANDED_CENTRES := {
+	&"phaedra": Vector2(540, -500), &"kuromori": Vector2(610, -1050),
+	&"phalanx": Vector2(-440, -1140),
+	&"saru": Vector2(0, 1510), &"pelagia": Vector2(560, 980),
+	&"argus": Vector2(1040, 1460)
+}
+static var _expanded_regions := {}
 
-static func arena_transform(kind: StringName) -> Transform3D:
-	var data: Array = REGIONS[kind]
+static func regions(layout := 3) -> Dictionary:
+	if layout != 4:
+		return REGIONS
+	if _expanded_regions.is_empty():
+		_expanded_regions = REGIONS.duplicate(true)
+		for kind: StringName in EXPANDED_CENTRES:
+			var delta: Vector2 = EXPANDED_CENTRES[kind] - REGIONS[kind][0]
+			_expanded_regions[kind][0] = EXPANDED_CENTRES[kind]
+			# Keep shared trunks fixed. Feather the individual approach to preserve
+			# its final heading/gate relationship rather than scaling the whole map.
+			var branch: Array = _expanded_regions[kind][5]
+			for i in branch.size():
+				branch[i] += delta * float(i + 1) / branch.size()
+	return _expanded_regions
+
+static func road_half_at(x: float, z: float, layout := 3) -> float:
+	if layout != 4:
+		return ROAD_HALF
+	# Retain existing shrine, gate and bridge envelopes. Open-country approaches
+	# broaden smoothly from 28 to 36 metres, including physical collision.
+	var p := Vector2(x, z)
+	var blend := smoothstep(250, 350, maxf(absf(x), absf(z)))
+	for data: Array in regions(layout).values():
+		blend = minf(blend, smoothstep(245, 320, p.distance_to(data[0])))
+	if z > 200 and z < 660:
+		blend *= smoothstep(65, 115, absf(x + 230))
+	return ROAD_HALF + 4.0 * blend
+
+static var _routes := {}
+static var _edges := {}
+
+static func arena_transform(kind: StringName, layout := 3) -> Transform3D:
+	var data: Array = regions(layout)[kind]
 	var centre: Vector2 = data[0]
 	var branch: Array = data[5]
 	var back: Vector2 = (branch.back() as Vector2) - centre
 	back = back.normalized()
 	return Transform3D(Basis(Vector3.UP, atan2(back.x, back.y)), Vector3(centre.x, 0, centre.y))
 
-static func gates() -> Dictionary:
+static func gates(layout := 3) -> Dictionary:
 	var result := {}
 	for kind: StringName in BossRoster.PLAYABLE:
-		var xf := arena_transform(kind)
+		var xf := arena_transform(kind, layout)
 		var pos := xf * Vector3(0, 0, GATE_DISTANCE)
-		result[kind] = {"pos": pos, "out": -xf.basis.z, "trigger": pos - xf.basis.z * Valley.GATE_TRIGGER, "layout": 3}
+		result[kind] = {"pos": pos, "out": -xf.basis.z, "trigger": pos - xf.basis.z * Valley.GATE_TRIGGER, "layout": layout}
 	return result
 
-static func route_points(kind: StringName) -> PackedVector3Array:
-	if _routes.has(kind):
-		return _routes[kind]
-	var data: Array = REGIONS[kind]
+static func route_points(kind: StringName, layout := 3) -> PackedVector3Array:
+	var key := "%d:%s" % [layout, kind]
+	if _routes.has(key):
+		return _routes[key]
+	var data: Array = regions(layout)[kind]
 	var points: Array[Vector2] = []
 	for point: Vector2 in COMMON:
 		points.append(point)
@@ -66,7 +105,7 @@ static func route_points(kind: StringName) -> PackedVector3Array:
 		points.append(trunk[index])
 	for point: Vector2 in data[5]:
 		points.append(point)
-	var xf := arena_transform(kind)
+	var xf := arena_transform(kind, layout)
 	# Exactly straight for the existing arena-approach bot, from gate to local Z=145.
 	for distance in [GATE_DISTANCE, WorldMap.RIM, 145.0]:
 		var p := xf * Vector3(0, 0, distance)
@@ -90,7 +129,7 @@ static func route_points(kind: StringName) -> PackedVector3Array:
 				dense.append(_road_point(start.lerp(b, t).lerp(b.lerp(end, t), t)))
 		last = end
 	_line(dense, last, points.back())
-	_routes[kind] = dense
+	_routes[key] = dense
 	return dense
 
 static func _line(points: PackedVector3Array, a: Vector2, b: Vector2) -> void:
@@ -112,15 +151,15 @@ static func road_height(x: float, z: float) -> float:
 	# the edge leaves a two-metre drop where Agro quite correctly refuses to go.
 	return (native + .035) * (1.0 - smoothstep(180.0, 300.0, edge))
 
-static func route_length(kind: StringName) -> float:
-	var points := route_points(kind)
+static func route_length(kind: StringName, layout := 3) -> float:
+	var points := route_points(kind, layout)
 	var length := 0.0
 	for i in range(1, points.size()):
 		length += points[i - 1].distance_to(points[i])
 	return length
 
-static func _nearest(kind: StringName, p: Vector3) -> Dictionary:
-	var points := route_points(kind)
+static func _nearest(kind: StringName, p: Vector3, layout := 3) -> Dictionary:
+	var points := route_points(kind, layout)
 	var query := Vector2(p.x, p.z)
 	var best := INF
 	var index := 0
@@ -136,9 +175,9 @@ static func _nearest(kind: StringName, p: Vector3) -> Dictionary:
 			fraction = a.distance_to(on) / maxf(0.001, a.distance_to(b))
 	return {"index": index, "fraction": fraction, "distance": sqrt(best)}
 
-static func guide_target(kind: StringName, p: Vector3) -> Vector3:
-	var points := route_points(kind)
-	var near := _nearest(kind, p)
+static func guide_target(kind: StringName, p: Vector3, layout := 3) -> Vector3:
+	var points := route_points(kind, layout)
+	var near := _nearest(kind, p, layout)
 	var i: int = near.index
 	var on := points[i].lerp(points[i + 1], near.fraction)
 	# Off a road, first return to the actual road instead of cutting through ridges.
@@ -153,27 +192,29 @@ static func guide_target(kind: StringName, p: Vector3) -> Vector3:
 		on = points[j]
 	return points[points.size() - 1]
 
-static func route_heading(kind: StringName, p: Vector3) -> Vector3:
-	var direction := guide_target(kind, p) - p
+static func route_heading(kind: StringName, p: Vector3, layout := 3) -> Vector3:
+	var direction := guide_target(kind, p, layout) - p
 	direction.y = 0
-	return direction.normalized() if direction.length() > 0.1 else -arena_transform(kind).basis.z
+	return direction.normalized() if direction.length() > 0.1 else -arena_transform(kind, layout).basis.z
 
-static func road_edges() -> Array[Array]:
-	if not _edges.is_empty():
-		return _edges
+static func road_edges(layout := 3) -> Array[Array]:
+	if _edges.has(layout):
+		return _edges[layout]
+	var edges: Array[Array] = []
 	var used := {}
 	for kind: StringName in BossRoster.PLAYABLE:
-		var points := route_points(kind)
+		var points := route_points(kind, layout)
 		for i in range(1, points.size()):
 			var a := points[i - 1]
 			var b := points[i]
 			var key := str(a.snapped(Vector3.ONE * 0.01)) + ":" + str(b.snapped(Vector3.ONE * 0.01))
 			if not used.has(key) and a.distance_to(b) > 0.01:
 				used[key] = true
-				_edges.append([a, b])
-	return _edges
+				edges.append([a, b])
+	_edges[layout] = edges
+	return edges
 
-static func build_valley(parent: Node3D, open_gate: StringName, with_art := true) -> Dictionary:
+static func build_valley(parent: Node3D, open_gate: StringName, with_art := true, layout := 3) -> Dictionary:
 	# Reuse our existing original temple/actors; legacy layouts retain their own build.
 	var result := Valley.build(parent, &"", with_art, true, 1)
 	for node in parent.get_children():
@@ -186,15 +227,15 @@ static func build_valley(parent: Node3D, open_gate: StringName, with_art := true
 	for prop in kit.get_children():
 		if not prop is Node3D or not (String(prop.name).begins_with("cliff") or String(prop.name).begins_with("rock")):
 			continue
-		if _distance_to_roads(Vector2(prop.position.x, prop.position.z)) < 30:
+		if _distance_to_roads(Vector2(prop.position.x, prop.position.z), layout) < 30:
 			kit.remove_child(prop)
 			prop.free()
 	var actual := {}
-	for kind: StringName in gates():
-		var gate_data: Dictionary = gates()[kind].duplicate()
+	for kind: StringName in gates(layout):
+		var gate_data: Dictionary = gates(layout)[kind].duplicate()
 		var gate_root := Node3D.new()
 		gate_root.name = "Gate_%s" % kind
-		gate_root.transform = Transform3D(arena_transform(kind).basis, gate_data.pos)
+		gate_root.transform = Transform3D(arena_transform(kind, layout).basis, gate_data.pos)
 		parent.add_child(gate_root)
 		var stone := ArenaArt.material(ArenaArt.Kind.STONE)
 		for side: float in [-1.0, 1.0]:
@@ -210,25 +251,25 @@ static func build_valley(parent: Node3D, open_gate: StringName, with_art := true
 		gate_data["node"] = gate_root
 		actual[kind] = gate_data
 	result.gates = actual
-	result["layout"] = 3
+	result["layout"] = layout
 	return result
 
-static func build(parent: Node3D, build_arena: Callable, with_art := true) -> Dictionary:
+static func build(parent: Node3D, build_arena: Callable, with_art := true, layout := 3) -> Dictionary:
 	var arenas := {}
 	for kind: StringName in BossRoster.PLAYABLE:
 		var root := Node3D.new()
 		root.name = "Arena_%s" % kind
-		root.transform = arena_transform(kind)
+		root.transform = arena_transform(kind, layout)
 		parent.add_child(root)
 		var points: Dictionary = build_arena.call(kind, root)
 		WorldMap._rim(root)
-		arenas[kind] = {"root": root, "xf": root.transform, "points": points, "route": route_points(kind), "biome": REGIONS[kind][2]}
-	ForbiddenLandsTerrain.build(parent, with_art)
+		arenas[kind] = {"root": root, "xf": root.transform, "points": points, "route": route_points(kind, layout), "biome": regions(layout)[kind][2]}
+	ForbiddenLandsTerrain.build(parent, with_art, layout)
 	return arenas
 
-static func _distance_to_roads(p: Vector2) -> float:
+static func _distance_to_roads(p: Vector2, layout := 3) -> float:
 	var best := INF
-	for edge: Array in road_edges():
+	for edge: Array in road_edges(layout):
 		var a: Vector3 = edge[0]
 		var b: Vector3 = edge[1]
 		best = minf(best, Geometry2D.get_closest_point_to_segment(p, Vector2(a.x, a.z), Vector2(b.x, b.z)).distance_to(p))

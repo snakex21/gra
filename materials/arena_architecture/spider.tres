@@ -1,0 +1,21 @@
+[gd_resource type="StandardMaterial3D" load_steps=4 format=3]
+
+[ext_resource type="Texture2D" path="res://textures/arena_architecture/spider_albedo.png" id="1"]
+[ext_resource type="Texture2D" path="res://textures/arena_architecture/spider_normal.png" id="2"]
+[ext_resource type="Texture2D" path="res://textures/arena_architecture/spider_roughness.png" id="3"]
+
+[resource]
+resource_name = "Spider / mossed ancient slate masonry"
+albedo_texture = ExtResource("1")
+metallic_specular = 0.32
+roughness = 1.0
+roughness_texture = ExtResource("3")
+roughness_texture_channel = 0
+normal_enabled = true
+normal_scale = 0.74
+normal_texture = ExtResource("2")
+uv1_scale = Vector3(0.100000000, 0.100000000, 0.100000000)
+uv1_triplanar = true
+uv1_triplanar_sharpness = 6.0
+uv1_world_triplanar = false
+texture_filter = 5

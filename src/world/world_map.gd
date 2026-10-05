@@ -34,8 +34,8 @@ const VALLEY_HALF := 180.0
 
 
 static func gates(layout := 2) -> Dictionary:
-	if layout == 3:
-		return ForbiddenLands.gates()
+	if layout >= 3:
+		return ForbiddenLands.gates(layout)
 	if layout == 1:
 		return Valley.GATES
 	var result := {}
@@ -55,8 +55,8 @@ static func out_dir(kind: StringName, layout := 2) -> Vector3:
 
 ## Where the corridor leaves the valley's height field (XZ, y = valley ground there).
 static func valley_exit(kind: StringName, layout := 2) -> Vector3:
-	if layout == 3:
-		for point: Vector3 in ForbiddenLands.route_points(kind):
+	if layout >= 3:
+		for point: Vector3 in ForbiddenLands.route_points(kind, layout):
 			if maxf(absf(point.x), absf(point.z)) >= VALLEY_HALF:
 				return point
 	var g: Vector3 = gate(kind, layout).pos
@@ -71,14 +71,14 @@ static func valley_exit(kind: StringName, layout := 2) -> Vector3:
 
 ## The arena's ground height (= the valley's ground where the corridor leaves it).
 static func arena_height(kind: StringName, layout := 2) -> float:
-	if layout == 3:
+	if layout >= 3:
 		return 0.0
 	return valley_exit(kind, layout).y
 
 
 static func arena_transform(kind: StringName, layout := 2) -> Transform3D:
-	if layout == 3:
-		return ForbiddenLands.arena_transform(kind)
+	if layout >= 3:
+		return ForbiddenLands.arena_transform(kind, layout)
 	var g: Vector3 = gate(kind, layout).pos
 	var o := out_dir(kind, layout)
 	var c := g + o * float((LEGACY_DISTANCE if layout == 1 else DISTANCE)[kind])
@@ -102,8 +102,8 @@ static func in_arena(kind: StringName, p: Vector3, layout := 2) -> bool:
 ## geometry is made by ``build_arena`` (a Callable(kind, root) -> Dictionary).
 ## Returns {kind: {"root": Node3D, "xf": Transform3D, "points": Dictionary}}.
 static func build(parent: Node3D, build_arena: Callable, with_art := true, layout := 2) -> Dictionary:
-	if layout == 3:
-		return ForbiddenLands.build(parent, build_arena, with_art)
+	if layout >= 3:
+		return ForbiddenLands.build(parent, build_arena, with_art, layout)
 	var arenas := {}
 	var stone := ArenaArt.material(ArenaArt.Kind.STONE) if with_art else _plain(Color(0.55, 0.53, 0.48))
 	for kind: StringName in gates(layout):

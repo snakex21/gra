@@ -1,0 +1,5 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+[ext_resource type="Shader" path="res://materials/arena_cave/support_cutout.gdshader" id="1"]
+[resource]
+resource_name = "Cave_Original_Support_Visible_Outside_Floors"
+shader = ExtResource("1")

@@ -216,6 +216,14 @@ func update_visual(player: PlayerCharacter, delta: float) -> void:
 	if _down > 0.001:
 		b = Basis(b.x, -PI * 0.5 * _down) * b
 		pos += Vector3.DOWN * 0.6 * _down
+	# The gameplay root stays at the historical rider offset. Only this render
+	# frame places the anatomical pelvis on the saddle and follows its tilt.
+	if player.riding.is_active() and is_instance_valid(player.riding.horse):
+		var seat_weight := player.riding.cosmetic_seat_weight()
+		var horse_body := player.riding.horse.body_transform()
+		var local_body_basis := player.global_basis.inverse() * horse_body.basis
+		b = Basis(b.get_rotation_quaternion().slerp(local_body_basis.get_rotation_quaternion(), seat_weight))
+		pos += local_body_basis.y * (PlayerRiding.SEATED_VISUAL_OFFSET * seat_weight)
 	transform = Transform3D(b, pos)
 
 

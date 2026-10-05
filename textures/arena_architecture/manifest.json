@@ -1,0 +1,265 @@
+{
+  "version": 1,
+  "authoring": "Original deterministic NumPy/Pillow math; no external or AI-generated images",
+  "generator": "tools/art/generate_arena_architecture_materials.py",
+  "reproduction": "python tools/art/generate_arena_architecture_materials.py --check",
+  "dimensions": [
+    512,
+    512
+  ],
+  "maps_per_arena": [
+    "albedo",
+    "normal",
+    "roughness"
+  ],
+  "normal_convention": "OpenGL tangent +Z; physical metre derivatives with periodic central differences",
+  "projection": "StandardMaterial3D local triplanar; upright mesh-local Y is gravity axis",
+  "geometry_displacement": false,
+  "palettes_and_scale": {
+    "barba": {
+      "tile_metres": 8.0,
+      "courses_per_tile": 6,
+      "blocks_per_course": 3,
+      "average_course_height_metres": 1.3333333333333333,
+      "average_block_width_metres": 2.6666666666666665,
+      "normal_strength": 0.78,
+      "identity": "Warm large coursed sandstone; sandy pores, rubbed arrises, incised lozenge frieze"
+    },
+    "kuromori": {
+      "tile_metres": 8.0,
+      "courses_per_tile": 5,
+      "blocks_per_course": 3,
+      "average_course_height_metres": 1.6,
+      "average_block_width_metres": 2.6666666666666665,
+      "normal_strength": 0.73,
+      "identity": "Cool large limestone courses; gravity-led mineral staining and eroded collar carving"
+    },
+    "argus": {
+      "tile_metres": 10.0,
+      "courses_per_tile": 5,
+      "blocks_per_course": 3,
+      "average_course_height_metres": 2.0,
+      "average_block_width_metres": 3.3333333333333335,
+      "normal_strength": 0.82,
+      "identity": "Very large dry stone, broad drafted edges, pale mineral spalls and worn linear collar"
+    },
+    "gaius": {
+      "tile_metres": 8.0,
+      "courses_per_tile": 4,
+      "blocks_per_course": 3,
+      "average_course_height_metres": 2.0,
+      "average_block_width_metres": 2.6666666666666665,
+      "normal_strength": 0.82,
+      "identity": "Pale granite, broad pecked margins, dark mica and simple incised bands"
+    },
+    "dirge": {
+      "tile_metres": 10.0,
+      "courses_per_tile": 5,
+      "blocks_per_course": 3,
+      "average_course_height_metres": 2.0,
+      "average_block_width_metres": 3.3333333333333335,
+      "normal_strength": 0.78,
+      "identity": "Deep ochre large blocks with horizontal sediment bedding and abraded shoulders"
+    },
+    "celosia_cenobia": {
+      "tile_metres": 8.0,
+      "courses_per_tile": 5,
+      "blocks_per_course": 3,
+      "average_course_height_metres": 1.6,
+      "average_block_width_metres": 2.6666666666666665,
+      "normal_strength": 0.7,
+      "identity": "Warm russet stone, pale salt bloom, sparse worn stepped-line frieze"
+    },
+    "phoenix": {
+      "tile_metres": 10.0,
+      "courses_per_tile": 4,
+      "blocks_per_course": 3,
+      "average_course_height_metres": 2.5,
+      "average_block_width_metres": 3.3333333333333335,
+      "normal_strength": 0.64,
+      "identity": "Rounded limestone ashlar, ochre mineral bedding, carbonate wash and eroded paired collars"
+    },
+    "spider": {
+      "tile_metres": 10.0,
+      "courses_per_tile": 5,
+      "blocks_per_course": 3,
+      "average_course_height_metres": 2.0,
+      "average_block_width_metres": 3.3333333333333335,
+      "normal_strength": 0.74,
+      "identity": "Muted green-grey split slate, moss gathered at joints, laminated beds and broken collars"
+    },
+    "dormin": {
+      "tile_metres": 12.0,
+      "courses_per_tile": 4,
+      "blocks_per_course": 3,
+      "average_course_height_metres": 3.0,
+      "average_block_width_metres": 4.0,
+      "normal_strength": 0.66,
+      "identity": "Pale silver megablocks, broad drafted margins, subtle mineral veins and quiet incised collars"
+    },
+    "malus": {
+      "tile_metres": 10.0,
+      "courses_per_tile": 5,
+      "blocks_per_course": 3,
+      "average_course_height_metres": 2.0,
+      "average_block_width_metres": 3.3333333333333335,
+      "normal_strength": 0.88,
+      "identity": "Cold blue slate megablocks, rain tracks, split bedding and austere drafted margins"
+    }
+  },
+  "source_png_bytes": 6726608,
+  "source_png_budget_bytes": 7200000,
+  "budget_scope": "Source PNG disk bytes only; not GPU residency, performance or gameplay proof",
+  "textures": [
+    {
+      "file": "textures/arena_architecture/barba_albedo.png",
+      "sha256": "c6607d7a558d032ace0ad8f49302ed65ae94f88eb8ad148468a259a748330315",
+      "bytes": 235963
+    },
+    {
+      "file": "textures/arena_architecture/barba_normal.png",
+      "sha256": "1421c93f430f549ebd437b4d2c02f2e8cbcc6f4ca2c05b6c3b269d8c1a729d78",
+      "bytes": 449071
+    },
+    {
+      "file": "textures/arena_architecture/barba_roughness.png",
+      "sha256": "d8ae65f6634041c5fbd4262d9b618569f5b15412dfa23e25edf026a0ec8254bc",
+      "bytes": 52145
+    },
+    {
+      "file": "textures/arena_architecture/kuromori_albedo.png",
+      "sha256": "63bd3da7a4b0c7fe2faf06e2c58b6e6656f2e06ef1f84333d8dafb1658cf1201",
+      "bytes": 208573
+    },
+    {
+      "file": "textures/arena_architecture/kuromori_normal.png",
+      "sha256": "76c3f44c179c44d3ce056436fa5a6ab202ce7dfbad827bc9ba23abbf6520a1c7",
+      "bytes": 383442
+    },
+    {
+      "file": "textures/arena_architecture/kuromori_roughness.png",
+      "sha256": "8763eff989db51461e7aa8e35aab41cd497f6fdf3f2de47256a25776fc12d9a6",
+      "bytes": 53379
+    },
+    {
+      "file": "textures/arena_architecture/argus_albedo.png",
+      "sha256": "4168b83c5c61928aadedc53d02d6bea9015d68409f979a8016f4e860be468abc",
+      "bytes": 251759
+    },
+    {
+      "file": "textures/arena_architecture/argus_normal.png",
+      "sha256": "05048ff08fa596f5bd2a0c146964b92646c745f57b619750d94a739e0d468501",
+      "bytes": 428751
+    },
+    {
+      "file": "textures/arena_architecture/argus_roughness.png",
+      "sha256": "8e4cd3516be2ef7d35b8ed9186934018d8437f422cf340472ece655e268a2415",
+      "bytes": 58472
+    },
+    {
+      "file": "textures/arena_architecture/gaius_albedo.png",
+      "sha256": "be463ab85e71839851babe9da2b3b56d9cc5dbe212c71be98b0f8e72adcbf5f4",
+      "bytes": 288054
+    },
+    {
+      "file": "textures/arena_architecture/gaius_normal.png",
+      "sha256": "e86b2d9291863ffd50030ca06783ac73611575b4ccc81a169159560db75533dd",
+      "bytes": 454159
+    },
+    {
+      "file": "textures/arena_architecture/gaius_roughness.png",
+      "sha256": "b9eee2afa2d4f8534c9a70c5c49420bce0d20c910469d89733b7c110e43476cf",
+      "bytes": 49644
+    },
+    {
+      "file": "textures/arena_architecture/dirge_albedo.png",
+      "sha256": "2862700e6ad36559e689029d47f1110b23313f7010d867b2dc1524fca346a239",
+      "bytes": 217271
+    },
+    {
+      "file": "textures/arena_architecture/dirge_normal.png",
+      "sha256": "63bdb1d8d8fa02c7cbef17d3dac01bb302d771b7933f826bb8317ef6522c95c3",
+      "bytes": 373503
+    },
+    {
+      "file": "textures/arena_architecture/dirge_roughness.png",
+      "sha256": "b2e42c4d3ddd6ca8f8e4562228caf18775a18ea5f0736c5a043723d127de69f0",
+      "bytes": 49910
+    },
+    {
+      "file": "textures/arena_architecture/celosia_cenobia_albedo.png",
+      "sha256": "96c778d9085ef75b51589e2349f1184cb71d644952502cfedb059cb6b9b2d175",
+      "bytes": 213719
+    },
+    {
+      "file": "textures/arena_architecture/celosia_cenobia_normal.png",
+      "sha256": "667c8a149a935640f0f50706fa27ec4c469b3ad3f981f699cd533a9bafb8a2bc",
+      "bytes": 402935
+    },
+    {
+      "file": "textures/arena_architecture/celosia_cenobia_roughness.png",
+      "sha256": "d2ecee913a78f4ff144c924af6618d20c77fda5b52bb1812931c96851afea498",
+      "bytes": 50827
+    },
+    {
+      "file": "textures/arena_architecture/phoenix_albedo.png",
+      "sha256": "3b80abbe2546a26684565035247124a6064130b004472f83672c7b23e8438ad9",
+      "bytes": 199795
+    },
+    {
+      "file": "textures/arena_architecture/phoenix_normal.png",
+      "sha256": "08dda018e2bf5f03fb3e29e1c495e03617890d5814fb1dd7f8c19f93ab7e8f54",
+      "bytes": 315847
+    },
+    {
+      "file": "textures/arena_architecture/phoenix_roughness.png",
+      "sha256": "f9cee4f3655bc467a0c9ea857ae3f1a50c33be8b27ed93b0a63efd3bf7ab2ba3",
+      "bytes": 50914
+    },
+    {
+      "file": "textures/arena_architecture/spider_albedo.png",
+      "sha256": "412fa188cf26832a36e304cb9f81c184a133e7e5736326910654f56e8ff08e38",
+      "bytes": 211738
+    },
+    {
+      "file": "textures/arena_architecture/spider_normal.png",
+      "sha256": "cbf62f187f43557b35784c958b3924547159a7898d08c2cd82c76e9ead268c32",
+      "bytes": 367639
+    },
+    {
+      "file": "textures/arena_architecture/spider_roughness.png",
+      "sha256": "3c857ca4cdc419b1eb486217825888b18aedd739d6eebf72eb09c76357378128",
+      "bytes": 51346
+    },
+    {
+      "file": "textures/arena_architecture/dormin_albedo.png",
+      "sha256": "61d8106453e7aacdaeb7d0034f8a4ae05c255fac683e30d7662ac0ca457af896",
+      "bytes": 237198
+    },
+    {
+      "file": "textures/arena_architecture/dormin_normal.png",
+      "sha256": "f06b84705450abefc297a8e745bd371d2a4923b4b647d5f77a84099e9fb7217d",
+      "bytes": 370712
+    },
+    {
+      "file": "textures/arena_architecture/dormin_roughness.png",
+      "sha256": "74eca6437c8ad84c993ed9198c12ef44ecd33a3b32201fead3d3672606dab14a",
+      "bytes": 52546
+    },
+    {
+      "file": "textures/arena_architecture/malus_albedo.png",
+      "sha256": "177d08c4f46e1da8e6fe345606166cdb2b4cefa51b5accecaefccb8068fe9eb6",
+      "bytes": 219761
+    },
+    {
+      "file": "textures/arena_architecture/malus_normal.png",
+      "sha256": "a7a16d6bc1c7893c5f897764fcdc42fcfc3022922a995dd8f3de3f445eda247b",
+      "bytes": 375240
+    },
+    {
+      "file": "textures/arena_architecture/malus_roughness.png",
+      "sha256": "1982b8fe658a42b5a2c4b3bec54dc7cd9658acb56d17158abb9728cc82f95c43",
+      "bytes": 52295
+    }
+  ]
+}

@@ -3,6 +3,9 @@ extends Node3D
 ## Render-only sculptures on existing rigid segments. No collision or bone writes.
 ## Invoke after older art: ColossusArtV3.dress(c, &"valus"). Returns attached segments.
 const ATLAS := preload("res://materials/colossi_v3/atlas.tres")
+# Private finish: exact allowlist only. Never mutate ATLAS or cached mesh surfaces.
+const FINISHED_ATLAS := preload("res://materials/colossi_material_finish/atlas.tres")
+const FINISHED_PROFILES := [&"valus", &"gaius", &"pelagia"]
 const Asset = preload("res://art/scripts/art_asset.gd")
 static var _manifest := {}
 static var _entries := {}
@@ -31,6 +34,7 @@ static func dress(c: Colossus, kind: StringName) -> int:
 	render.name = "ColossiV3Render"
 	c.add_child(render)
 	var count := 0
+	var material: Material = FINISHED_ATLAS if kind in FINISHED_PROFILES else ATLAS
 	for seg: BodySegment in c.segments:
 		var id := _id(kind, seg.bone_name)
 		for child in seg.get_children():
@@ -41,13 +45,13 @@ static func dress(c: Colossus, kind: StringName) -> int:
 		var art := Node3D.new()
 		art.name = "ColossiV3Visual"
 		seg.add_child(art)
-		_add_lods(art, id, seg)
+		_add_lods(art, id, seg, material)
 		count += 1
 		if _entries.has(id + "_grip"):
 			var wool := Node3D.new()
 			wool.name = "UnlockedWool"
 			art.add_child(wool)
-			_add_lods(wool, id + "_grip", seg)
+			_add_lods(wool, id + "_grip", seg, material)
 			var patches: Array[ClimbPatch] = []
 			for spec: Dictionary in _entries[id + "_grip"].patches:
 				var at := Vector3(spec.at[0], spec.at[1], spec.at[2])
@@ -71,7 +75,7 @@ static func _load_manifest() -> void:
 static func _id(kind: StringName, bone: StringName) -> String:
 	return "%s_%s" % [kind, String(bone).replace("-", "m")]
 
-static func _add_lods(root: Node3D, id: String, seg: BodySegment) -> void:
+static func _add_lods(root: Node3D, id: String, seg: BodySegment, material: Material = ATLAS) -> void:
 	var layer := 1
 	for child in seg.get_children():
 		if child is MeshInstance3D:
@@ -81,7 +85,7 @@ static func _add_lods(root: Node3D, id: String, seg: BodySegment) -> void:
 		var mesh := MeshInstance3D.new()
 		mesh.name = "LOD%d" % level
 		mesh.mesh = Asset.mesh_for(id, level, "colossi_v3")
-		mesh.material_override = ATLAS
+		mesh.material_override = material
 		mesh.layers = layer
 		mesh.lod_bias = 100
 		mesh.visibility_range_begin = [0.0, 55.0, 125.0][level]

@@ -1,0 +1,4 @@
+# Ignore stale extracted atlas copies if portable originals were imported locally.
+# Geometry-only runtime GLBs use one atlas in textures/nature_craft.
+*_nature_atlas_1k.png
+*_nature_atlas_1k.png.import

@@ -238,8 +238,8 @@ func _ride(delta: float) -> void:
 		if wander <= 0.0:
 			_since_check = RIDE_CHECK + 0.01
 		return
-	if game.layout_version == 3 and game.region_kind == GameWorld.VALLEY and game.state.next_colossus() != &"":
-		var direction := ForbiddenLands.route_heading(game.state.next_colossus(), p.global_position)
+	if game.layout_version >= 3 and game.region_kind == GameWorld.VALLEY and game.state.next_colossus() != &"":
+		var direction := ForbiddenLands.route_heading(game.state.next_colossus(), p.global_position, game.layout_version)
 		p.riding.steer_relative = false
 		a.view_basis = Basis.looking_at(direction)
 		a.move = Vector2(0, 1)

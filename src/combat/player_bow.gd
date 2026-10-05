@@ -95,11 +95,24 @@ func update(p: PlayerCharacter, delta: float) -> void:
 				draw = 0.0
 
 
-## Bow hand: in front of the chest, a little to the left (arrow side).
+## Right-cheek draw anchor shared by nock, aiming and the real projectile.
+## The head and shoulder girdle face the same aim frame cosmetically. This
+## socket reads deterministic gameplay input, never the smoothed render rig.
+func draw_frame(p: PlayerCharacter) -> Basis:
+	var up := Vector3.UP
+	if p.riding and p.riding.is_active() and is_instance_valid(p.riding.horse):
+		var weight := p.riding.cosmetic_seat_weight()
+		up = up.lerp(p.riding.horse.body_transform().basis.y.normalized(), weight).normalized()
+	var forward := -p.actions.view_basis.z.normalized()
+	if absf(forward.dot(up)) > .999:
+		up = p.actions.view_basis.y.normalized()
+	return Basis.looking_at(forward, up)
+
 func bow_point(p: PlayerCharacter) -> Vector3:
-	var b := p.actions.view_basis
-	var right := Vector3(b.x.x, 0.0, b.x.z).normalized()
-	return p.global_position + Vector3.UP * 0.55 + right * -0.15
+	var seated_offset := Vector3.ZERO
+	if p.riding and p.riding.is_active() and is_instance_valid(p.riding.horse):
+		seated_offset = p.riding.horse.body_transform().basis.y * (PlayerRiding.SEATED_VISUAL_OFFSET * p.riding.cosmetic_seat_weight())
+	return p.global_position + seated_offset + draw_frame(p) * Vector3(.17, .55, .05)
 
 
 func _update_aim(p: PlayerCharacter) -> void:

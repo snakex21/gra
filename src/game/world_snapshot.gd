@@ -145,6 +145,10 @@ func _index_nodes(n: Node) -> void:
 		_index_nodes(child)
 
 func _capture_nodes(n: Node, records: Array) -> void:
+	# TravelerArt owns derived render state, including its LOD-specific skin rig.
+	# Gameplay PlayerVisual/arm anchors remain outside this cosmetic subtree.
+	if n is TravelerArt:
+		return
 	var script := n.get_script() as Script
 	var simulation := script and script.resource_path.begins_with("res://src/") and not n is PlayerHud and not n is WaterCameraEffects and not n is FlatInputSource and not n is TravelerArt and not n is ColossusArtV3 and not n is WeaponArt
 	if simulation or n is Skeleton3D or n is CollisionShape3D and n.get_parent() is BodySegment:

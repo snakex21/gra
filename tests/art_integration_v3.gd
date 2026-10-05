@@ -60,10 +60,47 @@ func _check_actors(refs: Dictionary, context: String) -> void:
 	var traveler := p.visual.get_node_or_null("TravelerArt") as TravelerArt
 	check(traveler != null and is_instance_valid(traveler.model), context + " TravelerArt ready hook missing")
 	check(p.visual._blade != null and p.actions != null and p.find_children("*", "CollisionShape3D", true, false).size() > 0, context + " native player/sword missing")
-	for bone in AgroArt.BONES:
-		var art := h.get_node_or_null("Vis_%s/AgroArtV3" % bone)
-		check(art != null and art.get_child_count() == 3, context + " Agro ready hook incomplete: " + String(bone))
+	_check_agro_skin(h, context)
 	check(h.find_children("*", "CollisionShape3D", true, false).size() > 0, context + " horse collider missing")
+
+func _check_agro_skin(horse: Horse, context: String) -> void:
+	# Production core is now one skin on the ORIGINAL rig. The four hooves
+	# deliberately retain their original bone-local rigid adapters.
+	var root := horse.skeleton.get_node_or_null("AgroSkin") as Node3D
+	check(root != null and root.get_child_count() == 3, context + " Agro core skin ready hook incomplete")
+	if root:
+		check(root.visible and root.transform == Transform3D.IDENTITY, context + " Agro skin root hidden or transformed")
+		check(root.find_children("*", "CollisionObject3D", true, false).is_empty() and root.find_children("*", "CollisionShape3D", true, false).is_empty(), context + " Agro skin added cosmetic collision")
+		var reference := AgroArt.bind_reference()
+		for level in 3:
+			var visual := root.get_node_or_null("LOD%d" % level) as MeshInstance3D
+			check(visual != null and visual.mesh != null and visual.skin != null, context + " Agro core missing mesh/skin LOD%d" % level)
+			if visual == null or visual.mesh == null or visual.skin == null: continue
+			check(visual.visible and visual.transform == Transform3D.IDENTITY and visual.get_node_or_null(visual.skeleton) == horse.skeleton, context + " Agro LOD detached from original rig")
+			check(visual.visibility_range_begin == AgroArt.RANGES[level] and visual.visibility_range_end == AgroArt.RANGES[level + 1], context + " Agro core LOD range changed")
+			check(visual.skin.get_bind_count() == AgroArt.BONES.size(), context + " Agro core bind count changed")
+			var names := {}
+			for bind in visual.skin.get_bind_count():
+				var name := visual.skin.get_bind_name(bind)
+				var index := horse.skeleton.find_bone(name)
+				check(not names.has(name) and index >= 0 and visual.skin.get_bind_bone(bind) == index, context + " Agro bind detached/duplicated: " + String(name))
+				names[name] = true
+				check(reference.has(name) and ((reference.get(name, Transform3D.IDENTITY) as Transform3D) * visual.skin.get_bind_pose(bind)).is_equal_approx(Transform3D.IDENTITY), context + " Agro fixed neutral bind changed: " + String(name))
+			for bone in AgroArt.BONES:
+				check(names.has(bone), context + " Agro core bone missing: " + String(bone))
+	for bone in AgroArt.BONES:
+		var frame := horse.get_node_or_null("Vis_" + String(bone)) as Node3D
+		check(frame != null, context + " Native Agro attachment removed: " + String(bone))
+		if frame == null: continue
+		var hoof := String(bone).ends_with("hoof")
+		check(frame.visible == hoof, context + " Agro legacy visibility incorrect: " + String(bone))
+		if not hoof: continue
+		var art := frame.get_node_or_null("AgroArtV3")
+		check(art != null and art.get_child_count() == 3, context + " Agro hoof ready hook incomplete: " + String(bone))
+		if art:
+			for level in 3:
+				var visual := art.get_node_or_null("LOD%d" % level) as MeshInstance3D
+				check(visual != null and visual.mesh != null and visual.visible, context + " Agro hoof LOD missing: " + String(bone))
 
 func _check_encounter(c: Colossus, arena: Node, kind: StringName, context: String) -> Dictionary:
 	var bodies: Array[Colossus] = [c]
@@ -175,7 +212,7 @@ func _trial(kind: StringName) -> void:
 func _snapshot(game: GameWorld) -> Dictionary:
 	var data: Dictionary = bytes_to_var(var_to_bytes(WorldSnapshot.capture(game)))
 	for node: Dictionary in data.nodes:
-		check(not str(node.key).contains("ColossiV3Render") and not str(node.key).contains("TravelerArt"), "Cosmetic adapter was serialized into native node state")
+		check(not str(node.key).contains("ColossiV3Render") and not str(node.key).contains("TravelerArt") and not str(node.key).contains("AgroSkin"), "Cosmetic adapter was serialized into native node state")
 	for object: Dictionary in data.objects:
 		check(not String(object.get("script", "")).contains("colossus_art_v3") and not String(object.get("script", "")).contains("traveler_art"), "Cosmetic object serialized")
 	return data

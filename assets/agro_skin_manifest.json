@@ -1,0 +1,192 @@
+{
+  "version": 4,
+  "render_only": true,
+  "source": "res://art/source/agro_skin_v4.blend",
+  "generator": "tools/art/generate_agro_skin.py",
+  "details": {
+    "detail_objects": 31,
+    "materials": [
+      "points",
+      "eye",
+      "leather",
+      "cloth",
+      "brass"
+    ],
+    "design": "Solid laid hair clumps, shallow anatomical tack, head-rigid recessed facial inserts"
+  },
+  "triangles": 8534,
+  "skin_triangle_counts": [
+    8534,
+    3906,
+    1488
+  ],
+  "unchanged_hoof_triangle_counts": [
+    784,
+    360,
+    136
+  ],
+  "total_triangle_counts": [
+    9318,
+    4266,
+    1624
+  ],
+  "runtime_reins_triangle_count": 32,
+  "complete_runtime_triangle_counts": [
+    9350,
+    4298,
+    1656
+  ],
+  "baseline_total_triangle_counts": [
+    9482,
+    4347,
+    1676
+  ],
+  "lod_ratios": [
+    1,
+    0.458,
+    0.175
+  ],
+  "bounds": [
+    {
+      "min": [
+        -0.49949175119400024,
+        0.07229401171207428,
+        -2.279261350631714
+      ],
+      "max": [
+        0.49949175119400024,
+        2.4466195106506348,
+        1.320836067199707
+      ]
+    },
+    {
+      "min": [
+        -0.49949175119400024,
+        0.07229401171207428,
+        -2.2797937393188477
+      ],
+      "max": [
+        0.49949175119400024,
+        2.4466195106506348,
+        1.313570499420166
+      ]
+    },
+    {
+      "min": [
+        -0.49949175119400024,
+        0.0754987895488739,
+        -2.2753994464874268
+      ],
+      "max": [
+        0.49949175119400024,
+        2.429974317550659,
+        1.313570499420166
+      ]
+    }
+  ],
+  "rest": {
+    "body": [
+      0,
+      1.27,
+      0
+    ],
+    "neck": [
+      0,
+      1.49,
+      -0.95
+    ],
+    "head": [
+      0,
+      2.39,
+      -0.95
+    ],
+    "fl_up": [
+      -0.24,
+      1.17,
+      -0.78
+    ],
+    "fl_low": [
+      -0.24,
+      0.55,
+      -0.78
+    ],
+    "fl_hoof": [
+      -0.24,
+      -0.03,
+      -0.78
+    ],
+    "fr_up": [
+      0.24,
+      1.17,
+      -0.78
+    ],
+    "fr_low": [
+      0.24,
+      0.55,
+      -0.78
+    ],
+    "fr_hoof": [
+      0.24,
+      -0.03,
+      -0.78
+    ],
+    "rl_up": [
+      -0.24,
+      1.17,
+      0.78
+    ],
+    "rl_low": [
+      -0.24,
+      0.55,
+      0.78
+    ],
+    "rl_hoof": [
+      -0.24,
+      -0.03,
+      0.78
+    ],
+    "rr_up": [
+      0.24,
+      1.17,
+      0.78
+    ],
+    "rr_low": [
+      0.24,
+      0.55,
+      0.78
+    ],
+    "rr_hoof": [
+      0.24,
+      -0.03,
+      0.78
+    ]
+  },
+  "parents": {
+    "body": null,
+    "neck": "body",
+    "head": "neck",
+    "fl_up": "body",
+    "fl_low": "fl_up",
+    "fl_hoof": "fl_low",
+    "fr_up": "body",
+    "fr_low": "fr_up",
+    "fr_hoof": "fr_low",
+    "rl_up": "body",
+    "rl_low": "rl_up",
+    "rl_hoof": "rl_low",
+    "rr_up": "body",
+    "rr_low": "rr_up",
+    "rr_hoof": "rr_low"
+  },
+  "max_influences": 3,
+  "weight_contract": "Fixed recorded native neutral bind pose; separately revised runtime idle carriage does not alter bind matrices",
+  "neutral_reference": "assets/agro_skin_neutral_reference.json",
+  "runtime_materials": "Shared existing Agro body/head material resources. Only mane/tail gets a shallow matte clone; texture refs unchanged.",
+  "new_texture_files": 0,
+  "limitations": [
+    "No live GPU or FPS validation",
+    "Prescribed production gait snapshots are not live controller movement",
+    "Existing two-bone leg pose and linear-skinning volume limitations remain",
+    "Opaque low-poly hair; no secondary mane/tail physics"
+  ]
+}

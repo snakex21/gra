@@ -296,8 +296,11 @@ func _pose(delta: float) -> void:
 	var roll := atan2(right - left, 0.48) * 0.5 + clampf(c.speed * c.yaw_rate * 0.03, -0.12, 0.12)
 	_spring2(Vector2(pitch, roll), 7.0, dt)
 	# Height above the root: nominal, limited by what the legs reach (soft), plus the gait bob.
-	var nominal: float = BODY_HEIGHT - 0.05 * _gait_w[3]
-	var reach := (UPPER_LEN + LOWER_LEN) * 0.97
+	# A relaxed standing horse should carry its weight on almost extended limbs.
+	# Blend with the existing idle weight so a gait transition cannot snap the
+	# saddle height. Moving gaits retain their existing nominal height/reach.
+	var nominal: float = BODY_HEIGHT + 0.12 * _gait_w[0] - 0.05 * _gait_w[3]
+	var reach := (UPPER_LEN + LOWER_LEN) * lerpf(0.97, 0.992, _gait_w[0])
 	var reach_hard := (UPPER_LEN + LOWER_LEN) * 0.995
 	# The gait bob only rises as far as the legs allow (it never lifts a planted hoof).
 	var max_h := nominal + bob

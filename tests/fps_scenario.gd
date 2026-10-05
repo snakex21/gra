@@ -194,8 +194,13 @@ func _boss_tick() -> void:
 ## The whole Quadratus fight played by the scripted bot (on foot or from Agro): arrows,
 ## the foot reaction, climbing, both weak points, defeat.
 func _setup_quadratus() -> void:
+	# Remove the bootstrap floor before any physics tick. A deferred deletion
+	# can survive the first tick at low render FPS but disappear during a
+	# render-only iteration at high FPS, changing broadphase/contact history.
+	# This arena owns its ground; the unused collider must never coexist.
 	for c in get_children():
-		c.queue_free()
+		remove_child(c)
+		c.free()
 	InputSetup.ensure_defaults()
 	Sfx.enabled = false
 	var arena := Node3D.new()

@@ -12,6 +12,9 @@ extends RefCounted
 
 enum Phase { NONE, MOUNTING, RIDING, DISMOUNTING }
 
+## Shared seated frame correction: render pelvis and physical bow muzzle agree.
+const SEATED_VISUAL_OFFSET := -0.28
+
 const MOUNT_RANGE := 2.8
 const MOUNT_TIME := 0.6
 const DISMOUNT_TIME := 0.65
@@ -35,6 +38,15 @@ var _saved_mask := 0
 
 func _init(p_player: PlayerCharacter) -> void:
 	player = p_player
+
+
+## Render-only contact weight. Never changes the collision root or mount arc.
+func cosmetic_seat_weight() -> float:
+	match phase:
+		Phase.RIDING: return 1.0
+		Phase.MOUNTING: return smoothstep(0.25, 1.0, _t)
+		Phase.DISMOUNTING: return 1.0 - smoothstep(0.0, 0.75, _t)
+	return 0.0
 
 
 func is_active() -> bool:

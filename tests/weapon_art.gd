@@ -157,7 +157,35 @@ func _ready() -> void:
 	gear = p.visual.get_node("WeaponArt") as WeaponArt
 	gear.update_equipment(0)
 	check(p.bow.is_aiming() and gear.bow.visible and gear.arrow.visible and float(gear.hand_errors[0]) < .04, "Bow/hand pose does not work in the actual mounted state")
+	check(gear.arrow.global_position.distance_to(p.bow.bow_point(p)) < .0001, "Mounted held nock is detached from the corrected physical muzzle")
 	if camera: await shot("04_bow_on_agro", p)
+	# The corrected mounted socket survives a binary restore, without persisting
+	# an ArrowModel offset or introducing any second visual projectile origin.
+	var mounted_point := p.bow.bow_point(p)
+	data = WorldSnapshot.capture(game)
+	check(WorldSnapshot.restore(game, bytes_to_var(var_to_bytes(data))), "Mounted draw checkpoint failed to restore")
+	p = game.player()
+	gear = p.visual.get_node("WeaponArt") as WeaponArt
+	gear.update_equipment(0)
+	check(p.is_riding() and p.bow.bow_point(p).distance_to(mounted_point) < .0001, "Mounted checkpoint changed the physical muzzle")
+	check(gear.arrow.global_position.distance_to(mounted_point) < .0001, "Mounted checkpoint detached visible arrow from physical muzzle")
+	var mounted_launches: Array = []
+	p.bow.shot.connect(func(a: Dictionary) -> void:
+		var model := (a.node as Node3D).get_node("ArrowModel") as Node3D
+		mounted_launches.append({"start":a.start,"tail":model.global_position,"local":model.position,"velocity":a.vel}))
+	for repeated in 2:
+		gear.update_equipment(0)
+		var held_tail := gear.arrow.global_position
+		p.actions.attack_held = false
+		await ticks(2)
+		check(mounted_launches.size() == repeated + 1, "Repeated mounted release did not create exactly one projectile")
+		if mounted_launches.size() > repeated:
+			var launch: Dictionary = mounted_launches[repeated]
+			check((launch.start as Vector3).distance_to(held_tail) < .03, "Repeated mounted shot jumps away from held nock")
+			check((launch.tail as Vector3).distance_to(launch.start) < .0001 and launch.local == Vector3.ZERO, "Mounted projectile hides a physical/visual origin mismatch")
+		await ticks(40)
+		p.actions.attack_held = true
+		await ticks(25 if repeated == 0 else 75)
 	p.actions.clear()
 	game.free()
 	await ticks(2)

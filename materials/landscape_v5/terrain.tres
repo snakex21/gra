@@ -1,9 +1,24 @@
-[gd_resource type="ShaderMaterial" load_steps=3 format=3]
+[gd_resource type="ShaderMaterial" load_steps=9 format=3]
 
 [ext_resource type="Shader" path="res://materials/landscape_v5/terrain.gdshader" id="1"]
-[ext_resource type="Texture2D" path="res://textures/landscape_v5/landscape_atlas_albedo.png" id="2"]
+[ext_resource type="Texture2D" path="res://textures/environment/ground_v6_grass_albedo.png" id="2"]
+[ext_resource type="Texture2D" path="res://textures/environment/ground_v6_soil_albedo.png" id="3"]
+[ext_resource type="Texture2D" path="res://textures/environment/ground_v6_rock_albedo.png" id="4"]
+[ext_resource type="Texture2D" path="res://textures/environment/ground_v6_grass_normal.png" id="5"]
+[ext_resource type="Texture2D" path="res://textures/environment/ground_v6_soil_normal.png" id="6"]
+[ext_resource type="Texture2D" path="res://textures/environment/ground_v6_rock_normal.png" id="7"]
+[ext_resource type="Texture2D" path="res://textures/environment/ground_v6_macro.png" id="8"]
 
 [resource]
-resource_name = "Landscape V5 biome ground / single atlas fetch"
+resource_name = "Landscape V6 / grass, earth and exposed mineral ground"
 shader = ExtResource("1")
-shader_parameter/atlas = ExtResource("2")
+shader_parameter/ground_grass = ExtResource("2")
+shader_parameter/ground_soil = ExtResource("3")
+shader_parameter/ground_rock = ExtResource("4")
+shader_parameter/grass_normal = ExtResource("5")
+shader_parameter/soil_normal = ExtResource("6")
+shader_parameter/rock_normal = ExtResource("7")
+shader_parameter/ground_macro = ExtResource("8")
+shader_parameter/tile_metres = 4.5
+shader_parameter/normal_strength = 0.48
+shader_parameter/low_detail = false

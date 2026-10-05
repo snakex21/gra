@@ -1,0 +1,601 @@
+{
+  "seed": 639172,
+  "source": "tools/art/generate_biome_groundcover.py",
+  "material": "materials/environment/groundcover_atlas.tres",
+  "alpha": false,
+  "collision": false,
+  "authored_lods": true,
+  "root_clusters_all_lods": 9,
+  "triangle_limits": [
+    320,
+    160,
+    90
+  ],
+  "models": [
+    {
+      "path": "models/environment/biome_rush_lod0.glb",
+      "triangles": 279,
+      "bounds_min_godot": [
+        -1.998673677444458,
+        0,
+        -1.955585241317749
+      ],
+      "bounds_max_godot": [
+        1.967587947845459,
+        1.5496220588684082,
+        1.9831368923187256
+      ],
+      "size_godot_m": [
+        3.966261625289917,
+        1.5496220588684082,
+        3.9387221336364746
+      ],
+      "bytes": 30564,
+      "sha256": "f04f86e3a1ee70bbf3fc2a049e8297a948d5678217bc90577e80263ac21916a1",
+      "id": "biome_rush",
+      "lod": 0,
+      "intended_biomes": [
+        "wet banks",
+        "mire",
+        "stonewater"
+      ]
+    },
+    {
+      "path": "models/environment/biome_rush_lod1.glb",
+      "triangles": 144,
+      "bounds_min_godot": [
+        -2.01137375831604,
+        0,
+        -1.9403756856918335
+      ],
+      "bounds_max_godot": [
+        1.9987719058990479,
+        1.5496220588684082,
+        1.9388890266418457
+      ],
+      "size_godot_m": [
+        4.010145664215088,
+        1.5496220588684082,
+        3.879264712333679
+      ],
+      "bytes": 14992,
+      "sha256": "7047b441310e37acf9bc303418573f1a47ff9c7fc62cb471437515841d2ee964",
+      "id": "biome_rush",
+      "lod": 1,
+      "intended_biomes": [
+        "wet banks",
+        "mire",
+        "stonewater"
+      ]
+    },
+    {
+      "path": "models/environment/biome_rush_lod2.glb",
+      "triangles": 72,
+      "bounds_min_godot": [
+        -2.01137375831604,
+        0,
+        -1.9403756856918335
+      ],
+      "bounds_max_godot": [
+        1.9987719058990479,
+        1.499622106552124,
+        1.9388890266418457
+      ],
+      "size_godot_m": [
+        4.010145664215088,
+        1.499622106552124,
+        3.879264712333679
+      ],
+      "bytes": 10236,
+      "sha256": "15493bfb28e63478f785a8725662a1a0b44984564816e311398fe6dd7141f825",
+      "id": "biome_rush",
+      "lod": 2,
+      "intended_biomes": [
+        "wet banks",
+        "mire",
+        "stonewater"
+      ]
+    },
+    {
+      "path": "models/environment/biome_seedgrass_lod0.glb",
+      "triangles": 279,
+      "bounds_min_godot": [
+        -2.2612781524658203,
+        0,
+        -2.0540480613708496
+      ],
+      "bounds_max_godot": [
+        2.124605894088745,
+        0.974320113658905,
+        2.1489171981811523
+      ],
+      "size_godot_m": [
+        4.385884046554565,
+        0.974320113658905,
+        4.202965259552002
+      ],
+      "bytes": 30576,
+      "sha256": "517d5a49de9bebc21bfc135cd584d58047dbaf2bf15786fa60e3b3bb2d3fb161",
+      "id": "biome_seedgrass",
+      "lod": 0,
+      "intended_biomes": [
+        "meadow",
+        "open plains",
+        "ancient valley"
+      ]
+    },
+    {
+      "path": "models/environment/biome_seedgrass_lod1.glb",
+      "triangles": 144,
+      "bounds_min_godot": [
+        -2.2809388637542725,
+        0,
+        -2.036412239074707
+      ],
+      "bounds_max_godot": [
+        2.1651363372802734,
+        0.974320113658905,
+        2.093111753463745
+      ],
+      "size_godot_m": [
+        4.446075201034546,
+        0.974320113658905,
+        4.129523992538452
+      ],
+      "bytes": 15000,
+      "sha256": "7a3a04288cf244ef433c337983723d6fb15dcb102709e8b865f85f9c75ca40c2",
+      "id": "biome_seedgrass",
+      "lod": 1,
+      "intended_biomes": [
+        "meadow",
+        "open plains",
+        "ancient valley"
+      ]
+    },
+    {
+      "path": "models/environment/biome_seedgrass_lod2.glb",
+      "triangles": 72,
+      "bounds_min_godot": [
+        -2.2809388637542725,
+        0,
+        -2.036412239074707
+      ],
+      "bounds_max_godot": [
+        2.1651363372802734,
+        1.0143201351165771,
+        2.093111753463745
+      ],
+      "size_godot_m": [
+        4.446075201034546,
+        1.0143201351165771,
+        4.129523992538452
+      ],
+      "bytes": 10244,
+      "sha256": "837e3ae4561b96e69a284e277b17b04d99a851cc01662aeb80e6d05ec35fabd9",
+      "id": "biome_seedgrass",
+      "lod": 2,
+      "intended_biomes": [
+        "meadow",
+        "open plains",
+        "ancient valley"
+      ]
+    },
+    {
+      "path": "models/environment/biome_fern_lod0.glb",
+      "triangles": 270,
+      "bounds_min_godot": [
+        -2.175051212310791,
+        0,
+        -2.3178915977478027
+      ],
+      "bounds_max_godot": [
+        2.4081203937530518,
+        0.6217990517616272,
+        2.107391357421875
+      ],
+      "size_godot_m": [
+        4.583171606063843,
+        0.6217990517616272,
+        4.425282955169678
+      ],
+      "bytes": 30868,
+      "sha256": "1dbda1dab76f69eca0937800e5bbe8493d15e9f7bd1e89ad77ac837f7bd22133",
+      "id": "biome_fern",
+      "lod": 0,
+      "intended_biomes": [
+        "woodland",
+        "moist shade",
+        "mirewood"
+      ]
+    },
+    {
+      "path": "models/environment/biome_fern_lod1.glb",
+      "triangles": 144,
+      "bounds_min_godot": [
+        -2.146596670150757,
+        0,
+        -2.022592306137085
+      ],
+      "bounds_max_godot": [
+        1.88209867477417,
+        0.6217990517616272,
+        1.8814074993133545
+      ],
+      "size_godot_m": [
+        4.028695344924927,
+        0.6217990517616272,
+        3.9039998054504395
+      ],
+      "bytes": 16428,
+      "sha256": "befe5a48d28f17ca496ee1106e8f8c48b5637ab6ac3173175c597e796bb0b8ce",
+      "id": "biome_fern",
+      "lod": 1,
+      "intended_biomes": [
+        "woodland",
+        "moist shade",
+        "mirewood"
+      ]
+    },
+    {
+      "path": "models/environment/biome_fern_lod2.glb",
+      "triangles": 54,
+      "bounds_min_godot": [
+        -2.175051212310791,
+        0,
+        -2.3178915977478027
+      ],
+      "bounds_max_godot": [
+        2.4081203937530518,
+        0.6623805165290833,
+        2.107391357421875
+      ],
+      "size_godot_m": [
+        4.583171606063843,
+        0.6623805165290833,
+        4.425282955169678
+      ],
+      "bytes": 5804,
+      "sha256": "83d8b28d45d678eddb3052382ee6396c0121ffa9d3fca53cdab178904be82f4b",
+      "id": "biome_fern",
+      "lod": 2,
+      "intended_biomes": [
+        "woodland",
+        "moist shade",
+        "mirewood"
+      ]
+    },
+    {
+      "path": "models/environment/biome_wildflowers_lod0.glb",
+      "triangles": 252,
+      "bounds_min_godot": [
+        -1.5914160013198853,
+        0,
+        -1.440625786781311
+      ],
+      "bounds_max_godot": [
+        1.544095516204834,
+        0.6449999809265137,
+        1.383676290512085
+      ],
+      "size_godot_m": [
+        3.1355115175247192,
+        0.6449999809265137,
+        2.824302077293396
+      ],
+      "bytes": 27892,
+      "sha256": "1cb4f2f80c69e77137d541e7cb53b5b03866a80a2868539711cbb4b05630ed3e",
+      "id": "biome_wildflowers",
+      "lod": 0,
+      "intended_biomes": [
+        "meadow",
+        "ruin edges"
+      ]
+    },
+    {
+      "path": "models/environment/biome_wildflowers_lod1.glb",
+      "triangles": 126,
+      "bounds_min_godot": [
+        -1.6260056495666504,
+        0,
+        -1.4662948846817017
+      ],
+      "bounds_max_godot": [
+        1.491641640663147,
+        0.6449999809265137,
+        1.4030606746673584
+      ],
+      "size_godot_m": [
+        3.1176472902297974,
+        0.6449999809265137,
+        2.86935555934906
+      ],
+      "bytes": 13456,
+      "sha256": "669983a5b3b5bc258907e9caefbd7a791dede14c33913b05413240ca841aa98f",
+      "id": "biome_wildflowers",
+      "lod": 1,
+      "intended_biomes": [
+        "meadow",
+        "ruin edges"
+      ]
+    },
+    {
+      "path": "models/environment/biome_wildflowers_lod2.glb",
+      "triangles": 81,
+      "bounds_min_godot": [
+        -1.6139848232269287,
+        0,
+        -1.4629027843475342
+      ],
+      "bounds_max_godot": [
+        1.5540002584457397,
+        0.6449999809265137,
+        1.3766764402389526
+      ],
+      "size_godot_m": [
+        3.1679850816726685,
+        0.6449999809265137,
+        2.839579224586487
+      ],
+      "bytes": 11388,
+      "sha256": "14a97cdbb2a78cbec31bf5ca69079fd76748490432dc844d77ffd86aeee5ec4d",
+      "id": "biome_wildflowers",
+      "lod": 2,
+      "intended_biomes": [
+        "meadow",
+        "ruin edges"
+      ]
+    },
+    {
+      "path": "models/environment/biome_heather_lod0.glb",
+      "triangles": 279,
+      "bounds_min_godot": [
+        -1.6854665279388428,
+        0,
+        -1.6166799068450928
+      ],
+      "bounds_max_godot": [
+        1.6927218437194824,
+        0.5367640256881714,
+        1.4591878652572632
+      ],
+      "size_godot_m": [
+        3.378188371658325,
+        0.5367640256881714,
+        3.075867772102356
+      ],
+      "bytes": 31292,
+      "sha256": "a28db8b4f37ecc9422021e207436261ae9c462a3703d987323c0aa66e546a10d",
+      "id": "biome_heather",
+      "lod": 0,
+      "intended_biomes": [
+        "heath",
+        "coast",
+        "rocky slopes"
+      ]
+    },
+    {
+      "path": "models/environment/biome_heather_lod1.glb",
+      "triangles": 108,
+      "bounds_min_godot": [
+        -1.7207598686218262,
+        0,
+        -1.3879427909851074
+      ],
+      "bounds_max_godot": [
+        1.6069351434707642,
+        0.5367640256881714,
+        1.4527047872543335
+      ],
+      "size_godot_m": [
+        3.3276950120925903,
+        0.5367640256881714,
+        2.840647578239441
+      ],
+      "bytes": 11900,
+      "sha256": "22942d5fdd2f9958be8fbd3d103a99b438c814350774f27b74836e71548cdf56",
+      "id": "biome_heather",
+      "lod": 1,
+      "intended_biomes": [
+        "heath",
+        "coast",
+        "rocky slopes"
+      ]
+    },
+    {
+      "path": "models/environment/biome_heather_lod2.glb",
+      "triangles": 72,
+      "bounds_min_godot": [
+        -1.68765389919281,
+        0,
+        -1.4010608196258545
+      ],
+      "bounds_max_godot": [
+        1.6611398458480835,
+        0.5367640256881714,
+        1.4934279918670654
+      ],
+      "size_godot_m": [
+        3.3487937450408936,
+        0.5367640256881714,
+        2.89448881149292
+      ],
+      "bytes": 10240,
+      "sha256": "a276ce24d54bf502e649601e3968c26f953bc95f572f3964216b6027539d243e",
+      "id": "biome_heather",
+      "lod": 2,
+      "intended_biomes": [
+        "heath",
+        "coast",
+        "rocky slopes"
+      ]
+    },
+    {
+      "path": "models/environment/biome_dry_scrub_lod0.glb",
+      "triangles": 252,
+      "bounds_min_godot": [
+        -2.0683341026306152,
+        0,
+        -1.9927177429199219
+      ],
+      "bounds_max_godot": [
+        2.007870674133301,
+        0.7509471774101257,
+        2.01771879196167
+      ],
+      "size_godot_m": [
+        4.076204776763916,
+        0.7509471774101257,
+        4.010436534881592
+      ],
+      "bytes": 27168,
+      "sha256": "ab90c6e4ee0bdea39ac8280efe3449fa0ebab47eeb750ce293d8c9c0af194eb5",
+      "id": "biome_dry_scrub",
+      "lod": 0,
+      "intended_biomes": [
+        "dry slopes",
+        "saltwind",
+        "barren plains"
+      ]
+    },
+    {
+      "path": "models/environment/biome_dry_scrub_lod1.glb",
+      "triangles": 126,
+      "bounds_min_godot": [
+        -2.082880735397339,
+        0,
+        -1.976593255996704
+      ],
+      "bounds_max_godot": [
+        2.041452407836914,
+        0.7509471774101257,
+        1.971060037612915
+      ],
+      "size_godot_m": [
+        4.124333143234253,
+        0.7509471774101257,
+        3.947653293609619
+      ],
+      "bytes": 12728,
+      "sha256": "653c7479db415551097fa9abcadfa8f5a8c4448c8e3dc4e3105221d0f21bd0dd",
+      "id": "biome_dry_scrub",
+      "lod": 1,
+      "intended_biomes": [
+        "dry slopes",
+        "saltwind",
+        "barren plains"
+      ]
+    },
+    {
+      "path": "models/environment/biome_dry_scrub_lod2.glb",
+      "triangles": 72,
+      "bounds_min_godot": [
+        -2.082880735397339,
+        0,
+        -1.976593255996704
+      ],
+      "bounds_max_godot": [
+        2.041452407836914,
+        0.7509471774101257,
+        1.971060037612915
+      ],
+      "size_godot_m": [
+        4.124333143234253,
+        0.7509471774101257,
+        3.947653293609619
+      ],
+      "bytes": 10244,
+      "sha256": "ebf33cfa77a218e478df79b610608f106b48116bea3f0dd03aaef08b2dbe9c6c",
+      "id": "biome_dry_scrub",
+      "lod": 2,
+      "intended_biomes": [
+        "dry slopes",
+        "saltwind",
+        "barren plains"
+      ]
+    },
+    {
+      "path": "models/environment/biome_gravel_lod0.glb",
+      "triangles": 216,
+      "bounds_min_godot": [
+        -1.9564207792282104,
+        0,
+        -1.9614953994750977
+      ],
+      "bounds_max_godot": [
+        1.8652669191360474,
+        0.17173665761947632,
+        1.8090170621871948
+      ],
+      "size_godot_m": [
+        3.821687698364258,
+        0.17173665761947632,
+        3.7705124616622925
+      ],
+      "bytes": 28392,
+      "sha256": "f3d6a035b6801fb3bd19f0b49ab99d3df2e00f7406eb95be7b91ae4ecf3319dd",
+      "id": "biome_gravel",
+      "lod": 0,
+      "intended_biomes": [
+        "paths",
+        "barren rock",
+        "ruin margins"
+      ]
+    },
+    {
+      "path": "models/environment/biome_gravel_lod1.glb",
+      "triangles": 144,
+      "bounds_min_godot": [
+        -1.9471913576126099,
+        0,
+        -1.9614953994750977
+      ],
+      "bounds_max_godot": [
+        1.8652669191360474,
+        0.17173665761947632,
+        1.766067624092102
+      ],
+      "size_godot_m": [
+        3.8124582767486572,
+        0.17173665761947632,
+        3.7275630235671997
+      ],
+      "bytes": 19316,
+      "sha256": "eec681e11ded63df801715abe31e48f337f07146150c6f763c0b560777417947",
+      "id": "biome_gravel",
+      "lod": 1,
+      "intended_biomes": [
+        "paths",
+        "barren rock",
+        "ruin margins"
+      ]
+    },
+    {
+      "path": "models/environment/biome_gravel_lod2.glb",
+      "triangles": 72,
+      "bounds_min_godot": [
+        -1.9471913576126099,
+        0,
+        -1.9614953994750977
+      ],
+      "bounds_max_godot": [
+        1.8652669191360474,
+        0.17173665761947632,
+        1.766067624092102
+      ],
+      "size_godot_m": [
+        3.8124582767486572,
+        0.17173665761947632,
+        3.7275630235671997
+      ],
+      "bytes": 10240,
+      "sha256": "a8d283530a99805f682ab38621ef731cab160052cb35f8713cbfb466641aed44",
+      "id": "biome_gravel",
+      "lod": 2,
+      "intended_biomes": [
+        "paths",
+        "barren rock",
+        "ruin margins"
+      ]
+    }
+  ]
+}

@@ -4,20 +4,26 @@ extends RefCounted
 ## nodes or saved cosmetic references: restoring a checkpoint rebuilds these meshes.
 const CHUNK := 256
 const STEP := 32
+# Layout-5-only local road cut; historical layout 4 stays byte-identical: exact shared terrain/render/collision grid.
+const ROAD_CUT_MIN := Vector2i(224, -192)
+const ROAD_CUT_MAX := Vector2i(320, -32)
+const ROAD_CUT_STEP := 4
 const MINIMUM := Vector2i(-2304, -2304)
 const MAXIMUM := Vector2i(1792, 1792)
 static var _grid := {}
 static var _height_cache := {}
+static var _ground_low_detail := false
 static var _terrain_mat: Material
 static var _road_mat: StandardMaterial3D
 static var _landscape_mat: StandardMaterial3D
 static var _landscape_meshes := {}
 const LANDSCAPE_KINDS := ["oak", "wind_tree", "pine", "dead_tree", "rock_shelf", "rock_split", "ruin_arch", "ruin_support", "ruin_parapet"]
 
-static func _index_roads() -> void:
-	if not _grid.is_empty():
+static func _index_roads(layout := 3) -> void:
+	if _grid.has(layout):
 		return
-	for edge: Array in ForbiddenLands.road_edges():
+	_grid[layout] = {}
+	for edge: Array in ForbiddenLands.road_edges(layout):
 		var a: Vector3 = edge[0]
 		var b: Vector3 = edge[1]
 		var low := Vector2i(floori((minf(a.x, b.x) - 80) / 80), floori((minf(a.z, b.z) - 80) / 80))
@@ -25,32 +31,39 @@ static func _index_roads() -> void:
 		for z in range(low.y, high.y + 1):
 			for x in range(low.x, high.x + 1):
 				var key := Vector2i(x, z)
-				if not _grid.has(key):
-					_grid[key] = []
-				_grid[key].append(edge)
+				if not _grid[layout].has(key):
+					_grid[layout][key] = []
+				_grid[layout][key].append(edge)
 
-static func road_distance(p: Vector2) -> float:
-	_index_roads()
+static func road_distance(p: Vector2, layout := 3) -> float:
+	_index_roads(layout)
 	var best := INF
-	for edge: Array in _grid.get(Vector2i(floori(p.x / 80), floori(p.y / 80)), []):
+	for edge: Array in _grid[layout].get(Vector2i(floori(p.x / 80), floori(p.y / 80)), []):
 		var a: Vector3 = edge[0]
 		var b: Vector3 = edge[1]
 		best = minf(best, Geometry2D.get_closest_point_to_segment(p, Vector2(a.x, a.z), Vector2(b.x, b.z)).distance_to(p))
 	return best
 
-static func height_at(x: float, z: float) -> float:
+static func height_at(x: float, z: float, layout := 3) -> float:
 	var p := Vector2(x, z)
 	var natural := 4.0 + sin(x * .006) * cos(z * .005) * 9.0
 	for hill: Vector4 in [Vector4(-470, 370, 230, 110), Vector4(720, 500, 220, 94), Vector4(-910, -450, 200, 76), Vector4(280, -1310, 250, 65), Vector4(-1620, -730, 200, 82)]:
 		natural += hill.w * exp(-p.distance_squared_to(Vector2(hill.x, hill.y)) / (hill.z * hill.z))
+	if layout in [4, 5]:
+		# Broad asymmetric landforms in the opened north/south gaps. Road/arena
+		# protection below is shared by render mesh, collision and plant snapping.
+		for mound: Vector4 in [Vector4(390, -770, 200, 27), Vector4(-740, -870, 190, 22), Vector4(300, 1250, 210, 32)]:
+			natural += mound.w * exp(-p.distance_squared_to(Vector2(mound.x, mound.y)) / (mound.z * mound.z))
+		for basin: Vector4 in [Vector4(170, -790, 180, 10), Vector4(-640, -1180, 165, 9), Vector4(320, 1060, 180, 12)]:
+			natural -= basin.w * exp(-p.distance_squared_to(Vector2(basin.x, basin.y)) / (basin.z * basin.z))
 	var coastline := Vector2((x + 220) / 1950, (z + 150) / 2000).length()
 	natural = lerpf(natural, -45, smoothstep(.94, 1.10, coastline))
 	var nearest_arena := INF
-	for kind: StringName in ForbiddenLands.REGIONS:
-		nearest_arena = minf(nearest_arena, p.distance_to(ForbiddenLands.REGIONS[kind][0]))
+	for kind: StringName in ForbiddenLands.regions(layout):
+		nearest_arena = minf(nearest_arena, p.distance_to(ForbiddenLands.regions(layout)[kind][0]))
 	if nearest_arena < WorldMap.GROUND_RADIUS + 50:
 		natural = lerpf(-35, natural, smoothstep(WorldMap.GROUND_RADIUS + 2, WorldMap.GROUND_RADIUS + 50, nearest_arena))
-	var road := road_distance(p)
+	var road := road_distance(p, layout)
 	# The northern span is a real bridge above a recessed canyon, not land painted blue.
 	var bridge := absf(x + 230) < 75 and z > 240 and z < 620
 	if bridge:
@@ -64,7 +77,8 @@ static func height_at(x: float, z: float) -> float:
 	return natural
 
 static func biome_weights(x: float, z: float) -> Dictionary:
-	# Visual weights only: do not move terrain, routes, collision or arenas.
+	# Low-frequency domain warp breaks straight map bands without moving geography.
+	# These weights affect colour/decoration only; height, roads and arenas stay exact.
 	var wx := x + 48.0 * sin(z * .007) + 22.0 * sin((x + z) * .017)
 	var wz := z + 42.0 * sin(x * .006) + 19.0 * cos((z - x) * .015)
 	return {
@@ -75,7 +89,7 @@ static func biome_weights(x: float, z: float) -> Dictionary:
 		"volcanic": smoothstep(980, 1220, wx) * (1.0 - smoothstep(180, 420, absf(wz)))
 	}
 
-static func biome_color(x: float, z: float, known_height: float = NAN) -> Color:
+static func biome_color(x: float, z: float, known_height: float = NAN, layout := 3) -> Color:
 	var weights := biome_weights(x, z)
 	var variation := .018 * sin(x * .023 + z * .018) + .012 * cos(x * .009 - z * .014)
 	var color := Color(.30, .36, .25)
@@ -84,28 +98,35 @@ static func biome_color(x: float, z: float, known_height: float = NAN) -> Color:
 	color = color.lerp(Color(.42, .34, .27), weights.desert)
 	color = color.lerp(Color(.29, .36, .35), weights.eastern)
 	color = color.lerp(Color(.35, .28, .24), weights.volcanic)
-	# Chunk vertices already have a cached height; avoid repeating road/arena
-	# searches for every copy of a triangle corner during world construction.
-	var height := height_at(x, z) if is_nan(known_height) else known_height
+	var height := height_at(x, z, layout) if is_nan(known_height) else known_height
 	color = color.lerp(Color(.34, .35, .33), smoothstep(30, 58, height))
 	return color + Color(variation, variation, variation, 0)
+
+static func set_ground_quality(profile: String) -> void:
+	_ground_low_detail = profile == "low"
+	if _terrain_mat is ShaderMaterial:
+		_terrain_mat.set_shader_parameter("low_detail", _ground_low_detail)
 
 static func _materials() -> void:
 	if _terrain_mat:
 		return
-	# One atlas sample adds local grain while retaining the authored biome colours.
+	# Multiscale grass/earth/mineral detail retains the authored biome colours.
 	_terrain_mat = load("res://materials/landscape_v5/terrain.tres")
+	_terrain_mat.set_shader_parameter("low_detail", _ground_low_detail)
 	_road_mat = StandardMaterial3D.new()
-	_road_mat.albedo_color = Color(.43, .43, .37)
+	_road_mat.albedo_color = Color(.92, .90, .83)
 	_road_mat.roughness = 1
 	_road_mat.disable_receive_shadows = true
 	_road_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	_road_mat.albedo_texture = load("res://textures/environment/rock_albedo.png")
-	_road_mat.uv1_scale = Vector3(.2, .2, .2)
+	_road_mat.albedo_texture = load("res://textures/environment/ground_v6_path_albedo.png")
+	_road_mat.normal_enabled = true
+	_road_mat.normal_texture = load("res://textures/environment/ground_v6_path_normal.png")
+	_road_mat.normal_scale = .45
+	_road_mat.uv1_scale = Vector3(.18, .18, .18)
 
-static func build(parent: Node3D, with_art := true) -> void:
+static func build(parent: Node3D, with_art := true, layout := 3) -> void:
 	_materials()
-	_index_roads()
+	_index_roads(layout)
 	var root := Node3D.new()
 	root.name = "ForbiddenLandsTerrain"
 	parent.add_child(root)
@@ -116,13 +137,31 @@ static func build(parent: Node3D, with_art := true) -> void:
 		for kind: String in LANDSCAPE_KINDS:
 			job.add(func() -> void: _prime_landscape(kind))
 		job.add(func() -> void: _bridge_art(root))
+		if layout == 5:
+			# Warm each small groundcover LOD independently, before resumable
+			# meadow batches. No asset decode is hidden in a dense chunk step.
+			for ground_kind: String in ["grass_meadow_soft", "grass_meadow_straw", "shrub_meadow", "rock_02"] + BiomeGroundcover.KINDS:
+				for ground_lod in 3:
+					job.add(func() -> void: EnvironmentGroundcover.ASSET.mesh_for(ground_kind, ground_lod))
+		if layout in [4, 5]:
+			# Warm only used authored meshes, one small LOD resource per queue job.
+			# Never load twelve models inside a single first-visible chunk job.
+			var used_models := {}
+			for record: Dictionary in AuthoredNature.records():
+				used_models[record.model_id] = true
+			for nature_kind: String in used_models:
+				# Atlas decode is a one-time ~20ms CPU load. Do it in synchronous
+				# world construction before actors/control, not in a streaming job.
+				AuthoredNatureCatalog.material_for(nature_kind)
+				for nature_lod in 3:
+					job.add(func() -> void: AuthoredNatureCatalog.mesh_for(nature_kind, nature_lod))
 	for z in range(MINIMUM.y, MAXIMUM.y, CHUNK):
 		for x in range(MINIMUM.x, MAXIMUM.x, CHUNK):
 			var origin := Vector2i(x, z)
-			_build_chunk(root, origin)
+			_build_chunk(root, origin, layout)
 			if with_art:
-				job.add(func() -> void: _detail_chunk(root, origin))
-	_build_roads(root)
+				job.add(func() -> void: _detail_chunk(root, origin, layout))
+	_build_roads(root, layout)
 	_bridge_details(root)
 	if with_art:
 		var ocean := MeshInstance3D.new()
@@ -137,10 +176,11 @@ static func build(parent: Node3D, with_art := true) -> void:
 		ocean.material_override = water
 		root.add_child(ocean)
 		root.set_meta(&"detail_job", job)
+		job.set_meta(&"meadow_start_index", job.jobs.size())
 		# Existing bounded queue, native controller node; no simulation script to serialize.
 		var pump := func() -> void:
 			if is_instance_valid(root):
-				job.step(1800, 1)
+				step_details(job, layout)
 		parent.get_tree().process_frame.connect(pump)
 		root.tree_exiting.connect(func() -> void:
 			if parent.get_tree() and parent.get_tree().process_frame.is_connected(pump):
@@ -152,6 +192,17 @@ static func build(parent: Node3D, with_art := true) -> void:
 			if node is MeshInstance3D:
 				node.visible = false
 
+static func step_details(job: ArenaArtBuild, layout := 3) -> bool:
+	# Layout five can drain several cheap units instead of wasting one callback
+	# per tiny warmup/continuation. The existing queue stops on elapsed wall time;
+	# each meadow continuation remains independently bounded and cancellable.
+	if layout != 5:
+		return job.step(1800, 1)
+	# Legacy chunk builders are larger atomic units: only chain their cheap
+	# completions inside1ms. Meadow continuations are sliced and can use3ms.
+	var meadow := job.cursor >= int(job.get_meta(&"meadow_start_index", job.jobs.size()))
+	return job.step(3000 if meadow else 1000, 16)
+
 static func finish_art(parent: Node) -> void:
 	var root := parent.get_node_or_null("ForbiddenLandsTerrain")
 	if root and root.has_meta(&"detail_job"):
@@ -159,26 +210,51 @@ static func finish_art(parent: Node) -> void:
 		while not job.step(1800, 1):
 			pass
 
-static func _point(x: int, z: int) -> Vector3:
-	var key := Vector2i(x, z)
+static func _point(x: int, z: int, layout := 3) -> Vector3:
+	var key := Vector3i(x, z, layout)
 	if not _height_cache.has(key):
-		_height_cache[key] = height_at(x, z)
+		_height_cache[key] = height_at(x, z, layout)
 	return Vector3(x, _height_cache[key], z)
 
-static func surface_height(x: float, z: float) -> float:
+static func _in_road_cut(x: float, z: float, layout: int) -> bool:
+	return layout == 5 and x >= ROAD_CUT_MIN.x and x < ROAD_CUT_MAX.x and z >= ROAD_CUT_MIN.y and z < ROAD_CUT_MAX.y
+
+static func _road_cut_vertex(x: int, z: int) -> Vector3:
+	var original := _coarse_surface_height(x, z, 4)
+	var border := minf(minf(x - ROAD_CUT_MIN.x, ROAD_CUT_MAX.x - x), minf(z - ROAD_CUT_MIN.y, ROAD_CUT_MAX.y - z))
+	var weight := smoothstep(0, 8, border) * (1.0 - smoothstep(20, 28, road_distance(Vector2(x,z),4)))
+	# Analytic road surface is smooth here, but 32m terrain chords overshot it
+	# by half a metre. A 4m grid plus a 20cm underlay avoids that chord error.
+	var cut := minf(original, ForbiddenLands.road_height(x,z) - .20)
+	return Vector3(x, lerpf(original, cut, weight), z)
+
+static func surface_height(x: float, z: float, layout := 3) -> float:
+	if not _in_road_cut(x,z,layout) or road_distance(Vector2(x,z),4) > 34:
+		return _coarse_surface_height(x,z,layout)
+	var x0 := floori(x / ROAD_CUT_STEP) * ROAD_CUT_STEP
+	var z0 := floori(z / ROAD_CUT_STEP) * ROAD_CUT_STEP
+	var u := (x-x0)/ROAD_CUT_STEP
+	var v := (z-z0)/ROAD_CUT_STEP
+	var h00 := _road_cut_vertex(x0,z0).y
+	var h10 := _road_cut_vertex(x0+ROAD_CUT_STEP,z0).y
+	var h01 := _road_cut_vertex(x0,z0+ROAD_CUT_STEP).y
+	var h11 := _road_cut_vertex(x0+ROAD_CUT_STEP,z0+ROAD_CUT_STEP).y
+	return (1-u)*h00+(u-v)*h10+v*h11 if u>=v else (1-v)*h00+(v-u)*h01+u*h11
+
+static func _coarse_surface_height(x: float, z: float, layout := 3) -> float:
 	# Decorations stand on the actual coarse triangles, rather than floating at
 	# the analytic hill height between their vertices.
 	var x0 := floori(x / STEP) * STEP
 	var z0 := floori(z / STEP) * STEP
 	var u := (x - x0) / STEP
 	var v := (z - z0) / STEP
-	var h00 := _point(x0, z0).y
-	var h10 := _point(x0 + STEP, z0).y
-	var h01 := _point(x0, z0 + STEP).y
-	var h11 := _point(x0 + STEP, z0 + STEP).y
+	var h00 := _point(x0, z0, layout).y
+	var h10 := _point(x0 + STEP, z0, layout).y
+	var h01 := _point(x0, z0 + STEP, layout).y
+	var h11 := _point(x0 + STEP, z0 + STEP, layout).y
 	return (1 - u) * h00 + (u - v) * h10 + v * h11 if u >= v else (1 - v) * h00 + (v - u) * h01 + u * h11
 
-static func _build_chunk(root: Node3D, origin: Vector2i) -> void:
+static func _build_chunk(root: Node3D, origin: Vector2i, layout := 3) -> void:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var vertices := 0
@@ -186,12 +262,17 @@ static func _build_chunk(root: Node3D, origin: Vector2i) -> void:
 		for x in range(origin.x, origin.x + CHUNK, STEP):
 			if x >= -WorldMap.VALLEY_HALF and x + STEP <= WorldMap.VALLEY_HALF and z >= -WorldMap.VALLEY_HALF and z + STEP <= WorldMap.VALLEY_HALF:
 				continue
-			for corner: Vector2i in [Vector2i(0, 0), Vector2i(1, 1), Vector2i(0, 1), Vector2i(0, 0), Vector2i(1, 0), Vector2i(1, 1)]:
-				var point := _point(x + corner.x * STEP, z + corner.y * STEP)
-				st.set_uv(Vector2(point.x, point.z))
-				st.set_color(biome_color(point.x, point.z, point.y))
-				st.add_vertex(point)
-				vertices += 1
+			var local_step := ROAD_CUT_STEP if _in_road_cut(x,z,layout) else STEP
+			for local_z in range(z,z+STEP,local_step):
+				for local_x in range(x,x+STEP,local_step):
+					for corner: Vector2i in [Vector2i(0, 0), Vector2i(1, 1), Vector2i(0, 1), Vector2i(0, 0), Vector2i(1, 0), Vector2i(1, 1)]:
+						var px := local_x + corner.x * local_step
+						var pz := local_z + corner.y * local_step
+						var point := _road_cut_vertex(px,pz) if local_step == ROAD_CUT_STEP else _point(px,pz,layout)
+						st.set_uv(Vector2(point.x, point.z))
+						st.set_color(biome_color(point.x, point.z, point.y, layout))
+						st.add_vertex(point)
+						vertices += 1
 	if vertices == 0:
 		return
 	st.generate_normals()
@@ -250,6 +331,8 @@ static func _road_visual_chunks(body: StaticBody3D, mesh: ArrayMesh, mat: Materi
 				st.set_normal(Vector3.UP)
 				st.set_uv(uv[triangle + corner])
 				st.add_vertex(vertices[triangle + corner] - origin)
+		# Tangent-space path normal map needs a frame on the visual mesh only.
+		st.generate_tangents()
 		var visual := MeshInstance3D.new()
 		visual.name = "RoadVisual_%d_%d" % [cell.x, cell.y]
 		visual.position = origin
@@ -259,17 +342,17 @@ static func _road_visual_chunks(body: StaticBody3D, mesh: ArrayMesh, mat: Materi
 		visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		body.add_child(visual)
 
-static func _build_roads(root: Node3D) -> void:
+static func _build_roads(root: Node3D, layout := 3) -> void:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for edge: Array in ForbiddenLands.road_edges():
+	for edge: Array in ForbiddenLands.road_edges(layout):
 		var a: Vector3 = edge[0]
 		var b: Vector3 = edge[1]
 		# Tiny overlaps seal concave-triangle seams at the sampled curve vertices.
 		var forward := (Vector3(b.x, 0, b.z) - Vector3(a.x, 0, a.z)).normalized() * .25
 		a -= forward
 		b += forward
-		var side := (b - a).cross(Vector3.UP).normalized() * ForbiddenLands.ROAD_HALF
+		var side := (b - a).cross(Vector3.UP).normalized() * ForbiddenLands.road_half_at((a.x + b.x) * .5, (a.z + b.z) * .5, layout)
 		var apron := maxf(maxf(absf(a.x), absf(a.z)), maxf(absf(b.x), absf(b.z))) < 280
 		var lanes := 14 if apron else 1
 		var along := maxi(1, ceili(a.distance_to(b) / 2.0)) if apron else 1
@@ -379,7 +462,7 @@ static func _bridge_art(root: Node3D) -> void:
 			transforms.assign(cells[cell][kind])
 			_landscape_batch(details, kind, Vector3((cell.x + .5) * 64, 0, (cell.y + .5) * 64), transforms)
 
-static func _detail_chunk(root: Node3D, origin: Vector2i) -> void:
+static func _detail_chunk(root: Node3D, origin: Vector2i, layout := 3) -> void:
 	if not is_instance_valid(root):
 		return
 	var rng := RandomNumberGenerator.new()
@@ -391,14 +474,14 @@ static func _detail_chunk(root: Node3D, origin: Vector2i) -> void:
 	var groups := {}
 	for i in count:
 		var p := Vector3(origin.x + rng.randf_range(0, CHUNK), 0, origin.y + rng.randf_range(0, CHUNK))
-		if maxf(absf(p.x), absf(p.z)) < 210 or road_distance(Vector2(p.x, p.z)) < 34:
+		if maxf(absf(p.x), absf(p.z)) < 210 or road_distance(Vector2(p.x, p.z), layout) < 34:
 			continue
 		var close := false
-		for kind: StringName in ForbiddenLands.REGIONS:
-			close = close or Vector2(p.x, p.z).distance_to(ForbiddenLands.REGIONS[kind][0]) < 210
+		for kind: StringName in ForbiddenLands.regions(layout):
+			close = close or Vector2(p.x, p.z).distance_to(ForbiddenLands.regions(layout)[kind][0]) < 210
 		if close:
 			continue
-		p.y = surface_height(p.x, p.z)
+		p.y = surface_height(p.x, p.z, layout)
 		if p.y < -8:
 			continue
 		var forest_weight: float = biome_weights(p.x, p.z).forest
@@ -418,11 +501,13 @@ static func _detail_chunk(root: Node3D, origin: Vector2i) -> void:
 			continue
 		if not groups.has("ruin_arch"):
 			groups["ruin_arch"] = []
-		ruin.y = surface_height(ruin.x, ruin.z) - .15
+		ruin.y = surface_height(ruin.x, ruin.z, layout) - .15
 		groups["ruin_arch"].append(Transform3D(Basis(Vector3.UP, .6), ruin))
 	for kind: String in groups:
 		var transforms: Array[Transform3D] = []
 		transforms.assign(groups[kind])
 		_landscape_batch(details, kind, Vector3(origin.x + CHUNK * .5, 0, origin.y + CHUNK * .5), transforms)
 
-	EnvironmentGroundcover.append_chunk(details, origin, groups)
+	EnvironmentGroundcover.append_chunk(details, origin, groups, layout)
+	if layout in [4, 5]:
+		AuthoredNature.append_chunk(details, origin)

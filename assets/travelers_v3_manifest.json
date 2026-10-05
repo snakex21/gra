@@ -31,7 +31,7 @@
         0
       ]
     ],
-    "rig": "rigid part hierarchy; existing PlayerVisual controls shoulder raise and orientation",
+    "rig": "Original rigid gameplay anchors preserved; independent cosmetic skin with ten local axillary corrective bones driven after equipment IK by TravelerSurfacePose",
     "attachment_nodes": [
       "Arm_0",
       "Arm_1",
@@ -83,62 +83,68 @@
         {
           "lod": 0,
           "runtime": "models/characters/travelers_v3/traveler_lod0.glb",
-          "triangles": 34360,
-          "vertices": 17684,
-          "bytes": 4396340,
+          "triangles": 33396,
+          "vertices": 17319,
+          "bytes": 3578792,
           "bounds_godot": [
             [
-              -0.37854015827178955,
-              -0.8990000486373901,
-              -0.20900000631809235
+              -0.7842543125152588,
+              -0.8970000147819519,
+              -0.19699999690055847
             ],
             [
-              0.37854015827178955,
-              0.927943766117096,
-              0.22624805569648743
+              0.7842543125152588,
+              0.7861000299453735,
+              0.22615157067775726
             ]
           ]
         },
         {
           "lod": 1,
           "runtime": "models/characters/travelers_v3/traveler_lod1.glb",
-          "triangles": 17859,
-          "vertices": 9423,
-          "bytes": 3936464,
+          "triangles": 18593,
+          "vertices": 9893,
+          "bytes": 3026940,
           "bounds_godot": [
             [
-              -0.37854015827178955,
-              -0.8990000486373901,
-              -0.20900000631809235
+              -0.7842543125152588,
+              -0.8970000147819519,
+              -0.19699999690055847
             ],
             [
-              0.37844422459602356,
-              0.9279430508613586,
-              0.22624805569648743
+              0.7842543125152588,
+              0.7860974073410034,
+              0.22615157067775726
             ]
           ]
         },
         {
           "lod": 2,
           "runtime": "models/characters/travelers_v3/traveler_lod2.glb",
-          "triangles": 4080,
-          "vertices": 2526,
-          "bytes": 3537408,
+          "triangles": 6676,
+          "vertices": 3841,
+          "bytes": 2549208,
           "bounds_godot": [
             [
-              -0.3777274489402771,
-              -0.8984189033508301,
-              -0.20726080238819122
+              -0.7842543125152588,
+              -0.8970000147819519,
+              -0.19448202848434448
             ],
             [
-              0.378322035074234,
-              0.9279314875602722,
-              0.22972340881824493
+              0.7842543125152588,
+              0.7866342663764954,
+              0.22945159673690796
             ]
           ]
         }
       ],
       "material": "Travelers_v3_Woven_PBR_Atlas",
+      "materials": [
+        "Traveler_matte_hair_fibres",
+        "Traveler_skin_restrained_specular",
+        "Travelers_v3_Woven_PBR_Atlas"
+      ],
+      "mesh_parts": 16,
       "colliders": "none; preserve existing gameplay capsule/anchors",
       "parts": [
         "Traveler_v3",
@@ -161,23 +167,22 @@
         "Ankle_0",
         "Traveler_Foot_0",
         "Traveler_Shin_0",
-        "Traveler_Thigh_0",
         "Leg_1",
         "Knee_1",
         "Ankle_1",
         "Traveler_Foot_1",
         "Traveler_Shin_1",
-        "Traveler_Thigh_1",
         "Traveler_Head",
-        "Traveler_Torso"
+        "TravelerSurfaceRig",
+        "Traveler_ArmSurface_0",
+        "Traveler_ArmSurface_1",
+        "Traveler_Thigh_0",
+        "Traveler_Thigh_1",
+        "Traveler_Torso",
+        "Traveler_TunicSurface"
       ],
       "original_design": true,
-      "source": "art/source/travelers_v3.blend",
-      "materials": [
-        "Traveler_matte_hair_fibres",
-        "Travelers_v3_Woven_PBR_Atlas"
-      ],
-      "mesh_parts": 14
+      "source": "art/source/travelers_v3.blend"
     },
     {
       "id": "mono_sleep",
@@ -254,5 +259,320 @@
       "mesh_parts": 1
     }
   ],
-  "last_export": "from edited source; .blend left untouched"
+  "surface_rig_contract": {
+    "version": 5,
+    "corrective_bones": {
+      "SurfaceAxillaBody_0": {
+        "base": "SurfaceBody",
+        "side": 0,
+        "down": [
+          -0.008,
+          -0.012,
+          0
+        ],
+        "up": [
+          -0.004,
+          0.075,
+          0
+        ]
+      },
+      "SurfaceFoldFrontBody_0": {
+        "base": "SurfaceBody",
+        "side": 0,
+        "down": [
+          0,
+          0,
+          0
+        ],
+        "up": [
+          0,
+          0,
+          -0.04
+        ]
+      },
+      "SurfaceFoldFrontUpper_0": {
+        "base": "SurfaceUpper_0",
+        "side": 0,
+        "down": [
+          0,
+          0,
+          0
+        ],
+        "up": [
+          0,
+          0,
+          -0.04
+        ]
+      },
+      "SurfaceFoldBackBody_0": {
+        "base": "SurfaceBody",
+        "side": 0,
+        "down": [
+          0,
+          0,
+          0
+        ],
+        "up": [
+          0,
+          0,
+          0.032
+        ]
+      },
+      "SurfaceFoldBackUpper_0": {
+        "base": "SurfaceUpper_0",
+        "side": 0,
+        "down": [
+          0,
+          0,
+          0
+        ],
+        "up": [
+          0,
+          0,
+          0.032
+        ]
+      },
+      "SurfaceAxillaBody_1": {
+        "base": "SurfaceBody",
+        "side": 1,
+        "down": [
+          0.008,
+          -0.012,
+          0
+        ],
+        "up": [
+          0.004,
+          0.075,
+          0
+        ]
+      },
+      "SurfaceFoldFrontBody_1": {
+        "base": "SurfaceBody",
+        "side": 1,
+        "down": [
+          0,
+          0,
+          0
+        ],
+        "up": [
+          0,
+          0,
+          -0.04
+        ]
+      },
+      "SurfaceFoldFrontUpper_1": {
+        "base": "SurfaceUpper_1",
+        "side": 1,
+        "down": [
+          0,
+          0,
+          0
+        ],
+        "up": [
+          0,
+          0,
+          -0.04
+        ]
+      },
+      "SurfaceFoldBackBody_1": {
+        "base": "SurfaceBody",
+        "side": 1,
+        "down": [
+          0,
+          0,
+          0
+        ],
+        "up": [
+          0,
+          0,
+          0.032
+        ]
+      },
+      "SurfaceFoldBackUpper_1": {
+        "base": "SurfaceUpper_1",
+        "side": 1,
+        "down": [
+          0,
+          0,
+          0
+        ],
+        "up": [
+          0,
+          0,
+          0.032
+        ]
+      }
+    },
+    "binding_pose": "T",
+    "rest_positions": {
+      "SurfaceBody": [
+        0,
+        0,
+        0
+      ],
+      "SurfaceLeg_0": [
+        -0.118,
+        -0.188,
+        0
+      ],
+      "SurfaceUpper_0": [
+        -0.21,
+        0.405,
+        0
+      ],
+      "SurfaceLower_0": [
+        -0.502745623366089,
+        0.405,
+        0
+      ],
+      "SurfaceWrist_0": [
+        -0.7832380475062073,
+        0.405,
+        0
+      ],
+      "SurfaceLeg_1": [
+        0.118,
+        -0.188,
+        0
+      ],
+      "SurfaceUpper_1": [
+        0.21,
+        0.405,
+        0
+      ],
+      "SurfaceLower_1": [
+        0.502745623366089,
+        0.405,
+        0
+      ],
+      "SurfaceWrist_1": [
+        0.7832380475062073,
+        0.405,
+        0
+      ],
+      "SurfaceAxillaBody_0": [
+        0,
+        0,
+        0
+      ],
+      "SurfaceFoldFrontBody_0": [
+        0,
+        0,
+        0
+      ],
+      "SurfaceFoldFrontUpper_0": [
+        -0.21,
+        0.405,
+        0
+      ],
+      "SurfaceFoldBackBody_0": [
+        0,
+        0,
+        0
+      ],
+      "SurfaceFoldBackUpper_0": [
+        -0.21,
+        0.405,
+        0
+      ],
+      "SurfaceAxillaBody_1": [
+        0,
+        0,
+        0
+      ],
+      "SurfaceFoldFrontBody_1": [
+        0,
+        0,
+        0
+      ],
+      "SurfaceFoldFrontUpper_1": [
+        0.21,
+        0.405,
+        0
+      ],
+      "SurfaceFoldBackBody_1": [
+        0,
+        0,
+        0
+      ],
+      "SurfaceFoldBackUpper_1": [
+        0.21,
+        0.405,
+        0
+      ]
+    },
+    "helper_centers": {},
+    "rigid_wrist_rest": {
+      "SurfaceWrist_0": [
+        -0.3,
+        -0.161,
+        0
+      ],
+      "SurfaceWrist_1": [
+        0.3,
+        -0.161,
+        0
+      ]
+    },
+    "rigid_leg_rest": {
+      "SurfaceLeg_0": [
+        -0.118,
+        -0.188,
+        0
+      ],
+      "SurfaceLeg_1": [
+        0.118,
+        -0.188,
+        0
+      ]
+    },
+    "wrist_bind_axes": {
+      "SurfaceWrist_0": [
+        -1,
+        0,
+        0
+      ],
+      "SurfaceWrist_1": [
+        1,
+        0,
+        0
+      ]
+    },
+    "centre_correction_enabled": false,
+    "max_visual_stretch": 1.2,
+    "scope": "Cosmetic skeleton reads immutable old rigid arms and wrists. Gameplay anchors and controller unchanged."
+  },
+  "geometry_finish": {
+    "scope": "Traveler original visual garment/limb/foot topology and cosmetic skin; original rigid gameplay joint names/transforms, grips and colliders preserved. TravelerArt gains a visual-only driver.",
+    "authoring": "Original repository-authored geometry; no downloaded meshes, no AI-generated images",
+    "runtime_specular_import": "art/scripts/traveler_visual_import.gd",
+    "skin_specular": 0.24,
+    "hair_specular": 0.16,
+    "triangle_limits": [
+      40000,
+      22000,
+      5000
+    ],
+    "gpu_performance_measured": false
+  },
+  "material_finish": {
+    "generator": "tools/art/refine_character_materials.py",
+    "seed": 2601004,
+    "scope": "Traveler and Agro only; post-export embedded PNG finish; original editable Blender sources unchanged",
+    "reapply": "python tools/art/refine_character_materials.py"
+  },
+  "last_export": "from edited source; .blend left untouched",
+  "archery_hand": {
+    "mesh": "Traveler_BowDrawHand_1",
+    "contact": "BowStringContact_1",
+    "contact_wrist_local": [
+      0,
+      -0.09,
+      0
+    ],
+    "finger_release_shape": "ReleaseOpen",
+    "generator": "tools/art/archery_draw_hand.py",
+    "closed_hand_preserved": true,
+    "lod_topology_preserved": true
+  }
 }

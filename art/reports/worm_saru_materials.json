@@ -1,0 +1,73 @@
+{
+  "authoring": "Original CPU NumPy/Pillow; no external imagery",
+  "files": {
+    "materials/arena_ground/worm.tres": {
+      "bytes": 765,
+      "sha256": "0ce82b13e4e368449e8ed23b7162ad134823b0a6f1f576f4b0e7268744bd1ee9"
+    },
+    "textures/arena_ground/worm_albedo.png": {
+      "bytes": 201574,
+      "sha256": "00e7660454eab8ca37ddb5f34e7cfcc617d12267999fe4a541395773b737f953"
+    },
+    "textures/arena_ground/worm_normal.png": {
+      "bytes": 331733,
+      "sha256": "6f8af97099970049b458ba7a1b2faed91eb3a644b5111bcfa8718aaa406fc0e3"
+    },
+    "textures/arena_ground/worm_roughness.png": {
+      "bytes": 42925,
+      "sha256": "498eac10e40c09b38d3ad8a9eebbb5e556ee048185700273a677e9c84e430098"
+    },
+    "materials/arena_ground/saru.tres": {
+      "bytes": 760,
+      "sha256": "c8f8d4c12df03f6e934a40619293fc3a146ffab00c2d44ba5b045a4072beb661"
+    },
+    "textures/arena_ground/saru_albedo.png": {
+      "bytes": 207026,
+      "sha256": "87644b10b3cae057d6347d9d7ce3925526aeb5da1d5fd97fa054437b64bddba9"
+    },
+    "textures/arena_ground/saru_normal.png": {
+      "bytes": 297874,
+      "sha256": "a27ae8fca4fb994d24fb64af97a3e56032d1af9d164143d0d830a29016392810"
+    },
+    "textures/arena_ground/saru_roughness.png": {
+      "bytes": 46457,
+      "sha256": "db9a43b801380929ac3095a438770a027c6c7410622789bffdd0c1edd80128c1"
+    },
+    "materials/arena_ground/saru_chasm.tres": {
+      "bytes": 785,
+      "sha256": "8bd5d4817520cd036ad0288f0f604d5540c55829dbe0d3fc211f3d7bd25d7723"
+    },
+    "textures/arena_ground/saru_chasm_albedo.png": {
+      "bytes": 188612,
+      "sha256": "73ccfcc7000cb75b24690ed1fbe61180e6f7bd4bfc2a0b08a18d7ffab77ea8f0"
+    },
+    "textures/arena_ground/saru_chasm_normal.png": {
+      "bytes": 280135,
+      "sha256": "b9f193b87401fee2d23a5890ac098165e0fe97bf6e2899b69e21ed1620febaf4"
+    },
+    "textures/arena_ground/saru_chasm_roughness.png": {
+      "bytes": 44557,
+      "sha256": "91ff07378bc27bcd6f85f1155e4b980ec9cf2fba8fcac03226ab16ee92b74c32"
+    }
+  },
+  "config": {
+    "worm": {
+      "seed": 519001,
+      "tile": 14.0,
+      "normal": 0.66,
+      "title": "Worm / compact earth and weathered mineral crust"
+    },
+    "saru": {
+      "seed": 519002,
+      "tile": 16.0,
+      "normal": 0.68,
+      "title": "Saru / ochre granite banks with pale lichen"
+    },
+    "saru_chasm": {
+      "seed": 519003,
+      "tile": 18.0,
+      "normal": 0.55,
+      "title": "Saru chasm / cool fractured stone and settled silt"
+    }
+  }
+}

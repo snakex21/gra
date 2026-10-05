@@ -23,3 +23,5 @@ __pycache__/
 *.blend@
 *.tmp
 /art/reports/**/*.log
+*.zip
+.supercli/

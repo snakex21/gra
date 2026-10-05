@@ -59,8 +59,8 @@ static func on_ground(p: Vector3, lift := 0.0) -> Vector3:
 ## (WorldMap): the world's edge has openings where the corridors leave, and the kit's
 ## own horizon gives way to the world's.
 static func build(parent: Node3D, open_gate: StringName, with_art := true, world := false, layout := 2) -> Dictionary:
-	if layout == 3:
-		return ForbiddenLands.build_valley(parent, open_gate, with_art)
+	if layout >= 3:
+		return ForbiddenLands.build_valley(parent, open_gate, with_art, layout)
 	var kit := Node3D.new()
 	kit.name = "AncientValley"
 	kit.set_script(ValleyArt)
@@ -231,7 +231,7 @@ static func passed_gate(gate: Dictionary, p: Vector3) -> bool:
 	across.y = 0.0
 	# Through the opening and out of the valley (a gate at an angle to the edge leaves
 	# valley ground beside it that is "ahead" of the gate too).
-	var outside := int(gate.get("layout", 2)) == 3 or maxf(absf(p.x), absf(p.z)) > EDGE
+	var outside := int(gate.get("layout", 2)) >= 3 or maxf(absf(p.x), absf(p.z)) > EDGE
 	return along > GATE_TRIGGER * 0.5 and across.length() < GATE_WIDTH * 0.5 + 1.0 and outside
 
 

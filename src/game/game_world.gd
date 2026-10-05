@@ -397,7 +397,7 @@ func _play(_delta: float) -> void:
 	var gates: Dictionary = refs.gates
 	if region_kind == VALLEY:
 		var next := state.next_colossus()
-		p.beam.target = (ForbiddenLands.guide_target(next, p.global_position) if layout_version == 3 else (gates[next].trigger as Vector3)) if next != &"" else Vector3.INF
+		p.beam.target = (ForbiddenLands.guide_target(next, p.global_position, layout_version) if layout_version >= 3 else (gates[next].trigger as Vector3)) if next != &"" else Vector3.INF
 		if p.beam.locked and refs.has("hud"):
 			# The hint has done its job once the beam gathered.
 			(refs.hud as PlayerHud).message = ""
@@ -592,6 +592,15 @@ func _dress_arena(kind: StringName, root: Node3D, points: Dictionary) -> void:
 			var arena: Script = load("res://src/world/%s_arena.gd" % kind)
 			if arena.has_method(&"dress"):
 				arena.call(&"dress", root)
+
+	if layout_version == 5:
+		ArenaGroundMaterials.append(root, String(kind))
+		ArenaArchitectureMaterials.append(root, String(kind))
+		ArenaCaveFloorMaterials.append(root, String(kind))
+		ArenaEdgeDressing.append(root, String(kind))
+
+	if layout_version == 5:
+		ArenaVarietyDressing.append(root, String(kind))
 
 
 ## The arenas' square test ground becomes a disc (they sit side by side in the world).
@@ -884,8 +893,8 @@ func climate_region_at(pos: Vector3, cavern := false) -> StringName:
 	var kind: StringName = region_kind
 	if region_kind == VALLEY and layout_version >= 3:
 		var distance := 320.0 * 320.0
-		for boss: StringName in ForbiddenLands.REGIONS:
-			var data: Array = ForbiddenLands.REGIONS[boss]
+		for boss: StringName in ForbiddenLands.regions(layout_version):
+			var data: Array = ForbiddenLands.regions(layout_version)[boss]
 			var centre: Vector2 = data[0]
 			var d := Vector2(pos.x, pos.z).distance_squared_to(centre)
 			if d < distance:

@@ -1,0 +1,198 @@
+{
+  "seed": 816731,
+  "source": "tools/art/generate_meadow_grass.py",
+  "material": "materials/environment/groundcover_atlas.tres",
+  "alpha": false,
+  "notes": "Nine seeded irregular tussocks over ~5m; 8/8/6 leaves per tuft at LOD0/1/2; all levels keep every tuft; six low-cost slender far tips preserve grassy silhouette; shrub has seven unequal jagged leafy crowns (six far) plus sprigs at 240/120/80 triangles; no external assets",
+  "models": [
+    {
+      "path": "models/environment/grass_meadow_soft_lod0.glb",
+      "triangles": 288,
+      "bounds_min_godot": [
+        -2.0946810245513916,
+        0,
+        -2.3553202152252197
+      ],
+      "bounds_max_godot": [
+        2.087109327316284,
+        0.827958345413208,
+        1.9020286798477173
+      ],
+      "size_godot_m": [
+        4.181790351867676,
+        0.827958345413208,
+        4.257348895072937
+      ],
+      "bytes": 20192,
+      "sha256": "8dd6c8674564181fd0f85df8bd4c4d309b7b5f8f08293547e210ab2de1b2af32"
+    },
+    {
+      "path": "models/environment/grass_meadow_soft_lod1.glb",
+      "triangles": 144,
+      "bounds_min_godot": [
+        -2.0932912826538086,
+        0,
+        -2.354254961013794
+      ],
+      "bounds_max_godot": [
+        2.0841317176818848,
+        0.827958345413208,
+        1.9011715650558472
+      ],
+      "size_godot_m": [
+        4.177423000335693,
+        0.827958345413208,
+        4.255426526069641
+      ],
+      "bytes": 13564,
+      "sha256": "66168d91a6b116c269a1934b52a6a943f1a72d022bc181e9e3fb4bb9c3ecfcae"
+    },
+    {
+      "path": "models/environment/grass_meadow_soft_lod2.glb",
+      "triangles": 54,
+      "bounds_min_godot": [
+        -2.190816879272461,
+        0,
+        -2.217902421951294
+      ],
+      "bounds_max_godot": [
+        2.052356719970703,
+        0.7710912823677063,
+        2.0179457664489746
+      ],
+      "size_godot_m": [
+        4.243173599243164,
+        0.7710912823677063,
+        4.2358481884002686
+      ],
+      "bytes": 7980,
+      "sha256": "2e268e0b7c3e772bcb86c1e0c7b50ee7cab047f711a6ff77aedb8826d55c9a00"
+    },
+    {
+      "path": "models/environment/grass_meadow_straw_lod0.glb",
+      "triangles": 288,
+      "bounds_min_godot": [
+        -2.0501246452331543,
+        0,
+        -2.185946226119995
+      ],
+      "bounds_max_godot": [
+        2.2490315437316895,
+        0.8518539071083069,
+        1.8537522554397583
+      ],
+      "size_godot_m": [
+        4.299156188964844,
+        0.8518539071083069,
+        4.039698481559753
+      ],
+      "bytes": 20192,
+      "sha256": "f02f706f562f13bbc39dab9224c6430d7a213b13b2a1a69827a67ff8633fe014"
+    },
+    {
+      "path": "models/environment/grass_meadow_straw_lod1.glb",
+      "triangles": 144,
+      "bounds_min_godot": [
+        -2.0475668907165527,
+        0,
+        -2.1845078468322754
+      ],
+      "bounds_max_godot": [
+        2.2456166744232178,
+        0.8518539071083069,
+        1.8523919582366943
+      ],
+      "size_godot_m": [
+        4.2931835651397705,
+        0.8518539071083069,
+        4.03689980506897
+      ],
+      "bytes": 13568,
+      "sha256": "ef494507edcfde16d76d5b25c0e5d53265c5fcf7c972dfb9c16e0ef2d7725da0"
+    },
+    {
+      "path": "models/environment/grass_meadow_straw_lod2.glb",
+      "triangles": 54,
+      "bounds_min_godot": [
+        -2.1199400424957275,
+        0,
+        -2.1845078468322754
+      ],
+      "bounds_max_godot": [
+        2.206932544708252,
+        0.8518539071083069,
+        1.8858498334884644
+      ],
+      "size_godot_m": [
+        4.3268725872039795,
+        0.8518539071083069,
+        4.07035768032074
+      ],
+      "bytes": 7984,
+      "sha256": "77a95207b582961e01c6939fad6d2fac09c0a12b645959f65c908a58cbd0096a"
+    },
+    {
+      "path": "models/environment/shrub_meadow_lod0.glb",
+      "triangles": 240,
+      "bounds_min_godot": [
+        -1.6670304536819458,
+        0,
+        -1.3888150453567505
+      ],
+      "bounds_max_godot": [
+        1.4956309795379639,
+        1.399999976158142,
+        1.4675475358963013
+      ],
+      "size_godot_m": [
+        3.1626614332199097,
+        1.399999976158142,
+        2.8563625812530518
+      ],
+      "bytes": 10848,
+      "sha256": "aab08c1bcbe5835f25a6d77ee2ca3799e9cccc37993caa8d07b064596f980429"
+    },
+    {
+      "path": "models/environment/shrub_meadow_lod1.glb",
+      "triangles": 120,
+      "bounds_min_godot": [
+        -1.6613502502441406,
+        0,
+        -1.2993661165237427
+      ],
+      "bounds_max_godot": [
+        1.4956309795379639,
+        1.399999976158142,
+        1.4675475358963013
+      ],
+      "size_godot_m": [
+        3.1569812297821045,
+        1.399999976158142,
+        2.766913652420044
+      ],
+      "bytes": 5160,
+      "sha256": "5e90f1dee5a2c09212b7e0d21151481100cd2408711134fc619141aedd81e505"
+    },
+    {
+      "path": "models/environment/shrub_meadow_lod2.glb",
+      "triangles": 80,
+      "bounds_min_godot": [
+        -1.5829931497573853,
+        0,
+        -1.2993661165237427
+      ],
+      "bounds_max_godot": [
+        1.3755096197128296,
+        1.399999976158142,
+        1.2260792255401611
+      ],
+      "size_godot_m": [
+        2.958502769470215,
+        1.399999976158142,
+        2.525445342063904
+      ],
+      "bytes": 4040,
+      "sha256": "05c7796243929613abfcbe2554efcde29d20fdd6319fa7081fd07d36793721ce"
+    }
+  ]
+}

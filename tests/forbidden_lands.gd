@@ -1,6 +1,7 @@
 extends Node
 ## Geometry and real action-driven temple -> branch -> gate -> arena-rim journeys.
 var failures := 0
+var test_layout := 4 if OS.get_cmdline_user_args().has("--layout4") else 3
 var watchdog_ticks := 0
 var watchdog_began := Time.get_ticks_msec()
 var report := {"geometry": [], "rides": [], "legacy_layouts": true, "checkpoints": [], "reentries": []}
@@ -26,7 +27,7 @@ func _ready() -> void:
 	await _surfaces()
 	if not OS.get_cmdline_user_args().has("--geometry-only"):
 		for kind: StringName in BossRoster.PLAYABLE:
-			if OS.get_cmdline_user_args().is_empty() or OS.get_cmdline_user_args().has(String(kind)):
+			if OS.get_cmdline_user_args().is_empty() or OS.get_cmdline_user_args() == PackedStringArray(["--layout4"]) or OS.get_cmdline_user_args().has(String(kind)):
 				await _ride(kind)
 	report["failures"] = failures
 	report["completed"] = true
@@ -38,6 +39,9 @@ func _ready() -> void:
 		output = "forbidden_lands_geometry.json"
 	elif not OS.get_cmdline_user_args().is_empty():
 		output = "forbidden_lands_selected.json"
+	if test_layout == 4:
+		output = output.trim_suffix(".json") + "_layout4.json"
+	report["world_layout"] = test_layout
 	var file := FileAccess.open("res://tests/output/" + output, FileAccess.WRITE)
 	if file == null:
 		push_error("FORBIDDEN_LANDS cannot write final portable report")
@@ -70,15 +74,15 @@ func _geometry() -> void:
 	var lengths := []
 	var min_clearance := INF
 	for kind: StringName in BossRoster.PLAYABLE:
-		var xf := WorldMap.arena_transform(kind, 3)
+		var xf := WorldMap.arena_transform(kind, test_layout)
 		var centre := Vector2(xf.origin.x, xf.origin.z)
 		var square_nearest := Vector2(clampf(centre.x, -180, 180), clampf(centre.y, -180, 180))
 		check(centre.distance_to(square_nearest) > WorldMap.GROUND_RADIUS + 5, "Arena overlaps temple valley: " + String(kind))
 		for other: StringName in BossRoster.PLAYABLE:
 			if other != kind:
-				var other_centre: Vector2 = ForbiddenLands.REGIONS[other][0]
+				var other_centre: Vector2 = ForbiddenLands.regions(test_layout)[other][0]
 				check(centre.distance_to(other_centre) > WorldMap.GROUND_RADIUS * 2 + 15, "Arena discs overlap: %s/%s" % [kind, other])
-		var points := ForbiddenLands.route_points(kind)
+		var points := ForbiddenLands.route_points(kind, test_layout)
 		var clearance := INF
 		var bends := 0
 		for i in range(1, points.size()):
@@ -90,18 +94,18 @@ func _geometry() -> void:
 			for other: StringName in BossRoster.PLAYABLE:
 				if other == kind:
 					continue
-				var other_centre: Vector2 = ForbiddenLands.REGIONS[other][0]
+				var other_centre: Vector2 = ForbiddenLands.regions(test_layout)[other][0]
 				var distance := Geometry2D.get_closest_point_to_segment(other_centre, a, b).distance_to(other_centre) - WorldMap.GROUND_RADIUS
 				clearance = minf(clearance, distance)
 				check(distance > ForbiddenLands.ROAD_HALF + 2, "Route enters another arena or its rim: %s/%s %.1fm" % [kind, other, distance])
 		var end: Vector3 = xf.affine_inverse() * points[points.size() - 1]
 		check(absf(end.x) < .001 and absf(end.z - 145) < .001, "Route does not reach original +Z approach: " + String(kind))
-		var gate: Vector3 = xf.affine_inverse() * WorldMap.gate(kind, 3).pos
+		var gate: Vector3 = xf.affine_inverse() * WorldMap.gate(kind, test_layout).pos
 		check(absf(gate.x) < .001 and absf(gate.z - 220) < .001, "Gate not on final straight approach: " + String(kind))
-		var length := ForbiddenLands.route_length(kind)
+		var length := ForbiddenLands.route_length(kind, test_layout)
 		lengths.append(snappedf(length, .1))
 		min_clearance = minf(min_clearance, clearance)
-		report.geometry.append({"kind": String(kind), "grid": ForbiddenLands.REGIONS[kind][1], "centre": [centre.x, centre.y], "length_m": length, "samples": points.size(), "bends": bends, "other_arena_clearance_m": clearance})
+		report.geometry.append({"kind": String(kind), "grid": ForbiddenLands.regions(test_layout)[kind][1], "centre": [centre.x, centre.y], "length_m": length, "samples": points.size(), "bends": bends, "other_arena_clearance_m": clearance})
 	lengths.sort()
 	check(lengths.back() - lengths.front() > 1000, "Routes retained equal spoke lengths")
 	report["minimum_road_clearance_m"] = min_clearance
@@ -109,18 +113,18 @@ func _geometry() -> void:
 func _surfaces() -> void:
 	var world := Node3D.new()
 	add_child(world)
-	ForbiddenLands.build_valley(world, &"valus", false)
+	ForbiddenLands.build_valley(world, &"valus", false, test_layout)
 	WorldMap.build(world, func(kind: StringName, root: Node3D) -> Dictionary:
 		if kind in [&"valus", &"gaius"]:
 			return ValusArena.build(root)
 		var arena: Script = load("res://src/world/%s_arena.gd" % kind)
-		return arena.call(&"build", root), false, 3)
+		return arena.call(&"build", root), false, test_layout)
 	for i in 3:
 		await get_tree().physics_frame
 	var hits := 0
 	var missing := []
 	for kind: StringName in BossRoster.PLAYABLE:
-		var points := ForbiddenLands.route_points(kind)
+		var points := ForbiddenLands.route_points(kind, test_layout)
 		for i in range(1, points.size(), 3):
 			var direction := (points[i] - points[i - 1]).normalized()
 			var side := direction.cross(Vector3.UP).normalized()
@@ -142,7 +146,7 @@ func _surfaces() -> void:
 
 func _ride(kind: StringName) -> void:
 	var game := GameWorld.new()
-	game.layout_version = 3
+	game.layout_version = test_layout
 	game.with_input = false
 	game.with_art = false
 	game.save_path = ""
@@ -198,7 +202,7 @@ func _branch_checkpoint(game: GameWorld, bot: GameBot) -> void:
 	game.set_physics_process(false)
 	var before := game.player().global_position
 	var horse_before := (game.refs.horse as Horse).global_position
-	var heading := ForbiddenLands.route_heading(&"hydrus", before)
+	var heading := ForbiddenLands.route_heading(&"hydrus", before, test_layout)
 	var data := WorldSnapshot.capture(game)
 	var bytes := var_to_bytes(data)
 	var file := FileAccess.open("res://tests/output/forbidden_lands_branch.bin", FileAccess.WRITE)
@@ -218,10 +222,10 @@ func _branch_checkpoint(game: GameWorld, bot: GameBot) -> void:
 	var decoded: Dictionary = bytes_to_var(file.get_buffer(file.get_length()))
 	file.close()
 	check(WorldSnapshot.restore(game, decoded), "Layout 3 branch binary checkpoint failed")
-	check(game.layout_version == 3 and game.region_kind == GameWorld.VALLEY, "Checkpoint forgot layout or travel region")
+	check(game.layout_version == test_layout and game.region_kind == GameWorld.VALLEY, "Checkpoint forgot layout or travel region")
 	check(game.player().global_position.distance_to(before) < .001 and (game.refs.horse as Horse).global_position.distance_to(horse_before) < .001, "Checkpoint restarted travelled branch")
 	check(game.player().is_riding(), "Checkpoint lost live Agro rider reference")
-	check(ForbiddenLands.route_heading(&"hydrus", game.player().global_position).distance_to(heading) < .001, "Checkpoint changed position-derived route heading")
+	check(ForbiddenLands.route_heading(&"hydrus", game.player().global_position, test_layout).distance_to(heading) < .001, "Checkpoint changed position-derived route heading")
 	for object: Dictionary in decoded.objects:
 		check(not String(object.get("script", "")).contains("forbidden_lands"), "Render/terrain builder leaked into checkpoint")
 	report.checkpoints.append({"kind": "hydrus", "bytes": bytes.size(), "position": str(before), "restored": game.player().global_position.distance_to(before) < .001, "riding": game.player().is_riding()})

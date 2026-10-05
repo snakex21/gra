@@ -1,0 +1,21 @@
+{
+  "source_commit": "33851a305eeaed6a3371bff74df8feafd8a25ea9",
+  "sha256": {
+    "materials/arena_ground/basaran.tres": "35676f2109320c32d8d54e24992a2061f5a7ae0834bc16f3f067010437e95f12",
+    "materials/arena_ground/hydrus.tres": "c34852505501cb90cb1fe675aa1744ed0059e989e09d9eb6d2ed729e6a6d3bb4",
+    "materials/arena_ground/phalanx.tres": "5667d0721d92432073da19b07c8afd242438d4f0d89f508e26194c7d4817afee",
+    "materials/arena_ground/valus.tres": "035fa899752586caae0300eaa850a2311368a77d0de38e40521fbc1ab8607990",
+    "textures/arena_ground/basaran_albedo.png": "fdb44c25043644da66a2497f0c081c1529770a74b7029ff84a60327363701025",
+    "textures/arena_ground/basaran_normal.png": "0b472b0d0bb822cfcc5eec7b1044d6126a952a9db3c9f2478afd44bf0a4268a0",
+    "textures/arena_ground/basaran_roughness.png": "bd335ca6535b28da76ec81f2fa94a223fceb29c9af0b3cbc3166f1badffc0bd1",
+    "textures/arena_ground/hydrus_albedo.png": "b876f172ca4028eaee3af0601853dd95346d3c4277d8a6ef2ebb239a23a2b49e",
+    "textures/arena_ground/hydrus_normal.png": "e7b330e59992dadf777059d6e497babe1bffbeb09ca5b906423ab47eccf7bd6a",
+    "textures/arena_ground/hydrus_roughness.png": "45422e289e493ad0d4a92a57918970597475a2610a497045599ff15b1a71606b",
+    "textures/arena_ground/phalanx_albedo.png": "f586fa658f6d079a9539ac0b5426c7107f7c4f229d58a9eb3516276ce7918758",
+    "textures/arena_ground/phalanx_normal.png": "0a4e0c869e45b304411d47a18fc6f2440fe2a99173a21f510fab726adf8a4793",
+    "textures/arena_ground/phalanx_roughness.png": "0c51ed905c814dcff546ca96ac9e47c8ce51e9ace1daca8a94761cf08e34556a",
+    "textures/arena_ground/valus_albedo.png": "45e60b8aeca1b1e9f7a4d24b666100fee9486ba607ab842f8cfc30aac2a55430",
+    "textures/arena_ground/valus_normal.png": "7e705ebf461c4aa6bc8b60465417993c7f1e730882acc536655895504f11ba52",
+    "textures/arena_ground/valus_roughness.png": "2d021cef940cb9d46cda2a176caf81bd179bc309ed1e4d17299850257ee9e017"
+  }
+}

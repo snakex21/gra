@@ -1,15 +1,20 @@
 extends Node
 ## Documentation cameras render the real layout, original props and bounded terrain.
 var paths := []
+var capture_layout := 4 if OS.get_cmdline_user_args().has("--layout4") else 3
 
 func _ready() -> void:
+	if DisplayServer.get_name() == "headless":
+		push_error("This visual capture needs a permitted real graphics display; headless is not a screenshot")
+		get_tree().quit(1)
+		return
 	InputSetup.ensure_defaults()
 	Sfx.enabled = false
 	Fx.enabled = false
 	get_window().size = Vector2i(1440, 1440)
 	var began := Time.get_ticks_usec()
 	var game := GameWorld.new()
-	game.layout_version = 3
+	game.layout_version = capture_layout
 	game.with_input = false
 	game.with_art = true
 	game.save_path = ""
@@ -23,7 +28,7 @@ func _ready() -> void:
 		(ui as CanvasLayer).visible = false
 	var terrain := game.region.get_node("ForbiddenLandsTerrain")
 	var job: ArenaArtBuild = terrain.get_meta(&"detail_job")
-	var report := {"startup_usec": startup_usec, "detail_jobs": job.jobs.size(), "max_detail_job_usec": job.max_step_usec, "terrain_render_chunks": 0, "road_render_chunks": 0, "bounded_detail_meshes": 0, "native_culling": true}
+	var report := {"world_layout": capture_layout, "startup_usec": startup_usec, "detail_jobs": job.jobs.size(), "max_detail_job_usec": job.max_step_usec, "terrain_render_chunks": 0, "road_render_chunks": 0, "bounded_detail_meshes": 0, "native_culling": true}
 	var ranges := {}
 	for mesh: MeshInstance3D in terrain.find_children("*", "MeshInstance3D", true, false):
 		if mesh.visibility_range_end > 0:
@@ -60,7 +65,7 @@ func _ready() -> void:
 	background.size = get_viewport().get_visible_rect().size
 	labels.add_child(background)
 	for kind: StringName in BossRoster.PLAYABLE:
-		_map_label(labels, String(kind).replace("celosia_cenobia", "Celosia + Cenobia").capitalize(), WorldMap.arena_transform(kind, 3).origin)
+		_map_label(labels, String(kind).replace("celosia_cenobia", "Celosia + Cenobia").capitalize(), WorldMap.arena_transform(kind, capture_layout).origin)
 	_map_label(labels, "Shrine / F4\nNORTH +Z", Vector3(-20, 0, 25))
 	await _capture("01_world_map.png")
 	labels.visible = false
@@ -77,7 +82,7 @@ func _ready() -> void:
 	cam.look_at_from_position(Vector3(-715, 14, -410), Vector3(-630, 8, -535))
 	await _capture("03_southwestern_forest.png")
 	report["captures"] = paths
-	var output := FileAccess.open("res://tests/output/forbidden_lands_capture.json", FileAccess.WRITE)
+	var output := FileAccess.open("res://tests/output/forbidden_lands_capture_layout%d.json" % capture_layout, FileAccess.WRITE)
 	output.store_string(JSON.stringify(report, "  "))
 	output.close()
 	print("FORBIDDEN_LANDS_RENDER: ", report)
@@ -101,8 +106,9 @@ func _capture(label: String) -> void:
 	for i in 4:
 		await get_tree().process_frame
 	await RenderingServer.frame_post_draw
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://art/screenshots/forbidden_lands"))
-	var path := ProjectSettings.globalize_path("res://art/screenshots/forbidden_lands/" + label)
+	var folder := "res://art/screenshots/forbidden_lands_layout%d" % capture_layout
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(folder))
+	var path := ProjectSettings.globalize_path(folder + "/" + label)
 	var error := get_viewport().get_texture().get_image().save_png(path)
 	if error != OK:
 		push_error("Capture failed: " + path)
